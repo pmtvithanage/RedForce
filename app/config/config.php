@@ -1,6 +1,9 @@
 <?php
 
     // Database configuration and connection logic
+    // Database constants
+    // These constants should match your database configuration
+    // Update these values according to your database setup
     define("DB_HOST", "localhost");
     define("DB_USER", "root");
     define("DB_PASSWORD","");
@@ -13,4 +16,8 @@
 
     // Website Name
     define('SITE_NAME', 'Red Force Security Solutions');
+
+    // App Version
+    define('APP_VERSION', '1.0.0');
+
 ?>
