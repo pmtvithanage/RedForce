@@ -13,4 +13,7 @@
 
     // Website Name
     define('SITE_NAME', 'Red Force Security Solutions');
+
+    // App Version
+    define('APP_VERSION', '1.0.0');
 ?>
