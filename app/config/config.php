@@ -4,13 +4,13 @@
     define("DB_HOST", "localhost");
     define("DB_USER", "root");
     define("DB_PASSWORD","");
-    define("DB_NAME","MVC_db");
+    define("DB_NAME","REDFORCE_db");
 
     define('APP_ROOT', dirname(dirname(__FILE__)));
 
     // URL Root
-    define('URL_ROOT', 'http://localhost/MVC');
+    define('URL_ROOT', 'http://localhost/RedForce');
 
     // Website Name
-    define('SITE_NAME', 'MVC Application');
+    define('SITE_NAME', 'Red Force Security Solutions');
 ?>
