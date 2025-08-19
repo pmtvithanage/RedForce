@@ -1,9 +1,8 @@
 <?php
-    class M_pages {
+    class M_users {
         private $db;
-
-        public function __construct()
-        {
+        public function __construct() {
+            // Initialize the database connection
             $this->db = new Database();
         }
 
