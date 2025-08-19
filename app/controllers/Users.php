@@ -12,7 +12,7 @@
 
         public function about() {
             $users = $this->userModel->getUsers();
-             
+            
             $data = [
                 'users' => $users
             ];
@@ -20,4 +20,5 @@
         }
     }
 ?>
+
 
