@@ -9,15 +9,12 @@
     define("DB_PASSWORD","");
     define("DB_NAME","REDFORCE_db");
 
-    define('APP_ROOT', dirname(dirname(__FILE__)));
+    define('APP_ROOT', dirname(__FILE__,2));
 
     // URL Root
     define('URL_ROOT', 'http://localhost/RedForce');
 
     // Website Name
     define('SITE_NAME', 'Red Force Security Solutions');
-
-    // App Version
-    define('APP_VERSION', '1.0.0');
 
 ?>

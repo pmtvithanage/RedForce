@@ -1,21 +1,21 @@
 <?php
-    class Controller {
-        // Load model
-        public function model($model){
-            // Require model file
+    class controller {
+        // To load model
+        public function model($model) {
+
             require_once '../app/models/' . $model . '.php';
 
-            // Instantiate model and  pass it to the controller member variable
+            // Instantiate model and pass it to controller
             return new $model();
+            
         }
 
-        // Load view
-        public function view($view, $data = []){
-            // Check for view file
-            if(file_exists('../app/views/' . $view . '.php')){
+        // To load view
+        public function view($view, $data = []) {
+            if(file_exists('../app/views/' . $view . '.php')) {
                 require_once '../app/views/' . $view . '.php';
-            } else {
-                // View does not exist
+            }
+            else {
                 die('View does not exist');
             }
         }
