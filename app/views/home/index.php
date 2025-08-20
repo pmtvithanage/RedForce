@@ -24,9 +24,14 @@
                 <a href="#contact" class="nav-link">CONTACT</a>
             </li>
             <li class="nav-item">
-                <a href="<?php echo URL_ROOT; ?>/login" class="nav-link login-btn">LOGIN</a>
+                <a href="<?php echo URL_ROOT; ?>/users/login" class="nav-link login-btn">LOGIN</a>
             </li>
         </ul>
+        <div class="hamburger">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </div>
     </div>
 </nav>
 
@@ -38,13 +43,13 @@
             <p class="hero-subtitle">Streamline your security operations with RedForce — the complete solution for officer deployment, incident reporting, and performance tracking.</p>
             <div class="hero-buttons">
                 <a href="#GetService" class="btn btn-primary">Get Service</a>
-                <a href="<?php echo URL_ROOT; ?>/login" class="btn btn-secondary">Login</a>
+                <a href="<?php echo URL_ROOT; ?>/users/login" class="btn btn-secondary">Login</a>
             </div>
         </div>
         <div class="hero-logo">
-                    <div class="hero-emblem">
-            <img src="<?php echo URL_ROOT; ?>/public/img/logo.png" alt="RED FORCE Emblem">
-        </div>
+            <div class="hero-emblem">
+                <img src="<?php echo URL_ROOT; ?>/public/img/logo.png" alt="RED FORCE Emblem">
+            </div>
         </div>
     </div>
 </section>
