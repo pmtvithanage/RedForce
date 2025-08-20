@@ -14,4 +14,9 @@ class Home extends Controller {
         ];
         $this->view('home/index', $data);
     }
+
+    // get services
+    public function service() {
+        $this->view('home/v_services');
+    }
 }
