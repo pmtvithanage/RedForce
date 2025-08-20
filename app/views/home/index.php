@@ -210,7 +210,7 @@
         <div class="mission-content">
             <h2>Your Safety, Our Mission</h2>
             <p>Partner with RED FORCE for trusted, technology-driven security solutions tailored to protect your people, property, and peace of mind.</p>
-            <a href="#contact" class="btn btn-primary">Get Service</a>
+            <a href="<?php echo URL_ROOT; ?>/home/service" class="btn btn-primary">Get Service</a>
         </div>
     </div>
 </section>
@@ -253,6 +253,6 @@
     </div>
 </footer>
 
-<script src="<?php echo URL_ROOT; ?>/js/main.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/home/main.js"></script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
