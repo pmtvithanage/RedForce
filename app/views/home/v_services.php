@@ -1,4 +1,5 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+<link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/home/getservice_style.css">
 
     <div class="container">
         <div class="form-container">
@@ -19,7 +20,7 @@
                 <!-- Left Side - Logo Upload -->
                 <div class="logo-upload-section">
                     <div class="logo-placeholder">
-                        <div class="upload-icon">📷</div>
+                        
                     </div>
                     <button class="upload-btn">Upload logo/photo</button>
                 </div>

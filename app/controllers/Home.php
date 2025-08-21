@@ -19,4 +19,16 @@ class Home extends Controller {
     public function service() {
         $this->view('home/v_services');
     }
+
+    // job applications
+    public function premise_officer() {
+        $this->view('home/v_premise_officer_job');
+    }
+    public function care_taker() {
+        $this->view('home/v_care_taker_job');
+    }
+    public function mobile_rider() {
+        $this->view('home/v_mobile_rider_job');
+    }
+
 }
