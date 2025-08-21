@@ -101,13 +101,7 @@ document.addEventListener('DOMContentLoaded', function() {
         jobObserver.observe(card);
     });
     
-    // View button functionality for job cards
-    document.querySelectorAll('.view-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const jobTitle = this.parentElement.querySelector('.job-banner').textContent;
-            alert(`You clicked on ${jobTitle}. This would typically open a detailed job description or application form.`);
-        });
-    });
+    
     
     // Form validation for contact form (if exists)
     const contactForm = document.querySelector('#contact-form');

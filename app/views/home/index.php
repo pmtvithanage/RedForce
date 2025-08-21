@@ -1,5 +1,8 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
+<link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/home/home_style.css">
+
+
 <!-- Navigation -->
 <nav class="navbar">
     <div class="nav-container">
@@ -184,21 +187,21 @@
                     <img src="<?php echo URL_ROOT; ?>/img/premise-officer.png" alt="Premise Officer">
                     <div class="job-banner">As a Premise Officer</div>
                 </div>
-                <button class="view-btn">View</button>
+                <a href="<?php echo URL_ROOT; ?>/home/premise_officer" class="view-btn">View</a>
             </div>
             <div class="job-card">
                 <div class="job-image">
                     <img src="<?php echo URL_ROOT; ?>/img/care-taker.png" alt="Care Taker">
                     <div class="job-banner">As a Care-Taker</div>
                 </div>
-                <button class="view-btn">View</button>
+                <a href="<?php echo URL_ROOT; ?>/home/care_taker" class="view-btn">View</a>
             </div>
             <div class="job-card">
                 <div class="job-image">
                     <img src="<?php echo URL_ROOT; ?>/img/mobile-rider.png" alt="Mobile Rider">
                     <div class="job-banner">As a Mobile Rider</div>
                 </div>
-                <button class="view-btn">View</button>
+                <a href="<?php echo URL_ROOT; ?>/home/mobile_rider" class="view-btn">View</a>
             </div>
         </div>
     </div>
@@ -210,7 +213,7 @@
         <div class="mission-content">
             <h2>Your Safety, Our Mission</h2>
             <p>Partner with RED FORCE for trusted, technology-driven security solutions tailored to protect your people, property, and peace of mind.</p>
-            <a href="<?php echo URL_ROOT; ?>/home/service" class="btn btn-primary">Get Service</a>
+            <a href="<?php echo URL_ROOT; ?>/home/Service" class="btn btn-primary">Get Service</a>
         </div>
     </div>
 </section>

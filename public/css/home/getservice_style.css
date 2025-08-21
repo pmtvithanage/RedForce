@@ -106,7 +106,7 @@ body {
 .logo-placeholder {
     width: 150px;
     height: 150px;
-    border: 3px dashed #B30B0B;
+    border: 2px solid #B30B0B;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -159,10 +159,7 @@ body {
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
-.upload-icon {
-    font-size: 3rem;
-    color: #B30B0B;
-}
+
 
 .upload-btn {
     background: #B30B0B;

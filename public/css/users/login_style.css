@@ -1,4 +1,11 @@
 /* Login Page Styles */
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
 .login-container {
     display: flex;
     min-height: 100vh;

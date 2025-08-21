@@ -1,4 +1,5 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+<link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/users/login_style.css">
 
 <div class="login-container">
     <!-- Left Section - Red Gradient with Emblem -->
