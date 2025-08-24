@@ -2,7 +2,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 
-<link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/components/adminsidebar_style.css">
+<link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/components/sidebar_topbar_style.css">
 
 <div class="app">
       <aside class="sidebar" aria-label="Primary">
@@ -25,10 +25,7 @@
 
         <nav class="menu">
           <div class="menu-section">MAIN</div>
-          <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/dashboard">
-            <span class="icon"><span class="material-symbols-outlined">dashboard</span></span>
-            <span class="label">Dashboard</span>
-          </a>
+          <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
 
           <div class="menu-section">MANAGEMENT</div>
           <a class="menu-item <?php echo ($data['title'] === 'Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">Officers</span></a>
@@ -52,15 +49,15 @@
           <div class="topbar-right">
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
-    <span class="avatar" aria-hidden="true">👤</span>
+    <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
     <span class="name">Admin</span>
-    <span class="caret" aria-hidden="true">▾</span>
+    <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
   </div>
 
   <!-- Dropdown -->
   <div class="profile-dropdown" id="profileDropdown">
     <div class="profile-info">
-      <div class="avatar">👤</div>
+      <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
         <h4>Admin User</h4>
         <p>Super Admin</p>
