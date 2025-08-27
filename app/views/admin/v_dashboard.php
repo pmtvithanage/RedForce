@@ -10,7 +10,7 @@
     <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">group</span>
   <div>
-    <div class="stat-value">1445</div>
+    <div class="stat-value">0</div>
     <div>Total Officers</div>
   </div>
 </div>
@@ -18,7 +18,7 @@
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">shield_person</span>
   <div>
-    <div class="stat-value">988</div>
+    <div class="stat-value">0</div>
     <div>On Duty</div>
   </div>
 </div>
@@ -26,7 +26,7 @@
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">verified_user</span>
   <div>
-    <div class="stat-value">560</div>
+    <div class="stat-value">0</div>
     <div>Active</div>
   </div>
 </div>
@@ -34,7 +34,7 @@
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">report</span>
   <div>
-    <div class="stat-value">11</div>
+    <div class="stat-value">0</div>
     <div>Incidents</div>
   </div>
 </div>
