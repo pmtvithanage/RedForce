@@ -1,6 +1,4 @@
-h1{
-    color: #f00f0f;
-    font-size: 2em;
-    text-align: center;
-    margin-top: 20px;
+@font-face {
+    font-family: Poppins-Regular;
+    src: url('../fonts/Poppins-Regular.ttf') ;
 }

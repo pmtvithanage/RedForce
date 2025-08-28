@@ -1,0 +1,37 @@
+<?php
+class MobileRider extends Controller {
+    private $homeModel;
+
+    public function __construct() {
+        // Load the model
+        $this->homeModel = $this->model('M_mobilerider');
+    }
+
+    // Default action
+    public function index() {
+        // Currently empty → could redirect to dashboard or load a default view
+    }
+
+    // Dashboard action
+    public function dashboard() {
+        $data = [
+            'title' => 'Dashboard',
+        ];
+        $this->view('mobilerider/v_dashboard', $data);
+    }
+
+    // Schedule action
+    public function sites() {
+        $data = [
+            'title' => 'Sites',
+        ];
+        $this->view('mobilerider/v_sites', $data);
+    }
+    // Requests action
+    public function incidents() {
+        $data = [
+            'title' => 'Incidents',
+        ];
+        $this->view('mobilerider/v_incidents', $data);
+    }
+}
