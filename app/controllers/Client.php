@@ -65,13 +65,126 @@ class Client extends Controller {
         $this->view('client/v_dashboard', $data);
     }
 
-    //view officers
-    public function officers() {
-        $data = [
-            'title' => 'View Officers',
-        ];
-        $this->view('client/v_officers', $data);
-    }
+    // Add this method to your existing Client.php controller
+
+//view officers (guards)
+public function officers() {
+    // Sample data - replace with actual database queries
+    $data = [
+        'title' => 'View Guards',
+        'sites' => [
+            'All Sites',
+            'People\'s Bank PLC - Colombo 2',
+            'People\'s Bank PLC - Rajagiriya', 
+            'People\'s Bank PLC - Panadura',
+            'People\'s Bank PLC - Battaramulla',
+            'People\'s Bank PLC - Kelaniya',
+            'People\'s Bank PLC - Nugoda',
+            'People\'s Bank PLC - Ambalangoda',
+            'People\'s Bank PLC - Balangoda',
+            'People\'s Bank PLC - Avissawella',
+            'People\'s Bank PLC - Jaffna',
+            'People\'s Bank PLC - Kandy',
+            'People\'s Bank PLC - Jawla',
+            'People\'s Bank PLC - Ampara'
+        ],
+        'guards' => [
+            [
+                'id' => 'RF321',
+                'name' => 'Dasun Shanaka',
+                'rank' => 'JSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Colombo 2'
+            ],
+            [
+                'id' => 'RF411',
+                'name' => 'Chamika Karunaratne',
+                'rank' => 'SSO',
+                'status' => 'Off Duty',
+                'site' => 'People\'s Bank PLC - Rajagiriya'
+            ],
+            [
+                'id' => 'RF345',
+                'name' => 'Charith Asalanka',
+                'rank' => 'SSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Panadura'
+            ],
+            [
+                'id' => 'RF269',
+                'name' => 'Kusal Mendis',
+                'rank' => 'JSO',
+                'status' => 'Off Duty',
+                'site' => 'People\'s Bank PLC - Battaramulla'
+            ],
+            [
+                'id' => 'RF105',
+                'name' => 'Pathum Nissanka',
+                'rank' => 'OIC',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Kelaniya'
+            ],
+            [
+                'id' => 'RF456',
+                'name' => 'Binura Fernando',
+                'rank' => 'SSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Nugoda'
+            ],
+            [
+                'id' => 'RF809',
+                'name' => 'Matheesha Pathirana',
+                'rank' => 'LSO',
+                'status' => 'On Break',
+                'site' => 'People\'s Bank PLC - Ambalangoda'
+            ],
+            [
+                'id' => 'RF129',
+                'name' => 'Maheesh Theekshana',
+                'rank' => 'LSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Balangoda'
+            ],
+            [
+                'id' => 'RF768',
+                'name' => 'Angelo Mathews',
+                'rank' => 'JSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Avissawella'
+            ],
+            [
+                'id' => 'RF811',
+                'name' => 'Pawan Rathnayaka',
+                'rank' => 'JSO',
+                'status' => 'Off Duty',
+                'site' => 'People\'s Bank PLC - Jaffna'
+            ],
+            [
+                'id' => 'RF564',
+                'name' => 'Asela Gunarathna',
+                'rank' => 'LSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Kandy'
+            ],
+            [
+                'id' => 'RF123',
+                'name' => 'Sanath Jayasuriya',
+                'rank' => 'SSO',
+                'status' => 'On Duty',
+                'site' => 'People\'s Bank PLC - Jawla'
+            ],
+            [
+                'id' => 'RF176',
+                'name' => 'Kamindu Mendis',
+                'rank' => 'OIC',
+                'status' => 'Off Duty',
+                'site' => 'People\'s Bank PLC - Ampara'
+            ]
+        ]
+    ];
+    
+    $this->view('client/v_officers', $data);
+}
 
     //requests
     public function requests() {
