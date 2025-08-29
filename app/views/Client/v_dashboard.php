@@ -15,7 +15,7 @@
     }
     
     .main-content {
-        margin-left: 250px; /* keep sidebar space */
+        margin-left: 100px; /* keep sidebar space */
         margin-top: 70px;  /* keep topbar space */
         padding: 30px;
         min-height: calc(100vh - 70px);
