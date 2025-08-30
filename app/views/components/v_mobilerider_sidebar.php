@@ -28,7 +28,9 @@
             <div class="menu-section"></div>
             <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/mobilerider/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Sites') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/mobilerider/sites"><span class="icon"></span><span class="material-symbols-outlined">location_on</span><span class="label">Sites</span></a>
+            <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/mobilerider/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Incidents') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/mobilerider/incidents"><span class="icon"></span><span class="material-symbols-outlined">report</span><span class="label">Incidents</span></a>
+            <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/mobilerider/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
 
 
         </nav>
