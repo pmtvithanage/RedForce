@@ -27,11 +27,25 @@ class MobileRider extends Controller {
         ];
         $this->view('mobilerider/v_sites', $data);
     }
-    // Requests action
+    // Messages
+    public function messages() {
+        $data = [
+            'title' => 'Messages',
+        ];
+        $this->view('mobilerider/v_messages', $data);
+    }
+    // Incidents
     public function incidents() {
         $data = [
             'title' => 'Incidents',
         ];
         $this->view('mobilerider/v_incidents', $data);
+    }
+    // Profile
+    public function profile() {
+        $data = [
+            'title' => 'Profile',
+        ];
+        $this->view('mobilerider/v_profile', $data);
     }
 }
