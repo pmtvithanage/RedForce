@@ -1,8 +1,5 @@
 /* Base */
 :root { --bg: #f9dfe3; --card: #ffffff; --ink: #0f172a; --muted: #6b7280; --ring: #f1a7b2; --accent: #ef476f; }
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body { margin: 0; font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; color: var(--ink); background: var(--bg); }
 
 .page { max-width: 100vb; margin: 0 auto; padding: 16px; }
 .page__header { padding: 8px 0 20px; }
