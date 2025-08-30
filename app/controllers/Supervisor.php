@@ -26,6 +26,13 @@ class Supervisor extends Controller {
         ];
         $this->view('supervisor/v_officers', $data);
     }
+    // Messages
+    public function messages() {
+        $data = [
+            'title' => 'Messages',
+        ];
+        $this->view('supervisor/v_messages', $data);
+    }
 
     //Leave Requests
     public function leave_requests() {
