@@ -9,25 +9,29 @@
         <!-- Summary Cards Section -->
         <div class="summary-section">
             <div class="summary-card resolved">
-                <div class="card-icon">
-                    <i class="fas fa-file-alt"></i>
-                    <i class="fas fa-check-circle check-icon"></i>
-                </div>
-                <div class="card-content">
-                    <h3>Resolved Incidents</h3>
-                    <p class="count">122</p>
-                </div>
+              <div class="card-icon">
+                <!-- File icon -->
+                <span class="material-symbols-outlined">description</span>
+                <!-- Check circle icon -->
+                <span class="material-symbols-outlined check-icon">check_circle</span>
+              </div>
+              <div class="card-content">
+                <h3>Resolved Incidents</h3>
+                <p class="count">122</p>
+              </div>
             </div>
             
             <div class="summary-card pending">
-                <div class="card-icon">
-                    <i class="fas fa-desktop"></i>
-                    <i class="fas fa-exclamation-triangle warning-icon"></i>
-                </div>
-                <div class="card-content">
-                    <h3>Pending Incidents</h3>
-                    <p class="count">3</p>
-                </div>
+              <div class="card-icon">
+                <!-- Computer icon -->
+                <span class="material-symbols-outlined">desktop_windows</span>
+                <!-- Warning icon -->
+                <span class="material-symbols-outlined warning-icon">warning</span>
+              </div>
+              <div class="card-content">
+                <h3>Pending Incidents</h3>
+                <p class="count">3</p>
+              </div>
             </div>
         </div>
 
