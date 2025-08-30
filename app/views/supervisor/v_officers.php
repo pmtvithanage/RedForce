@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 
 
     <!-- Content will be loaded here -->

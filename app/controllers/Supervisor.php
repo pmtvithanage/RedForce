@@ -8,8 +8,6 @@ class Supervisor extends Controller {
 
     // Default action
     public function index() {
-        
-        
     }
 
     // dashboard
@@ -27,63 +25,29 @@ class Supervisor extends Controller {
         ];
         $this->view('supervisor/v_officers', $data);
     }
-
-    //clients
-    public function clients() {
+    // Messages
+    public function messages() {
         $data = [
-            'title' => 'Clients',
+            'title' => 'Messages',
         ];
-        $this->view('supervisor/v_clients', $data);  
+        $this->view('supervisor/v_messages', $data);
     }
 
-    // scheduling
-    public function scheduling() {
+    //Leave Requests
+    public function leave_requests() {
         $data = [
-            'title' => 'Scheduling',
+            'title' => 'Leave Requests',
         ];
-        $this->view('supervisor/v_scheduling', $data);
+        $this->view('supervisor/v_leaverequests', $data);  
     }
 
-    //salary
-    public function salary() {
+    //Profile
+    public function profile() {
         $data = [
-            'title' => 'Salary',
+            'title' => 'Profile',
         ];
-        $this->view('admin/v_salary', $data);
+        $this->view('supervisor/v_profile', $data);
     }
-
-    //advertisements
-    public function advertisements() {
-        $data = [
-            'title' => 'Advertisements',
-        ];
-        $this->view('admin/v_advertisements', $data);
-    }
-
-    // incidents
-    public function incidents() {
-        $data = [
-            'title' => 'Incidents',
-        ];
-        $this->view('admin/v_incidents', $data);
-    }
-
-    // reports
-    public function reports() {
-        $data = [
-            'title' => 'Reports',
-        ];
-        $this->view('admin/v_reports', $data);  
-    }
-
-    // settings
-    public function settings() {
-        $data = [
-            'title' => 'Settings',
-        ];
-        $this->view('admin/v_settings', $data);
-    }
-
 
 
 }
