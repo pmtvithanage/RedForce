@@ -1,10 +1,9 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
+  <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 
 
     <!-- Content will be loaded here -->
-     
     
     </main>
     </div>

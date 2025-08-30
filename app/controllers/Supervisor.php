@@ -8,7 +8,6 @@ class Supervisor extends Controller {
 
     // Default action
     public function index() {
-          
     }
 
     // dashboard
@@ -49,5 +48,6 @@ class Supervisor extends Controller {
         ];
         $this->view('supervisor/v_profile', $data);
     }
+
 
 }
