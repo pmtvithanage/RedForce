@@ -41,6 +41,13 @@ class MobileRider extends Controller {
         ];
         $this->view('mobilerider/v_incidents', $data);
     }
+    // Leave Requests
+    public function leaverequests() {
+        $data = [
+            'title' => 'Leave Requests',
+        ];
+        $this->view('mobilerider/v_leaverequests', $data);  
+    }
     // Profile
     public function profile() {
         $data = [
