@@ -1,15 +1,18 @@
 <?php
 class MobileRider extends Controller {
-    private $homeModel;
+    private $mobileRiderModel;
+    private $userModel;
 
     public function __construct() {
-        // Load the model
-        $this->homeModel = $this->model('M_mobilerider');
+        // Check if user is logged in and has mobile rider role
+        requireAuth('mobile rider');
+        $this->mobileRiderModel = $this->model('M_mobileRider');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
-        // Currently empty → could redirect to dashboard or load a default view
+        redirect('mobilerider/dashboard');
     }
 
     // Dashboard action

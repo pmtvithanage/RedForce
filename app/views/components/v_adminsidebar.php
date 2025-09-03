@@ -18,8 +18,8 @@
         <div class="user-card">
           <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
           <div class="user-meta">
-            <div class="user-name">Admin User</div>
-            <div class="user-role">Super Admin</div>
+            <div class="user-name"><?php echo getCurrentUserName() ?? 'Admin User'; ?></div>
+            <div class="user-role"><?php echo getCurrentUserRole() ?? 'Super Admin'; ?></div>
           </div>
         </div>
 
@@ -41,6 +41,8 @@
         </nav>
       </aside>
 
+      <div class="backdrop" id="backdrop" hidden></div>
+
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
@@ -50,7 +52,7 @@
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
     <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
-    <span class="name">Admin</span>
+    <span class="name"><?php echo getCurrentUserName() ?? 'Admin'; ?></span>
     <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
   </div>
 
@@ -59,15 +61,15 @@
     <div class="profile-info">
       <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
-        <h4>Admin User</h4>
-        <p>Super Admin</p>
+        <h4><?php echo getCurrentUserName() ?? 'Admin User'; ?></h4>
+        <p><?php echo getCurrentUserRole() ?? 'Super Admin'; ?></p>
       </div>
     </div>
     <hr>
     <a href="#" class="dropdown-link change-password">
   <span class="material-symbols-outlined">lock</span> Change Password
 </a>
-    <a href="<?php echo URL_ROOT; ?>/home/index" class="dropdown-link logout">
+    <a href="<?php echo URL_ROOT; ?>/users/logout" class="dropdown-link logout">
       <span class="material-symbols-outlined">logout</span> Logout
     </a>
   </div>
