@@ -17,19 +17,25 @@ class Client extends Controller {
 
     // dashboard
     public function dashboard() {
+        // Sample data - replace with actual database queries
         $data = [
             'title' => 'Dashboard',
         ];
+        
         $this->view('client/v_dashboard', $data);
     }
 
-    //view officers
-    public function officers() {
-        $data = [
-            'title' => 'View Officers',
-        ];
-        $this->view('client/v_officers', $data);
-    }
+    // Add this method to your existing Client.php controller
+
+//view officers (guards)
+public function officers() {
+    // Sample data - replace with actual database queries
+    $data = [
+        'title' => 'View Guards',
+    ];
+    
+    $this->view('client/v_officers', $data);
+}
 
     //requests
     public function requests() {
