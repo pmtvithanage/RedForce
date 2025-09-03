@@ -153,6 +153,9 @@
                 case 'client':
                     redirect('client/dashboard');
                     break;
+                case 'caretaker':
+                    redirect('caretaker/dashboard');
+                    break;
                 default:
                     // Default to admin dashboard for unknown roles
                     redirect('admin/dashboard');

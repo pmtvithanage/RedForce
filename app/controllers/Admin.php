@@ -1,15 +1,19 @@
 <?php
 class Admin extends Controller {
-    private $homeModel;
+    private $adminModel;
+    private $userModel;
 
     public function __construct() {
-        $this->homeModel = $this->model('M_admin');
+        // Check if user is logged in and has admin role
+        requireAuth('admin');
+        
+        $this->adminModel = $this->model('M_admin');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
-        
-        
+        redirect('admin/dashboard');
     }
 
     // dashboard

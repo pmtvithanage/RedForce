@@ -1,15 +1,18 @@
 <?php
 class Client extends Controller {
-    private $homeModel;
+    private $clientModel;
+    private $userModel;
 
     public function __construct() {
-        $this->homeModel = $this->model('M_client');
+        // Check if user is logged in and has client role
+        requireAuth('client');
+        $this->clientModel = $this->model('M_client');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
-        
-        
+        redirect('client/dashboard');
     }
 
     // dashboard
