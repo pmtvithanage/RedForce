@@ -1,0 +1,270 @@
+
+/* ==========================
+   MAIN CONTENT
+========================== */
+.main-content {
+  margin-left: 280px;
+  flex: 1;
+  padding: 18px;
+  background: #fde5eb;
+}
+
+/* --- Top Header --- */
+.top-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border: 1px solid #f0d6dc;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 16px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-left i {
+  color: #111;
+}
+
+.top-header h1 {
+  font-size: 18px;
+}
+
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid #f0d6dc;
+  border-radius: 24px;
+  padding: 6px 12px;
+}
+
+.profile-chip i {
+  color: #111;
+}
+
+/* --- Grid Layout --- */
+.content-grid {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 18px;
+}
+
+/* ==========================
+   PROFILE CARD
+========================== */
+.profile-card {
+  background: #fff;
+  border: 1px solid #f0d6dc;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-wrapper {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.avatar {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  position: relative;
+}
+
+.status-dot {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #fff;
+}
+
+.edit-btn {
+  position: absolute;
+  right: -6px;
+  bottom: -8px;
+  background: #eee;
+  border: 1px solid #ddd;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.details {
+  width: 100%;
+}
+
+.detail {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #f0d6dc;
+}
+
+.detail:last-child {
+  border-bottom: none;
+}
+
+.detail label {
+  color: #666;
+  margin-right: 10px;
+}
+
+.address span {
+  max-width: 230px;
+  text-align: right;
+}
+
+/* ==========================
+   ATTENDANCE CARD
+========================== */
+.attendance-card {
+  background: #fff;
+  border: 1px solid #f0d6dc;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e7c8ce;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  background: #fff;
+}
+
+.search-bar i {
+  color: #888;
+}
+
+.search-bar input {
+  border: none;
+  outline: none;
+  flex: 1;
+  font-family: inherit;
+}
+
+/* --- Attendance Table --- */
+.table-wrapper {
+  max-height: 360px;
+  overflow: auto;
+  border: 1px solid #f7d1d7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table thead th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #f0d6dc;
+  text-align: left;
+  padding: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.attendance-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #f7d1d7;
+  font-size: 13px;
+}
+
+/* --- Status Chips --- */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 14px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border: 1px solid transparent;
+}
+
+.status-present {
+  background: #e9f9ee;
+  color: #0f9d58;
+  border-color: #bde8cd;
+}
+
+.status-absent {
+  background: #fde9ea;
+  color: #d93025;
+  border-color: #f2c3c6;
+}
+
+/* --- Action Icons --- */
+.action-icons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-icons i {
+  color: #0f9d58;
+}
+
+.action-icons .fail {
+  color: #d93025;
+}
+
+/* ==========================
+   SCAN QR BUTTON
+========================== */
+.scan-qr {
+  display: flex;
+  justify-content: center;
+  margin: 22px 0;
+}
+
+.scan-btn {
+  background: #c41212;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 34px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  cursor: pointer;
+}
+
+.scan-btn:hover {
+  background: #a80f0f;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+@media (max-width: 1000px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
