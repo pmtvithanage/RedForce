@@ -39,31 +39,31 @@
           <h1 class="page-title"><?php echo $data['title']; ?></h1>
 
           <div class="topbar-right">
-  <!-- Profile Toggle -->
-  <div class="topbar-user" id="profileToggle">
-    <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
-    <span class="name">client</span>
-    <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
-  </div>
-
-  <!-- Dropdown -->
-  <div class="profile-dropdown" id="profileDropdown">
-    <div class="profile-info">
-      <div class="avatar"><span class="material-symbols-outlined">person</span></div>
-      <div>
-        <h4>User</h4>
-        <p>Client</p>
-      </div>
-    </div>
-    <hr>
-    <a href="#" class="dropdown-link change-password">
-  <span class="material-symbols-outlined">lock</span> Change Password
+          <!-- Profile Toggle -->
+          <div class="topbar-user" id="profileToggle">
+            <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
+            <span class="name">client</span>
+            <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
+          </div>
+        
+          <!-- Dropdown -->
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="profile-info">
+              <div class="avatar"><span class="material-symbols-outlined">person</span></div>
+              <div>
+                <h4>User</h4>
+                <p>Client</p>
+              </div>
+            </div>
+            <hr>
+            <a href="#" class="dropdown-link change-password">
+          <span class="material-symbols-outlined">lock</span> Change Password
 </a>
     <a href="<?php echo URL_ROOT; ?>/home/index" class="dropdown-link logout">
       <span class="material-symbols-outlined">logout</span> Logout
     </a>
   </div>
-</div>
+</div>    
 
         </header>
 

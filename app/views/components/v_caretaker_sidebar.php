@@ -44,7 +44,7 @@
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
     <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
-    <span class="name">User</span>
+    <span class="name">user</span>
     <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
   </div>
 
