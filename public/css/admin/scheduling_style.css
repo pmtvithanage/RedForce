@@ -1,0 +1,349 @@
+
+.container {
+  background: #fff;
+  border-radius: 15px;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.requests-box {
+  font-size: 20px;
+  font-weight: bold;
+  border: 2px solid #000;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: white;
+}
+
+.search-section {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  width: 40%;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box input {
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
+.search-box button {
+  background: #f8dcdc;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+
+
+/* Scrollable duty points */
+.scroll-container {
+  max-height: 500px; /* you can adjust */
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.duty-point {
+  background: #ffeef1;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.duty-title {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.supervisor {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.supervisor input {
+  padding: 6px;
+  border: 1px solid #aaa;
+  border-radius: 5px;
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  color: white;
+  font-size: 13px;
+}
+
+.badge.day {
+  background: #39d44a;
+}
+
+.badge.night {
+  background: #ff2a2a;
+}
+
+.replace-btn {
+  background: #f2bdbd;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.remove-btn {
+  background: #ff7070;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: white;
+  margin-left: 5px;
+}
+
+.officer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.officer-table th,
+.officer-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.officer-table td small {
+  font-size: 12px;
+  color: gray;
+}
+
+/* General table style */
+.site-table,
+.officer-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+/* Header row */
+.site-table thead th,
+.officer-table thead th {
+  background-color: #f8dcdc;
+  font-weight: bold;
+  text-align: left;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+}
+
+/* Body rows */
+.site-table tbody td,
+.officer-table tbody td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+/* Optional: align numbers (like # or Rating) */
+.site-table tbody td:first-child,
+.officer-table tbody td:first-child,
+.officer-table thead th:first-child {
+  text-align: center;
+  width: 50px;
+}
+
+.officer-table thead th:last-child,
+.officer-table tbody td:last-child {
+  text-align: center;
+  width: 100px; /* for buttons like Replace/Remove */
+}
+
+.add-officer {
+  margin-top: 10px;
+  background: #eaeaea;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.new-duty-btn {
+  background: white;
+  border: 2px solid #000;
+  padding: 10px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mobile-rider {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.mobile-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.rider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.rider input {
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
+.site-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+}
+
+.site-table th,
+.site-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.site-table td {
+  background: #fde4e7;
+  border-radius: 8px;
+}
+
+.add-site {
+  background: white;
+  border: 1px solid #000;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.mobile-rider-section {
+  margin-top: 30px;
+}
+
+.mobile-rider-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.mobile-rider-search input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
+.mobile-rider-search button {
+  background: #f8dcdc;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.mobile-rider-search button:hover {
+  background: #f5bcbc;
+}
+
+.add-rider {
+  font-weight: bold;
+}
+
+/* --- Responsive Layout --- */
+.search-section {
+  display: flex;
+  flex-wrap: wrap;          /* allow wrapping on small screens */
+  justify-content: flex-start;
+  gap: 15px;                /* space between boxes */
+  margin: 20px 0;
+  width: 100%;              /* use full width */
+}
+
+.search-box {
+  flex: 1;                  /* both search boxes take equal width */
+  min-width: 220px;         /* don’t shrink too much */
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box label {
+  font-weight: bold;
+}
+
+/* Inputs stretch */
+.search-box input {
+  flex: 1;
+  padding: 6px;
+  border-radius: 5px;
+  border: 1px solid #aaa;
+}
+
+/* On tablets and below (≤ 768px), stack neatly */
+@media (max-width: 768px) {
+  .search-section {
+    flex-direction: column; /* stack Client + Site vertically */
+    gap: 10px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+}
+
+/* On very small screens (≤ 480px), adjust paddings */
+@media (max-width: 480px) {
+  body {
+    padding: 10px;
+  }
+
+  .requests-box {
+    font-size: 16px;
+    padding: 8px 12px;
+  }
+
+  .officer-table th,
+  .officer-table td {
+    font-size: 13px;
+    padding: 6px;
+  }
+
+  .add-officer,
+  .replace-btn,
+  .remove-btn,
+  .new-duty-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
