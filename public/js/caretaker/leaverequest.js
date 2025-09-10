@@ -14,8 +14,9 @@ let selectedEndDate = null;
 
 // Initialize Inline Calendars
 document.addEventListener('DOMContentLoaded', function() {
-    initializeCalendar('startCalendar', currentDate);
-    initializeCalendar('endCalendar', currentDate);
+    const today = new Date();
+    initializeCalendar('startCalendar', today);
+    initializeCalendar('endCalendar', today);
     
     // Close calendars when clicking outside
     document.addEventListener('click', function(e) {
@@ -380,12 +381,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
-    // Set default dates (31/12/2025 as shown in the image)
+    // Set current month for both calendars
+    const today = new Date();
     const startDateInput = document.getElementById('startDate');
     const endDateInput = document.getElementById('endDate');
     
-    startDateInput.value = '31/12/2025';
-    endDateInput.value = '31/12/2025';
+    // Initialize with current month instead of preset dates
+    initializeCalendar('startCalendar', today);
+    initializeCalendar('endCalendar', today);
+    
+    // Clear any preset values
+    startDateInput.value = '';
+    endDateInput.value = '';
 });
 
 // Sidebar navigation functionality

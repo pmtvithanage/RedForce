@@ -1,3 +1,31 @@
+// Profile Image Management (View Only)
+let selectedImageFile = null;
+
+// Profile Image functionality (Read-only for dashboard)
+function initializeProfileImage() {
+    console.log('Initializing read-only profile image functionality...');
+    
+    const profileOverlay = document.getElementById('profileOverlay');
+    const profileImage = document.getElementById('profileImage');
+    const profileIcon = document.getElementById('profileIcon');
+
+    // Handle click on readonly profile overlay - show access denied
+    if (profileOverlay) {
+        profileOverlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showNotification('Access Denied: Profile picture changes are restricted on dashboard', 'error');
+        });
+    }
+
+    // Load saved profile image from localStorage (if any)
+    const savedImage = localStorage.getItem('caretakerProfileImage');
+    if (savedImage) {
+        profileImage.src = savedImage;
+        profileImage.style.display = 'block';
+        profileIcon.style.display = 'none';
+    }
+}
+
 // File upload functionality
 document.addEventListener('DOMContentLoaded', function() {
     // File upload button functionality
@@ -213,6 +241,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     console.log('RED FORCE Care Taker Dashboard loaded successfully!');
+    
+    // Initialize profile image functionality
+    initializeProfileImage();
     
     // Add some interactive features
     const sections = document.querySelectorAll('section');

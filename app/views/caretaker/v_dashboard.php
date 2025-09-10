@@ -2,6 +2,7 @@
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/dashboard_style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Content will be loaded here -->
 
@@ -12,7 +13,18 @@
                 <section class="top-section">
                     <div class="profile-section">
                         <div class="profile-image">
-                            <img src="2.jpeg" alt="Siriwardhana" class="user-photo">
+                            <div class="profile-circle readonly-profile" id="profileCircle">
+                                <img id="profileImage" src="<?php echo URL_ROOT; ?>/img/default-avatar.png" alt="Siriwardhana" class="user-photo" style="display: none;">
+                                <i id="profileIcon" class="fas fa-user"></i>
+                                
+                                <!-- Access Denied Overlay -->
+                                <div class="profile-overlay readonly-overlay" id="profileOverlay">
+                                    <div class="access-denied-icon">
+                                        <i class="fas fa-lock"></i>
+                                        <span>View Only</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="profile-details">
                             <div class="detail-item">
