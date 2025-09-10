@@ -1,0 +1,218 @@
+
+  /* --- User Card --- */
+  .user-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, .15);
+  }
+  
+  .user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .user-role {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  
+  .user-role strong {
+    font-size: 14px;
+  }
+  
+  .user-role span {
+    opacity: .9;
+    font-size: 13px;
+  }
+  
+  /* --- Sidebar Menu --- */
+  .menu {
+    padding: 12px 0;
+  }
+  
+  .menu .section {
+    font-size: 12px;
+    opacity: .85;
+    margin: 10px 16px;
+  }
+  
+  .menu .item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    margin: 2px 8px;
+  }
+  
+  .menu .item:hover,
+  .menu .item.active {
+    background: rgba(255, 255, 255, .15);
+  }
+  
+  /* ==========================
+     HEADER
+  ========================== */
+  .main-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .profile-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #f0d6dc;
+    border-radius: 20px;
+    padding: 6px 12px;
+  }
+  
+  /* ==========================
+     CHAT CARD
+  ========================== */
+  .chat-card {
+    background: #fff;
+    border: 1px solid #f0d6dc;
+    border-radius: 12px;
+    padding: 16px;
+    position: relative; /* for role select */
+  }
+  
+  /* --- Messages --- */
+  .messages {
+    height: 420px;
+    overflow: auto;
+    background: #fdeff3;
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid #f6d7dd;
+  }
+  
+  .msg {
+    margin-bottom: 14px;
+  }
+  
+  .bubble {
+    background: #ffe4ea;
+    border-radius: 18px;
+    padding: 14px;
+    max-width: 520px;
+  }
+  
+  .msg-out .bubble {
+    background: #e91e63;
+    color: #fff;
+    margin-left: auto;
+    max-width: 640px;
+  }
+  
+  /* ==========================
+     COMPOSER (Message Input)
+  ========================== */
+  .composer {
+    margin-top: 14px;
+  }
+  
+  .input-wrap {
+    background: #fff;
+    border: 1px solid #e7c8ce;
+    border-radius: 10px;
+    padding: 12px;
+  }
+  
+  .input-wrap textarea {
+    width: 100%;
+    min-height: 70px;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    resize: vertical;
+  }
+  
+  .input-wrap .row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+  }
+  
+  /* --- Buttons --- */
+  .attach {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid #e7c8ce;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
+  
+  .send {
+    background: #e91e63;
+    color: #fff;
+    border: 1px solid #e91e63;
+    border-radius: 8px;
+    padding: 8px 18px;
+    cursor: pointer;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  
+  .actions .ghost {
+    flex: 1;
+    background: #ffe4ea;
+    border: 1px solid #e91e63;
+    border-radius: 8px;
+    padding: 10px 14px;
+    cursor: pointer;
+  }
+  
+  /* ==========================
+     SCROLLBAR (Messages)
+  ========================== */
+  .messages::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .messages::-webkit-scrollbar-thumb {
+    background: #e0b9c1;
+    border-radius: 6px;
+  }
+  
+  /* ==========================
+     CHAT ROLE SELECT
+  ========================== */
+  .chat-role-select {
+    position: absolute;
+    right: 16px;
+    top: 16px;
+    background: #fff;
+    border: 1px solid #e0c5cb;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #333;
+  }
+  
+  .chat-role-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(233, 30, 99, .15);
+  }
