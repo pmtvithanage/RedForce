@@ -16,39 +16,51 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function filterBySite() {
-    const siteFilter = document.getElementById('siteFilter').value;
-    const searchInput = document.getElementById('searchInput').value.toLowerCase();
-    
-    let filteredData = [...originalData];
-    
-    console.log('Filtering by site:', siteFilter);
-    
-    // Apply site filter
-    if (siteFilter && siteFilter !== '' && siteFilter !== 'All Sites') {
-        filteredData = filteredData.filter(guard => 
-            guard.site === siteFilter
-        );
+    const filter = document.getElementById('siteFilter').value;
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const siteCell = rows[i].querySelector('.site-info');
+        if (siteCell) {
+            const siteText = siteCell.textContent;
+            if (filter === '' || siteText === filter) {
+                rows[i].style.display = '';
+                visibleCount++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
     }
     
-    // Apply search filter
-    if (searchInput) {
-        filteredData = filteredData.filter(guard =>
-            guard.name.toLowerCase().includes(searchInput) ||
-            guard.id.toLowerCase().includes(searchInput) ||
-            guard.rank.toLowerCase().includes(searchInput) ||
-            guard.status.toLowerCase().includes(searchInput) ||
-            guard.site.toLowerCase().includes(searchInput)
-        );
-    }
-    
-    currentData = filteredData;
-    renderTable(currentData);
-    updateGuardsCount(currentData.length);
+    updateGuardsCount(visibleCount);
 }
 
 function searchGuards() {
-    console.log('Search function called');
-    filterBySite(); // This will apply both filters
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const officerName = rows[i].querySelector('.officer-name');
+        const officerId = rows[i].querySelector('.officer-id');
+        
+        if (officerName && officerId) {
+            const nameText = officerName.textContent.toLowerCase();
+            const idText = officerId.textContent.toLowerCase();
+            
+            if (nameText.includes(searchTerm) || idText.includes(searchTerm)) {
+                rows[i].style.display = '';
+                visibleCount++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+    
+    updateGuardsCount(visibleCount);
 }
 
 function renderTable(data) {
@@ -97,10 +109,8 @@ function renderTable(data) {
 }
 
 function updateGuardsCount(count) {
-    const countElement = document.getElementById('guardsCount');
-    if (countElement) {
-        countElement.textContent = `${count} guards found`;
-    }
+    const guardsCountElement = document.getElementById('guardsCount');
+    guardsCountElement.textContent = `${count} guards found`;
 }
 
 function openGuardModal(id, name, rank, status, site) {
@@ -180,21 +190,30 @@ function saveEvaluation() {
 }
 
 function exportData() {
-    console.log('Exporting data');
+    // Get visible rows
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    const exportData = [];
     
-    if (!currentData || currentData.length === 0) {
-        alert('No data to export');
-        return;
+    // Add header
+    exportData.push(['Officer ID', 'Officer Name', 'Rank', 'Status', 'Site']);
+    
+    // Add visible rows data
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].style.display !== 'none') {
+            const officerId = rows[i].querySelector('.officer-id').textContent;
+            const officerName = rows[i].querySelector('.officer-name').textContent;
+            const rank = rows[i].querySelector('.rank-badge').textContent;
+            const status = rows[i].querySelector('.status-badge').textContent;
+            const site = rows[i].querySelector('.site-info').textContent;
+            
+            exportData.push([officerId, officerName, rank, status, site]);
+        }
     }
     
-    // Simple CSV export functionality
-    let csv = 'Officer ID,Officer Name,Rank,Status,Site\n';
-    
-    currentData.forEach(guard => {
-        csv += `"${guard.id}","${guard.name}","${guard.rank}","${guard.status}","${guard.site}"\n`;
-    });
-    
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Convert to CSV and download
+    const csvContent = exportData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
