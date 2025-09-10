@@ -1,11 +1,49 @@
 
 /* ==========================
+   DASHBOARD HEADER
+========================== */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #f0d6dc;
+  border-radius: 12px;
+  padding: 16px 24px;
+  margin: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.header-left i, .header-right i {
+  font-size: 20px;
+  color: #666;
+}
+
+.header-left i {
+  color: #4a90e2;
+}
+
+.header-right i {
+  color: #e74c3c;
+}
+
+/* ==========================
    MAIN CONTENT
 ========================== */
 .main-content {
   margin-left: 280px;
   flex: 1;
-  padding: 18px;
+  padding: 0;
   background: #fde5eb;
 }
 
@@ -54,6 +92,7 @@
   display: grid;
   grid-template-columns: 420px 1fr;
   gap: 18px;
+  margin: 0 20px;
 }
 
 /* ==========================
@@ -210,6 +249,27 @@
   border: 1px solid transparent;
 }
 
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.present {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.status-badge.present::before {
+  content: "●";
+  color: #2e7d32;
+}
+
 .status-present {
   background: #e9f9ee;
   color: #0f9d58;
@@ -222,10 +282,42 @@
   border-color: #f2c3c6;
 }
 
+/* --- Name Links --- */
+.name-link {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.name-link:hover {
+  text-decoration: underline;
+}
+
 /* --- Action Icons --- */
 .action-icons {
   display: flex;
   gap: 10px;
+}
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.action-btn.approve {
+  color: #2e7d32;
+}
+
+.action-btn.reject {
+  color: #d32f2f;
+}
+
+.action-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
 }
 
 .action-icons i {
