@@ -21,7 +21,18 @@
               </div>
               <div class="ad-card__date">
                 <div class="muted">Published</div>
-                <div><?= date('Y M d', strtotime($ad->created_at)) ?></div>
+                <div>
+                  <span class="date"><?= date('Y M d', strtotime($ad->created_at)) ?></span><br/>
+                  <span class="time"><?= date('h:i A', strtotime($ad->created_at)) ?></span>
+                </div>
+
+                <?php if (!empty($ad->updated_at)): ?>
+                  <div class="muted" style="margin-top:8px;">Updated</div>
+                  <div>
+                    <span class="date"><?= date('Y M d', strtotime($ad->updated_at)) ?></span><br/>
+                    <span class="time"><?= date('h:i A', strtotime($ad->updated_at)) ?></span>
+                  </div>
+                <?php endif; ?>
               </div>
               <div class="ad-card__status">
                 <span>Status: <?= ucfirst($ad->status) ?></span>
