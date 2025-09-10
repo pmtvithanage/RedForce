@@ -27,3 +27,16 @@ INSERT INTO Users (userID, name, email, password, role) VALUES
 ('CLIENT001', 'People\'s Bank', 'contact@peoplesbank.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 'client'),
 ('CLIENT002', 'Cargills PLC', 'security@cargills.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 'client'),
 ('CARETAKER001', 'Michael Johnson', 'johnson.michael@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'caretaker');
+
+-- Advertisements table
+CREATE TABLE Advertisements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image_path VARCHAR(500) NOT NULL,
+    target_roles TEXT NOT NULL, -- JSON or comma-separated roles
+    created_by INT NOT NULL,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE CASCADE
+);
