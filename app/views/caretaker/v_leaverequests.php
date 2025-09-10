@@ -4,9 +4,25 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/leaverequests.style.css">
 
 
-    <!-- Content will be loaded here -->
-      <main class="main-content">
+
           
+=======
+      <!-- Main Content Area -->
+      <main class="main-content">
+          <!-- Top Header -->
+          <header class="top-header">
+              <div class="header-left">
+                  <h2><i class="fas fa-check"></i> Request Leave</h2>
+              </div>
+              <div class="header-right">
+                  <div class="user-profile">
+                      <i class="fas fa-user"></i>
+                      <span>Care Taker</span>
+                  </div>
+              </div>
+          </header>
+
+
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
@@ -120,13 +136,7 @@
             </section>
         </main>
     </div>
-    
-    </main>
-    </div>
 
-    <div class="backdrop" id="backdrop" hidden></div>
-
-    
     </main>
     </div>
 
