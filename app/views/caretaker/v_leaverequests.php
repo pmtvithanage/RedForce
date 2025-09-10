@@ -1,9 +1,12 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/leaverequests.style.css">
 
 
-    <!-- Content will be loaded here -->
+
+          
+=======
       <!-- Main Content Area -->
       <main class="main-content">
           <!-- Top Header -->
@@ -18,6 +21,7 @@
                   </div>
               </div>
           </header>
+
 
             <!-- Request Leave Form -->
             <section class="request-leave-section">
@@ -140,3 +144,4 @@
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+<script src="<?= URL_ROOT ?>/js/caretaker/leaverequests.js"></script>
