@@ -14,8 +14,6 @@
   --info: #2563eb;
 }
 
-
-
 .page {
   max-width: 100vw;
   width: 90%;
@@ -93,11 +91,15 @@
 }
 
 .ad-card__image {
-  display: block;
+  aspect-ratio: 3 / 4; /* controls box ratio */
+  overflow: hidden; /* hides overflow from child */
+}
+
+.ad-card__image img {
   width: 100%;
-  aspect-ratio: 3/4;
-  height: auto;
+  height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .ad-card__close {
@@ -394,7 +396,8 @@
   background: white;
   padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   z-index: 1001;
   max-width: 90%;
   width: 600px;
@@ -411,8 +414,8 @@
 .modal .radio,
 .modal .check {
   display: flex;
-  align-items: center;   /* vertically centers input + text */
-  gap: 8px;              /* consistent spacing */
+  align-items: center; /* vertically centers input + text */
+  gap: 8px; /* consistent spacing */
   font-size: 14px;
   line-height: 1.4;
 }
@@ -431,7 +434,7 @@
 .modal .ad-card__role,
 .modal .role-badge {
   display: flex;
-  align-items: center;   /* aligns role names vertically */
+  align-items: center; /* aligns role names vertically */
   gap: 6px;
 }
 
@@ -559,7 +562,7 @@ legend {
     width: 100%;
     min-width: 0;
   }
-  
+
   .modal {
     width: 95%;
     padding: 1.5rem;
@@ -591,7 +594,7 @@ legend {
     width: 100%;
     max-width: none;
   }
-  
+
   .modal__close {
     top: -5px;
     right: -5px;
