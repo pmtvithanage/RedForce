@@ -356,7 +356,8 @@
 
 .settings-card {
     background: #fff;
-    border: 2px solid #2b77ff;
+    /* softened neutral border instead of bright blue */
+    border: 1px solid #e6eef8; /* subtle light border */
     border-radius: 12px;
     max-width: 600px;
     width: 100%;
@@ -371,7 +372,8 @@
     align-items: center;
     gap: 16px;
     padding: 18px 24px;
-    border-bottom: 1px dashed #b5d1ff;
+    /* subtle divider instead of blue dashed */
+    border-bottom: 1px dashed #eef6ff;
     background: transparent;
 }
 
@@ -431,9 +433,9 @@
     color: #333;
 }
 .ghost-btn {
-    background: #fff0fa;
-    border: 1px solid #e91e63;
-    color: #e91e63;
+    background: #fff;
+    border: 1px solid #ddd;
+    color: #333;
     border-radius: 6px;
     padding: 8px 16px;
     cursor: pointer;
@@ -442,8 +444,8 @@
     transition: background 0.2s, border-color 0.2s;
 }
 .ghost-btn:hover {
-    background: #ffd6e0;
-    border-color: #e91e63;
+    background: #f7f7f7;
+    border-color: #ccc;
 }
 /* Center the settings card on the page */
 .main {

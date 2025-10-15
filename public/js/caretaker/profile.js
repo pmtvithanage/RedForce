@@ -80,13 +80,8 @@ function initializeProfileImage() {
         });
     }
 
-    // Open modal when profile overlay is clicked
-    if (profileOverlay) {
-        profileOverlay.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openProfileModal();
-        });
-    }
+    // Note: opening modal on overlay click intentionally disabled to prevent popup on profile icon click
+    // If you want the whole avatar clickable in future, re-enable by adding the listener back.
 
     // Close modal when clicking outside
     if (profileImageModal) {
