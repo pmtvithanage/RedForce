@@ -6,13 +6,6 @@
 
     <!-- Content will be loaded here -->
      <main class="main-content">
-<<<<<<< HEAD
-=======
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/leaverequests.style.css">
-
-
-
->>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84
           
             <!-- Request Leave Form -->
             <section class="request-leave-section">
@@ -135,10 +128,6 @@
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-<<<<<<< HEAD
+
  <script src="<?= URL_ROOT ?>/js/caretaker/leaverequest.js"></script>
-=======
 
-<script src="<?= URL_ROOT ?>/js/caretaker/leaverequests.js"></script>
-
->>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84

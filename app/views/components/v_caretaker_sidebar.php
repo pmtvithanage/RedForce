@@ -18,13 +18,12 @@
         <div class="user-card">
             <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
                 <div class="user-meta">
-<<<<<<< HEAD
-                    <div class="user-name">User</div>
-                    <div class="user-role">CareTaker</div>
-=======
+
+                 
+
                   <div class="user-name"><?php echo getCurrentUserName() ?? 'User'; ?></div>
                   <div class="user-role"><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></div>
->>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84
+
                 </div>
             </div>
 
@@ -60,13 +59,10 @@
     <div class="profile-info">
       <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
-<<<<<<< HEAD
-        <h4>Care Taker</h4>
-        <p>care taker</p>
-=======
+
         <h4><?php echo getCurrentUserName() ?? 'User'; ?></h4>
         <p><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></p>
->>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84
+
       </div>
     </div>
     <hr>
