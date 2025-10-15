@@ -29,15 +29,24 @@
                 <div class="error-message"><?php echo $data['error']; ?></div>
             <?php endif; ?>
             
+            <?php flash('login_error'); ?>
+            <?php flash('access_error'); ?>
+            
             <form class="login-form" method="POST" action="<?php echo URL_ROOT; ?>/Users/login">
                 <div class="form-group">
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Username" required>
+                    <input type="text" id="userID" name="userID" class="form-input" placeholder="User ID" value="<?php echo $data['userID'] ?? ''; ?>" required>
                     <div class="input-underline"></div>
+                    <?php if (!empty($data['userID_err'])): ?>
+                        <span class="error-text"><?php echo $data['userID_err']; ?></span>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="form-group">
                     <input type="password" id="password" name="password" class="form-input" placeholder="Password" required>
                     <div class="input-underline"></div>
+                    <?php if (!empty($data['password_err'])): ?>
+                        <span class="error-text"><?php echo $data['password_err']; ?></span>
+                    <?php endif; ?>
                 </div>
                 
                 <button type="submit" class="login-button">login</button>

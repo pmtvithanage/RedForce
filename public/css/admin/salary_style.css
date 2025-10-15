@@ -1,0 +1,288 @@
+
+/* Container */
+.container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+    margin-top: 50px;
+}
+
+/* Card Styling */
+.card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  overflow: hidden;
+  width: 280px;
+  text-align: center;
+  padding-bottom: 20px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.card h2 {
+  margin: 15px 0 5px;
+  font-size: 20px;
+}
+
+.units {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #333;
+  margin: 5px 0;
+}
+
+.amount {
+  font-size: 16px;
+  font-weight: bold;
+  color: red;
+}
+
+/* Popup Styling */
+.popup {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
+  overflow-y: auto;
+}
+
+.popup-content {
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  width: 95%;
+  max-width: 1000px;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.popup-content h2 {
+  margin-bottom: 15px;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 28px;
+  cursor: pointer;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0; transform: translateY(-20px);}
+  to {opacity: 1; transform: translateY(0);}
+}
+
+/* Salary Structure Section */
+.salary-structure {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.salary-structure .basics,
+.salary-structure .bonus {
+  flex: 1;
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.salary-structure h3 {
+  margin-bottom: 10px;
+}
+
+.salary-structure .row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.salary-structure .row label {
+  width: 70px;
+  font-weight: bold;
+}
+
+.salary-structure input {
+  flex: 1;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.add-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.add-row input {
+  flex: 1;
+}
+
+.addBtn {
+  padding: 6px 12px;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addBtn:hover {
+  background: #cc0000;
+}
+
+/* Bonus Section */
+.salary-structure .bonus ul {
+  list-style: none;
+  padding: 0;
+}
+
+.salary-structure .bonus li {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+/* Bonus Cards */
+.bonus-cards {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+.bonus-cards h3 {
+  margin-bottom: 10px;
+}
+
+.bonus-cards input {
+  padding: 6px;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.bonus-cards button {
+  padding: 6px 12px;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.bonus-cards button:hover {
+  background: #cc0000;
+}
+
+/* Actions (Search + Dropdown + Apply) */
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.actions input,
+.actions select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.actions button {
+  padding: 8px 15px;
+  background: #ff4d4d;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.actions button:hover {
+  background: #cc0000;
+}
+
+/* Officer Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+table th {
+  background: #f4f4f4;
+}
+
+table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+/* Payment History Section */
+.payment-history {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.payment-history button {
+  background: #fff;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 15px 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.payment-history button:hover {
+  background: #f4f4f4;
+}
+
+#historyContent {
+  margin-top: 20px;
+  padding: 15px;
+  background: #fff;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.hidden {
+  display: none;
+}

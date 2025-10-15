@@ -1,13 +1,18 @@
 <?php
 class Supervisor extends Controller {
-    private $homeModel;
+    private $supervisorModel;
+    private $userModel;
 
     public function __construct() {
-        $this->homeModel = $this->model('M_supervisor');
+        // Check if user is logged in and has supervisor role
+        requireAuth('supervisor');
+        $this->supervisorModel = $this->model('M_supervisor');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
+        redirect('supervisor/dashboard');
     }
 
     // dashboard

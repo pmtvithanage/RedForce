@@ -1,395 +1,259 @@
-// RED FORCE Care Taker Dashboard JavaScript
+// Profile Image Management (View Only)
+let selectedImageFile = null;
 
+// Profile Image functionality (Read-only for dashboard)
+function initializeProfileImage() {
+    console.log('Initializing read-only profile image functionality...');
+    
+    const profileOverlay = document.getElementById('profileOverlay');
+    const profileImage = document.getElementById('profileImage');
+    const profileIcon = document.getElementById('profileIcon');
+
+    // Handle click on readonly profile overlay - show access denied
+    if (profileOverlay) {
+        profileOverlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showNotification('Access Denied: Profile picture changes are restricted on dashboard', 'error');
+        });
+    }
+
+    // Load saved profile image from localStorage (if any)
+    const savedImage = localStorage.getItem('caretakerProfileImage');
+    if (savedImage) {
+        profileImage.src = savedImage;
+        profileImage.style.display = 'block';
+        profileIcon.style.display = 'none';
+    }
+}
+
+// File upload functionality
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the dashboard
-    initializeDashboard();
-    
-    // Add event listeners
-    addEventListeners();
-});
-
-function initializeDashboard() {
-    console.log('RED FORCE Dashboard initialized');
-    
-    // Set current date and time
-    updateDateTime();
-    
-    // Initialize file upload functionality
-    initializeFileUpload();
-}
-
-function addEventListeners() {
-    // Upload button functionality
+    // File upload button functionality
     const uploadBtn = document.querySelector('.upload-btn');
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', handleUpload);
-    }
-    
-    // Submit button functionality
     const submitBtn = document.querySelector('.submit-btn');
-    if (submitBtn) {
-        submitBtn.addEventListener('click', handleSubmit);
-    }
-    
-    // Contact button functionality
-    const contactBtn = document.querySelector('.contact-btn');
-    if (contactBtn) {
-        contactBtn.addEventListener('click', handleContact);
-    }
-    
-    // Description area auto-resize
     const descriptionArea = document.querySelector('.description-area');
-    if (descriptionArea) {
-        descriptionArea.addEventListener('input', autoResizeTextarea);
-    }
     
-    // Menu item click handlers
-    const menuItems = document.querySelectorAll('.menu-item a');
-    menuItems.forEach(item => {
-        item.addEventListener('click', handleMenuClick);
-    });
-}
-
-function updateDateTime() {
-    const now = new Date();
-    const dateString = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    const timeString = now.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-    });
-    
-    // You can add this to the header if needed
-    console.log(`Current time: ${dateString} at ${timeString}`);
-}
-
-function removeFile(button) {
-    const filePreview = button.parentElement;
-    
-    // Add fade out animation
-    filePreview.style.transition = 'all 0.3s ease';
-    filePreview.style.opacity = '0';
-    filePreview.style.transform = 'scale(0.8)';
-    
-    setTimeout(() => {
-        filePreview.remove();
-        
-        // Check if no files remain
-        const remainingFiles = document.querySelectorAll('.file-preview');
-        if (remainingFiles.length === 0) {
-            showMessage('All files removed', 'info');
-            
-            // Hide submit button if no files remain
-            const submitBtn = document.querySelector('.submit-btn');
-            if (submitBtn) {
-                submitBtn.classList.remove('show');
-                setTimeout(() => {
-                    submitBtn.style.display = 'none';
-                }, 300);
-            }
-        }
-    }, 300);
-}
-
-function handleUpload() {
-    const description = document.querySelector('.description-area').value;
-    const files = document.querySelectorAll('.file-preview');
-    
-    if (files.length === 0) {
-        showMessage('Please add at least one file before uploading', 'warning');
-        return;
-    }
-    
-    if (!description.trim()) {
-        showMessage('Please add a description before uploading', 'warning');
-        return;
-    }
-    
-    // Simulate upload process
-    const uploadBtn = document.querySelector('.upload-btn');
-    const submitBtn = document.querySelector('.submit-btn');
-    const originalText = uploadBtn.textContent;
-    
-    uploadBtn.textContent = 'Uploading...';
-    uploadBtn.disabled = true;
-    
-    setTimeout(() => {
-        uploadBtn.textContent = 'Upload Complete!';
-        uploadBtn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
-        
-        showMessage('Files uploaded successfully!', 'success');
-        
-        // Show submit button after successful upload
-        if (submitBtn) {
-            submitBtn.style.display = 'block';
-            setTimeout(() => {
-                submitBtn.classList.add('show');
-            }, 100);
-        }
-        
-        // Reset upload button after 2 seconds
-        setTimeout(() => {
-            uploadBtn.textContent = originalText;
-            uploadBtn.disabled = false;
-            uploadBtn.style.background = 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)';
-        }, 2000);
-    }, 2000);
-}
-
-function handleSubmit() {
-    const description = document.querySelector('.description-area').value;
-    const files = document.querySelectorAll('.file-preview');
-    const submitBtn = document.querySelector('.submit-btn');
-    
-    if (files.length === 0) {
-        showMessage('No files to submit. Please upload files first.', 'warning');
-        return;
-    }
-    
-    if (!description.trim()) {
-        showMessage('Please add a description before submitting', 'warning');
-        return;
-    }
-    
-    // Simulate submit process
-    const originalText = submitBtn.textContent;
-    
-    submitBtn.textContent = 'Submitting...';
-    submitBtn.disabled = true;
-    submitBtn.style.background = 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)';
-    
-    setTimeout(() => {
-        submitBtn.textContent = 'Submitted Successfully!';
-        submitBtn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
-        
-        showMessage('Report submitted successfully!', 'success');
-        
-        // Reset form after successful submission
-        setTimeout(() => {
-            // Clear form
-            document.querySelector('.description-area').value = '';
-            document.querySelectorAll('.file-preview').forEach(file => file.remove());
-            
-            // Hide submit button
-            submitBtn.classList.remove('show');
-            setTimeout(() => {
-                submitBtn.style.display = 'none';
-            }, 300);
-            
-            // Reset submit button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            submitBtn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
-        }, 2000);
-    }, 2000);
-}
-
-function handleContact() {
-    showMessage('Contact form will open in a new window', 'info');
-    
-    // Simulate opening contact form
-    setTimeout(() => {
-        const contactInfo = {
-            phone: '+94 11 2345678',
-            email: 'contact@redforce.com',
-            address: 'Reid Avenue, Colombo 07, Sri Lanka'
-        };
-        
-        alert(`Contact Information:\n\nPhone: ${contactInfo.phone}\nEmail: ${contactInfo.email}\nAddress: ${contactInfo.address}`);
-    }, 500);
-}
-
-function handleMenuClick(e) {
-    e.preventDefault();
-    
-    // Remove active class from all menu items
-    document.querySelectorAll('.menu-item').forEach(item => {
-        item.classList.remove('active');
-    });
-    
-    // Add active class to clicked item
-    const menuItem = e.target.closest('.menu-item');
-    if (menuItem) {
-        menuItem.classList.add('active');
-    }
-    
-    // Handle different menu items
-    const href = e.target.closest('a').getAttribute('href');
-    
-    switch(href) {
-        case '#dashboard':
-            showMessage('Dashboard loaded', 'info');
-            break;
-        case '#communicate':
-            showMessage('Communication module will open', 'info');
-            break;
-        case '#incidents':
-            showMessage('Incidents module will open', 'info');
-            break;
-        case '#settings':
-            showMessage('Settings module will open', 'info');
-            break;
-    }
-}
-
-function initializeFileUpload() {
-    // Create a hidden file input
+    // Create hidden file input
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.multiple = true;
-    fileInput.accept = 'image/*,.pdf,.doc,.docx';
+    fileInput.accept = 'image/*';
     fileInput.style.display = 'none';
+    document.body.appendChild(fileInput);
     
-    // Add click handler to upload button to trigger file selection
-    const uploadBtn = document.querySelector('.upload-btn');
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', function(e) {
-            // Only trigger file selection if no files are already uploaded
-            const existingFiles = document.querySelectorAll('.file-preview');
-            if (existingFiles.length === 0) {
-                fileInput.click();
-            }
-        });
-    }
-    
-    // Handle file selection
-    fileInput.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        
-        files.forEach(file => {
-            addFilePreview(file);
-        });
+    // Upload button click handler
+    uploadBtn.addEventListener('click', function() {
+        fileInput.click();
     });
     
-    document.body.appendChild(fileInput);
-}
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        const filePreviews = document.querySelector('.file-previews');
+        
+        files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+                const filePreview = document.createElement('div');
+                filePreview.className = 'file-preview';
+                filePreview.innerHTML = `
+                    <span class="file-name">${file.name}</span>
+                    <button class="remove-file" onclick="removeFile(this)">×</button>
+                `;
+                filePreviews.appendChild(filePreview);
+            }
+        });
+        
+        // Show submit button if files are uploaded
+        if (filePreviews.children.length > 0) {
+            submitBtn.style.display = 'block';
+        }
+    });
+    
+    // Submit button click handler
+    submitBtn.addEventListener('click', function() {
+        const description = descriptionArea.value.trim();
+        const fileCount = document.querySelectorAll('.file-preview').length;
+        
+        if (!description) {
+            showNotification('Please add a description', 'error');
+            return;
+        }
+        
+        if (fileCount === 0) {
+            showNotification('Please upload at least one photo', 'error');
+            return;
+        }
+        
+        // Simulate form submission
+        showNotification('Report submitted successfully!', 'success');
+        
+        // Reset form
+        descriptionArea.value = '';
+        fileInput.value = '';
+        document.querySelector('.file-previews').innerHTML = '';
+        submitBtn.style.display = 'none';
+    });
+});
 
-function addFilePreview(file) {
+// Remove file function
+function removeFile(button) {
+    const filePreview = button.parentElement;
+    filePreview.remove();
+    
+    // Hide submit button if no files remain
     const filePreviews = document.querySelector('.file-previews');
+    const submitBtn = document.querySelector('.submit-btn');
     
-    const filePreview = document.createElement('div');
-    filePreview.className = 'file-preview';
-    
-    const fileName = document.createElement('span');
-    fileName.className = 'file-name';
-    fileName.textContent = file.name;
-    
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'remove-file';
-    removeBtn.textContent = '×';
-    removeBtn.onclick = function() {
-        removeFile(this);
-    };
-    
-    filePreview.appendChild(fileName);
-    filePreview.appendChild(removeBtn);
-    
-    // Add with animation
-    filePreview.style.opacity = '0';
-    filePreview.style.transform = 'scale(0.8)';
-    filePreviews.appendChild(filePreview);
-    
-    setTimeout(() => {
-        filePreview.style.transition = 'all 0.3s ease';
-        filePreview.style.opacity = '1';
-        filePreview.style.transform = 'scale(1)';
-    }, 10);
+    if (filePreviews.children.length === 0) {
+        submitBtn.style.display = 'none';
+    }
 }
 
-function autoResizeTextarea(e) {
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = textarea.scrollHeight + 'px';
-}
-
-function showMessage(message, type = 'info') {
-    // Create message element
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message message-${type}`;
-    messageDiv.textContent = message;
+// Notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
     
-    // Style the message
-    messageDiv.style.cssText = `
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
+        background-color: ${getNotificationColor(type)};
+        color: white;
         padding: 15px 20px;
         border-radius: 8px;
-        color: white;
-        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         z-index: 1000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 300px;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
     `;
     
-    // Set background color based on type
-    switch(type) {
-        case 'success':
-            messageDiv.style.background = '#059669';
-            break;
-        case 'warning':
-            messageDiv.style.background = '#d97706';
-            break;
-        case 'error':
-            messageDiv.style.background = '#dc2626';
-            break;
-        default:
-            messageDiv.style.background = '#3b82f6';
-    }
+    // Add animation styles
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
     
     // Add to page
-    document.body.appendChild(messageDiv);
+    document.body.appendChild(notification);
     
-    // Animate in
+    // Close button functionality
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.remove();
+    });
+    
+    // Auto remove after 5 seconds
     setTimeout(() => {
-        messageDiv.style.transform = 'translateX(0)';
-    }, 10);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        messageDiv.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-            document.body.removeChild(messageDiv);
-        }, 300);
-    }, 3000);
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
 }
 
-// Add some utility functions
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
-function validateFile(file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-    
-    if (file.size > maxSize) {
-        showMessage('File size too large. Maximum size is 10MB.', 'error');
-        return false;
+// Get notification color based on type
+function getNotificationColor(type) {
+    switch (type) {
+        case 'success':
+            return '#28a745';
+        case 'error':
+            return '#dc3545';
+        case 'warning':
+            return '#ffc107';
+        default:
+            return '#17a2b8';
     }
-    
-    if (!allowedTypes.includes(file.type)) {
-        showMessage('File type not allowed. Please upload images, PDFs, or Word documents.', 'error');
-        return false;
-    }
-    
-    return true;
 }
 
-// Export functions for global access
-window.removeFile = removeFile;
-window.handleUpload = handleUpload;
-window.handleContact = handleContact;
-window.handleSubmit = handleSubmit;
+// Sidebar navigation functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const menuItems = document.querySelectorAll('.menu-item a');
+    
+    menuItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Remove active class from all items
+            menuItems.forEach(menuItem => {
+                menuItem.parentElement.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            this.parentElement.classList.add('active');
+            
+            // Show notification for navigation
+            const pageName = this.querySelector('span').textContent;
+            showNotification(`Navigating to ${pageName}`, 'info');
+        });
+    });
+});
 
+// Profile section interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const profileSection = document.querySelector('.profile-section');
+    
+    if (profileSection) {
+        profileSection.addEventListener('click', function() {
+            this.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1)';
+            }, 200);
+        });
+    }
+});
+
+// Instructions section interactions
+document.addEventListener('DOMContentLoaded', function() {
+    const instructionsContent = document.querySelector('.instructions-content');
+    
+    if (instructionsContent) {
+        instructionsContent.addEventListener('click', function() {
+            this.style.backgroundColor = '#fce4ec';
+            setTimeout(() => {
+                this.style.backgroundColor = '#fef2f2';
+            }, 300);
+        });
+    }
+});
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('RED FORCE Care Taker Dashboard loaded successfully!');
+    
+    // Initialize profile image functionality
+    initializeProfileImage();
+    
+    // Add some interactive features
+    const sections = document.querySelectorAll('section');
+    sections.forEach(section => {
+        section.addEventListener('mouseenter', function() {
+            this.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.15)';
+        });
+        
+        section.addEventListener('mouseleave', function() {
+            this.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
+        });
+    });
+});

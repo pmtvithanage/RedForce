@@ -1,15 +1,18 @@
 <?php
 class PremiseOfficer extends Controller {
-    private $homeModel;
+    private $premiseOfficerModel;
+    private $userModel;
 
     public function __construct() {
-        // Load the model
-        $this->homeModel = $this->model('M_premiseofficer');
+        // Check if user is logged in and has premise officer role
+        requireAuth('premise officer');
+        $this->premiseOfficerModel = $this->model('M_premiseofficer');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
-        // Currently empty → could redirect to dashboard or load a default view
+        redirect('premiseofficer/dashboard');
     }
 
     // Dashboard action

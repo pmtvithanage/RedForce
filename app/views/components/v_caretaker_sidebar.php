@@ -18,8 +18,13 @@
         <div class="user-card">
             <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
                 <div class="user-meta">
+<<<<<<< HEAD
                     <div class="user-name">User</div>
                     <div class="user-role">CareTaker</div>
+=======
+                  <div class="user-name"><?php echo getCurrentUserName() ?? 'User'; ?></div>
+                  <div class="user-role"><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></div>
+>>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84
                 </div>
             </div>
 
@@ -35,6 +40,8 @@
         </nav>
       </aside>
 
+      <div class="backdrop" id="backdrop" hidden></div>
+
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
@@ -44,7 +51,7 @@
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
     <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
-    <span class="name">User</span>
+    <span class="name"><?php echo getCurrentUserName() ?? 'User'; ?></span>
     <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
   </div>
 
@@ -53,15 +60,20 @@
     <div class="profile-info">
       <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
+<<<<<<< HEAD
         <h4>Care Taker</h4>
         <p>care taker</p>
+=======
+        <h4><?php echo getCurrentUserName() ?? 'User'; ?></h4>
+        <p><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></p>
+>>>>>>> d919e3dd6588cea322eafd1242e9bee16e35cf84
       </div>
     </div>
     <hr>
     <a href="#" class="dropdown-link change-password">
   <span class="material-symbols-outlined">lock</span> Change Password
 </a>
-    <a href="<?php echo URL_ROOT; ?>/home/index" class="dropdown-link logout">
+    <a href="<?php echo URL_ROOT; ?>/users/logout" class="dropdown-link logout">
       <span class="material-symbols-outlined">logout</span> Logout
     </a>
   </div>
