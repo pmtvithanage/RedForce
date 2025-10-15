@@ -273,10 +273,8 @@ function createMessageItem(msg) {
   const subject = clone.querySelector('.subject');
   const preview = clone.querySelector('.preview');
   
-  // Set avatar color based on initials
-  const colors = ['#e91e63', '#9c27b0', '#3f51b5', '#00bcd4', '#4caf50', '#ff9800'];
-  const colorIndex = msg.initials.charCodeAt(0) % colors.length;
-  avatar.style.backgroundColor = colors[colorIndex];
+  // Set avatar color - all red
+  avatar.style.backgroundColor = '#e91e63';
   avatar.setAttribute('data-initials', msg.initials);
   avatar.textContent = msg.initials;
   
