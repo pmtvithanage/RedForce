@@ -41,6 +41,7 @@
           <h1 class="page-title"><?php echo $data['title']; ?></h1>
 
           <div class="topbar-right">
+
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
     <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
@@ -65,7 +66,7 @@
       <span class="material-symbols-outlined">logout</span> Logout
     </a>
   </div>
-</div>
+</div>    
 
         </header>
 
