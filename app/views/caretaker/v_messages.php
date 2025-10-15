@@ -3,16 +3,11 @@
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/message_style.css">
 
-<main class="main-content">
-  <div class="container">
-    <header class="page-header">
-      <h1>Messages</h1>
-    </header>
-    
-    <div class="messages-container">
-      <div id="messagesList" class="messages-list" aria-live="polite">
-        <!-- Messages will be loaded by JavaScript -->
-      </div>
+<!-- Messages Content -->
+<div class="messages-content">
+  <div class="messages-container">
+    <div id="messagesList" class="messages-list" aria-live="polite">
+      <!-- Messages will be loaded by JavaScript -->
     </div>
   </div>
   <div id="chatBackdrop" class="backdrop" hidden></div>
@@ -51,7 +46,9 @@
       </div>
     </button>
   </template>
+</div>
 </main>
+</div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <script src="<?= URL_ROOT ?>/js/caretaker/messages.js"></script>
