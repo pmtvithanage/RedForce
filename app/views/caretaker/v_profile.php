@@ -24,13 +24,13 @@
             <div class="setting-row">
                 <label>Care Taker Name</label>
                 <div class="value" id="nameValue">- Abesekara</div>
-                <button class="ghost-btn" data-edit="name">Change Name</button>
+                <button class="danger-btn" data-edit="name">Change Name</button>
                 <button class="icon-btn" data-edit="name" title="Edit"><i class="fas fa-pen"></i></button>
             </div>
             <div class="setting-row">
                 <label>Password</label>
                 <div class="value" id="passwordValue">- ••••••••</div>
-                <button class="ghost-btn" data-edit="password">Change Password</button>
+                <button class="danger-btn" data-edit="password">Change Password</button>
                 <button class="icon-btn" data-edit="password" title="Edit"><i class="fas fa-pen"></i></button>
             </div>
             <div class="setting-row">
