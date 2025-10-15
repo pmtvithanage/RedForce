@@ -48,12 +48,21 @@ function initializeProfileImage() {
 
     // Function to open modal
     function openProfileModal() {
-        console.log('Opening modal...');
+        console.log('Opening profile modal...');
         if (profileImageModal) {
             profileImageModal.style.display = 'flex';
             profileImageModal.removeAttribute('hidden');
         }
-        console.log('Modal opened successfully');
+    }
+
+    // Open modal when "Change Profile Image" button is clicked
+    const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
+    if (changeProfileImageBtn) {
+        changeProfileImageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openProfileModal();
+        });
     }
 
     // Close modal button event
@@ -71,17 +80,6 @@ function initializeProfileImage() {
             closeModal();
         });
     }
-
-    // Open modal when edit avatar is clicked
-    if (editAvatar) {
-        editAvatar.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openProfileModal();
-        });
-    }
-
-    // Note: opening modal on overlay click intentionally disabled to prevent popup on profile icon click
-    // If you want the whole avatar clickable in future, re-enable by adding the listener back.
 
     // Close modal when clicking outside
     if (profileImageModal) {

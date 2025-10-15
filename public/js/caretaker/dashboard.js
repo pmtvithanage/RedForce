@@ -9,11 +9,13 @@ function initializeProfileImage() {
     const profileImage = document.getElementById('profileImage');
     const profileIcon = document.getElementById('profileIcon');
 
-    // Handle click on readonly profile overlay - show access denied
+    // Handle click on readonly profile overlay - disabled (no-op)
     if (profileOverlay) {
         profileOverlay.addEventListener('click', (e) => {
+            // Prevent any action when clicking the profile overlay on dashboard
             e.stopPropagation();
-            showNotification('Access Denied: Profile picture changes are restricted on dashboard', 'error');
+            console.log('Profile overlay click on dashboard is disabled.');
+            return;
         });
     }
 
