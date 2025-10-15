@@ -1,4 +1,3 @@
-
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
@@ -61,35 +60,35 @@
                 <h2 class="section-title">Messages</h2>
             </div>
             <div class="section-content">
-                <div class="message-item">
+                <div class="message-item" onclick="openChatModal(1)" data-sender="Admin - Red Force" data-message="Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurune...">
+                    <div class="message-avatar">A</div>
+                    <div class="message-content">
+                        <div class="message-sender">Admin - Red Force</div>
+                        <div class="message-text">Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurune...</div>
+                    </div>
+                </div>
+
+                <div class="message-item" onclick="openChatModal(2)" data-sender="John Silva" data-message="Officer Ravindu Fernando was...">
                     <div class="message-avatar">J</div>
                     <div class="message-content">
-                        <div class="message-sender">John Smith</div>
-                        <div class="message-text">Security patrol completed for Building A. All clear, no issues reported.</div>
+                        <div class="message-sender">John Silva</div>
+                        <div class="message-text">Officer Ravindu Fernando was...</div>
                     </div>
                 </div>
-                
-                <div class="message-item">
-                    <div class="message-avatar">S</div>
+
+                <div class="message-item" onclick="openChatModal(3)" data-sender="Naduni Senanayake" data-message="Officer training certificates...">
+                    <div class="message-avatar">N</div>
                     <div class="message-content">
-                        <div class="message-sender">Sarah Wilson</div>
-                        <div class="message-text">Monthly security report is ready for review. Please check the attached document.</div>
+                        <div class="message-sender">Nadi Senanayake</div>
+                        <div class="message-text">Officer training certificates...</div>
                     </div>
                 </div>
-                
-                <div class="message-item">
-                    <div class="message-avatar">M</div>
+
+                <div class="message-item" onclick="openChatModal(4)" data-sender="Nishadi Dissanayake" data-message="Updated shift schedules for all...">
+                    <div class="message-avatar">N</div>
                     <div class="message-content">
-                        <div class="message-sender">Mike Johnson</div>
-                        <div class="message-text">New security protocols have been implemented. Training session scheduled for next week.</div>
-                    </div>
-                </div>
-                
-                <div class="message-item">
-                    <div class="message-avatar">L</div>
-                    <div class="message-content">
-                        <div class="message-sender">Lisa Chen</div>
-                        <div class="message-text">Access control system maintenance completed successfully. All systems operational.</div>
+                        <div class="message-sender">Nishadi Dissanayake</div>
+                        <div class="message-text">Updated shift schedules for all...</div>
                     </div>
                 </div>
             </div>
@@ -200,6 +199,34 @@
             </div>
             
             <button class="back-button" onclick="closeModal('allIncidentsModal')">Back</button>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Modal -->
+<div id="chatModal" class="modal chat-modal">
+    <div class="modal-content chat-modal-content">
+        <div class="chat-header">
+            <div class="chat-info">
+                <h3 id="chatTitle">Messages</h3>
+                <p id="chatParticipant">Admin - Red Force</p>
+            </div>
+            <span class="close" onclick="closeModal('chatModal')">&times;</span>
+        </div>
+        
+        <div class="chat-body">
+            <div id="chatContent" class="chat-messages">
+                <!-- Messages will be loaded here dynamically -->
+            </div>
+        </div>
+        
+        <div class="chat-footer">
+            <div class="message-input-container">
+                <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleMessageKeyPress(event)">
+                <button onclick="sendMessage()" class="send-btn">
+                    <span class="material-icons">mic</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
