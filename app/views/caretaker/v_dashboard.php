@@ -1,56 +1,16 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/dashboard_style.css">
-
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/dashboard_style.css">
 
     <!-- Content will be loaded here -->
-        <!-- Main Content Area -->
-        <main class="main-content">
-            <!-- Top Header -->
-            <header class="top-header">
-                <div class="header-left">
-                    <h2><i class="fas fa-check"></i> Dashboard</h2>
-                </div>
-                <div class="header-right">
-                    <div class="user-profile">
-                        <i class="fas fa-user"></i>
-                        <span>Care Taker</span>
-                    </div>
-                </div>
-            </header>
+
 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
                 <!-- Top Section - User Profile and Instructions -->
                 <section class="top-section">
-                    <div class="profile-section">
-                        <div class="profile-image">
-                            <img src="2.jpeg" alt="Siriwardhana" class="user-photo">
-                        </div>
-                        <div class="profile-details">
-                            <div class="detail-item">
-                                <label>Name:</label>
-                                <span>Siriwardhana</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>ID:</label>
-                                <span>20022930323874</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Phone Number:</label>
-                                <span>0764732674</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Email:</label>
-                                <span>Siri123@gmail.com</span>
-                            </div>
-                            <div class="detail-item">
-                                <label>Site Address:</label>
-                                <span>Reid Avenue, Colombo 07</span>
-                            </div>
-                        </div>
-                    </div>
+                    
                     
                     <div class="instructions-section">
                         <h2>Instructions from Admin</h2>
@@ -112,6 +72,7 @@
     </div>
 
     <div class="backdrop" id="backdrop" hidden></div>
-    <script src="<?php echo URL_ROOT; ?>/js/caretaker/dashboard.js"></script>
+
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+    <script src="<?= URL_ROOT ?>/js/caretaker/dashboard.js"></script>
