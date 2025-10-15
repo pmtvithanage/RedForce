@@ -4,23 +4,20 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/profile_style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Content will be loaded here -->
-
-<main class="main">
-
-
-
+<!-- Profile Content -->
+<div class="profile-content">
     <section class="settings-wrapper">
         <div class="profile-circle" id="profileOverlay">
             <img id="profileImage" class="profile-img" style="display: none;" alt="Profile Image">
             <i id="profileIcon" class="fas fa-user"></i>
-            <div class="change-picture-icon">
-                <i class="fas fa-camera"></i>
-            </div>
-            <button class="edit-avatar" id="editAvatar" title="Change Avatar"><i class="fas fa-pen"></i></button>
         </div>
+        
+        <button class="change-profile-btn" id="changeProfileImageBtn">
+            <i class="fas fa-camera"></i>
+            Change Profile Image
+        </button>
 
-    <div class="settings-card">
+        <div class="settings-card">
             <div class="setting-row">
                 <label>Care Taker Name</label>
                 <div class="value" id="nameValue">- Abesekara</div>
@@ -51,10 +48,11 @@
             </div>
         </div>
     </section>
+</div>
 </main>
+</div>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<div class="backdrop" id="backdrop" hidden></div>
 
 <!-- Profile Image Modal -->
 <div id="profileImageModal" class="profile-modal" hidden>

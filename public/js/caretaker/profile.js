@@ -46,11 +46,23 @@ function initializeProfileImage() {
         console.log('Modal closed successfully');
     }
 
-    // Function to open modal (disabled)
+    // Function to open modal
     function openProfileModal() {
-        // Modal opening disabled intentionally to prevent popup when clicking the profile icon.
-        console.log('openProfileModal called but is disabled.');
-        return;
+        console.log('Opening profile modal...');
+        if (profileImageModal) {
+            profileImageModal.style.display = 'flex';
+            profileImageModal.removeAttribute('hidden');
+        }
+    }
+
+    // Open modal when "Change Profile Image" button is clicked
+    const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
+    if (changeProfileImageBtn) {
+        changeProfileImageBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openProfileModal();
+        });
     }
 
     // Close modal button event
