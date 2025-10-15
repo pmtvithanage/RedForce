@@ -16,6 +16,14 @@
 </div>
 
 <div class="card stat-card">
+  <span class="material-symbols-outlined stat-icon">group</span>
+  <div>
+    <div class="stat-value">0</div>
+    <div>Total Officers</div>
+  </div>
+</div>
+
+<div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">shield_person</span>
   <div>
     <div class="stat-value">0</div>

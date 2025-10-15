@@ -4,6 +4,8 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/profile_style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
+    <!-- Content will be loaded here -->
+
 <main class="main">
 
 
@@ -18,7 +20,7 @@
             <button class="edit-avatar" id="editAvatar" title="Change Avatar"><i class="fas fa-pen"></i></button>
         </div>
 
-        <div class="settings-card" style="border:2px solid #2b77ff;">
+    <div class="settings-card">
             <div class="setting-row">
                 <label>Care Taker Name</label>
                 <div class="value" id="nameValue">- Abesekara</div>

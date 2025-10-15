@@ -2,6 +2,8 @@
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/dashboard_style.css">
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <!-- Content will be loaded here -->
 
@@ -10,8 +12,6 @@
             <div class="dashboard-content">
                 <!-- Top Section - User Profile and Instructions -->
                 <section class="top-section">
-                    
-                    
                     <div class="instructions-section">
                         <h2>Instructions from Admin</h2>
                         <div class="instructions-content">
@@ -20,6 +20,38 @@
                             <p>Also, don't forget to update the incident report if there were any issues during the night shift.</p>
                             <p>Let me know once it's done.</p>
                             <p>Thank you.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right-side stat cards -->
+                    <div class="stats-column">
+                        <div class="stat-card purple">
+                            <div class="stat-icon"><span class="material-icons">groups</span></div>
+                            <div class="stat-text">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Total Officers</div>
+                            </div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="stat-icon"><span class="material-icons">person</span></div>
+                            <div class="stat-text">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">On Duty</div>
+                            </div>
+                        </div>
+                        <div class="stat-card yellow">
+                            <div class="stat-icon"><span class="material-icons">verified_user</span></div>
+                            <div class="stat-text">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Active</div>
+                            </div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="stat-icon"><span class="material-icons">report_problem</span></div>
+                            <div class="stat-text">
+                                <div class="stat-value">0</div>
+                                <div class="stat-label">Incidents</div>
+                            </div>
                         </div>
                     </div>
                 </section>
