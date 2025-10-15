@@ -183,6 +183,16 @@ body {
   cursor: pointer;
 }
 
+.topbar-user .avatar {
+  width: 32px;
+  height: 32px;
+  background: #e0e0e0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #666;
+}
+
 .topbar-btn {
   border: 1px solid var(--border);
   background: #fff;
