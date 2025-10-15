@@ -19,7 +19,7 @@
             <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
                 <div class="user-meta">
                     <div class="user-name">User</div>
-                    <div class="user-role">Rider</div>
+                    <div class="user-role">CareTaker</div>
                 </div>
             </div>
 
@@ -53,8 +53,8 @@
     <div class="profile-info">
       <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
-        <h4>User</h4>
-        <p>Rider</p>
+        <h4>Care Taker</h4>
+        <p>care taker</p>
       </div>
     </div>
     <hr>

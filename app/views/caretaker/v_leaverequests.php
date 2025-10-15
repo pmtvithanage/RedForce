@@ -1,24 +1,13 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/leaverequest_style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 
     <!-- Content will be loaded here -->
-      <!-- Main Content Area -->
-      <main class="main-content">
-          <!-- Top Header -->
-          <header class="top-header">
-              <div class="header-left">
-                  <h2><i class="fas fa-check"></i> Request Leave</h2>
-              </div>
-              <div class="header-right">
-                  <div class="user-profile">
-                      <i class="fas fa-user"></i>
-                      <span>Care Taker</span>
-                  </div>
-              </div>
-          </header>
-
+     <main class="main-content">
+          
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
@@ -132,7 +121,7 @@
             </section>
         </main>
     </div>
-
+    
     </main>
     </div>
 
@@ -140,3 +129,4 @@
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+ <script src="<?= URL_ROOT ?>/js/caretaker/leaverequest.js"></script>
