@@ -56,3 +56,29 @@ CREATE TABLE IF NOT EXISTS leave_requests (
     FOREIGN KEY (caretaker_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE service_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL,
+    event_name VARCHAR(255) NOT NULL,
+    event_description TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    guard_type ENUM('Armed', 'Regular') NOT NULL,
+    guard_count INT NOT NULL,
+    comments TEXT,
+    status ENUM('Pending', 'Approved', 'Rejected', 'In Progress', 'Completed') DEFAULT 'Pending',
+    submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    -- Foreign key to link with users table
+    FOREIGN KEY (client_id) REFERENCES users(id) ON DELETE CASCADE,
+    
+    -- Indexes for better performance
+    INDEX idx_client_id (client_id),
+    INDEX idx_status (status),
+    INDEX idx_submitted_date (submitted_date)
+);
