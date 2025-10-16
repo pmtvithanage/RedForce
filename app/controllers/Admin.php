@@ -14,7 +14,14 @@ class Admin extends Controller {
     }
 
     public function dashboard() {
-        $data = ['title' => 'Dashboard'];
+        $pendingLeaves = $this->adminModel->getPendingLeaveRequests();
+        $leaveStats = $this->adminModel->getLeaveRequestStats();
+    
+        $data = [
+            'title' => 'Dashboard',
+            'pendingLeaves' => $pendingLeaves,
+            'leaveStats' => $leaveStats
+        ];
         $this->view('admin/v_dashboard', $data);
     }
 
@@ -38,9 +45,62 @@ class Admin extends Controller {
         $this->view('admin/v_salary', $data);
     }
 
-    // ==============================
-    // Advertisements
-    // ==============================
+    // View leave request details
+    public function viewLeaveRequest($id) {
+    $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+    
+    if (!$leaveRequest) {
+        flash('leave_error', 'Leave request not found');
+        redirect('admin/dashboard');
+    }
+    
+    $data = [
+        'title' => 'Leave Request Details',
+        'leaveRequest' => $leaveRequest
+    ];
+    $this->view('admin/v_leave_details', $data);
+}
+
+// Approve leave request
+public function approveLeave($id) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $admin_id = $_SESSION['user_id'];
+        
+        if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
+            flash('leave_success', 'Leave request approved successfully');
+        } else {
+            flash('leave_error', 'Failed to approve leave request');
+        }
+        
+        redirect('admin/dashboard');
+    }
+}
+
+
+// Reject leave request
+public function rejectLeave($id) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $admin_id = $_SESSION['user_id'];
+        $reason = trim($_POST['reason'] ?? '');
+        
+        if (empty($reason)) {
+            flash('leave_error', 'Please provide a reason for rejection');
+            redirect('admin/viewLeaveRequest/' . $id);
+            return;
+        }
+        
+        if ($this->adminModel->rejectLeaveRequest($id, $admin_id, $reason)) {
+            flash('leave_success', 'Leave request rejected');
+        } else {
+            flash('leave_error', 'Failed to reject leave request');
+        }
+        
+        redirect('admin/dashboard');
+    }
+}
+// ==============================
+// Advertisements
+// ==============================
     public function advertisements() {
         $advertisements = $this->adminModel->getAdvertisements();
         $data = [
