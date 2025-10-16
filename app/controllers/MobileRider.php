@@ -21,8 +21,10 @@ class MobileRider extends Controller
     // Dashboard action
     public function dashboard()
     {
+        $notes = $this->getNotes();
         $data = [
             'title' => 'Dashboard',
+            'notes' => $notes,
         ];
         $this->view('mobilerider/v_dashboard', $data);
     }
@@ -67,4 +69,68 @@ class MobileRider extends Controller
         ];
         $this->view('mobilerider/v_profile', $data);
     }
+
+    public function addNote()
+{
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $title = trim($_POST['title']);
+        $content = trim($_POST['content']);
+        $noteId = isset($_POST['noteId']) && !empty($_POST['noteId']) ? $_POST['noteId'] : null;
+
+        // Check if it's an edit or new note
+        if ($noteId) {
+            // Edit existing note
+            if ($this->mobileRiderModel->updateNoteById($noteId, $title, $content)) {
+                header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+                exit;
+            } else {
+                echo 'Update failed';
+            }
+        } else {
+            // Add new note
+            $data = [
+                'title' => $title,
+                'content' => $content,
+                'userID' => $_SESSION['user_userID'],
+            ];
+
+            if ($this->mobileRiderModel->addNote($data)) {
+                header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+                exit;
+            } else {
+                echo 'Add failed';
+            }
+        }
+    }
+}
+
+    public function getNotes() {
+        $notes = $this->mobileRiderModel->getAllNotes();
+        return $notes;
+    }
+
+    public function deleteNote(){
+        $id = $_GET['id'];
+        //echo $id;
+        $this->mobileRiderModel->deleteNoteById($id);
+        header(header: "Location:" . URL_ROOT . "/mobilerider/dashboard?notes=open");
+    }
+
+public function editNote()
+{
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $noteId = $_POST['noteId'];
+        $title = trim($_POST['title']);
+        $content = trim($_POST['content']);
+
+        if ($this->mobileRiderModel->updateNoteById($noteId, $title, $content)) {
+            header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+            exit;
+        } else {
+            echo 'Update failed';
+        }
+    }
+}
+
+
 }

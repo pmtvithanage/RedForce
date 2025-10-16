@@ -117,7 +117,7 @@
                                         </td>
                                         <td>
                                             <?php if($leave->proof_file): ?>
-                                                <a href="<?= URL_ROOT ?>/public/uploads/leave_proofs/<?= $leave->proof_file ?>" target="_blank" class="view-file-btn">View File</a>
+                                                <a href="<?= URL_ROOT ?>/<?= $leave->proof_file ?>" target="_blank" class="view-file-btn">View File</a>
                                             <?php else: ?>
                                                 -
                                             <?php endif; ?>
