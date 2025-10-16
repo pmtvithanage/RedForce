@@ -67,17 +67,18 @@ class Caretaker extends Controller {
             // Handle file upload
             $proof_file = null;
             if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == 0) {
-                $upload_dir = 'public/uploads/leave_proofs/';
+                $upload_dir = 'uploads/leaverequest/';
                 if (!file_exists($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
                 
                 $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
-                $proof_file = 'leave_' . $caretaker_id . '_' . time() . '.' . $file_extension;
-                $upload_path = $upload_dir . $proof_file;
+                $file_name = 'leave_' . $caretaker_id . '_' . time() . '.' . $file_extension;
+                $upload_path = $upload_dir . $file_name;
                 
-                if (!move_uploaded_file($_FILES['proof_file']['tmp_name'], $upload_path)) {
-                    $proof_file = null;
+                if (move_uploaded_file($_FILES['proof_file']['tmp_name'], $upload_path)) {
+                    // Store full path in database
+                    $proof_file = $upload_dir . $file_name;
                 }
             }
             
@@ -155,20 +156,22 @@ class Caretaker extends Controller {
             // Handle file upload
             $proof_file = $existingLeave->proof_file; // Keep existing file
             if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == 0) {
-                $upload_dir = 'public/uploads/leave_proofs/';
+                $upload_dir = 'uploads/leaverequest/';
                 if (!file_exists($upload_dir)) {
                     mkdir($upload_dir, 0777, true);
                 }
                 
                 $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
-                $proof_file = 'leave_' . $caretaker_id . '_' . time() . '.' . $file_extension;
-                $upload_path = $upload_dir . $proof_file;
+                $file_name = 'leave_' . $caretaker_id . '_' . time() . '.' . $file_extension;
+                $upload_path = $upload_dir . $file_name;
                 
                 if (move_uploaded_file($_FILES['proof_file']['tmp_name'], $upload_path)) {
                     // Delete old file if exists
-                    if ($existingLeave->proof_file && file_exists($upload_dir . $existingLeave->proof_file)) {
-                        unlink($upload_dir . $existingLeave->proof_file);
+                    if ($existingLeave->proof_file && file_exists($existingLeave->proof_file)) {
+                        unlink($existingLeave->proof_file);
                     }
+                    // Store full path in database
+                    $proof_file = $upload_dir . $file_name;
                 }
             }
             
@@ -235,9 +238,9 @@ class Caretaker extends Controller {
             
             // Delete file if exists
             if ($leave->proof_file) {
-                $file_path = 'public/uploads/leave_proofs/' . $leave->proof_file;
-                if (file_exists($file_path)) {
-                    unlink($file_path);
+                // proof_file already contains full path
+                if (file_exists($leave->proof_file)) {
+                    unlink($leave->proof_file);
                 }
             }
             
