@@ -6,41 +6,36 @@
 
     <!-- Content will be loaded here -->
     <div class="dashboard">
-    
-    <!-- Flash Messages -->
-    <?php flash('leave_success'); ?>
-    <?php flash('leave_error'); ?>
-    
     <!-- Stats -->
     <div class="card stat-card">
-  <span class="material-symbols-outlined stat-icon pending-icon">pending_actions</span>
+  <span class="material-symbols-outlined stat-icon">group</span>
   <div>
-    <div class="stat-value"><?= $data['leaveStats']->pending ?? 0 ?></div>
-    <div>Pending Requests</div>
+    <div class="stat-value">0</div>
+    <div>Total Officers</div>
   </div>
 </div>
 
 <div class="card stat-card">
-  <span class="material-symbols-outlined stat-icon approved-icon">check_circle</span>
+  <span class="material-symbols-outlined stat-icon">shield_person</span>
   <div>
-    <div class="stat-value"><?= $data['leaveStats']->approved ?? 0 ?></div>
-    <div>Approved</div>
+    <div class="stat-value">0</div>
+    <div>On Duty</div>
   </div>
 </div>
 
 <div class="card stat-card">
-  <span class="material-symbols-outlined stat-icon rejected-icon">cancel</span>
+  <span class="material-symbols-outlined stat-icon">verified_user</span>
   <div>
-    <div class="stat-value"><?= $data['leaveStats']->rejected ?? 0 ?></div>
-    <div>Rejected</div>
+    <div class="stat-value">0</div>
+    <div>Active</div>
   </div>
 </div>
 
 <div class="card stat-card">
-  <span class="material-symbols-outlined stat-icon total-icon">assessment</span>
+  <span class="material-symbols-outlined stat-icon">report</span>
   <div>
-    <div class="stat-value"><?= $data['leaveStats']->total ?? 0 ?></div>
-    <div>Total Requests</div>
+    <div class="stat-value">0</div>
+    <div>Incidents</div>
   </div>
 </div>
 
