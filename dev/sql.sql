@@ -40,3 +40,19 @@ CREATE TABLE Advertisements (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE CASCADE
 );
+
+--leaverequests table
+CREATE TABLE IF NOT EXISTS leave_requests (
+    id INT(11) AUTO_INCREMENT PRIMARY KEY,
+    caretaker_id INT(11) NOT NULL,
+    leave_type VARCHAR(50) NOT NULL,
+    reason TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    proof_file VARCHAR(255) DEFAULT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (caretaker_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
