@@ -7,13 +7,17 @@
     <!-- Content will be loaded here -->
      <main class="main-content">
           
+            <!-- Flash Messages -->
+            <?php flash('leave_success'); ?>
+            <?php flash('leave_error'); ?>
+
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
-                <form id="leaveForm" class="leave-form">
+                <form action="<?= URL_ROOT ?>/caretaker/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
                     <div class="form-group">
                         <label for="leaveType">Leave Type</label>
-                        <select id="leaveType" name="leaveType" required>
+                        <select id="leaveType" name="leave_type" required>
                             <option value="">Select leave type</option>
                             <option value="Sick Leave">Sick Leave</option>
                             <option value="Vacation">Vacation</option>
@@ -23,14 +27,14 @@
                     
                     <div class="form-group">
                         <label for="leaveReason">Leave Reason</label>
-                        <textarea id="leaveReason" name="leaveReason" placeholder="Enter leave reason"></textarea>
+                        <textarea id="leaveReason" name="reason" placeholder="Enter leave reason" required></textarea>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group">
                             <label for="startDate">Starting Date</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="startDate" name="startDate" placeholder="Select start date" class="date-picker" readonly>
+                                <input type="text" id="startDate" name="start_date" placeholder="Select start date" class="date-picker" readonly required>
                                 <div class="inline-calendar" id="startCalendar">
                                     <div class="calendar-header">
                                         <button class="calendar-nav prev" onclick="changeMonth('startCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
@@ -49,7 +53,7 @@
                         <div class="form-group">
                             <label for="endDate">End Date</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="endDate" name="endDate" placeholder="Select end date" class="date-picker" readonly>
+                                <input type="text" id="endDate" name="end_date" placeholder="Select end date" class="date-picker" readonly required>
                                 <div class="inline-calendar" id="endCalendar">
                                     <div class="calendar-header">
                                         <button class="calendar-nav prev" onclick="changeMonth('endCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
@@ -67,13 +71,13 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="leaveProof">Leave proves</label>
+                        <label for="leaveProof">Leave Proof (Optional)</label>
                         <div class="file-upload">
                             <button type="button" id="attachFile" class="attach-btn">
                                 <i class="fas fa-file"></i>
                                 Attach File
                             </button>
-                            <input type="file" id="fileInput" hidden>
+                            <input type="file" id="fileInput" name="proof_file" accept=".pdf,.jpg,.jpeg,.png" hidden>
                             <span id="fileName" class="file-name"></span>
                         </div>
                     </div>
@@ -95,25 +99,41 @@
                                 <th>End Date</th>
                                 <th>Status</th>
                                 <th>Proof</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="leaveHistoryBody">
-                            <tr>
-                                <td>Sick Leave</td>
-                                <td>Fever</td>
-                                <td>20/08/2025</td>
-                                <td>22/08/2025</td>
-                                <td><span class="status approved">Approved</span></td>
-                                <td><button class="view-file-btn">View File</button></td>
-                            </tr>
-                            <tr>
-                                <td>Annual Leave</td>
-                                <td>Family Trip</td>
-                                <td>01/06/2025</td>
-                                <td>05/06/2025</td>
-                                <td><span class="status pending">Pending</span></td>
-                                <td>-</td>
-                            </tr>
+                            <?php if (!empty($data['leaveRequests'])): ?>
+                                <?php foreach($data['leaveRequests'] as $leave): ?>
+                                    <tr>
+                                        <td><?= htmlspecialchars($leave->leave_type) ?></td>
+                                        <td><?= htmlspecialchars($leave->reason) ?></td>
+                                        <td><?= date('d/m/Y', strtotime($leave->start_date)) ?></td>
+                                        <td><?= date('d/m/Y', strtotime($leave->end_date)) ?></td>
+                                        <td>
+                                            <span class="status <?= strtolower($leave->status) ?>">
+                                                <?= $leave->status ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <?php if($leave->proof_file): ?>
+                                                <a href="<?= URL_ROOT ?>/public/uploads/leave_proofs/<?= $leave->proof_file ?>" target="_blank" class="view-file-btn">View File</a>
+                                            <?php else: ?>
+                                                -
+                                            <?php endif; ?>
+                                        </td>
+                                        <td>
+                                            <button onclick="deleteLeave(<?= $leave->id ?>)" class="delete-btn" title="Delete">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="7" style="text-align:center; padding: 20px; color: #666;">No leave requests found</td>
+                                </tr>
+                            <?php endif; ?>
                         </tbody>
                     </table>
                 </div>

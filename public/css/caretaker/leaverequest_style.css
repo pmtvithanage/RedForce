@@ -76,16 +76,21 @@
 
 .date-input-wrapper input {
     padding-right: 40px;
-    cursor: pointer;
     height: 42px;
     width: 100%;
+    transition: all 0.3s ease;
+}
+
+.date-input-wrapper input:hover {
+    border-color: #999;
+    background: #f9f9f9;
+    cursor: pointer;
 }
 
 .calendar-icon {
     position: absolute;
     right: 12px;
-    color: #666;
-    cursor: pointer;
+    color: #666;;
     font-size: 16px;
     z-index: 20;
 }
@@ -94,7 +99,7 @@
     color: #d32f2f;
 }
 
-/* Inline Calendar Styles */
+/* Inline Calendar Styles 
 .inline-calendar {
     position: absolute;
     top: 0;
@@ -109,6 +114,34 @@
     display: none;
     min-width: 280px;
     height: 100%;
+}*/
+
+/* Update the inline-calendar positioning */
+.inline-calendar {
+    position: absolute;
+    bottom: 100%; /* Changed from top: 100% to bottom: 100% */
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.15); /* Changed shadow direction */
+    padding: 15px;
+    display: none;
+    z-index: 1000;
+    margin-bottom: 8px; /* Changed from margin-top to margin-bottom */
+    animation: slideUp 0.2s ease-out; /* Changed animation name */
+}
+/* Update animation for upward slide */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px); /* Slide up from below */
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .inline-calendar.active {
@@ -313,6 +346,32 @@
 .status.pending {
     background-color: #fff3cd;
     color: #856404;
+}
+
+.status.rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Action Buttons */
+.delete-btn {
+    background: none;
+    border: none;
+    color: #dc3545;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.delete-btn:hover {
+    background: #ffe6e6;
+    transform: scale(1.1);
+}
+
+.delete-btn i {
+    pointer-events: none;
 }
 
 /* View File Button */
