@@ -252,7 +252,7 @@
     border-top: 1px solid #e0e0e0;
 }
 
-.btn-cancel, .btn-save {
+.btn-cancel, .btn-save, .btn-remove {
     padding: 10px 20px;
     border: none;
     border-radius: 6px;
@@ -278,6 +278,15 @@
 
 .btn-save:hover {
     background: #0056b3;
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-remove:hover {
+    background: #c82333;
 }
 
 /* Image Preview */

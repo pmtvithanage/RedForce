@@ -5,9 +5,7 @@
 
 <main class="main-content">
     <div class="profile-container">
-        <!-- Profile Header -->
         
-
         <!-- Profile Content -->
         <div class="profile-content">
             <!-- Profile Picture Section -->
@@ -31,7 +29,7 @@
                         Change Name
                     </button>
                     <button class="edit-icon-btn">
-                        <span>✏️</span>
+                        <span>✏</span>
                     </button>
                 </div>
 
@@ -43,7 +41,7 @@
                         Change Password
                     </button>
                     <button class="edit-icon-btn">
-                        <span>✏️</span>
+                        <span>✏</span>
                     </button>
                 </div>
 
@@ -55,7 +53,7 @@
                         Change Contact No
                     </button>
                     <button class="edit-icon-btn">
-                        <span>✏️</span>
+                        <span>✏</span>
                     </button>
                 </div>
 
@@ -67,7 +65,7 @@
                         Change Email
                     </button>
                     <button class="edit-icon-btn">
-                        <span>✏️</span>
+                        <span>✏</span>
                     </button>
                 </div>
 
@@ -127,6 +125,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn-cancel" onclick="closeProfileImageModal()">Cancel</button>
+                    <button type="button" class="btn-remove" id="removeImageBtn">Remove Image</button>
                     <button type="submit" class="btn-save">Upload Image</button>
                 </div>
             </form>

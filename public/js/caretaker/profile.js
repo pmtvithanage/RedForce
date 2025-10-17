@@ -1,14 +1,6 @@
-
 // ==============================
-// TOAST HELPER
+// CARETAKER PROFILE FUNCTIONALITY
 // ==============================
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  if (!toast) return;
-  toast.textContent = message;
-  toast.classList.add("show");
-  setTimeout(() => toast.classList.remove("show"), 2500);
-}
 
 // ==============================
 // GLOBAL VARIABLES
@@ -196,7 +188,11 @@ function uploadProfileImage(file) {
     const reader = new FileReader();
     reader.onload = function (e) {
       const profilePicture = document.querySelector('.profile-picture');
-      profilePicture.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      if (profilePicture) {
+        profilePicture.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      }
+      // Save to localStorage
+      localStorage.setItem('caretakerProfileImage', e.target.result);
     };
     reader.readAsDataURL(file);
     closeProfileImageModal();
@@ -255,92 +251,85 @@ style.textContent = `
 document.head.appendChild(style);
 
 // ==============================
-// PROFILE IMAGE INITIALIZATION
+// PROFILE IMAGE FUNCTIONS
 // ==============================
-function initializeProfileImage() {
-  const profileImage = document.getElementById("profileImage");
-  const profileIcon = document.getElementById("profileIcon");
-  const useDefaultBtn = document.getElementById("useDefaultBtn");
-  const removeImageBtn = document.getElementById("removeImageBtn");
-  const saveImageBtn = document.getElementById("saveImageBtn");
-  const cancelImageBtn = document.getElementById("cancelImageBtn");
-
-  if (profileImageInput) {
-    profileImageInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file && file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          previewImg.src = e.target.result;
-          imagePreview.style.display = "block";
-          selectedImageFile = file;
-        };
-        reader.readAsDataURL(file);
-      } else {
-        showToast("Please select a valid image file");
-      }
-    });
-  }
-
-  if (saveImageBtn) {
-    saveImageBtn.addEventListener("click", () => {
-      if (selectedImageFile) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          profileImage.src = e.target.result;
-          profileImage.style.display = "block";
-          profileIcon.style.display = "none";
-          localStorage.setItem("caretakerProfileImage", e.target.result);
-          showToast("Profile image updated successfully!");
-          closeProfileImageModal();
-        };
-        reader.readAsDataURL(selectedImageFile);
-      }
-    });
-  }
-
-  if (useDefaultBtn) {
-    useDefaultBtn.addEventListener("click", () => {
-      profileImage.style.display = "none";
-      profileIcon.style.display = "block";
-      localStorage.removeItem("caretakerProfileImage");
-      showToast("Using default profile icon");
-      closeProfileImageModal();
-    });
-  }
-
-  if (removeImageBtn) {
-    removeImageBtn.addEventListener("click", () => {
-      profileImage.style.display = "none";
-      profileIcon.style.display = "block";
-      localStorage.removeItem("caretakerProfileImage");
-      showToast("Profile image removed");
-      closeProfileImageModal();
-    });
-  }
-
-  if (cancelImageBtn) {
-    cancelImageBtn.addEventListener("click", () => {
-      imagePreview.style.display = "none";
-      selectedImageFile = null;
-      profileImageInput.value = "";
-    });
-  }
-
-  const savedImage = localStorage.getItem("caretakerProfileImage");
-  if (savedImage) {
-    profileImage.src = savedImage;
-    profileImage.style.display = "block";
-    profileIcon.style.display = "none";
-  }
-}
 
 // ==============================
 // INITIALIZATION
 // ==============================
 document.addEventListener('DOMContentLoaded', function () {
   console.log('Profile page loaded successfully!');
-  initializeProfileImage();
+  
+  // Add event listener for Change Profile Image button
+  const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
+  if (changeProfileImageBtn) {
+    changeProfileImageBtn.addEventListener('click', openProfileImageModal);
+  }
+  
+  // Add event listener for Remove Image button
+  const removeImageBtn = document.getElementById('removeImageBtn');
+  if (removeImageBtn) {
+    removeImageBtn.addEventListener('click', function() {
+      const profilePicture = document.querySelector('.profile-picture');
+      if (profilePicture) {
+        profilePicture.innerHTML = '<span class="profile-icon">👤</span>';
+      }
+      localStorage.removeItem('caretakerProfileImage');
+      closeProfileImageModal();
+      showNotification('Profile image removed', 'success');
+    });
+  }
+  
+  // Add click outside modal to close
+  window.addEventListener('click', function(e) {
+    if (e.target === editModal) {
+      closeEditModal();
+    }
+    if (e.target === profileImageModal) {
+      closeProfileImageModal();
+    }
+  });
+  
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (editModal && editModal.style.display === 'flex') {
+        closeEditModal();
+      }
+      if (profileImageModal && profileImageModal.style.display === 'flex') {
+        closeProfileImageModal();
+      }
+    }
+  });
+  
+  // Initialize profile image functionality
+  if (profileImageInput) {
+    profileImageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith("image/")) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (previewImg) {
+            previewImg.src = e.target.result;
+            imagePreview.style.display = "block";
+          }
+          selectedImageFile = file;
+        };
+        reader.readAsDataURL(file);
+      } else {
+        showNotification("Please select a valid image file", "error");
+      }
+    });
+  }
+  
+  // Load saved image from localStorage
+  const savedImage = localStorage.getItem("caretakerProfileImage");
+  if (savedImage) {
+    const profilePicture = document.querySelector('.profile-picture');
+    if (profilePicture) {
+      profilePicture.innerHTML = `<img src="${savedImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    }
+  }
 });
 
 window.openEditModal = openEditModal;
