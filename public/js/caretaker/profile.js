@@ -1,282 +1,400 @@
-// Toast helper
-function showToast(message){
-  const toast=document.getElementById('toast');
-  if(!toast) return;
-  toast.textContent=message;
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),2500);
-}
+// ==============================
+// PROFILE PAGE FUNCTIONALITY
+// ==============================
 
-// Profile Image Management
-let selectedImageFile = null;
+// Global variables
+let currentField = '';
+let currentValue = '';
 
-// Profile Image functionality
-function initializeProfileImage() {
-    console.log('Initializing profile image functionality...');
+// DOM Elements
+const editModal = document.getElementById('editModal');
+const profileImageModal = document.getElementById('profileImageModal');
+const editForm = document.getElementById('editForm');
+const profileImageForm = document.getElementById('profileImageForm');
+const modalTitle = document.getElementById('modalTitle');
+const fieldLabel = document.getElementById('fieldLabel');
+const fieldInput = document.getElementById('fieldInput');
+const passwordInput = document.getElementById('passwordInput');
+const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+const profileImageInput = document.getElementById('profileImageInput');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
+
+// ==============================
+// MODAL FUNCTIONS
+// ==============================
+
+// Open edit modal for different fields
+function openEditModal(field, value) {
+    currentField = field;
+    currentValue = value;
     
-    const editAvatar = document.getElementById('editAvatar');
-    const profileOverlay = document.getElementById('profileOverlay');
-    const profileImageModal = document.getElementById('profileImageModal');
-    const profileImageInput = document.getElementById('profileImageInput');
-    const profileImage = document.getElementById('profileImage');
-    const profileIcon = document.getElementById('profileIcon');
-    const uploadImageBtn = document.getElementById('uploadImageBtn');
-    const useDefaultBtn = document.getElementById('useDefaultBtn');
-    const removeImageBtn = document.getElementById('removeImageBtn');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-    const imagePreview = document.getElementById('imagePreview');
-    const previewImage = document.getElementById('previewImage');
-    const saveImageBtn = document.getElementById('saveImageBtn');
-    const cancelImageBtn = document.getElementById('cancelImageBtn');
-
-    // Function to close modal
-    function closeModal() {
-        console.log('Closing modal...');
-        if (profileImageModal) {
-            profileImageModal.style.display = 'none';
-            profileImageModal.setAttribute('hidden', '');
-        }
-        if (imagePreview) {
-            imagePreview.style.display = 'none';
-        }
-        if (profileImageInput) {
-            profileImageInput.value = '';
-        }
-        selectedImageFile = null;
-        console.log('Modal closed successfully');
+    // Reset form
+    editForm.reset();
+    fieldInput.style.display = 'block';
+    passwordInput.style.display = 'none';
+    confirmPasswordInput.style.display = 'none';
+    
+    // Configure modal based on field type
+    switch(field) {
+        case 'name':
+            modalTitle.textContent = 'Change Name';
+            fieldLabel.textContent = 'Full Name';
+            fieldInput.value = value;
+            fieldInput.type = 'text';
+            fieldInput.placeholder = 'Enter your full name';
+            break;
+            
+        case 'password':
+            modalTitle.textContent = 'Change Password';
+            fieldLabel.textContent = 'New Password';
+            fieldInput.style.display = 'none';
+            passwordInput.style.display = 'block';
+            confirmPasswordInput.style.display = 'block';
+            passwordInput.placeholder = 'Enter new password';
+            confirmPasswordInput.placeholder = 'Confirm new password';
+            break;
+            
+        case 'contact':
+            modalTitle.textContent = 'Change Contact Number';
+            fieldLabel.textContent = 'Contact Number';
+            fieldInput.value = value;
+            fieldInput.type = 'tel';
+            fieldInput.placeholder = 'Enter contact number';
+            break;
+            
+        case 'email':
+            modalTitle.textContent = 'Change Email';
+            fieldLabel.textContent = 'Email Address';
+            fieldInput.value = value;
+            fieldInput.type = 'email';
+            fieldInput.placeholder = 'Enter email address';
+            break;
     }
+    
+    // Show modal
+    editModal.style.display = 'flex';
+}
 
-    // Function to open modal
-    function openProfileModal() {
-        console.log('Opening profile modal...');
-        if (profileImageModal) {
-            profileImageModal.style.display = 'flex';
-            profileImageModal.removeAttribute('hidden');
-        }
-    }
+// Close edit modal
+function closeEditModal() {
+    editModal.style.display = 'none';
+    editForm.reset();
+}
 
-    // Open modal when "Change Profile Image" button is clicked
-    const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
-    if (changeProfileImageBtn) {
-        changeProfileImageBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openProfileModal();
-        });
-    }
+// Open profile image modal
+function openProfileImageModal() {
+    profileImageModal.style.display = 'flex';
+    imagePreview.style.display = 'none';
+}
 
-    // Close modal button event
-    if (closeModalBtn) {
-        closeModalBtn.onclick = function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModal();
-            return false;
-        };
-        
-        closeModalBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeModal();
-        });
-    }
+// Close profile image modal
+function closeProfileImageModal() {
+    profileImageModal.style.display = 'none';
+    profileImageForm.reset();
+    imagePreview.style.display = 'none';
+}
 
-    // Close modal when clicking outside
-    if (profileImageModal) {
-        profileImageModal.addEventListener('click', (e) => {
-            if (e.target === profileImageModal) {
-                closeModal();
+// ==============================
+// FORM HANDLERS
+// ==============================
+
+// Handle edit form submission
+editForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    let newValue = '';
+    let isValid = true;
+    let errorMessage = '';
+    
+    // Validate based on field type
+    switch(currentField) {
+        case 'name':
+            newValue = fieldInput.value.trim();
+            if (newValue.length < 2) {
+                isValid = false;
+                errorMessage = 'Name must be at least 2 characters long';
             }
-        });
+            break;
+            
+        case 'password':
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            
+            if (password.length < 6) {
+                isValid = false;
+                errorMessage = 'Password must be at least 6 characters long';
+            } else if (password !== confirmPassword) {
+                isValid = false;
+                errorMessage = 'Passwords do not match';
+            } else {
+                newValue = password;
+            }
+            break;
+            
+        case 'contact':
+            newValue = fieldInput.value.trim();
+            const phoneRegex = /^[0-9+\-\s()]+$/;
+            if (!phoneRegex.test(newValue) || newValue.length < 10) {
+                isValid = false;
+                errorMessage = 'Please enter a valid contact number';
+            }
+            break;
+            
+        case 'email':
+            newValue = fieldInput.value.trim();
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(newValue)) {
+                isValid = false;
+                errorMessage = 'Please enter a valid email address';
+            }
+            break;
     }
-
-    // Escape key to close modal
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && profileImageModal && !profileImageModal.hasAttribute('hidden')) {
-            closeModal();
-        }
-    });
-
-    // Upload image button
-    if (uploadImageBtn) {
-        uploadImageBtn.addEventListener('click', () => {
-            profileImageInput.click();
-        });
+    
+    if (!isValid) {
+        showNotification(errorMessage, 'error');
+        return;
     }
+    
+    // Simulate saving (replace with actual AJAX call)
+    updateProfileField(currentField, newValue);
+});
 
-    // Handle file selection
-    if (profileImageInput) {
-        profileImageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                // Validate file size (5MB limit)
-                if (file.size > 5 * 1024 * 1024) {
-                    showToast('File size must be less than 5MB');
-                    return;
-                }
+// Handle profile image form submission
+profileImageForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const file = profileImageInput.files[0];
+    if (!file) {
+        showNotification('Please select an image', 'error');
+        return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+        showNotification('Please select a valid image file (JPEG, PNG, GIF)', 'error');
+        return;
+    }
+    
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+        showNotification('Image size must be less than 5MB', 'error');
+        return;
+    }
+    
+    // Simulate upload (replace with actual AJAX call)
+    uploadProfileImage(file);
+});
+
+// ==============================
+// PROFILE UPDATE FUNCTIONS
+// ==============================
+
+// Update profile field
+function updateProfileField(field, value) {
+    // Show loading
+    showNotification('Updating...', 'info');
+    
+    // Simulate API call
+    setTimeout(() => {
+        // Update the display value
+        const infoRows = document.querySelectorAll('.info-row');
+        infoRows.forEach(row => {
+            const label = row.querySelector('.info-label').textContent.toLowerCase();
+            
+            if ((field === 'name' && label.includes('name')) ||
+                (field === 'password' && label.includes('password')) ||
+                (field === 'contact' && label.includes('contact')) ||
+                (field === 'email' && label.includes('email'))) {
                 
-                if (file.type.startsWith('image/')) {
-                    selectedImageFile = file;
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        previewImage.src = e.target.result;
-                        imagePreview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
+                const valueElement = row.querySelector('.info-value');
+                if (field === 'password') {
+                    valueElement.textContent = '- ••••••••';
                 } else {
-                    showToast('Please select a valid image file');
+                    valueElement.textContent = '- ' + value;
                 }
             }
         });
-    }
+        
+        // Close modal and show success
+        closeEditModal();
+        showNotification('Profile updated successfully!', 'success');
+    }, 1000);
+}
 
-    // Save image
-    if (saveImageBtn) {
-        saveImageBtn.addEventListener('click', () => {
-            if (selectedImageFile) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    profileImage.src = e.target.result;
-                    profileImage.style.display = 'block';
-                    profileIcon.style.display = 'none';
-                    
-                    // Save to localStorage for persistence
-                    localStorage.setItem('caretakerProfileImage', e.target.result);
-                    
-                    showToast('Profile image updated successfully!');
-                    closeModal();
-                };
-                reader.readAsDataURL(selectedImageFile);
-            }
-        });
-    }
+// Upload profile image
+function uploadProfileImage(file) {
+    // Show loading
+    showNotification('Uploading image...', 'info');
+    
+    // Create FormData for file upload
+    const formData = new FormData();
+    formData.append('profile_image', file);
+    
+    // Simulate upload
+    setTimeout(() => {
+        // Update profile picture (in real app, use the returned URL)
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const profilePicture = document.querySelector('.profile-picture');
+            profilePicture.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        };
+        reader.readAsDataURL(file);
+        
+        // Close modal and show success
+        closeProfileImageModal();
+        showNotification('Profile image updated successfully!', 'success');
+    }, 1500);
+}
 
-    // Cancel image
-    if (cancelImageBtn) {
-        cancelImageBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (imagePreview) {
-                imagePreview.style.display = 'none';
-            }
-            selectedImageFile = null;
-            if (profileImageInput) {
-                profileImageInput.value = '';
-            }
-        });
-    }
+// ==============================
+// EVENT LISTENERS
+// ==============================
 
-    // Use default icon
-    if (useDefaultBtn) {
-        useDefaultBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (profileImage) {
-                profileImage.style.display = 'none';
-            }
-            if (profileIcon) {
-                profileIcon.style.display = 'block';
-            }
-            localStorage.removeItem('caretakerProfileImage');
-            showToast('Using default profile icon');
-            closeModal();
-        });
-    }
+// Change Profile Image button
+document.getElementById('changeProfileImageBtn').addEventListener('click', openProfileImageModal);
 
-    // Remove image
-    if (removeImageBtn) {
-        removeImageBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            if (profileImage) {
-                profileImage.style.display = 'none';
-            }
-            if (profileIcon) {
-                profileIcon.style.display = 'block';
-            }
-            localStorage.removeItem('caretakerProfileImage');
-            showToast('Profile image removed');
-            closeModal();
-        });
+// Image preview
+profileImageInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImg.src = e.target.result;
+            imagePreview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
     }
+});
 
-    // Load saved profile image on page load
-    const savedImage = localStorage.getItem('caretakerProfileImage');
-    if (savedImage) {
-        profileImage.src = savedImage;
-        profileImage.style.display = 'block';
-        profileIcon.style.display = 'none';
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+    if (e.target === editModal) {
+        closeEditModal();
+    }
+    if (e.target === profileImageModal) {
+        closeProfileImageModal();
+    }
+});
+
+// Close modal with Escape key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeEditModal();
+        closeProfileImageModal();
+    }
+});
+
+// ==============================
+// NOTIFICATION SYSTEM
+// ==============================
+
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
+        </div>
+    `;
+    
+    // Style notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: ${getNotificationColor(type)};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 10000;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    `;
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Close button functionality
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.remove();
+    });
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Get notification color based on type
+function getNotificationColor(type) {
+    switch (type) {
+        case 'success':
+            return '#28a745';
+        case 'error':
+            return '#dc3545';
+        case 'warning':
+            return '#ffc107';
+        default:
+            return '#17a2b8';
     }
 }
 
-// Wire actions after DOM ready
-document.addEventListener('DOMContentLoaded',()=>{
-  // Initialize profile image functionality
-  initializeProfileImage();
+// Add CSS for notification animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    .notification-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .notification-close {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 18px;
+        cursor: pointer;
+        margin-left: 10px;
+    }
+`;
+document.head.appendChild(style);
 
-  // Logout
-  const logoutBtn=document.getElementById('logoutBtn');
-  if(logoutBtn){
-    logoutBtn.addEventListener('click',()=>{
-      showToast('You have been logged out.');
-    });
-  }
+// ==============================
+// INITIALIZATION
+// ==============================
 
-     // Inline edits
-   document.querySelectorAll('.icon-btn,[data-edit]').forEach(btn=>{
-     btn.addEventListener('click',()=>{
-       const key=btn.getAttribute('data-edit');
-       if(!key) return;
-       const map={
-         name:{label:'Mobile Rider Name', el:'#nameValue'},
-         password:{label:'Password', el:'#passwordValue', type:'password'},
-         contact:{label:'Contact Number', el:'#contactValue'},
-         email:{label:'Email', el:'#emailValue'}
-       };
-       const entry=map[key];
-       if(!entry) return;
-       const valueEl=document.querySelector(entry.el);
-       
-       if(entry.type === 'password') {
-         // Handle password change with confirmation
-         const currentPassword = prompt('Enter current password:');
-         if(currentPassword === null) return;
-         
-         // In a real app, you'd verify against stored password
-         if(currentPassword !== 'current123') { // Demo password
-           showToast('Current password is incorrect');
-           return;
-         }
-         
-         const newPassword = prompt('Enter new password (min 8 characters):');
-         if(newPassword === null) return;
-         
-         if(newPassword.length < 8) {
-           showToast('Password must be at least 8 characters long');
-           return;
-         }
-         
-         const confirmPassword = prompt('Confirm new password:');
-         if(confirmPassword === null) return;
-         
-         if(newPassword !== confirmPassword) {
-           showToast('Passwords do not match');
-           return;
-         }
-         
-         if(valueEl) { 
-           valueEl.textContent = '- ••••••••'; 
-         }
-         showToast('Password updated successfully');
-       } else {
-         // Handle regular field updates
-         const current = valueEl ? valueEl.textContent.replace(/^\s*-\s*/,'').trim() : '';
-         const next = prompt(`Update ${entry.label}:`, current);
-         if(next !== null){
-           if(valueEl){ valueEl.textContent = `- ${next.trim()}`; }
-           showToast(`${entry.label} updated`);
-         }
-       }
-     });
-   });
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Profile page loaded successfully!');
+    
+    // Add any initialization code here
+    // For example, load user data from server
 });
+
+// Export functions for global access
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.openProfileImageModal = openProfileImageModal;
+window.closeProfileImageModal = closeProfileImageModal;
