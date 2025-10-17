@@ -1,19 +1,26 @@
 <?php
-class MobileRider extends Controller {
-    private $homeModel;
+class MobileRider extends Controller
+{
+    private $mobileRiderModel;
+    private $userModel;
 
-    public function __construct() {
-        // Load the model
-        $this->homeModel = $this->model('M_mobilerider');
+    public function __construct()
+    {
+        // Check if user is logged in and has mobile rider role
+        requireAuth('mobile rider');
+        $this->mobileRiderModel = $this->model('M_mobileRider');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
-    public function index() {
-        // Currently empty → could redirect to dashboard or load a default view
+    // Default action - redirect to dashboard
+    public function index()
+    {
+        redirect('mobilerider/dashboard');
     }
 
     // Dashboard action
-    public function dashboard() {
+    public function dashboard()
+    {
         $data = [
             'title' => 'Dashboard',
         ];
@@ -21,35 +28,40 @@ class MobileRider extends Controller {
     }
 
     // Schedule action
-    public function sites() {
+    public function sites()
+    {
         $data = [
             'title' => 'Sites',
         ];
         $this->view('mobilerider/v_sites', $data);
     }
     // Messages
-    public function messages() {
+    public function messages()
+    {
         $data = [
             'title' => 'Messages',
         ];
         $this->view('mobilerider/v_messages', $data);
     }
     // Incidents
-    public function incidents() {
+    public function incidents()
+    {
         $data = [
             'title' => 'Incidents',
         ];
         $this->view('mobilerider/v_incidents', $data);
     }
     // Leave Requests
-    public function leaverequests() {
+    public function leaverequests()
+    {
         $data = [
             'title' => 'Leave Requests',
         ];
-        $this->view('mobilerider/v_leaverequests', $data);  
+        $this->view('mobilerider/v_leaverequests', $data);
     }
     // Profile
-    public function profile() {
+    public function profile()
+    {
         $data = [
             'title' => 'Profile',
         ];

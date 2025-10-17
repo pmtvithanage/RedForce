@@ -1,13 +1,18 @@
 <?php
 class Caretaker extends Controller {
-    private $homeModel;
+    private $caretakerModel;
+    private $userModel;
 
     public function __construct() {
-        $this->homeModel = $this->model('M_caretaker');
+        // Check if user is logged in and has care taker role
+        requireAuth('caretaker');
+        $this->caretakerModel = $this->model('M_caretaker');
+        $this->userModel = $this->model('M_users');
     }
 
-    // Default action
+    // Default action - redirect to dashboard
     public function index() {
+        redirect('caretaker/dashboard');
     }
 
     // dashboard
