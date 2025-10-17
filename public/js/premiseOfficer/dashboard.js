@@ -20,7 +20,7 @@ function openChatModal(messageId) {
 
 // Load conversation data
 function loadConversation(messageId, container) {
-    // Mock conversation data based on your interface
+    // Mock conversation data
     const conversations = {
         1: {
             title: "Messages",
@@ -28,44 +28,20 @@ function loadConversation(messageId, container) {
             messages: [
                 {
                     sender: "Admin - Red Force",
-                    message: "Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurunegala branch as per your request.",
+                    message: "Dear Officer, kindly note that we are assigning you to the night shift tonight as per the schedule.",
                     time: "14:32",
                     isOwn: false
                 },
                 {
                     sender: "You",
-                    message: "What do you mean?",
+                    message: "Understood. What time should I report?",
                     time: "14:35",
                     isOwn: true
                 },
                 {
                     sender: "Admin - Red Force",
-                    message: "I think the idea that things are chaning isnt good",
+                    message: "Please report at 8:00 PM sharp. The shift ends at 6:00 AM.",
                     time: "14:36",
-                    isOwn: false
-                },
-                {
-                    sender: "You",
-                    message: "What do you mean?",
-                    time: "14:37",
-                    isOwn: true
-                },
-                {
-                    sender: "Admin - Red Force",
-                    message: "I think the idea that things are chaning isnt good",
-                    time: "14:38",
-                    isOwn: false
-                },
-                {
-                    sender: "You",
-                    message: "What do you mean?",
-                    time: "14:39",
-                    isOwn: true
-                },
-                {
-                    sender: "Admin - Red Force",
-                    message: "I think the idea that things are chaning isnt good",
-                    time: "14:40",
                     isOwn: false
                 }
             ]
@@ -76,9 +52,15 @@ function loadConversation(messageId, container) {
             messages: [
                 {
                     sender: "John Silva",
-                    message: "Officer Ravindu Fernando was assigned to your location today.",
+                    message: "Your shift schedule has been updated. Please check your email for details.",
                     time: "12:32",
                     isOwn: false
+                },
+                {
+                    sender: "You",
+                    message: "Thank you for the update.",
+                    time: "12:35",
+                    isOwn: true
                 }
             ]
         },
@@ -88,7 +70,7 @@ function loadConversation(messageId, container) {
             messages: [
                 {
                     sender: "Naduni Senanayake",
-                    message: "Officer training certificates have been updated in the system.",
+                    message: "Please submit your monthly report by the end of this week.",
                     time: "01:42",
                     isOwn: false
                 }
@@ -96,11 +78,11 @@ function loadConversation(messageId, container) {
         },
         4: {
             title: "Messages",
-            participant: "Nishadi Dissanayake - Admin",
+            participant: "Manager - Site Manager",
             messages: [
                 {
-                    sender: "Nishadi Dissanayake",
-                    message: "Updated shift schedules for all locations have been sent to your email.",
+                    sender: "Manager",
+                    message: "Team meeting scheduled for tomorrow at 10:00 AM. Please attend.",
                     time: "01:22",
                     isOwn: false
                 }
@@ -189,5 +171,5 @@ window.onclick = function(event) {
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Dashboard loaded successfully');
+    console.log('Premise Officer Dashboard loaded successfully');
 });

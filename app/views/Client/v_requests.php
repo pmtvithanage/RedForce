@@ -1,68 +1,52 @@
+<?php
+// Quick fix for undefined variables
+if (!isset($data)) {
+    $data = [];
+}
+if (!isset($data['title'])) {
+    $data['title'] = 'Request Services - RedForce';
+}
+?>
+
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php
-// Handle form submission
-$showSuccessMessage = false;
-$errorMessage = '';
+// Get data passed from controller
+$showSuccessMessage = $data['showSuccessMessage'] ?? false;
+$errorMessage = $data['errorMessage'] ?? '';
+$previousRequests = $data['previousRequests'] ?? [];
+$showHistory = $data['showHistory'] ?? false;
+$todayDate = $data['todayDate'] ?? date('Y-m-d');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_request'])) {
-    // Get current date
-    $currentDate = date('Y-m-d');
-    $startDate = $_POST['startDate'];
-    $endDate = $_POST['endDate'];
-    
-    // Validate dates - ensure they are not before today
-    if ($startDate < $currentDate) {
-        $errorMessage = 'Starting date cannot be in the past. Please select today or a future date.';
-    } elseif ($endDate < $currentDate) {
-        $errorMessage = 'Ending date cannot be in the past. Please select today or a future date.';
-    } elseif ($endDate < $startDate) {
-        $errorMessage = 'Ending date cannot be before starting date.';
-    } else {
-        // Process form data here (save to database, etc.)
-        $showSuccessMessage = true;
-    }
+// Ensure $previousRequests is always an array
+if (!is_array($previousRequests)) {
+    $previousRequests = [];
 }
 
-// Get current date for HTML date input restrictions
-$todayDate = date('Y-m-d');
-
-// Mock data for previous requests (replace with actual database query)
-$previousRequests = [
-    [
-        'id' => 1,
-        'eventName' => 'Corporate Conference',
-        'eventDescription' => 'Annual company meeting with 200+ attendees',
-        'startDate' => '2024-10-15',
-        'endDate' => '2024-10-15',
-        'startTime' => '09:00',
-        'endTime' => '17:00',
-        'location' => 'Hilton Hotel, Colombo',
-        'guardType' => 'Armed',
-        'guardCount' => '3',
-        'comments' => 'Need experienced personnel',
-        'status' => 'Approved',
-        'submittedDate' => '2024-09-01'
-    ],
-    [
-        'id' => 2,
-        'eventName' => 'Wedding Ceremony',
-        'eventDescription' => 'Traditional wedding celebration',
-        'startDate' => '2024-11-20',
-        'endDate' => '2024-11-20',
-        'startTime' => '14:00',
-        'endTime' => '23:00',
-        'location' => 'Taj Samudra Hotel',
-        'guardType' => 'Regular',
-        'guardCount' => '2',
-        'comments' => 'Formal attire required',
-        'status' => 'Pending',
-        'submittedDate' => '2024-09-05'
-    ]
-];
-
-// Handle history popup
-$showHistory = isset($_GET['show_history']);
+// Convert database results to match your existing format
+$formattedRequests = [];
+if (!empty($previousRequests)) {
+    foreach ($previousRequests as $request) {
+        // Make sure $request is an object before accessing properties
+        if (is_object($request)) {
+            $formattedRequests[] = [
+                'id' => $request->id ?? '',
+                'eventName' => $request->event_name ?? '',
+                'eventDescription' => $request->event_description ?? '',
+                'startDate' => $request->start_date ?? '',
+                'endDate' => $request->end_date ?? '',
+                'startTime' => $request->start_time ?? '',
+                'endTime' => $request->end_time ?? '',
+                'location' => $request->location ?? '',
+                'numberOfGuards' => $request->number_of_guards ?? '',  // Updated field name
+                'comments' => $request->comments ?? '',
+                'status' => $request->status ?? 'Pending',
+                'submittedDate' => isset($request->submitted_date) ? date('Y-m-d', strtotime($request->submitted_date)) : ''
+            ];
+        }
+    }
+}
+$previousRequests = $formattedRequests;
 ?>
 
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
@@ -136,10 +120,6 @@ $showHistory = isset($_GET['show_history']);
                 <span class="label">Location:</span>
                 <span><?php echo htmlspecialchars($request['location']); ?></span>
               </div>
-              <div class="detail-row">
-                <span class="label">Guard Type:</span>
-                <span><?php echo $request['guardType']; ?> (<?php echo $request['guardCount']; ?> guards)</span>
-              </div>
               <?php if (!empty($request['comments'])): ?>
               <div class="detail-row">
                 <span class="label">Comments:</span>
@@ -149,6 +129,10 @@ $showHistory = isset($_GET['show_history']);
               <div class="detail-row">
                 <span class="label">Submitted:</span>
                 <span><?php echo $request['submittedDate']; ?></span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Number of Guards:</span>
+                <span><?php echo $request['numberOfGuards']; ?> guards</span>
               </div>
             </div>
           </div>
@@ -229,26 +213,19 @@ $showHistory = isset($_GET['show_history']);
                  required />
         </div>
 
-        <!-- Guard Type -->
+    
+        <!-- Number of Guards -->
         <div class="form-group">
-          <label>*Guard Type :</label>
-          <div class="guard-type">
-            <label>
-              <input type="radio" name="guardType" value="Armed" 
-                     <?php echo (isset($_POST['guardType']) && $_POST['guardType'] == 'Armed') ? 'checked' : ''; ?> 
-                     required /> Armed
-            </label>
-            <label>
-              <input type="radio" name="guardType" value="Regular" 
-                     <?php echo (isset($_POST['guardType']) && $_POST['guardType'] == 'Regular') ? 'checked' : ''; ?> /> Regular
-            </label>
-            <select id="guardCount" name="guardCount">
-              <option value="1" <?php echo (isset($_POST['guardCount']) && $_POST['guardCount'] == '1') ? 'selected' : ''; ?>>1</option>
-              <option value="2" <?php echo (isset($_POST['guardCount']) && $_POST['guardCount'] == '2') ? 'selected' : ''; ?>>2</option>
-              <option value="3" <?php echo (isset($_POST['guardCount']) && $_POST['guardCount'] == '3') ? 'selected' : ''; ?>>3</option>
-              <option value="4" <?php echo (isset($_POST['guardCount']) && $_POST['guardCount'] == '4') ? 'selected' : ''; ?>>4</option>
-            </select>
-          </div>
+          <label for="numberOfGuards">*Number of Guards :</label>
+          <select id="numberOfGuards" name="numberOfGuards" required>
+            <option value="">Select number of guards</option>
+            <option value="1" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '1') ? 'selected' : ''; ?>>1 Guard</option>
+            <option value="2" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '2') ? 'selected' : ''; ?>>2 Guards</option>
+            <option value="3" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '3') ? 'selected' : ''; ?>>3 Guards</option>
+            <option value="4" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '4') ? 'selected' : ''; ?>>4 Guards</option>
+            <option value="5" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '5') ? 'selected' : ''; ?>>5 Guards</option>
+            <option value="6" <?php echo (isset($_POST['numberOfGuards']) && $_POST['numberOfGuards'] == '6') ? 'selected' : ''; ?>>6 Guards</option>
+          </select>
         </div>
 
         <!-- Additional Comments -->

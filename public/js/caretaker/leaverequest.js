@@ -18,6 +18,24 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar('startCalendar', today);
     initializeCalendar('endCalendar', today);
     
+    // Add click event listeners to date input fields
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if (startDateInput) {
+        startDateInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleCalendar('startCalendar');
+        });
+    }
+    
+    if (endDateInput) {
+        endDateInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleCalendar('endCalendar');
+        });
+    }
+    
     // Close calendars when clicking outside
     document.addEventListener('click', function(e) {
         if (!e.target.closest('.date-input-wrapper')) {
@@ -481,6 +499,22 @@ function clearFieldError(field) {
     const errorDiv = field.parentNode.querySelector('.field-error');
     if (errorDiv) {
         errorDiv.remove();
+    }
+}
+
+// Delete leave request function
+function deleteLeave(id) {
+    if (confirm('Are you sure you want to delete this leave request?')) {
+        // Get the base URL from the window location
+        const baseUrl = window.location.origin;
+        const path = window.location.pathname.split('/')[1]; // Gets 'RedForce' or your app name
+        
+        // Create a form dynamically and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/${path}/caretaker/deleteLeave/${id}`;
+        document.body.appendChild(form);
+        form.submit();
     }
 }
 
