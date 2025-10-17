@@ -1,312 +1,364 @@
-// Profile Image Management
+// ==============================
+// TOAST HELPER
+// ==============================
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  if (!toast) return;
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2500);
+}
+
+// ==============================
+// GLOBAL VARIABLES
+// ==============================
+let currentField = '';
+let currentValue = '';
 let selectedImageFile = null;
 
-// Profile Image functionality
-function initializeProfileImage() {
-  console.log('Initializing profile image functionality...');
-  
-  const editAvatar = document.getElementById('editAvatar');
-  const changeProfileBtn = document.getElementById('changeProfileBtn');
-  const profileOverlay = document.getElementById('profileOverlay');
-  const profileImageModal = document.getElementById('profileImageModal');
-  const profileImageInput = document.getElementById('profileImageInput');
-  const profileImage = document.getElementById('profileImage');
-  const profileIcon = document.getElementById('profileIcon');
-  const uploadImageBtn = document.getElementById('uploadImageBtn');
-  const useDefaultBtn = document.getElementById('useDefaultBtn');
-  const removeImageBtn = document.getElementById('removeImageBtn');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const imagePreview = document.getElementById('imagePreview');
-  const previewImage = document.getElementById('previewImage');
-  const saveImageBtn = document.getElementById('saveImageBtn');
-  const cancelImageBtn = document.getElementById('cancelImageBtn');
+// ==============================
+// DOM ELEMENTS
+// ==============================
+const editModal = document.getElementById('editModal');
+const profileImageModal = document.getElementById('profileImageModal');
+const editForm = document.getElementById('editForm');
+const profileImageForm = document.getElementById('profileImageForm');
+const modalTitle = document.getElementById('modalTitle');
+const fieldLabel = document.getElementById('fieldLabel');
+const fieldInput = document.getElementById('fieldInput');
+const passwordInput = document.getElementById('passwordInput');
+const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+const profileImageInput = document.getElementById('profileImageInput');
+const imagePreview = document.getElementById('imagePreview');
+const previewImg = document.getElementById('previewImg');
 
-  console.log('Close button element:', closeModalBtn);
-  console.log('Modal element:', profileImageModal);
+// ==============================
+// MODAL FUNCTIONS
+// ==============================
+function openEditModal(field, value) {
+  currentField = field;
+  currentValue = value;
 
-  // Function to close modal
-  function closeModal() {
-    console.log('Closing modal...');
-    if (profileImageModal) {
-      profileImageModal.style.display = 'none';
-      profileImageModal.setAttribute('hidden', '');
-    }
-    if (imagePreview) {
-      imagePreview.style.display = 'none';
-    }
-    if (profileImageInput) {
-      profileImageInput.value = '';
-    }
-    selectedImageFile = null;
-    console.log('Modal closed successfully');
+  editForm.reset();
+  fieldInput.style.display = 'block';
+  passwordInput.style.display = 'none';
+  confirmPasswordInput.style.display = 'none';
+
+  switch (field) {
+    case 'name':
+      modalTitle.textContent = 'Change Name';
+      fieldLabel.textContent = 'Full Name';
+      fieldInput.value = value;
+      fieldInput.type = 'text';
+      fieldInput.placeholder = 'Enter your full name';
+      break;
+    case 'password':
+      modalTitle.textContent = 'Change Password';
+      fieldLabel.textContent = 'New Password';
+      fieldInput.style.display = 'none';
+      passwordInput.style.display = 'block';
+      confirmPasswordInput.style.display = 'block';
+      break;
+    case 'contact':
+      modalTitle.textContent = 'Change Contact Number';
+      fieldLabel.textContent = 'Contact Number';
+      fieldInput.value = value;
+      fieldInput.type = 'tel';
+      break;
+    case 'email':
+      modalTitle.textContent = 'Change Email';
+      fieldLabel.textContent = 'Email Address';
+      fieldInput.value = value;
+      fieldInput.type = 'email';
+      break;
   }
 
-  // Function to open modal
-  function openProfileModal() {
-    console.log('Opening modal...');
-    if (profileImageModal) {
-      profileImageModal.style.display = 'flex';
-      profileImageModal.removeAttribute('hidden');
-    }
-    console.log('Modal opened successfully');
-  }
+  editModal.style.display = 'flex';
+}
 
-  // Close modal button event - MULTIPLE WAYS TO ENSURE IT WORKS
-  if (closeModalBtn) {
-    console.log('Adding click event to close button');
-    
-    closeModalBtn.onclick = function(e) {
-      console.log('Close button clicked via onclick');
-      e.preventDefault();
-      e.stopPropagation();
-      closeModal();
-      return false;
-    };
-    
-    closeModalBtn.addEventListener('click', function(e) {
-      console.log('Close button clicked via addEventListener');
-      e.preventDefault();
-      e.stopPropagation();
-      closeModal();
-    });
-    
-    closeModalBtn.addEventListener('mousedown', function(e) {
-      console.log('Close button mousedown');
-      e.preventDefault();
-      e.stopPropagation();
-      closeModal();
-    });
-  } else {
-    console.error('Close button not found!');
-  }
+function closeEditModal() {
+  editModal.style.display = 'none';
+  editForm.reset();
+}
 
-  // Open modal when edit avatar is clicked
-  if (editAvatar) {
-    editAvatar.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openProfileModal();
-    });
-  }
+function openProfileImageModal() {
+  profileImageModal.style.display = 'flex';
+  imagePreview.style.display = 'none';
+}
 
-  // Open modal when change profile button is clicked
-  if (changeProfileBtn) {
-    changeProfileBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openProfileModal();
-    });
-  }
+function closeProfileImageModal() {
+  profileImageModal.style.display = 'none';
+  profileImageForm.reset();
+  imagePreview.style.display = 'none';
+}
 
-  // Open modal when profile overlay is clicked
-  if (profileOverlay) {
-    profileOverlay.addEventListener('click', (e) => {
-      e.stopPropagation();
-      openProfileModal();
-    });
-  }
+// ==============================
+// FORM HANDLERS
+// ==============================
+if (editForm) {
+  editForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+  let newValue = '';
+  let isValid = true;
+  let errorMessage = '';
 
-  // Close modal when clicking outside
-  if (profileImageModal) {
-    profileImageModal.addEventListener('click', (e) => {
-      if (e.target === profileImageModal) {
-        console.log('Modal overlay clicked');
-        closeModal();
+  switch (currentField) {
+    case 'name':
+      newValue = fieldInput.value.trim();
+      if (newValue.length < 2) {
+        isValid = false;
+        errorMessage = 'Name must be at least 2 characters long';
       }
-    });
+      break;
+    case 'password':
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+      if (password.length < 6) {
+        isValid = false;
+        errorMessage = 'Password must be at least 6 characters long';
+      } else if (password !== confirmPassword) {
+        isValid = false;
+        errorMessage = 'Passwords do not match';
+      } else {
+        newValue = password;
+      }
+      break;
+    case 'contact':
+      newValue = fieldInput.value.trim();
+      const phoneRegex = /^[0-9+\-\s()]+$/;
+      if (!phoneRegex.test(newValue) || newValue.length < 10) {
+        isValid = false;
+        errorMessage = 'Please enter a valid contact number';
+      }
+      break;
+    case 'email':
+      newValue = fieldInput.value.trim();
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(newValue)) {
+        isValid = false;
+        errorMessage = 'Please enter a valid email address';
+      }
+      break;
   }
 
-  // Escape key to close modal
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && profileImageModal && !profileImageModal.hasAttribute('hidden')) {
-      console.log('Escape key pressed');
-      closeModal();
-    }
+  if (!isValid) {
+    showNotification(errorMessage, 'error');
+    return;
+  }
+
+  updateProfileField(currentField, newValue);
   });
+}
 
-  // Upload image button
-  if (uploadImageBtn) {
-    uploadImageBtn.addEventListener('click', () => {
-      console.log('Upload button clicked');
-      profileImageInput.click();
-    });
+if (profileImageForm) {
+  profileImageForm.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const file = profileImageInput.files[0];
+  if (!file) {
+    showNotification('Please select an image', 'error');
+    return;
   }
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+  if (!allowedTypes.includes(file.type)) {
+    showNotification('Invalid image file type', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showNotification('Image size must be less than 5MB', 'error');
+    return;
+  }
+  uploadProfileImage(file);
+  });
+}
 
-  // Handle file selection
-  if (profileImageInput) {
-    profileImageInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.type.startsWith('image/')) {
-          selectedImageFile = file;
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            previewImage.src = e.target.result;
-            imagePreview.style.display = 'block';
-          };
-          reader.readAsDataURL(file);
-        } else {
-          showToast('Please select a valid image file');
+// ==============================
+// PROFILE UPDATE FUNCTIONS
+// ==============================
+function updateProfileField(field, value) {
+  showNotification('Updating...', 'info');
+  setTimeout(() => {
+    const infoRows = document.querySelectorAll('.info-row');
+    infoRows.forEach(row => {
+      const label = row.querySelector('.info-label').textContent.toLowerCase();
+      if ((field === 'name' && label.includes('name')) ||
+        (field === 'password' && label.includes('password')) ||
+        (field === 'contact' && label.includes('contact')) ||
+        (field === 'email' && label.includes('email'))) {
+        const valueElement = row.querySelector('.info-value');
+        if (valueElement) {
+          valueElement.textContent = field === 'password' ? '- ••••••••' : '- ' + value;
         }
       }
     });
+    closeEditModal();
+    showNotification('Profile updated successfully!', 'success');
+  }, 1000);
+}
+
+function uploadProfileImage(file) {
+  showNotification('Uploading image...', 'info');
+  setTimeout(() => {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const profilePicture = document.querySelector('.profile-picture');
+      if (profilePicture) {
+        profilePicture.innerHTML = `<img src="${e.target.result}" alt="Profile" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+        // Save to localStorage for supervisor
+        localStorage.setItem('supervisorProfileImage', e.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+    closeProfileImageModal();
+    showNotification('Profile image updated successfully!', 'success');
+  }, 1500);
+}
+
+// ==============================
+// NOTIFICATION SYSTEM
+// ==============================
+function showNotification(message, type = 'info') {
+  const existing = document.querySelectorAll('.notification');
+  existing.forEach(n => n.remove());
+
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <span class="notification-message">${message}</span>
+      <button class="notification-close">&times;</button>
+    </div>
+  `;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: ${getNotificationColor(type)};
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    max-width: 400px;
+    animation: slideIn 0.3s ease-out;
+  `;
+  document.body.appendChild(notification);
+  
+  const closeBtn = notification.querySelector('.notification-close');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => notification.remove());
+  }
+  
+  setTimeout(() => {
+    if (notification && notification.parentNode) {
+      notification.remove();
+    }
+  }, 5000);
+}
+
+function getNotificationColor(type) {
+  switch (type) {
+    case 'success': return '#28a745';
+    case 'error': return '#dc3545';
+    case 'warning': return '#ffc107';
+    default: return '#17a2b8';
+  }
+}
+
+const style = document.createElement('style');
+style.textContent = `
+@keyframes slideIn { from {transform:translateX(100%);opacity:0;} to {transform:translateX(0);opacity:1;} }
+.notification-content {display:flex;justify-content:space-between;align-items:center;}
+.notification-close {background:none;border:none;color:white;font-size:18px;cursor:pointer;margin-left:10px;}
+`;
+document.head.appendChild(style);
+
+// ==============================
+// PROFILE IMAGE INITIALIZATION
+// ==============================
+function initializeProfileImage() {
+  // Add event listener for Change Profile Image button
+  const changeProfileImageBtn = document.getElementById('changeProfileImageBtn');
+  if (changeProfileImageBtn) {
+    changeProfileImageBtn.addEventListener('click', openProfileImageModal);
+  }
+  
+  // Add event listener for Remove Image button
+  const removeImageBtn = document.getElementById('removeImageBtn');
+  if (removeImageBtn) {
+    removeImageBtn.addEventListener('click', function() {
+      const profilePicture = document.querySelector('.profile-picture');
+      if (profilePicture) {
+        profilePicture.innerHTML = '<span class="profile-icon">👤</span>';
+      }
+      localStorage.removeItem('supervisorProfileImage');
+      closeProfileImageModal();
+      showNotification('Profile image removed', 'success');
+    });
   }
 
-  // Save image
-  if (saveImageBtn) {
-    saveImageBtn.addEventListener('click', () => {
-      if (selectedImageFile) {
+  // Initialize profile image functionality
+  if (profileImageInput) {
+    profileImageInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (file && file.type.startsWith("image/")) {
         const reader = new FileReader();
         reader.onload = (e) => {
-          profileImage.src = e.target.result;
-          profileImage.style.display = 'block';
-          profileIcon.style.display = 'none';
-          
-          // Save to localStorage for persistence
-          localStorage.setItem('supervisorProfileImage', e.target.result);
-          
-          showToast('Profile image updated successfully');
-          closeModal();
+          if (previewImg) {
+            previewImg.src = e.target.result;
+            if (imagePreview) {
+              imagePreview.style.display = "block";
+            }
+          }
+          selectedImageFile = file;
         };
-        reader.readAsDataURL(selectedImageFile);
+        reader.readAsDataURL(file);
+      } else {
+        showNotification("Please select a valid image file", "error");
       }
     });
   }
 
-  // Cancel image
-  if (cancelImageBtn) {
-    cancelImageBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (imagePreview) {
-        imagePreview.style.display = 'none';
+  // Add click outside modal to close
+  window.addEventListener('click', function(e) {
+    if (e.target === editModal) {
+      closeEditModal();
+    }
+    if (e.target === profileImageModal) {
+      closeProfileImageModal();
+    }
+  });
+  
+  // Close modal with Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      if (editModal && editModal.style.display === 'flex') {
+        closeEditModal();
       }
-      selectedImageFile = null;
-      if (profileImageInput) {
-        profileImageInput.value = '';
+      if (profileImageModal && profileImageModal.style.display === 'flex') {
+        closeProfileImageModal();
       }
-      console.log('Cancel button clicked');
-    });
-  }
+    }
+  });
 
-  // Use default icon
-  if (useDefaultBtn) {
-    useDefaultBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (profileImage) {
-        profileImage.style.display = 'none';
-      }
-      if (profileIcon) {
-        profileIcon.style.display = 'block';
-      }
-      localStorage.removeItem('supervisorProfileImage');
-      showToast('Using default profile icon');
-      closeModal();
-    });
-  }
-
-  // Remove image
-  if (removeImageBtn) {
-    removeImageBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (profileImage) {
-        profileImage.style.display = 'none';
-      }
-      if (profileIcon) {
-        profileIcon.style.display = 'block';
-      }
-      localStorage.removeItem('supervisorProfileImage');
-      showToast('Profile image removed');
-      closeModal();
-    });
-  }
-
-  // Load saved profile image on page load
-  const savedImage = localStorage.getItem('supervisorProfileImage');
+  // Load saved image from localStorage
+  const savedImage = localStorage.getItem("supervisorProfileImage");
   if (savedImage) {
-    profileImage.src = savedImage;
-    profileImage.style.display = 'block';
-    profileIcon.style.display = 'none';
+    const profilePicture = document.querySelector('.profile-picture');
+    if (profilePicture) {
+      profilePicture.innerHTML = `<img src="${savedImage}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    }
   }
 }
 
-// Toast helper
-function showToast(message){
-  const toast=document.getElementById('toast');
-  if(!toast) return;
-  toast.textContent=message;
-  toast.classList.add('show');
-  setTimeout(()=>toast.classList.remove('show'),2500);
-}
-
-// Wire actions after DOM ready
-document.addEventListener('DOMContentLoaded',()=>{
-  // Initialize profile image functionality
+// ==============================
+// INITIALIZATION
+// ==============================
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Profile page loaded successfully!');
   initializeProfileImage();
-
-  // Logout
-  const logoutBtn=document.getElementById('logoutBtn');
-  if(logoutBtn){
-    logoutBtn.addEventListener('click',()=>{
-      showToast('You have been logged out.');
-    });
-  }
-
-     // Inline edits
-   document.querySelectorAll('.icon-btn,[data-edit]').forEach(btn=>{
-     btn.addEventListener('click',()=>{
-       const key=btn.getAttribute('data-edit');
-       if(!key) return;
-       const map={
-         name:{label:'Mobile Rider Name', el:'#nameValue'},
-         password:{label:'Password', el:'#passwordValue', type:'password'},
-         contact:{label:'Contact Number', el:'#contactValue'},
-         email:{label:'Email', el:'#emailValue'}
-       };
-       const entry=map[key];
-       if(!entry) return;
-       const valueEl=document.querySelector(entry.el);
-       
-       if(entry.type === 'password') {
-         // Handle password change with confirmation
-         const currentPassword = prompt('Enter current password:');
-         if(currentPassword === null) return;
-         
-         // In a real app, you'd verify against stored password
-         if(currentPassword !== 'current123') { // Demo password
-           showToast('Current password is incorrect');
-           return;
-         }
-         
-         const newPassword = prompt('Enter new password (min 8 characters):');
-         if(newPassword === null) return;
-         
-         if(newPassword.length < 8) {
-           showToast('Password must be at least 8 characters long');
-           return;
-         }
-         
-         const confirmPassword = prompt('Confirm new password:');
-         if(confirmPassword === null) return;
-         
-         if(newPassword !== confirmPassword) {
-           showToast('Passwords do not match');
-           return;
-         }
-         
-         if(valueEl) { 
-           valueEl.textContent = '- ••••••••'; 
-         }
-         showToast('Password updated successfully');
-       } else {
-         // Handle regular field updates
-         const current = valueEl ? valueEl.textContent.replace(/^\s*-\s*/,'').trim() : '';
-         const next = prompt(`Update ${entry.label}:`, current);
-         if(next !== null){
-           if(valueEl){ valueEl.textContent = `- ${next.trim()}`; }
-           showToast(`${entry.label} updated`);
-         }
-       }
-     });
-   });
 });
+
+window.openEditModal = openEditModal;
+window.closeEditModal = closeEditModal;
+window.openProfileImageModal = openProfileImageModal;
+window.closeProfileImageModal = closeProfileImageModal;
