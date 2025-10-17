@@ -2,7 +2,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/profile_style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <main class="main-content">
     <div class="profile-container">
@@ -14,10 +13,10 @@
             <!-- Profile Picture Section -->
             <div class="profile-picture-section">
                 <div class="profile-picture">
-                    <i class="fas fa-user profile-icon"></i>
+                    <span class="profile-icon">👤</span>
                 </div>
                 <button class="change-profile-btn" id="changeProfileImageBtn">
-                    <i class="fas fa-camera"></i>
+                    <span>📷</span>
                     Change Profile Image
                 </button>
             </div>
@@ -32,7 +31,7 @@
                         Change Name
                     </button>
                     <button class="edit-icon-btn">
-                        <i class="fas fa-pen"></i>
+                        <span>✏️</span>
                     </button>
                 </div>
 
@@ -44,7 +43,7 @@
                         Change Password
                     </button>
                     <button class="edit-icon-btn">
-                        <i class="fas fa-pen"></i>
+                        <span>✏️</span>
                     </button>
                 </div>
 
@@ -56,7 +55,7 @@
                         Change Contact No
                     </button>
                     <button class="edit-icon-btn">
-                        <i class="fas fa-pen"></i>
+                        <span>✏️</span>
                     </button>
                 </div>
 
@@ -68,7 +67,7 @@
                         Change Email
                     </button>
                     <button class="edit-icon-btn">
-                        <i class="fas fa-pen"></i>
+                        <span>✏️</span>
                     </button>
                 </div>
 
@@ -87,7 +86,7 @@
             <div class="modal-header">
                 <h3 id="modalTitle">Edit Information</h3>
                 <button class="close-btn" onclick="closeEditModal()">
-                    <i class="fas fa-times"></i>
+                    <span>×</span>
                 </button>
             </div>
             <form id="editForm">
@@ -113,7 +112,7 @@
             <div class="modal-header">
                 <h3>Change Profile Image</h3>
                 <button class="close-btn" onclick="closeProfileImageModal()">
-                    <i class="fas fa-times"></i>
+                    <span>×</span>
                 </button>
             </div>
             <form id="profileImageForm" enctype="multipart/form-data">
