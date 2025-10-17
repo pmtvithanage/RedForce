@@ -5,106 +5,136 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- Content will be loaded here -->
-<section class="settings-wrapper">
-    <div class="profile-section">
-        <div class="profile-circle">
-            <img id="profileImage" src="<?php echo URL_ROOT; ?>/img/default-avatar.png" alt="Profile" style="display: none;">
-            <i id="profileIcon" class="fas fa-user"></i>
-            <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
-            
-            <!-- Enhanced Change Profile Picture Icon -->
-            <div class="profile-overlay" id="profileOverlay">
-                <div class="change-picture-icon">
-                    <i class="fas fa-camera"></i>
-                    <span>Change Picture</span>
-                </div>
-            </div>
-            
-            <button class="edit-avatar" id="editAvatar" title="Change Profile Picture">
-                <i class="fas fa-edit"></i>
-            </button>
-        </div>
+ <main class="main-content">
+    <div class="profile-container">
         
-        <!-- Change Profile Picture Button -->
-       
-    
-
-                <div class="settings-card">
-                    <div class="setting-row">
-                        <label>Care Taker Name</label>
-                        <div class="value" id="nameValue">- Abesekara</div>
-                        <button class="ghost-btn" data-edit="name"><span>Change Name</span></button>
-                        <button class="icon-btn" data-edit="name" title="Edit"><i class="fas fa-pen"></i></button>
-                    </div>
-
-                    <div class="setting-row">
-                        <label>Password</label>
-                        <div class="value" id="passwordValue">- ••••••••</div>
-                        <button class="ghost-btn" data-edit="password"><span>Change Password</span></button>
-                        <button class="icon-btn" data-edit="password" title="Edit"><i class="fas fa-pen"></i></button>
-                    </div>
-
-                    <div class="setting-row">
-                        <label>Contact Number</label>
-                        <div class="value" id="contactValue">- 0112 112 112</div>
-                        <button class="danger-btn" data-edit="contact"><span>Change Contact No</span></button>
-                        <button class="icon-btn" data-edit="contact" title="Edit"><i class="fas fa-pen"></i></button>
-                    </div>
-
-                    <div class="setting-row">
-                        <label>Email</label>
-                        <div class="value" id="emailValue">- abesekara@hotmail.com</div>
-                        <button class="primary-btn" data-edit="email"><span>Change Email</span></button>
-                        <button class="icon-btn" data-edit="email" title="Edit"><i class="fas fa-pen"></i></button>
-                    </div>
-
-                    <div class="setting-row read-only">
-                        <label>Address</label>
-                        <div class="value" id="addressValue">- 123 Main Street, Colombo 01, Sri Lanka</div>
-                    </div>
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Profile Picture Section -->
+            <div class="profile-picture-section">
+                <div class="profile-picture">
+                    <span class="profile-icon">👤</span>
                 </div>
-            </section>
-        </main>
-    </div>
-
-    <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <div class="backdrop" id="backdrop" hidden></div>
-
-    <!-- Profile Image Modal -->
-    <div class="modal-overlay" id="profileImageModal" hidden>
-        <div class="modal">
-            <div class="modal-header">
-                <h2>Change Profile Picture</h2>
-                <button type="button" class="modal-close" id="closeModalBtn" title="Close">
-                    <i class="fas fa-times"></i>
+                <button class="change-profile-btn" id="changeProfileImageBtn">
+                    <span>📷</span>
+                    Change Profile Image
                 </button>
             </div>
-            <div class="modal-content">
-                <div class="upload-options">
-                    <button class="upload-option" id="uploadImageBtn">
-                        <i class="fas fa-upload"></i>
-                        <span>Upload Image</span>
+
+            <!-- Profile Information -->
+            <div class="profile-info-section">
+                <!-- Care Taker Name -->
+                <div class="info-row">
+                    <div class="info-label">Care Taker Name</div>
+                    <div class="info-value">- Abesekara</div>
+                    <button class="change-btn" onclick="openEditModal('name', 'Abesekara')">
+                        Change Name
                     </button>
-                    <button class="upload-option" id="useDefaultBtn">
-                        <i class="fas fa-user"></i>
-                        <span>Use Default Icon</span>
-                    </button>
-                    <button class="upload-option" id="removeImageBtn">
-                        <i class="fas fa-trash"></i>
-                        <span>Remove Image</span>
+                    <button class="edit-icon-btn">
+                        <span>✏</span>
                     </button>
                 </div>
-                <div class="image-preview" id="imagePreview" style="display: none;">
-                    <img id="previewImage" src="" alt="Preview">
-                    <div class="preview-actions">
-                        <button class="btn-save" id="saveImageBtn">Save</button>
-                        <button class="btn-cancel" id="cancelImageBtn">Cancel</button>
-                    </div>
+
+                <!-- Password -->
+                <div class="info-row">
+                    <div class="info-label">Password</div>
+                    <div class="info-value">- ••••••••</div>
+                    <button class="change-btn" onclick="openEditModal('password', '')">
+                        Change Password
+                    </button>
+                    <button class="edit-icon-btn">
+                        <span>✏</span>
+                    </button>
+                </div>
+
+                <!-- Contact Number -->
+                <div class="info-row">
+                    <div class="info-label">Contact Number</div>
+                    <div class="info-value">- 0112 112 112</div>
+                    <button class="change-btn" onclick="openEditModal('contact', '0112 112 112')">
+                        Change Contact No
+                    </button>
+                    <button class="edit-icon-btn">
+                        <span>✏</span>
+                    </button>
+                </div>
+
+                <!-- Email -->
+                <div class="info-row">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">- abesekara@hotmail.com</div>
+                    <button class="change-btn" onclick="openEditModal('email', 'abesekara@hotmail.com')">
+                        Change Email
+                    </button>
+                    <button class="edit-icon-btn">
+                        <span>✏</span>
+                    </button>
+                </div>
+
+                <!-- Address -->
+                <div class="info-row">
+                    <div class="info-label">Address</div>
+                    <div class="info-value">- 123 Main Street, Colombo 01, Sri Lanka</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Edit Information</h3>
+                <button class="close-btn" onclick="closeEditModal()">
+                    <span>×</span>
+                </button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label id="fieldLabel">Field</label>
+                        <input type="text" id="fieldInput" required>
+                        <input type="password" id="passwordInput" style="display: none;">
+                        <input type="password" id="confirmPasswordInput" style="display: none;" placeholder="Confirm Password">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Image Modal -->
+    <div id="profileImageModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Change Profile Image</h3>
+                <button class="close-btn" onclick="closeProfileImageModal()">
+                    <span>×</span>
+                </button>
+            </div>
+            <form id="profileImageForm" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Select New Image</label>
+                        <input type="file" id="profileImageInput" accept="image/*" required>
+                        <div class="image-preview" id="imagePreview" style="display: none;">
+                            <img id="previewImg" src="" alt="Preview">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeProfileImageModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Upload Image</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-    <script src="<?php echo URL_ROOT; ?>/js/supervisor/profile.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/supervisor/profile.js"></script>
+
