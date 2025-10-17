@@ -88,4 +88,77 @@ class M_admin {
     public function getLastInsertId() {
         return $this->db->lastInsertId();
     }
+
+    // ==============================
+    // Leave Request Management
+    // ==============================
+    
+    // Get all pending leave requests
+    public function getPendingLeaveRequests() {
+        $this->db->query("
+            SELECT lr.*, u.name as caretaker_name, u.email as caretaker_email
+            FROM leave_requests lr
+            JOIN users u ON lr.caretaker_id = u.id
+            WHERE lr.status = 'Pending'
+            ORDER BY lr.created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    // Get leave request by ID
+    public function getLeaveRequestById($id) {
+        $this->db->query("
+            SELECT lr.*, u.name as caretaker_name, u.email as caretaker_email
+            FROM leave_requests lr
+            JOIN users u ON lr.caretaker_id = u.id
+            WHERE lr.id = :id
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+// Approve leave request
+public function approveLeaveRequest($id, $admin_id) {
+    $this->db->query("
+        UPDATE leave_requests 
+        SET status = 'Approved', 
+            reviewed_by = :admin_id, 
+            reviewed_at = NOW()
+        WHERE id = :id
+    ");
+    $this->db->bind(':id', $id);
+    $this->db->bind(':admin_id', $admin_id);
+    $this->db->execute();
+    return $this->db->rowCount() > 0;
+}
+
+// Reject leave request
+public function rejectLeaveRequest($id, $admin_id, $reason) {
+    $this->db->query("
+        UPDATE leave_requests 
+        SET status = 'Rejected', 
+            admin_response = :reason,
+            reviewed_by = :admin_id, 
+            reviewed_at = NOW()
+        WHERE id = :id
+    ");
+    $this->db->bind(':id', $id);
+    $this->db->bind(':admin_id', $admin_id);
+    $this->db->bind(':reason', $reason);
+    $this->db->execute();
+    return $this->db->rowCount() > 0;
+}
+
+    // Get leave request statistics
+    public function getLeaveRequestStats() {
+        $this->db->query("
+            SELECT 
+                COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending,
+                COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved,
+                COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected,
+                COUNT(*) as total
+            FROM leave_requests
+        ");
+        return $this->db->single();
+    }
 }
