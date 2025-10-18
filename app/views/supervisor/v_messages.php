@@ -1,11 +1,9 @@
-<?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
-
+<?php
 <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/Messages.style.css">
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/message_style.css">
 
-
-    <!-- Content will be loaded here -->
-    <div class="messages-content">
+<!-- Messages Content -->
+<div class="messages-content">
   <div class="messages-container">
     <div id="messagesList" class="messages-list" aria-live="polite">
       <!-- Messages will be loaded by JavaScript -->
@@ -52,6 +50,4 @@
 </div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
-<script src="<?= URL_ROOT ?>/js/supervisor/messages.js"></script>
-
-<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+<script src="<?= URL_ROOT ?>/js/caretaker/messages.js"></script>

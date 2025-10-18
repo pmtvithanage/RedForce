@@ -31,35 +31,7 @@ body {
   margin: 0 auto;
 }
 
-/* Messages list 
-.messages-page {
-  display: flex;
-  justify-content: center;
-  padding: 24px;
-}
-
-.messages-card {
-  width: min(680px, 96vw);
-  background: #fff;
-  border: 1px solid #f0d6dc;
-  border-radius: 12px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, .06);
-  overflow: hidden;
-}
-
-.messages-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  background: #fff;
-  border-bottom: 1px solid #f0d6dc;
-}
-
-.messages-header h2 {
-  font-size: 18px;
-}*/
-
+/* Messages list */
 .messages-list {
   display: flex;
   flex-direction: column;
