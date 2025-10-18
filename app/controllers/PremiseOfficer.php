@@ -2,10 +2,13 @@
 class PremiseOfficer extends Controller {
     private $premiseOfficerModel;
     private $userModel;
+    private $advertisementModel;
 
     public function __construct() {
         // Check if user is logged in and has premise officer role
         requireAuth('premise officer');
+
+        $this->advertisementModel = $this->model('M_advertisements');
         $this->premiseOfficerModel = $this->model('M_premiseofficer');
         $this->userModel = $this->model('M_users');
     }
@@ -17,9 +20,15 @@ class PremiseOfficer extends Controller {
 
     // Dashboard action
     public function dashboard() {
+        // Fetch advertisements based on role dynamically
+        $role = 'premise officer';
+        $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+
         $data = [
             'title' => 'Dashboard',
+            'advertisements' => $advertisements
         ];
+
         $this->view('premiseofficer/v_dashboard', $data);
     }
 
@@ -30,6 +39,7 @@ class PremiseOfficer extends Controller {
         ];
         $this->view('premiseofficer/v_schedule', $data);
     }
+
     // Requests action
     public function requests() {
         $data = [
@@ -38,3 +48,4 @@ class PremiseOfficer extends Controller {
         $this->view('premiseofficer/v_requests', $data);
     }
 }
+?>

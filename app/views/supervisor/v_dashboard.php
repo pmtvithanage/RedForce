@@ -6,7 +6,7 @@
 
     <!-- Dashboard Header -->
    
-
+    
     <!-- Content Grid -->
     <section class="content-grid">
         <!-- Profile Card -->
@@ -106,6 +106,8 @@
     </section>
         </main>
     </div>
+
+    
      
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
