@@ -5,50 +5,53 @@
 
 
     <!-- Content will be loaded here -->
-    <main class="main">
-			<header class="main-header">
-			</header>
-
-			<section class="chat-card">
-				<!-- Chat role selector (upper right) -->
-				<select class="chat-role-select" aria-label="Select chat role">
-					<option>Admin Panel</option>
-					<option>Premise Officer</option>
-					<option>Client</option>
-					<option>Caretaker</option>
-				</select>
-				<div class="messages" id="messages">
-					<div class="msg msg-in">
-						<div class="bubble">
-							<p>Good Morning!!</p>
-							<p>Please Ensure that all security officers a site a have submitted their attendence by 9.00 AM.</p>
-							<p>Also, don't forget to update the incident report If there were any issues during night shift</p>
-							<p>Let me know once it's done</p>
-							<p>Thank You</p>
-						</div>
-					</div>
-					<div class="msg msg-out">
-						<div class="bubble">Sure,I will take care of it.</div>
-					</div>
-				</div>
-
-				<div class="composer">
-					<div class="input-wrap">
-						<textarea placeholder="Type Your message............"></textarea>
-						<div class="row">
-							<button class="attach"><i class="fas fa-paperclip"></i> Attach File</button>
-							<button class="send">Send</button>
-						</div>
-					</div>
-					
-				</div>
-			</section>
-    </main>
+    <div class="messages-content">
+  <div class="messages-container">
+    <div id="messagesList" class="messages-list" aria-live="polite">
+      <!-- Messages will be loaded by JavaScript -->
     </div>
+  </div>
+  <div id="chatBackdrop" class="backdrop" hidden></div>
+  <div id="chatModal" class="chat-modal" role="dialog" aria-modal="true" aria-labelledby="chatTitle" hidden>
+    <div class="chat-card">
+      <header class="chat-header">
+        <div class="title-wrap">
+          <h2 id="chatTitle">Messages</h2>
+          <p class="subtitle" id="chatSubtitle">Admin - Red Force</p>
+        </div>
+        <button id="closeChatBtn" class="icon-btn" aria-label="Close">✕</button>
+      </header>
 
-    <div class="backdrop" id="backdrop" hidden></div>
+      <div id="chatMessages" class="messages" aria-live="polite"></div>
 
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+      <footer class="composer">
+        <div class="input-wrap">
+          <input id="chatInput" type="text" placeholder="Type a message" autocomplete="off" />
+          <button id="sendBtn" class="send" aria-label="Send">➤</button>
+          <button id="micBtn" class="mic" aria-label="Voice"><span>🎤</span></button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <template id="messageItemTpl">
+    <button class="message-item" type="button">
+      <div class="avatar" data-initials="A"></div>
+      <div class="content">
+        <div class="top-row">
+          <span class="sender">Sender</span>
+          <time class="time" datetime="">Now</time>
+        </div>
+        <div class="subject">Subject line</div>
+        <div class="preview">Message preview...</div>
+      </div>
+    </button>
+  </template>
+</div>
+</main>
+</div>
+
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<script src="<?= URL_ROOT ?>/js/supervisor/messages.js"></script>
+
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-<script src="<?php echo URL_ROOT; ?>/js/supervisor/messages.js"></script>
