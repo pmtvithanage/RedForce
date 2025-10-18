@@ -47,5 +47,20 @@ class PremiseOfficer extends Controller {
         ];
         $this->view('premiseofficer/v_requests', $data);
     }
+
+    // Profile action
+    public function profile() {
+        // Check if user is logged in
+        if (!isset($_SESSION['user_id'])) {
+            redirect('login');
+        }
+
+        $data = [
+            'title' => 'Profile'
+        ];
+
+        // Load view
+        $this->view('premiseofficer/v_profile', $data);
+    }
 }
 ?>
