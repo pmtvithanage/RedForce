@@ -1,4 +1,3 @@
-<?php
 <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/message_style.css">
 
