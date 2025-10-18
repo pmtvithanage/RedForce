@@ -2,10 +2,12 @@
 class Supervisor extends Controller {
     private $supervisorModel;
     private $userModel;
+    private $advertisementModel;
 
     public function __construct() {
         // Check if user is logged in and has supervisor role
         requireAuth('supervisor');
+        $this->advertisementModel = $this->model('M_advertisements');
         $this->supervisorModel = $this->model('M_supervisor');
         $this->userModel = $this->model('M_users');
     }
@@ -17,8 +19,12 @@ class Supervisor extends Controller {
 
     // dashboard
     public function dashboard() {
+        $role = 'supervisor';
+        $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+
         $data = [
             'title' => 'Dashboard',
+            'advertisements' => $advertisements
         ];
         $this->view('supervisor/v_dashboard', $data);
     }

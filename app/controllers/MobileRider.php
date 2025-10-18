@@ -3,11 +3,13 @@ class MobileRider extends Controller
 {
     private $mobileRiderModel;
     private $userModel;
+    private $advertisementModel;
 
     public function __construct()
     {
         // Check if user is logged in and has mobile rider role
         requireAuth('mobile rider');
+        $this->advertisementModel = $this->model('M_advertisements');
         $this->mobileRiderModel = $this->model('M_mobileRider');
         $this->userModel = $this->model('M_users');
     }
@@ -21,9 +23,14 @@ class MobileRider extends Controller
     // Dashboard action
     public function dashboard()
     {
+        $role = 'mobile rider';
+        $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+
         $notes = $this->getNotes();
+
         $data = [
             'title' => 'Dashboard',
+            'advertisements' => $advertisements,
             'notes' => $notes,
         ];
         $this->view('mobilerider/v_dashboard', $data);

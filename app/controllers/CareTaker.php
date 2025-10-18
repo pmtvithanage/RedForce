@@ -2,10 +2,12 @@
 class Caretaker extends Controller {
     private $caretakerModel;
     private $userModel;
+    private $advertisementModel;
 
     public function __construct() {
         // Check if user is logged in and has care taker role
         requireAuth('caretaker');
+        $this->advertisementModel = $this->model('M_advertisements');
         $this->caretakerModel = $this->model('M_caretaker');
         $this->userModel = $this->model('M_users');
     }
@@ -17,8 +19,12 @@ class Caretaker extends Controller {
 
     // dashboard
     public function dashboard() {
+        $role = 'caretaker';
+        $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+
         $data = [
             'title' => 'Dashboard',
+            'advertisements' => $advertisements
         ];
         $this->view('caretaker/v_dashboard', $data);
     }
