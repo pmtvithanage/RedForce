@@ -1,299 +1,248 @@
-// RED FORCE - Feedback System
-// JavaScript functionality for the feedback interface
+// Store original data for filtering
+let originalData = [];
+let currentData = [];
+let currentRating = 0;
 
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the feedback system
-    const FeedbackSystem = {
-        currentRating: 0,
-        selectedOfficer: null,
-        
-        // DOM elements
-        elements: {
-            starRating: document.getElementById('starRating'),
-            description: document.getElementById('description'),
-            submitBtn: document.getElementById('submitFeedback'),
-            ratingValue: document.querySelector('.rating-value')
-        },
-
-        // Initialize the system
-        init() {
-            this.bindEvents();
-            this.loadOfficerData();
-            this.setupStarRating();
-            this.setupNavigation();
-        },
-
-        // Bind event listeners
-        bindEvents() {
-            // Submit feedback
-            this.elements.submitBtn.addEventListener('click', () => this.submitFeedback());
-            
-            // Auto-resize textarea
-            this.elements.description.addEventListener('input', () => this.autoResizeTextarea());
-            
-            // Form validation
-            this.elements.description.addEventListener('input', () => this.validateForm());
-        },
-
-        // Setup star rating functionality
-        setupStarRating() {
-            const stars = this.elements.starRating.querySelectorAll('i');
-            
-            stars.forEach((star, index) => {
-                star.addEventListener('click', () => this.setRating(index + 1));
-                star.addEventListener('mouseenter', () => this.highlightStars(index + 1));
-                star.addEventListener('mouseleave', () => this.resetStarHighlight());
-            });
-        },
-
-        // Set rating
-        setRating(rating) {
-            this.currentRating = rating;
-            this.updateStarDisplay();
-            this.validateForm();
-        },
-
-        // Highlight stars on hover
-        highlightStars(rating) {
-            const stars = this.elements.starRating.querySelectorAll('i');
-            stars.forEach((star, index) => {
-                if (index < rating) {
-                    star.style.color = '#e91e63';
-                } else {
-                    star.style.color = '#ddd';
-                }
-            });
-        },
-
-        // Reset star highlight
-        resetStarHighlight() {
-            this.updateStarDisplay();
-        },
-
-        // Update star display
-        updateStarDisplay() {
-            const stars = this.elements.starRating.querySelectorAll('i');
-            stars.forEach((star, index) => {
-                if (index < this.currentRating) {
-                    star.style.color = '#e91e63';
-                    star.classList.add('filled');
-                } else {
-                    star.style.color = '#ddd';
-                    star.classList.remove('filled');
-                }
-            });
-        },
-
-        // Auto-resize textarea
-        autoResizeTextarea() {
-            const textarea = this.elements.description;
-            textarea.style.height = 'auto';
-            textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
-        },
-
-        // Validate form
-        validateForm() {
-            const description = this.elements.description.value.trim();
-            const isValid = description.length > 0 && this.currentRating > 0;
-            
-            this.elements.submitBtn.disabled = !isValid;
-            this.elements.submitBtn.style.opacity = isValid ? '1' : '0.6';
-            this.elements.submitBtn.style.cursor = isValid ? 'pointer' : 'not-allowed';
-        },
-
-        // Submit feedback
-        submitFeedback() {
-            const description = this.elements.description.value.trim();
-            
-            if (!description || this.currentRating === 0) {
-                this.showNotification('Please fill in all required fields', 'error');
-                return;
-            }
-
-            // Create feedback object
-            const feedback = {
-                officerId: 'PF231',
-                officerName: 'M.W.Viviane Perera',
-                rating: this.currentRating,
-                description: description,
-                timestamp: new Date(),
-                submittedBy: 'Supervisor'
-            };
-
-            // Simulate API call
-            this.showLoadingState();
-            
-            setTimeout(() => {
-                this.hideLoadingState();
-                this.showNotification('Feedback submitted successfully!', 'success');
-                this.resetForm();
-                this.updateOfficerRating();
-            }, 1500);
-        },
-
-        // Show loading state
-        showLoadingState() {
-            this.elements.submitBtn.textContent = 'Submitting...';
-            this.elements.submitBtn.disabled = true;
-        },
-
-        // Hide loading state
-        hideLoadingState() {
-            this.elements.submitBtn.textContent = 'Submit Feedback';
-            this.elements.submitBtn.disabled = false;
-        },
-
-        // Reset form
-        resetForm() {
-            this.elements.description.value = '';
-            this.currentRating = 0;
-            this.updateStarDisplay();
-            this.validateForm();
-            this.autoResizeTextarea();
-        },
-
-        // Update officer rating (simulate)
-        updateOfficerRating() {
-            const currentRating = parseInt(this.elements.ratingValue.textContent);
-            const newRating = Math.floor((currentRating + this.currentRating) / 2);
-            this.elements.ratingValue.textContent = newRating;
-            
-            // Add animation
-            this.elements.ratingValue.style.transform = 'scale(1.2)';
-            setTimeout(() => {
-                this.elements.ratingValue.style.transform = 'scale(1)';
-            }, 200);
-        },
-
-        // Show notification
-        showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification notification-${type}`;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? '#4caf50' : type === 'error' ? '#f44336' : '#2196f3'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                z-index: 1000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                animation: slideIn 0.3s ease-out;
-                max-width: 300px;
-            `;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        },
-
-        // Load officer data (simulate)
-        loadOfficerData() {
-            // In a real application, this would fetch data from an API
-            this.selectedOfficer = {
-                id: 'PF231',
-                name: 'M.W.Viviane Perera',
-                rank: 'OIC',
-                location: 'People\'s Bank PLC, No. 112, Sir Chittampalam A. Gardiner Mawatha, Colombo 2',
-                rating: 1403
-            };
-        },
-
-        // Setup navigation
-        setupNavigation() {
-            document.querySelectorAll('.menu .item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handleNavigation(item);
-                });
-            });
-        },
-
-        // Handle navigation
-        handleNavigation(item) {
-            // Remove active class from all items
-            document.querySelectorAll('.menu .item').forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            item.classList.add('active');
-            
-            const pageName = item.textContent.trim();
-            console.log(`Navigating to: ${pageName}`);
-            
-            // You can add actual navigation logic here
-            if (pageName === 'Duty Roster') {
-                // Navigate to duty roster page
-                window.location.href = 'index6.html';
-            }
-        },
-
-        // Search officers (for future functionality)
-        searchOfficers(query) {
-            // This would typically make an API call
-            console.log(`Searching for officers: ${query}`);
-        },
-
-        // Get officer details (for future functionality)
-        getOfficerDetails(officerId) {
-            // This would typically make an API call
-            console.log(`Getting details for officer: ${officerId}`);
-        }
-    };
-
-    // Add CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .rating-value {
-            transition: transform 0.2s ease;
-        }
-        
-        .submit-btn {
-            transition: all 0.2s ease;
-        }
-        
-        .submit-btn:disabled {
-            background: #ccc !important;
-            cursor: not-allowed;
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Initialize the feedback system
-    FeedbackSystem.init();
-
-    // Add some additional utility functions
-    window.FeedbackSystem = FeedbackSystem;
-
-    // Add keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + Enter to submit feedback
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-            e.preventDefault();
-            FeedbackSystem.submitFeedback();
-        }
-        
-        // Escape to reset form
-        if (e.key === 'Escape') {
-            FeedbackSystem.resetForm();
-        }
-    });
+    // Get data from PHP
+    if (typeof guardsData !== 'undefined') {
+        originalData = [...guardsData];
+        currentData = [...originalData];
+    }
+    
+    console.log('Officers page loaded');
+    console.log('Guards data:', originalData);
 });
 
-// Export for potential module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = FeedbackSystem;
+function filterBySite() {
+    const filter = document.getElementById('siteFilter').value;
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const siteCell = rows[i].querySelector('.site-info');
+        if (siteCell) {
+            const siteText = siteCell.textContent;
+            if (filter === '' || siteText === filter) {
+                rows[i].style.display = '';
+                visibleCount++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+    
+    updateGuardsCount(visibleCount);
 }
+
+function searchGuards() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    let visibleCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+        const officerName = rows[i].querySelector('.officer-name');
+        const officerId = rows[i].querySelector('.officer-id');
+        
+        if (officerName && officerId) {
+            const nameText = officerName.textContent.toLowerCase();
+            const idText = officerId.textContent.toLowerCase();
+            
+            if (nameText.includes(searchTerm) || idText.includes(searchTerm)) {
+                rows[i].style.display = '';
+                visibleCount++;
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+    
+    updateGuardsCount(visibleCount);
+}
+
+function renderTable(data) {
+    const tbody = document.getElementById('guardsTableBody');
+    if (!tbody) {
+        console.error('Table body not found');
+        return;
+    }
+    
+    tbody.innerHTML = '';
+    
+    data.forEach(guard => {
+        const row = document.createElement('tr');
+        row.className = 'guard-row';
+        row.onclick = () => openGuardModal(guard.id, guard.name, guard.rank, guard.status, guard.site);
+        
+        row.innerHTML = `
+            <td>
+                <span class="officer-id">${escapeHtml(guard.id)}</span>
+            </td>
+            <td>
+                <div class="officer-info">
+                    <div class="officer-avatar">
+                        ${guard.name.charAt(0).toUpperCase()}
+                    </div>
+                    <span class="officer-name">${escapeHtml(guard.name)}</span>
+                </div>
+            </td>
+            <td>
+                <span class="rank-badge rank-${guard.rank.toLowerCase()}">
+                    ${escapeHtml(guard.rank)}
+                </span>
+            </td>
+            <td>
+                <span class="status-badge status-${guard.status.toLowerCase().replace(' ', '-')}">
+                    ${escapeHtml(guard.status)}
+                </span>
+            </td>
+            <td>
+                <span class="site-info">${escapeHtml(guard.site)}</span>
+            </td>
+        `;
+        
+        tbody.appendChild(row);
+    });
+}
+
+function updateGuardsCount(count) {
+    const guardsCountElement = document.getElementById('guardsCount');
+    guardsCountElement.textContent = `${count} guards found`;
+}
+
+function openGuardModal(id, name, rank, status, site) {
+    console.log('Opening modal for:', name);
+    
+    // Update modal content
+    document.getElementById('modalGuardId').textContent = id;
+    document.getElementById('modalGuardName').textContent = name;
+    document.getElementById('modalGuardRank').textContent = rank;
+    document.getElementById('modalGuardSite').textContent = site;
+    
+    // Update avatar
+    document.getElementById('modalGuardAvatar').textContent = name.charAt(0).toUpperCase();
+    
+    // Update status indicator
+    const statusIndicator = document.getElementById('statusIndicator');
+    statusIndicator.className = 'status-indicator';
+    if (status.toLowerCase() === 'off duty') {
+        statusIndicator.classList.add('off-duty');
+    } else if (status.toLowerCase() === 'on break') {
+        statusIndicator.classList.add('on-break');
+    }
+    
+    // Reset rating
+    currentRating = 0;
+    updateStarRating(0);
+    document.getElementById('ratingInput').value = '';
+    
+    // Show modal
+    document.getElementById('guardModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId || 'guardModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function setRating(rating) {
+    console.log('Setting rating:', rating);
+    currentRating = rating;
+    updateStarRating(rating);
+}
+
+function updateStarRating(rating) {
+    const stars = document.querySelectorAll('.star');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+
+function saveEvaluation() {
+    const ratingText = document.getElementById('ratingInput').value;
+    
+    if (currentRating === 0) {
+        alert('Please select a star rating.');
+        return;
+    }
+    
+    if (!ratingText.trim()) {
+        alert('Please enter evaluation comments.');
+        return;
+    }
+    
+    console.log('Saving evaluation:', { rating: currentRating, text: ratingText });
+    
+    // Here you would normally send the evaluation to the server
+    alert(`Evaluation saved!\nRating: ${currentRating} stars\nComments: ${ratingText}`);
+    
+    // Close modal
+    closeModal('guardModal');
+}
+
+function exportData() {
+    // Get visible rows
+    const tableBody = document.getElementById('guardsTableBody');
+    const rows = tableBody.getElementsByTagName('tr');
+    const exportData = [];
+    
+    // Add header
+    exportData.push(['Officer ID', 'Officer Name', 'Rank', 'Status', 'Site']);
+    
+    // Add visible rows data
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i].style.display !== 'none') {
+            const officerId = rows[i].querySelector('.officer-id').textContent;
+            const officerName = rows[i].querySelector('.officer-name').textContent;
+            const rank = rows[i].querySelector('.rank-badge').textContent;
+            const status = rows[i].querySelector('.status-badge').textContent;
+            const site = rows[i].querySelector('.site-info').textContent;
+            
+            exportData.push([officerId, officerName, rank, status, site]);
+        }
+    }
+    
+    // Convert to CSV and download
+    const csvContent = exportData.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'guards_data.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Close modal when clicking outside of it
+window.onclick = function(event) {
+    const modal = document.getElementById('guardModal');
+    if (modal && event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Make functions globally available
+window.filterBySite = filterBySite;
+window.searchGuards = searchGuards;
+window.openGuardModal = openGuardModal;
+window.closeModal = closeModal;
+window.setRating = setRating;
+window.saveEvaluation = saveEvaluation;
+window.exportData = exportData;
