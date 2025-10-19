@@ -1,454 +1,366 @@
-// RED FORCE - Supervisor Communication System
-// JavaScript functionality for the communication interface
+// Sample messages data (will be replaced with server data)
+const sampleMessages = [
+  {
+    id: 1,
+    sender: 'Admin - Red Force',
+    initials: 'A',
+    subject: 'Deployment update',
+    preview: 'Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurune...',
+    time: '2h ago',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 2,
+    sender: 'John Silva',
+    initials: 'JS',
+    subject: 'Attendance notice',
+    preview: 'Officer Ravindu Fernando was absent yesterday. Please follow up.',
+    time: '5h ago',
+    timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 3,
+    sender: 'Nadi Senanayake',
+    initials: 'NS',
+    subject: 'Training docs',
+    preview: 'Officer training certificates need to be submitted by end of week.',
+    time: '1d ago',
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 4,
+    sender: 'Nishadi Dissanayake',
+    initials: 'ND',
+    subject: 'Shift schedules',
+    preview: 'Updated shift schedules for all officers have been sent to your email.',
+    time: '2d ago',
+    timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 5,
+    sender: 'Supervisor Team',
+    initials: 'ST',
+    subject: 'Site inspection report',
+    preview: 'Monthly site inspection has been completed. Please review the attached report.',
+    time: '2d ago',
+    timestamp: new Date(Date.now() - 50 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 6,
+    sender: 'HR Department',
+    initials: 'HR',
+    subject: 'Leave approval',
+    preview: 'Your leave request for next week has been approved. Enjoy your time off!',
+    time: '3d ago',
+    timestamp: new Date(Date.now() - 72 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 7,
+    sender: 'Kamal Perera',
+    initials: 'KP',
+    subject: 'Equipment maintenance',
+    preview: 'Security equipment at Site B requires urgent maintenance. Please arrange.',
+    time: '3d ago',
+    timestamp: new Date(Date.now() - 75 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 8,
+    sender: 'Admin - Red Force',
+    initials: 'A',
+    subject: 'Monthly meeting',
+    preview: 'Reminder: Monthly coordination meeting scheduled for Friday at 10:00 AM.',
+    time: '4d ago',
+    timestamp: new Date(Date.now() - 96 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 9,
+    sender: 'Saman Jayasinghe',
+    initials: 'SJ',
+    subject: 'Incident report',
+    preview: 'Minor incident reported at Gate 3. All personnel are safe, no injuries.',
+    time: '5d ago',
+    timestamp: new Date(Date.now() - 120 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 10,
+    sender: 'Finance Team',
+    initials: 'FT',
+    subject: 'Salary payment',
+    preview: 'Your salary for this month has been processed and credited to your account.',
+    time: '6d ago',
+    timestamp: new Date(Date.now() - 144 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 11,
+    sender: 'Ravi Wickramasinghe',
+    initials: 'RW',
+    subject: 'New officer onboarding',
+    preview: 'Three new officers will join next Monday. Please prepare orientation schedule.',
+    time: '6d ago',
+    timestamp: new Date(Date.now() - 150 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 12,
+    sender: 'Security Operations',
+    initials: 'SO',
+    subject: 'Emergency drill',
+    preview: 'Emergency evacuation drill scheduled for next Wednesday. All officers must participate.',
+    time: '1w ago',
+    timestamp: new Date(Date.now() - 168 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 13,
+    sender: 'Chaminda Silva',
+    initials: 'CS',
+    subject: 'Uniform replacement',
+    preview: 'Request for uniform replacement has been approved. Please collect from stores.',
+    time: '1w ago',
+    timestamp: new Date(Date.now() - 180 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 14,
+    sender: 'Admin - Red Force',
+    initials: 'A',
+    subject: 'Policy update',
+    preview: 'New security protocols have been implemented. Please review attached document.',
+    time: '1w ago',
+    timestamp: new Date(Date.now() - 192 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 15,
+    sender: 'Prasad Fernando',
+    initials: 'PF',
+    subject: 'Vehicle inspection',
+    preview: 'Company vehicle inspection completed. All vehicles passed the safety check.',
+    time: '2w ago',
+    timestamp: new Date(Date.now() - 336 * 60 * 60 * 1000).toISOString()
+  }
+];
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize the communication system
-    const CommunicationSystem = {
-        messages: [],
-        currentRole: 'Admin Panel',
-        isTyping: false,
-        
-        // DOM elements
-        elements: {
-            messagesContainer: document.getElementById('messages'),
-            textarea: document.querySelector('.input-wrap textarea'),
-            sendButton: document.querySelector('.send'),
-            attachButton: document.querySelector('.attach'),
-            roleSelect: document.querySelector('.chat-role-select'),
-            requestLeaveBtn: document.querySelector('.actions .ghost:first-child'),
-            reportIssuesBtn: document.querySelector('.actions .ghost:last-child')
-        },
+// Chat conversation data
+const chatConversations = {
+  1: [
+    { sender: 'Admin - Red Force', text: 'Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurunegala site.', time: '2h ago', isOwn: false },
+    { sender: 'You', text: 'Understood, I will coordinate with the team.', time: '1h ago', isOwn: true },
+    { sender: 'Admin - Red Force', text: 'Thank you for your prompt response.', time: '1h ago', isOwn: false }
+  ],
+  2: [
+    { sender: 'John Silva', text: 'Officer Ravindu Fernando was absent yesterday without prior notice.', time: '5h ago', isOwn: false },
+    { sender: 'You', text: 'I will follow up with Officer Fernando immediately.', time: '4h ago', isOwn: true }
+  ],
+  3: [
+    { sender: 'Nadi Senanayake', text: 'Officer training certificates need to be submitted by end of week.', time: '1d ago', isOwn: false },
+    { sender: 'You', text: 'I will collect all certificates and submit them by Friday.', time: '1d ago', isOwn: true }
+  ],
+  4: [
+    { sender: 'Nishadi Dissanayake', text: 'Updated shift schedules for all officers have been sent to your email.', time: '2d ago', isOwn: false },
+    { sender: 'You', text: 'Received. I have reviewed the schedules.', time: '2d ago', isOwn: true }
+  ],
+  5: [
+    { sender: 'Supervisor Team', text: 'Monthly site inspection has been completed. Please review the attached report.', time: '2d ago', isOwn: false },
+    { sender: 'You', text: 'Thank you. I will review and respond by tomorrow.', time: '2d ago', isOwn: true }
+  ],
+  6: [
+    { sender: 'HR Department', text: 'Your leave request for next week has been approved. Enjoy your time off!', time: '3d ago', isOwn: false },
+    { sender: 'You', text: 'Thank you very much!', time: '3d ago', isOwn: true }
+  ],
+  7: [
+    { sender: 'Kamal Perera', text: 'Security equipment at Site B requires urgent maintenance. Please arrange.', time: '3d ago', isOwn: false },
+    { sender: 'You', text: 'I will contact the maintenance team today.', time: '3d ago', isOwn: true }
+  ],
+  8: [
+    { sender: 'Admin - Red Force', text: 'Reminder: Monthly coordination meeting scheduled for Friday at 10:00 AM.', time: '4d ago', isOwn: false },
+    { sender: 'You', text: 'Confirmed. I will attend.', time: '4d ago', isOwn: true }
+  ],
+  9: [
+    { sender: 'Saman Jayasinghe', text: 'Minor incident reported at Gate 3. All personnel are safe, no injuries.', time: '5d ago', isOwn: false },
+    { sender: 'You', text: 'Good to hear everyone is safe. I will review the incident report.', time: '5d ago', isOwn: true }
+  ],
+  10: [
+    { sender: 'Finance Team', text: 'Your salary for this month has been processed and credited to your account.', time: '6d ago', isOwn: false }
+  ],
+  11: [
+    { sender: 'Ravi Wickramasinghe', text: 'Three new officers will join next Monday. Please prepare orientation schedule.', time: '6d ago', isOwn: false },
+    { sender: 'You', text: 'I will prepare the orientation program and send it for review.', time: '6d ago', isOwn: true }
+  ],
+  12: [
+    { sender: 'Security Operations', text: 'Emergency evacuation drill scheduled for next Wednesday. All officers must participate.', time: '1w ago', isOwn: false },
+    { sender: 'You', text: 'Noted. I will ensure all officers are informed.', time: '1w ago', isOwn: true }
+  ],
+  13: [
+    { sender: 'Chaminda Silva', text: 'Request for uniform replacement has been approved. Please collect from stores.', time: '1w ago', isOwn: false },
+    { sender: 'You', text: 'Thank you. I will collect it this week.', time: '1w ago', isOwn: true }
+  ],
+  14: [
+    { sender: 'Admin - Red Force', text: 'New security protocols have been implemented. Please review attached document.', time: '1w ago', isOwn: false },
+    { sender: 'You', text: 'I have reviewed the protocols and will implement them.', time: '1w ago', isOwn: true }
+  ],
+  15: [
+    { sender: 'Prasad Fernando', text: 'Company vehicle inspection completed. All vehicles passed the safety check.', time: '2w ago', isOwn: false }
+  ]
+};
 
-        // Initialize the system
-        init() {
-            this.bindEvents();
-            this.loadInitialMessages();
-            this.setupAutoResize();
-            this.setupRoleSwitching();
-        },
+// DOM elements
+let messagesList;
+let chatModal;
+let chatBackdrop;
+let closeChatBtn;
+let chatMessages;
+let chatInput;
+let sendBtn;
+let micBtn;
+let chatTitle;
+let chatSubtitle;
+let currentChatId = null;
 
-        // Bind event listeners
-        bindEvents() {
-            // Send message functionality
-            this.elements.sendButton.addEventListener('click', () => this.sendMessage());
-            this.elements.textarea.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  // Get DOM elements
+  messagesList = document.getElementById('messagesList');
+  chatModal = document.getElementById('chatModal');
+  chatBackdrop = document.getElementById('chatBackdrop');
+  closeChatBtn = document.getElementById('closeChatBtn');
+  chatMessages = document.getElementById('chatMessages');
+  chatInput = document.getElementById('chatInput');
+  sendBtn = document.getElementById('sendBtn');
+  micBtn = document.getElementById('micBtn');
+  chatTitle = document.getElementById('chatTitle');
+  chatSubtitle = document.getElementById('chatSubtitle');
 
-            // Attach file functionality
-            this.elements.attachButton.addEventListener('click', () => this.attachFile());
+  // Render messages
+  renderMessages(sampleMessages);
 
-            // Action buttons
-            this.elements.requestLeaveBtn.addEventListener('click', () => this.requestLeave());
-            this.elements.reportIssuesBtn.addEventListener('click', () => this.reportIssues());
+  // Event listeners
+  closeChatBtn?.addEventListener('click', closeChat);
+  chatBackdrop?.addEventListener('click', closeChat);
+  sendBtn?.addEventListener('click', sendMessage);
+  chatInput?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+  micBtn?.addEventListener('click', () => {
+    alert('Voice message feature coming soon!');
+  });
 
-            // Menu navigation
-            document.querySelectorAll('.menu .item').forEach(item => {
-                item.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.handleNavigation(item);
-                });
-            });
-        },
-
-        // Load initial messages
-        loadInitialMessages() {
-            // Add some sample messages to demonstrate functionality
-            const sampleMessages = [
-                {
-                    type: 'in',
-                    content: 'Good Morning!!\nPlease Ensure that all security officers a site a have submitted their attendence by 9.00 AM.\nAlso, don\'t forget to update the incident report If there were any issues during night shift\nLet me know once it\'s done\nThank You',
-                    timestamp: new Date(Date.now() - 3600000), // 1 hour ago
-                    sender: 'Admin Panel'
-                },
-                {
-                    type: 'out',
-                    content: 'Sure, I will take care of it.',
-                    timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
-                    sender: 'Supervisor'
-                }
-            ];
-
-            sampleMessages.forEach(msg => {
-                this.messages.push(msg);
-                this.displayMessage(msg);
-            });
-        },
-
-        // Send a new message
-        sendMessage() {
-            const content = this.elements.textarea.value.trim();
-            if (!content) return;
-
-            const message = {
-                type: 'out',
-                content: content,
-                timestamp: new Date(),
-                sender: 'Supervisor'
-            };
-
-            this.messages.push(message);
-            this.displayMessage(message);
-            this.elements.textarea.value = '';
-            this.elements.textarea.style.height = 'auto';
-
-            // Simulate response after a short delay
-            setTimeout(() => this.simulateResponse(), 1000 + Math.random() * 2000);
-        },
-
-        // Display a message in the chat
-        displayMessage(message) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `msg msg-${message.type}`;
-            
-            const bubble = document.createElement('div');
-            bubble.className = 'bubble';
-            
-            // Handle multi-line content
-            const contentLines = message.content.split('\n');
-            contentLines.forEach((line, index) => {
-                if (line.trim()) {
-                    const p = document.createElement('p');
-                    p.textContent = line;
-                    bubble.appendChild(p);
-                }
-            });
-
-            // Add timestamp
-            const timestamp = document.createElement('small');
-            timestamp.style.cssText = 'font-size: 11px; opacity: 0.7; display: block; margin-top: 4px;';
-            timestamp.textContent = this.formatTimestamp(message.timestamp);
-            bubble.appendChild(timestamp);
-
-            messageDiv.appendChild(bubble);
-            this.elements.messagesContainer.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            this.scrollToBottom();
-        },
-
-        // Simulate automated responses
-        simulateResponse() {
-            const responses = {
-                'Admin Panel': [
-                    'Thank you for the update.',
-                    'Please keep me informed of any developments.',
-                    'Good work, continue monitoring the situation.',
-                    'I\'ll review the reports and get back to you.',
-                    'Make sure all protocols are being followed.'
-                ],
-                'Premise Officer': [
-                    'Understood, I\'ll coordinate with the team.',
-                    'Will ensure all security measures are in place.',
-                    'I\'ll check the perimeter and report back.',
-                    'Noted, I\'ll update the duty roster accordingly.',
-                    'I\'ll verify all equipment is functioning properly.'
-                ],
-                'Client': [
-                    'Thank you for your attention to this matter.',
-                    'We appreciate your professional service.',
-                    'Please keep us updated on any issues.',
-                    'Your security team is doing excellent work.',
-                    'We value your commitment to safety.'
-                ],
-                'Caretaker': [
-                    'I\'ll make sure the premises are properly maintained.',
-                    'Will check all facilities and report any issues.',
-                    'I\'ll coordinate with the cleaning staff.',
-                    'Noted, I\'ll ensure everything is in order.',
-                    'I\'ll monitor the building systems closely.'
-                ]
-            };
-
-            const currentResponses = responses[this.currentRole] || responses['Admin Panel'];
-            const randomResponse = currentResponses[Math.floor(Math.random() * currentResponses.length)];
-
-            const responseMessage = {
-                type: 'in',
-                content: randomResponse,
-                timestamp: new Date(),
-                sender: this.currentRole
-            };
-
-            this.messages.push(responseMessage);
-            this.displayMessage(responseMessage);
-        },
-
-        // Format timestamp
-        formatTimestamp(date) {
-            const now = new Date();
-            const diff = now - date;
-            const minutes = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-
-            if (minutes < 1) return 'Just now';
-            if (minutes < 60) return `${minutes}m ago`;
-            if (hours < 24) return `${hours}h ago`;
-            return date.toLocaleDateString();
-        },
-
-        // Scroll to bottom of messages
-        scrollToBottom() {
-            this.elements.messagesContainer.scrollTop = this.elements.messagesContainer.scrollHeight;
-        },
-
-        // Setup auto-resize for textarea
-        setupAutoResize() {
-            this.elements.textarea.addEventListener('input', () => {
-                this.elements.textarea.style.height = 'auto';
-                this.elements.textarea.style.height = Math.min(this.elements.textarea.scrollHeight, 120) + 'px';
-            });
-        },
-
-        // Setup role switching
-        setupRoleSwitching() {
-            this.elements.roleSelect.addEventListener('change', (e) => {
-                this.currentRole = e.target.value;
-                this.updateChatHeader();
-                this.showRoleNotification();
-            });
-        },
-
-        // Update chat header based on selected role
-        updateChatHeader() {
-            // You can add visual indicators here
-            console.log(`Switched to: ${this.currentRole}`);
-        },
-
-        // Show role switch notification
-        showRoleNotification() {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #e91e63;
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                z-index: 1000;
-                animation: slideIn 0.3s ease-out;
-            `;
-            notification.textContent = `Switched to ${this.currentRole}`;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease-in';
-                setTimeout(() => notification.remove(), 300);
-            }, 2000);
-        },
-
-        // Attach file functionality
-        attachFile() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
-            input.style.display = 'none';
-            
-            input.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    this.handleFileAttachment(file);
-                }
-            });
-            
-            document.body.appendChild(input);
-            input.click();
-            document.body.removeChild(input);
-        },
-
-        // Handle file attachment
-        handleFileAttachment(file) {
-            const message = {
-                type: 'out',
-                content: `📎 Attached: ${file.name} (${this.formatFileSize(file.size)})`,
-                timestamp: new Date(),
-                sender: 'Supervisor',
-                attachment: file
-            };
-
-            this.messages.push(message);
-            this.displayMessage(message);
-        },
-
-        // Format file size
-        formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        },
-
-        // Request leave functionality
-        requestLeave() {
-            const leaveForm = this.createLeaveForm();
-            this.showModal('Request Leave', leaveForm);
-        },
-
-        // Report issues functionality
-        reportIssues() {
-            const issueForm = this.createIssueForm();
-            this.showModal('Report Issues', issueForm);
-        },
-
-        // Create leave request form
-        createLeaveForm() {
-            return `
-                <div style="padding: 20px;">
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Leave Type:</label>
-                        <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option>Sick Leave</option>
-                            <option>Annual Leave</option>
-                            <option>Emergency Leave</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">From Date:</label>
-                        <input type="date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">To Date:</label>
-                        <input type="date" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Reason:</label>
-                        <textarea style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px;" placeholder="Please provide a reason for your leave request..."></textarea>
-                    </div>
-                    <div style="text-align: right;">
-                        <button onclick="this.closest('.modal').remove()" style="background: #ccc; border: none; padding: 8px 16px; border-radius: 4px; margin-right: 10px; cursor: pointer;">Cancel</button>
-                        <button onclick="this.closest('.modal').remove(); alert('Leave request submitted successfully!')" style="background: #e91e63; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Submit</button>
-                    </div>
-                </div>
-            `;
-        },
-
-        // Create issue report form
-        createIssueForm() {
-            return `
-                <div style="padding: 20px;">
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Issue Type:</label>
-                        <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option>Security Breach</option>
-                            <option>Equipment Malfunction</option>
-                            <option>Personnel Issue</option>
-                            <option>Safety Concern</option>
-                            <option>Other</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Priority:</label>
-                        <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-                            <option>Low</option>
-                            <option>Medium</option>
-                            <option>High</option>
-                            <option>Critical</option>
-                        </select>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Description:</label>
-                        <textarea style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-height: 100px;" placeholder="Please describe the issue in detail..."></textarea>
-                    </div>
-                    <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Location:</label>
-                        <input type="text" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="Enter the location where the issue occurred">
-                    </div>
-                    <div style="text-align: right;">
-                        <button onclick="this.closest('.modal').remove()" style="background: #ccc; border: none; padding: 8px 16px; border-radius: 4px; margin-right: 10px; cursor: pointer;">Cancel</button>
-                        <button onclick="this.closest('.modal').remove(); alert('Issue report submitted successfully!')" style="background: #e91e63; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Submit</button>
-                    </div>
-                </div>
-            `;
-        },
-
-        // Show modal
-        showModal(title, content) {
-            const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-
-            const modalContent = document.createElement('div');
-            modalContent.style.cssText = `
-                background: white;
-                border-radius: 8px;
-                max-width: 500px;
-                width: 90%;
-                max-height: 80vh;
-                overflow-y: auto;
-            `;
-
-            const modalHeader = document.createElement('div');
-            modalHeader.style.cssText = `
-                padding: 15px 20px;
-                border-bottom: 1px solid #eee;
-                font-weight: 600;
-                font-size: 16px;
-            `;
-            modalHeader.textContent = title;
-
-            modalContent.appendChild(modalHeader);
-            modalContent.insertAdjacentHTML('beforeend', content);
-            modal.appendChild(modalContent);
-            document.body.appendChild(modal);
-
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) modal.remove();
-            });
-        },
-
-        // Handle navigation
-        handleNavigation(item) {
-            // Remove active class from all items
-            document.querySelectorAll('.menu .item').forEach(i => i.classList.remove('active'));
-            // Add active class to clicked item
-            item.classList.add('active');
-            
-            // You can add navigation logic here
-            console.log(`Navigating to: ${item.textContent.trim()}`);
-        }
-    };
-
-    // Add CSS animations
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(style);
-
-    // Initialize the communication system
-    CommunicationSystem.init();
-
-    // Add some additional utility functions
-    window.CommunicationSystem = CommunicationSystem;
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !chatModal.hasAttribute('hidden')) {
+      closeChat();
+    }
+  });
 });
 
-// Export for potential module usage
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = CommunicationSystem;
+// Render messages list
+function renderMessages(messages) {
+  if (!messagesList) return;
+  
+  messagesList.innerHTML = '';
+  
+  messages.forEach(msg => {
+    const messageItem = createMessageItem(msg);
+    messagesList.appendChild(messageItem);
+  });
+}
+
+// Create message item
+function createMessageItem(msg) {
+  const template = document.getElementById('messageItemTpl');
+  const clone = template.content.cloneNode(true);
+  
+  const button = clone.querySelector('.message-item');
+  const avatar = clone.querySelector('.avatar');
+  const sender = clone.querySelector('.sender');
+  const time = clone.querySelector('.time');
+  const subject = clone.querySelector('.subject');
+  const preview = clone.querySelector('.preview');
+  
+  // Set avatar color - all red
+  avatar.style.backgroundColor = '#e91e63';
+  avatar.setAttribute('data-initials', msg.initials);
+  avatar.textContent = msg.initials;
+  
+  sender.textContent = msg.sender;
+  time.textContent = msg.time;
+  time.setAttribute('datetime', msg.timestamp);
+  subject.textContent = msg.subject;
+  preview.textContent = msg.preview;
+  
+  button.addEventListener('click', () => openChat(msg));
+  
+  return clone;
+}
+
+// Open chat modal
+function openChat(msg) {
+  currentChatId = msg.id;
+  chatSubtitle.textContent = msg.sender;
+  
+  // Load conversation
+  const conversation = chatConversations[msg.id] || [];
+  renderConversation(conversation);
+  
+  // Show modal
+  chatModal.removeAttribute('hidden');
+  chatBackdrop.removeAttribute('hidden');
+  chatInput.focus();
+}
+
+// Close chat modal
+function closeChat() {
+  chatModal.setAttribute('hidden', '');
+  chatBackdrop.setAttribute('hidden', '');
+  currentChatId = null;
+  chatInput.value = '';
+}
+
+// Render conversation
+function renderConversation(conversation) {
+  chatMessages.innerHTML = '';
+  
+  conversation.forEach(msg => {
+    const bubble = document.createElement('div');
+    bubble.className = `message-bubble ${msg.isOwn ? 'own' : 'other'}`;
+    
+    const content = document.createElement('div');
+    content.className = 'bubble-content';
+    content.textContent = msg.text;
+    
+    const time = document.createElement('time');
+    time.className = 'bubble-time';
+    time.textContent = msg.time;
+    
+    bubble.appendChild(content);
+    bubble.appendChild(time);
+    chatMessages.appendChild(bubble);
+  });
+  
+  // Scroll to bottom
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Send message
+function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text || currentChatId === null) return;
+  
+  // Add to conversation
+  const newMsg = {
+    sender: 'You',
+    text: text,
+    time: 'Just now',
+    isOwn: true
+  };
+  
+  if (!chatConversations[currentChatId]) {
+    chatConversations[currentChatId] = [];
+  }
+  chatConversations[currentChatId].push(newMsg);
+  
+  // Re-render
+  renderConversation(chatConversations[currentChatId]);
+  
+  // Clear input
+  chatInput.value = '';
+  chatInput.focus();
+  
+  // TODO: Send to server via AJAX
 }
