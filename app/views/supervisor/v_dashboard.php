@@ -4,33 +4,52 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/dashboard.style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- Dashboard Header -->
-   
-    
-    <!-- Content Grid -->
-    <section class="content-grid">
-        <!-- Profile Card -->
-        <div class="profile-card">
-            <div class="avatar-wrapper">
-                <div class="avatar">
-                    <i class="fas fa-user"></i>
-                    <span class="status-dot"></span>
-                </div>
-                <button class="edit-btn" type="button">Edit</button>
+    <!-- Statistics Cards -->
+    <section class="stats-grid">
+        <div class="stat-card purple">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
             </div>
-            <div class="details">
-                <div class="detail"><label>Name:</label><span>W.W. Nuwan Perera</span></div>
-                <div class="detail"><label>Officer ID:</label><span>PF231</span></div>
-                <div class="detail"><label>Rank:</label><span>OIC</span></div>
-                <div class="detail address">
-                    <label>Location:</label>
-                    <span>People's Bank PLC, 123 Sample Road, Colombo 01</span>
-                </div>
-                <div class="detail"><label>Rating:</label><span>1403</span></div>
+            <div class="stat-info">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Total Officers</div>
             </div>
         </div>
 
-        <!-- Attendance List -->
+        <div class="stat-card green">
+            <div class="stat-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value">0</div>
+                <div class="stat-label">On Duty</div>
+            </div>
+        </div>
+
+        <div class="stat-card yellow">
+            <div class="stat-icon">
+                <i class="fas fa-shield-check"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Active</div>
+            </div>
+        </div>
+
+        <div class="stat-card red">
+            <div class="stat-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stat-info">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Incidents</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Content -->
+    <section class="content-grid">
+        <!-- Attendance Card -->
         <div class="attendance-card">
             <div class="search-bar">
                 <i class="fas fa-search"></i>
@@ -96,6 +115,14 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        <!-- Advertisements Card -->
+        <div class="advertisements-card">
+            <h2 class="card-title">Advertisements</h2>
+            <div class="ads-content">
+                <p class="no-ads-message">There are no advertisements yet</p>
             </div>
         </div>
     </section>
