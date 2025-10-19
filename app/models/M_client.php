@@ -57,4 +57,14 @@ class M_client {
         
         return $this->db->resultSet();
     }
+
+    // Delete a service request
+    public function deleteServiceRequest($request_id, $client_id) {
+        $this->db->query('DELETE FROM service_requests WHERE id = :request_id AND client_id = :client_id');
+        
+        $this->db->bind(':request_id', $request_id);
+        $this->db->bind(':client_id', $client_id);
+        
+        return $this->db->execute();
+    }
 }

@@ -90,6 +90,18 @@ class Client extends Controller {
             }
         }
 
+        // Handle delete request
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_request'])) {
+            $request_id = $_POST['request_id'];
+            
+            if ($this->clientModel->deleteServiceRequest($request_id, $_SESSION['user_id'])) {
+                // Redirect back to history view with success message
+                redirect('client/requests?show_history=1&deleted=1');
+            } else {
+                $data['errorMessage'] = 'Failed to delete request. Please try again.';
+            }
+        }
+
         // Get client's previous requests for history popup
         $data['previousRequests'] = $this->clientModel->getClientServiceRequests($_SESSION['user_id']);
         $data['todayDate'] = date('Y-m-d');
