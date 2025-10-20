@@ -19,7 +19,7 @@ class Caretaker extends Controller {
 
     // dashboard
     public function dashboard() {
-        $role = 'caretaker';
+        $role = 'Care-Taker';
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
 
         $data = [
