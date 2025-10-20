@@ -97,12 +97,12 @@ $previousRequests = $formattedRequests;
       <?php else: ?>
         <?php foreach ($previousRequests as $request): ?>
           <div class="request-item">
-            <div class="request-header">
-              <h4><?php echo htmlspecialchars($request['eventName']); ?></h4>
-              <span class="status status-<?php echo strtolower($request['status']); ?>">
-                <?php echo $request['status']; ?>
-              </span>
-            </div>
+           <div class="request-header">
+  <h4><?php echo htmlspecialchars($request['eventName']); ?></h4>
+  <span class="status status-<?php echo strtolower($request['status']); ?>">
+    <?php echo strtoupper($request['status']); ?>
+  </span>
+</div>
             <div class="request-details">
               <div class="detail-row">
                 <span class="label">Description:</span>
@@ -133,6 +133,16 @@ $previousRequests = $formattedRequests;
               <div class="detail-row">
                 <span class="label">Number of Guards:</span>
                 <span><?php echo $request['numberOfGuards']; ?> guards</span>
+              </div>
+              
+              <!-- ADD DELETE BUTTON HERE -->
+              <div class="delete-section">
+                <form method="POST" onsubmit="return confirm('Are you sure you want to delete this request?');">
+                  <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
+                  <button type="submit" name="delete_request" class="delete-request-btn">
+                    🗑️ Delete Request
+                  </button>
+                </form>
               </div>
             </div>
           </div>

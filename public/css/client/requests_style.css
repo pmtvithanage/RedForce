@@ -249,6 +249,13 @@ textarea {
   border-bottom: 1px solid #e0e0e0;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 10px; /* Force same height */
+}
+
 .request-header h4 {
   margin: 0;
   color: #333;
@@ -261,6 +268,10 @@ textarea {
   font-size: 12px;
   font-weight: 500;
   text-transform: uppercase;
+  line-height: 1.2;
+  height: 28px;
+  display: flex;
+  align-items: center;
 }
 
 .status-approved {
@@ -271,6 +282,7 @@ textarea {
 .status-pending {
   background: #fff8e1;
   color: #f57c00;
+
 }
 
 .status-rejected {
@@ -299,3 +311,57 @@ textarea {
   color: #666;
   flex: 1;
 }
+
+/* Delete button styles */
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    /* EXACT SAME STYLING AS .status */
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    /* Remove the height and display flex - let it be natural */
+    cursor: pointer;
+    transition: background 0.3s;
+    line-height: 1.2; /* Match line-height */
+    height: 200px; /* Force exact same height as status */
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Delete section at bottom of request */
+.delete-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.delete-request-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.delete-request-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
