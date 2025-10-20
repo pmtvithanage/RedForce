@@ -23,9 +23,9 @@
 
             <!-- Profile Information -->
             <div class="profile-info-section">
-                <!-- Care Taker Name -->
+                <!-- Supervisor Name -->
                 <div class="info-row">
-                    <div class="info-label">Care Taker Name</div>
+                    <div class="info-label"> Supervisor Name</div>
                     <div class="info-value">- Abesekara</div>
                     <button class="change-btn" onclick="openEditModal('name', 'Abesekara')">
                         Change Name
