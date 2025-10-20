@@ -1,4 +1,3 @@
-
 /* ==========================
    DASHBOARD HEADER
 ========================== */
@@ -15,7 +14,8 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.header-left, .header-right {
+.header-left,
+.header-right {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -24,7 +24,8 @@
   color: #333;
 }
 
-.header-left i, .header-right i {
+.header-left i,
+.header-right i {
   font-size: 20px;
   color: #666;
 }
@@ -182,7 +183,7 @@
 /* --- Grid Layout --- */
 .content-grid {
   display: grid;
-  grid-template-columns: 1fr 400px;
+  grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin: 0 20px;
 }
@@ -502,7 +503,7 @@
   border-radius: 14px;
   padding: 16px 34px;
   font-weight: 700;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   cursor: pointer;
 }
 
