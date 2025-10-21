@@ -27,3 +27,22 @@ INSERT INTO Users (userID, name, email, password, role) VALUES
 ('CLIENT001', 'People\'s Bank', 'contact@peoplesbank.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 'client'),
 ('CLIENT002', 'Cargills PLC', 'security@cargills.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 'client'),
 ('CARETAKER001', 'Michael Johnson', 'johnson.michael@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'caretaker');
+
+
+
+NOTES TABLE
+
+CREATE TABLE Notes (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  userID VARCHAR(50) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted TINYINT(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  KEY fk_notes_user_id (userID),
+  CONSTRAINT fk_notes_user_id FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE ON UPDATE CASCADE
+  );
+   
+  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
