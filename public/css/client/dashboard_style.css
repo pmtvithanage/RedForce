@@ -10,8 +10,8 @@ body {
 }
 
 .main-content {
-    margin-left: 80px;
-    margin-top: 50px;
+    margin-left: 0px;
+    margin-top: 0px;
     padding: 30px;
     min-height: calc(100vh - 70px);
 }
