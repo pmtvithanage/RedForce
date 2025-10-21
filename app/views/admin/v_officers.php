@@ -1,12 +1,9 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
-
-
-  <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/officers_style.css">
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/officers_style.css">
 
 <div class="container">
-
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" data-tab="officers">Officers</button>
@@ -112,18 +109,19 @@
     <button class="btn add">+ Add Officers</button>
     <button class="btn apps">4 Applications</button>
   </div>
-
 </div>
 
+<!-- Extra closing tags cleanup -->
 </main>
 </div>
- <div class="backdrop" id="backdrop" hidden></div>
+
+<div class="backdrop" id="backdrop" hidden></div>
 
 <!-- Officer Details Modal -->
-<div id="officerModal" class="modal">
+<div id="officerModal" class="officer-modal">
+  <div class="overlay" data-close></div>
   <div class="modal-content">
     <div class="modal-body">
-      
       <!-- Left Section: Officer Info -->
       <div class="officer-card">
         <div class="avatar">
@@ -142,7 +140,7 @@
       <div class="evaluate-card">
         <h3>Evaluate Officer</h3>
         <textarea id="evaluationDesc" placeholder="Description"></textarea>
-        
+
         <!-- Rating stars -->
         <div class="stars" id="ratingStars">
           <span data-value="1">★</span>
@@ -160,13 +158,13 @@
           <button class="btn close" id="closeModal">Close</button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <!-- Rating History Modal -->
-<div id="ratingHistoryModal" class="modal">
+<div id="ratingHistoryModal" class="rating-history-modal">
+  <div class="overlay" data-close></div>
   <div class="modal-content">
     <h3>Rating History</h3>
     <table class="history-table">
@@ -186,7 +184,8 @@
 </div>
 
 <!-- Rank Update Modal -->
-<div id="rankUpdateModal" class="modal">
+<div id="rankUpdateModal" class="rank-update-modal">
+  <div class="overlay" data-close></div>
   <div class="modal-content small">
     <h3>Update Officer Rank</h3>
     <select id="rankSelect">
@@ -203,10 +202,7 @@
   </div>
 </div>
 
-
 <script src="<?php echo URL_ROOT; ?>/js/admin/officers.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 
-   
-
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

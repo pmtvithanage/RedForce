@@ -1,0 +1,341 @@
+.main-content {
+    padding: 20px;
+    background-color: #FFEAEA;
+    min-height: calc(100vh - 60px);
+}
+
+.history-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.history-header {
+    margin-bottom: 30px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.history-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: white;
+    padding: 20px 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border-left: 4px solid #d32f2f;
+}
+
+.history-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    background: #fff5f5;
+}
+
+.history-icon {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    background: #fff0f0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.history-details {
+    flex: 1;
+}
+
+.history-period {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+/* Popup Styles */
+.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.year-popup {
+    background: #ffeaea;
+    border-radius: 12px;
+    width: 95%;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    background: #ffeaea;
+    border-bottom: 1px solid #f0c0c0;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.company-logo .logo-img {
+    height: 40px;
+    width: auto;
+}
+
+.period-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.period-text {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    text-decoration: none;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.close-btn:hover {
+    background: #f0c0c0;
+    color: #d32f2f;
+}
+
+.popup-content {
+    padding: 25px;
+    background: #ffeaea;
+    max-height: calc(90vh - 100px);
+    overflow-y: auto;
+}
+
+.filter-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.filter-section label {
+    font-weight: 500;
+    color: #333;
+}
+
+.site-filter {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    min-width: 200px;
+}
+
+.data-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: #d32f2f;
+}
+
+.data-table th {
+    color: white;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.data-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f1f3f4;
+    font-size: 14px;
+    color: #333;
+}
+
+.data-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.summary-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.summary-row {
+    display: flex;
+    gap: 15px;
+    justify-content: space-between;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 4px solid #d32f2f;
+}
+
+.card-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #fff0f0;
+}
+
+.card-content {
+    flex: 1;
+}
+
+.card-label {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.card-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .popup-overlay {
+        padding: 10px;
+    }
+    
+    .year-popup {
+        width: 100%;
+    }
+    
+    .popup-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .popup-content {
+        padding: 15px;
+    }
+    
+    .data-table-container {
+        overflow-x: auto;
+    }
+    
+    .data-table {
+        min-width: 800px;
+    }
+    
+    .summary-row {
+        flex-direction: column;
+    }
+    
+    .summary-card {
+        min-width: 100%;
+    }
+    
+    .filter-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .site-filter {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .history-period {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+    
+    .history-item {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .history-icon {
+        align-self: center;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    
+    .card-value {
+        font-size: 16px;
+    }
+}

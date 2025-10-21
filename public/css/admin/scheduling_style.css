@@ -1,8 +1,8 @@
-
 .container {
   background: #fff;
   border-radius: 15px;
   padding: 20px;
+  margin: 20px;
 }
 
 .header {
@@ -45,8 +45,6 @@
   border-radius: 6px;
   cursor: pointer;
 }
-
-
 
 /* Scrollable duty points */
 .scroll-container {
@@ -200,6 +198,7 @@
   border-radius: 10px;
   padding: 15px;
   margin-bottom: 20px;
+  margin: 20px;
 }
 
 .mobile-title {
@@ -255,6 +254,7 @@
   align-items: center;
   gap: 10px;
   margin-bottom: 20px;
+  margin: 20px;
 }
 
 .mobile-rider-search input {
@@ -283,16 +283,16 @@
 /* --- Responsive Layout --- */
 .search-section {
   display: flex;
-  flex-wrap: wrap;          /* allow wrapping on small screens */
+  flex-wrap: wrap; /* allow wrapping on small screens */
   justify-content: flex-start;
-  gap: 15px;                /* space between boxes */
+  gap: 15px; /* space between boxes */
   margin: 20px 0;
-  width: 100%;              /* use full width */
+  width: 100%; /* use full width */
 }
 
 .search-box {
-  flex: 1;                  /* both search boxes take equal width */
-  min-width: 220px;         /* don’t shrink too much */
+  flex: 1; /* both search boxes take equal width */
+  min-width: 220px; /* don’t shrink too much */
   display: flex;
   align-items: center;
   gap: 10px;

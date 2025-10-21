@@ -5,7 +5,7 @@
 
 
     <!-- Content will be loaded here -->
-     <div class="container">
+  <div class="container">
 
     <!-- Header -->
     <header class="header">
