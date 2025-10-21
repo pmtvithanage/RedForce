@@ -96,15 +96,7 @@ $notes = $data['notes'];
                         <div class="action-text">Report Incident</div>
                     </a>
 
-                    <a href="#" class="action-btn">
-                        <span class="action-icon">📋</span>
-                        <div class="action-text">Fill Attendance</div>
-                    </a>
 
-                    <a href="#" class="action-btn">
-                        <span class="action-icon">📡</span>
-                        <div class="action-text">Alert HQ</div>
-                    </a>
 
                     <a href="#" class="action-btn">
                         <span class="action-icon">📝</span>
