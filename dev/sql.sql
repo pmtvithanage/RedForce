@@ -26,23 +26,23 @@ CREATE TABLE
 
 -- Insert sample users with hashed passwords
 -- Password for all users is '1234' (hashed)
+-- NOTES TABLE
+CREATE TABLE
+    Notes (
+        id INT (11) NOT NULL AUTO_INCREMENT,
+        userID VARCHAR(50) NOT NULL,
+        title VARCHAR(255) NOT NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        is_deleted TINYINT (1) DEFAULT 0,
+        PRIMARY KEY (id),
+        KEY fk_notes_user_id (userID),
+        CONSTRAINT fk_notes_user_id FOREIGN KEY (userID) REFERENCES Users (userID) ON DELETE CASCADE ON UPDATE CASCADE
+    );
 
-NOTES TABLE
+ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
-CREATE TABLE Notes (
-  id INT(11) NOT NULL AUTO_INCREMENT,
-  userID VARCHAR(50) NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  content TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  is_deleted TINYINT(1) DEFAULT 0,
-  PRIMARY KEY (id),
-  KEY fk_notes_user_id (userID),
-  CONSTRAINT fk_notes_user_id FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE ON UPDATE CASCADE
-  );
-   
-  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 INSERT INTO
     Users (userID, name, email, password, role)
 VALUES
@@ -171,4 +171,3 @@ CREATE TABLE
         INDEX idx_status (status),
         INDEX idx_submitted_date (submitted_date)
     );
-
