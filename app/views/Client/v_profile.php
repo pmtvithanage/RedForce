@@ -155,9 +155,6 @@ if (isset($_GET['change_email'])) {
                 <div class="avatar-circle">
                     <span class="material-icons">person</span>
                 </div>
-                <button class="edit-avatar-btn">
-                    <span class="material-icons">edit</span>
-                </button>
             </div>
             
             <div class="profile-info">

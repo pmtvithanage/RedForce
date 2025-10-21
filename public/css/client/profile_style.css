@@ -1,6 +1,6 @@
 .main-content {
     padding: 20px;
-    background-color: #f8f9fa;
+    background-color: #ffeaea;
     min-height: calc(100vh - 60px);
     display: flex;
     justify-content: center;
@@ -35,7 +35,7 @@
 }
 
 .profile-section {
-    background: #ffeaea;
+    background: #ffffff;
     border-radius: 12px;
     padding: 60px 40px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
