@@ -140,10 +140,6 @@ if (isset($_GET['change_email'])) {
 
 <div class="main-content">
     <div class="settings-container">
-        <div class="settings-header">
-            <h2 class="page-title">Settings</h2>
-        </div>
-        
         <?php if ($message): ?>
         <div class="success-message">
             <?php echo htmlspecialchars($message); ?>
