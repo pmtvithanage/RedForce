@@ -292,7 +292,7 @@
 
 .search-box {
   flex: 1; /* both search boxes take equal width */
-  min-width: 220px; /* don’t shrink too much */
+  min-width: 220px; /* don't shrink too much */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -310,6 +310,332 @@
   border: 1px solid #aaa;
 }
 
+/* Officers Popup Styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-content {
+  background: white;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8dcdc;
+  border-bottom: 2px solid #ccc;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-popup:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.popup-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.officers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.officers-table thead th {
+  background: #ffeef1;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #f8dcdc;
+  position: sticky;
+  top: 0;
+}
+
+.officers-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.officers-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.officers-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.officers-table tbody tr:nth-child(even):hover {
+  background: #f0f0f0;
+}
+
+.select-officer {
+  background: #39d44a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.select-officer:hover {
+  background: #2fb83e;
+}
+
+/* Status colors in popup */
+.officers-table td:nth-child(5) {
+  font-weight: bold;
+}
+
+.officers-table tr td:nth-child(5):contains("On Duty"),
+.officers-table tr:nth-child(1) td:nth-child(5),
+.officers-table tr:nth-child(3) td:nth-child(5),
+.officers-table tr:nth-child(4) td:nth-child(5),
+.officers-table tr:nth-child(5) td:nth-child(5) {
+  color: #39d44a;
+}
+
+.officers-table tr td:nth-child(5):contains("On Leave"),
+.officers-table tr:nth-child(2) td:nth-child(5),
+.officers-table tr:nth-child(7) td:nth-child(5) {
+  color: #ff2a2a;
+}
+
+.officers-table tr td:nth-child(5):contains("On Break"),
+.officers-table tr:nth-child(6) td:nth-child(5) {
+  color: #ffa500;
+}
+
+/* Backdrop */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* New Duty Point Popup Styles */
+.new-duty-popup {
+  max-width: 800px;
+}
+
+.duty-point-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #f8dcdc;
+  box-shadow: 0 0 5px rgba(248, 220, 220, 0.5);
+}
+
+.form-group input[readonly] {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.supervisors-section,
+.officers-section {
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.supervisors-section h4,
+.officers-section h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.supervisor-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.supervisor-input-group input {
+  flex: 1;
+}
+
+.select-supervisor-btn {
+  background: #f8dcdc;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.select-supervisor-btn:hover {
+  background: #f5bcbc;
+}
+
+.officers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.officer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.officer-item input,
+.officer-item select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.officer-item select {
+  background: white;
+  cursor: pointer;
+}
+
+.remove-officer-btn {
+  background: #ff7070;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.remove-officer-btn:hover {
+  background: #ff5252;
+}
+
+.add-officer-btn {
+  background: #eaeaea;
+  border: 1px dashed #ccc;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.add-officer-btn:hover {
+  background: #ddd;
+  color: #333;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn {
+  background: #f8dcdc;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #f5bcbc;
+}
+
+.create-btn {
+  background: #39d44a;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.create-btn:hover {
+  background: #2fb83e;
+}
+
 /* On tablets and below (≤ 768px), stack neatly */
 @media (max-width: 768px) {
   .search-section {
@@ -318,6 +644,58 @@
   }
 
   .search-box {
+    width: 100%;
+  }
+
+  .popup-content {
+    width: 95%;
+    margin: 20px;
+  }
+
+  .popup-body {
+    padding: 15px;
+  }
+
+  .officers-table {
+    font-size: 12px;
+  }
+
+  .officers-table thead th,
+  .officers-table tbody td {
+    padding: 8px;
+  }
+
+  .select-officer {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  /* New duty point form responsive */
+  .new-duty-popup {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .supervisor-input-group {
+    flex-direction: column;
+  }
+
+  .officer-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .officer-item input,
+  .officer-item select {
+    width: 100%;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .cancel-btn,
+  .create-btn {
     width: 100%;
   }
 }
@@ -346,4 +724,367 @@
     padding: 6px 10px;
     font-size: 13px;
   }
+
+  .popup-header {
+    padding: 15px;
+  }
+
+  .popup-header h3 {
+    font-size: 18px;
+  }
+
+  .officers-table {
+    font-size: 11px;
+  }
+
+  .officers-table thead th,
+  .officers-table tbody td {
+    padding: 6px;
+  }
+
+  /* Make table scrollable horizontally on very small screens */
+  .popup-body {
+    overflow-x: auto;
+  }
+
+  .officers-table {
+    min-width: 600px;
+  }
+
+  /* New duty point form mobile adjustments */
+  .duty-point-form {
+    gap: 15px;
+  }
+
+  .supervisors-section,
+  .officers-section {
+    padding: 10px;
+  }
+
+  .form-group input {
+    padding: 8px;
+  }
+
+  .select-supervisor-btn,
+  .remove-officer-btn,
+  .add-officer-btn,
+  .cancel-btn,
+  .create-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+/* Add these styles to your existing CSS */
+
+/* Officers Popup Styles - Higher z-index */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* Officers popup should have higher z-index */
+#officersPopup {
+  z-index: 1002;
+}
+
+/* New duty point popup should have lower z-index */
+#newDutyPointPopup {
+  z-index: 1001;
+}
+
+/* Backdrop should be between them */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Rest of your existing CSS remains the same */
+.popup-content {
+  background: white;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 1200px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: #f8dcdc;
+  border-bottom: 2px solid #ccc;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.close-popup {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.close-popup:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.popup-body {
+  padding: 20px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.officers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.officers-table thead th {
+  background: #ffeef1;
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+  border-bottom: 2px solid #f8dcdc;
+  position: sticky;
+  top: 0;
+}
+
+.officers-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.officers-table tbody tr:hover {
+  background: #f9f9f9;
+}
+
+.officers-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.officers-table tbody tr:nth-child(even):hover {
+  background: #f0f0f0;
+}
+
+.select-officer {
+  background: #39d44a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.2s;
+}
+
+.select-officer:hover {
+  background: #2fb83e;
+}
+
+/* New Duty Point Popup Styles */
+.new-duty-popup {
+  max-width: 800px;
+}
+
+.duty-point-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #f8dcdc;
+  box-shadow: 0 0 5px rgba(248, 220, 220, 0.5);
+}
+
+.form-group input[readonly] {
+  background-color: #f9f9f9;
+  cursor: pointer;
+}
+
+.supervisors-section,
+.officers-section {
+  border: 1px solid #eee;
+  padding: 15px;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.supervisors-section h4,
+.officers-section h4 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.supervisor-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.supervisor-input-group input {
+  flex: 1;
+}
+
+.select-supervisor-btn {
+  background: #f8dcdc;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.select-supervisor-btn:hover {
+  background: #f5bcbc;
+}
+
+.officers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.officer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.officer-item input,
+.officer-item select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.officer-item select {
+  background: white;
+  cursor: pointer;
+}
+
+.remove-officer-btn {
+  background: #ff7070;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.remove-officer-btn:hover {
+  background: #ff5252;
+}
+
+.add-officer-btn {
+  background: #eaeaea;
+  border: 1px dashed #ccc;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.add-officer-btn:hover {
+  background: #ddd;
+  color: #333;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.cancel-btn {
+  background: #f8dcdc;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #f5bcbc;
+}
+
+.create-btn {
+  background: #39d44a;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.create-btn:hover {
+  background: #2fb83e;
 }
