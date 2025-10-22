@@ -185,13 +185,287 @@
     </div>
 </div>
 
+</main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+<!-- Incident Report Popup -->
+<div id="incident-popup" class="popup">
+    <div class="popup-content">
+        <div class="form-header">
+            <button type="button" class="back-btn" onclick="closePopup()">←</button>
+            <h2>Security Incident Report</h2>
+            <button type="button" class="close-btn" onclick="closePopup()">×</button>
+        </div>
+
+        <form id="incident-form" method="POST" enctype="multipart/form-data">
+            <div class="form-body">
+                <!-- Officer Information -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">👤</span>
+                        <span>Officer Information</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="officer_name" value="Amal Rathnayake" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Role</label>
+                            <input type="text" name="officer_role" value="Premise Officer" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Property / Leading Site</label>
+                            <select name="property_site">
+                                <option value="">--</option>
+                                <option value="site1">Site 1</option>
+                                <option value="site2">Site 2</option>
+                                <option value="site3">Site 3</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incident Type -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">⚠️</span>
+                        <span>Incident Type</span>
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Incident Type</label>
+                            <select name="incident_type" required>
+                                <option value="">-- Select Type --</option>
+                                <option value="security">Security Breach</option>
+                                <option value="network">Network Issue</option>
+                                <option value="server">Server Outage</option>
+                                <option value="physical">Physical Security</option>
+                                <option value="fire">Fire Incident</option>
+                                <option value="medical">Medical Emergency</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date & Time -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">📅</span>
+                        <span>Date & Time</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" name="incident_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Time</label>
+                            <input type="time" name="incident_time" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incident Description -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">📝</span>
+                        <span>Incident Description</span>
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <textarea name="incident_description" rows="4" placeholder="Describe the incident, including relevant details and circumstances" required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Media -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">📎</span>
+                        <span>Upload Media (Optional)</span>
+                    </div>
+                    <div class="upload-area" onclick="document.getElementById('file-input').click()">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">Click to upload or drag and drop files</div>
+                        <div class="upload-subtext">PNG, JPG or PDF (Max. 10 MB each)</div>
+                    </div>
+                    <input type="file" id="file-input" name="media_files[]" class="file-input-hidden" multiple accept="image/*,.pdf">
+                    <div id="file-list" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+                </div>
+
+                <!-- Location Verification -->
+                <!-- <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">📍</span>
+                        <span>Location Verification (Optional)</span>
+                    </div>
+                    <button type="button" class="location-btn" id="capture-location">
+                        <span>📍</span>
+                        <span>Capture Current Location</span>
+                    </button>
+                    <div class="location-text">
+                        By clicking 'Capture', you'll share your<br>
+                        current location (GPS or IP address)
+                    </div>
+                    <input type="hidden" name="latitude" id="latitude">
+                    <input type="hidden" name="longitude" id="longitude">
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Or enter location manually</label>
+                            <input type="text" name="location_manual" placeholder="Tiger Zone">
+                        </div>
+                    </div>
+                </div> -->
+
+                <!-- Action Taken -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">✅</span>
+                        <span>Action Taken</span>
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <textarea name="action_taken" rows="3" placeholder="Describe the immediate action taken in response to the incident"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Details -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <span class="section-icon">ℹ️</span>
+                        <span>Additional Details</span>
+                    </div>
+                    <div class="form-row single">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="minor" name="severity[]" value="minor">
+                            <label for="minor">Minor</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="moderate" name="severity[]" value="moderate">
+                            <label for="moderate">Moderate</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="major" name="severity[]" value="major">
+                            <label for="major">Major</label>
+                        </div>
+                    </div>
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label>Follow-Up Investigation</label>
+                            <input type="text" name="follow_up_id" placeholder="e.g., 202501210123">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Section -->
+            <div class="submit-section">
+                <button type="submit" class="submit-btn">
+                    <span>📋</span>
+                    <span>Submit Incident Report</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+
 <script>
+
+// Incident Report Functions
 function reportIncident() {
-    alert('Report Incident clicked! Opening incident form...');
+    console.log('Report incident clicked'); // Debug log
+    const popup = document.getElementById('incident-popup');
+    if (popup) {
+        popup.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('Incident popup not found!');
+    }
 }
 
+function closePopup() {
+    console.log('Close popup clicked'); // Debug log
+    const popup = document.getElementById('incident-popup');
+    if (popup) {
+        popup.classList.remove('show');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Page loaded - initializing incident report'); // Debug log
+    
+    // Add click event to report incident button
+    const reportBtn = document.querySelector('.report-incident');
+    if (reportBtn) {
+        reportBtn.addEventListener('click', reportIncident);
+        console.log('Report button found and event listener added');
+    } else {
+        console.error('Report incident button not found!');
+    }
+    
+    // Close popup when clicking outside
+    const popup = document.getElementById('incident-popup');
+    if (popup) {
+        popup.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePopup();
+            }
+        });
+    }
+    
+    // Close with ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closePopup();
+        }
+    });
+    
+    // File upload handling
+    const fileInput = document.getElementById('file-input');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            const fileList = document.getElementById('file-list');
+            
+            if (files.length > 0) {
+                let fileNames = [];
+                for (let i = 0; i < files.length; i++) {
+                    fileNames.push(files[i].name);
+                }
+                fileList.innerHTML = `<strong>Selected files:</strong> ${fileNames.join(', ')}`;
+            } else {
+                fileList.innerHTML = '';
+            }
+        });
+    }
+    
+    // Form submission
+    const incidentForm = document.getElementById('incident-form');
+    if (incidentForm) {
+        incidentForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Incident report submitted successfully!');
+            closePopup();
+            this.reset();
+            const fileList = document.getElementById('file-list');
+            if (fileList) fileList.innerHTML = '';
+        });
+    }
+});
+
 function viewAllReports() {
-    alert('View All Reports clicked! Opening reports page...');
+    alert('View All Reports clicked!');
 }
 
 // Add hover effects to incident items
@@ -219,11 +493,4 @@ window.addEventListener('load', function() {
 });
 </script>
 
-
-</main>
-</div>
-
-<div class="backdrop" id="backdrop" hidden></div>
-
-<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

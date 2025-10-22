@@ -1,140 +1,234 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-<?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/profile.style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<?php
+// Handle form submissions
+$showPasswordModal = false;
+$showContactModal = false;
+$showEmailModal = false;
+$message = '';
 
-<!-- Content will be loaded here -->
- <main class="main-content">
-    <div class="profile-container">
+// Mock client data - replace with actual database query
+$clientData = [
+    'name' => "John Supervisor",
+    'contact' => '0112 112 112',
+    'email' => 'johnsupervisor@hotmail.com'
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['change_password'])) {
+        $currentPassword = $_POST['current_password'];
+        $newPassword = $_POST['new_password'];
+        $confirmPassword = $_POST['confirm_password'];
         
-        <!-- Profile Content -->
-        <div class="profile-content">
-            <!-- Profile Picture Section -->
-            <div class="profile-picture-section">
-                <div class="profile-picture">
-                    <span class="profile-icon">👤</span>
-                </div>
-                <button class="change-profile-btn" id="changeProfileImageBtn">
-                    <span>📷</span>
-                    Change Profile Image
-                </button>
-            </div>
+        $message = 'Password updated successfully!';
+    }
+    
+    if (isset($_POST['change_contact'])) {
+        $newContact = $_POST['new_contact'];
+        $clientData['contact'] = $newContact;
+        $message = 'Contact number updated successfully!';
+    }
+    
+    if (isset($_POST['change_email'])) {
+        $newEmail = $_POST['new_email'];
+        $clientData['email'] = $newEmail;
+        $message = 'Email updated successfully!';
+    }
+}
 
-            <!-- Profile Information -->
-            <div class="profile-info-section">
-                <!-- Supervisor Name -->
-                <div class="info-row">
-                    <div class="info-label"> Supervisor Name</div>
-                    <div class="info-value">- Abesekara</div>
-                    <button class="change-btn" onclick="openEditModal('name', 'Abesekara')">
-                        Change Name
-                    </button>
-                    <button class="edit-icon-btn">
-                        <span>✏</span>
-                    </button>
-                </div>
+if (isset($_GET['change_password'])) {
+    $showPasswordModal = true;
+}
+if (isset($_GET['change_contact'])) {
+    $showContactModal = true;
+}
+if (isset($_GET['change_email'])) {
+    $showEmailModal = true;
+}
+?>
 
-                <!-- Password -->
-                <div class="info-row">
-                    <div class="info-label">Password</div>
-                    <div class="info-value">- ••••••••</div>
-                    <button class="change-btn" onclick="openEditModal('password', '')">
-                        Change Password
-                    </button>
-                    <button class="edit-icon-btn">
-                        <span>✏</span>
-                    </button>
-                </div>
+<?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
-                <!-- Contact Number -->
-                <div class="info-row">
-                    <div class="info-label">Contact Number</div>
-                    <div class="info-value">- 0112 112 112</div>
-                    <button class="change-btn" onclick="openEditModal('contact', '0112 112 112')">
-                        Change Contact No
-                    </button>
-                    <button class="edit-icon-btn">
-                        <span>✏</span>
-                    </button>
-                </div>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-                <!-- Email -->
-                <div class="info-row">
-                    <div class="info-label">Email</div>
-                    <div class="info-value">- abesekara@hotmail.com</div>
-                    <button class="change-btn" onclick="openEditModal('email', 'abesekara@hotmail.com')">
-                        Change Email
-                    </button>
-                    <button class="edit-icon-btn">
-                        <span>✏</span>
-                    </button>
-                </div>
+<!-- Link to Profile CSS -->
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/profile_style.css">
 
-                <!-- Address -->
-                <div class="info-row">
-                    <div class="info-label">Address</div>
-                    <div class="info-value">- 123 Main Street, Colombo 01, Sri Lanka</div>
-                </div>
-            </div>
+<!-- Password Change Modal -->
+<?php if ($showPasswordModal): ?>
+<div class="modal-overlay">
+    <div class="change-modal">
+        <div class="modal-header">
+            <h3>Change Password</h3>
+            <a href="?" class="close-btn">&times;</a>
         </div>
-    </div>
-
-    <!-- Edit Modal -->
-    <div id="editModal" class="modal" style="display: none;">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Edit Information</h3>
-                <button class="close-btn" onclick="closeEditModal()">
-                    <span>×</span>
-                </button>
-            </div>
-            <form id="editForm">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label id="fieldLabel">Field</label>
-                        <input type="text" id="fieldInput" required>
-                        <input type="password" id="passwordInput" style="display: none;">
-                        <input type="password" id="confirmPasswordInput" style="display: none;" placeholder="Confirm Password">
-                    </div>
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" name="current_password" required placeholder="Enter current password">
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Cancel</button>
-                    <button type="submit" class="btn-save">Save Changes</button>
+                
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" name="new_password" required placeholder="Enter new password">
                 </div>
+                
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" name="confirm_password" required placeholder="Confirm new password">
+                </div>
+                
+                <button type="submit" name="change_password" class="save-btn">Save Changes</button>
             </form>
         </div>
     </div>
+</div>
+<?php endif; ?>
 
-    <!-- Profile Image Modal -->
-    <div id="profileImageModal" class="modal" style="display: none;">
+<!-- Contact Change Modal -->
+<?php if ($showContactModal): ?>
+<div class="modal-overlay">
+    <div class="change-modal">
+        <div class="modal-header">
+            <h3>Change Contact Number</h3>
+            <a href="?" class="close-btn">&times;</a>
+        </div>
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Change Profile Image</h3>
-                <button class="close-btn" onclick="closeProfileImageModal()">
-                    <span>×</span>
-                </button>
-            </div>
-            <form id="profileImageForm" enctype="multipart/form-data">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Select New Image</label>
-                        <input type="file" id="profileImageInput" accept="image/*" required>
-                        <div class="image-preview" id="imagePreview" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview">
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label>Contact Number</label>
+                    <input type="tel" name="new_contact" value="<?php echo htmlspecialchars($clientData['contact']); ?>" required placeholder="Enter new contact number">
+                </div>
+                
+                <button type="submit" name="change_contact" class="save-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<!-- Email Change Modal -->
+<?php if ($showEmailModal): ?>
+<div class="modal-overlay">
+    <div class="change-modal">
+        <div class="modal-header">
+            <h3>Change Email Address</h3>
+            <a href="?" class="close-btn">&times;</a>
+        </div>
+        <div class="modal-content">
+            <form method="POST" action="">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="new_email" value="<?php echo htmlspecialchars($clientData['email']); ?>" required placeholder="Enter new email">
+                </div>
+                
+                <button type="submit" name="change_email" class="save-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
+<div class="main-content">
+    <div class="profile-container">
+        <div class="profile-header">
+            <h2>My Profile</h2>
+            <p>Manage your account information and settings</p>
+        </div>
+
+        <?php if ($message): ?>
+        <div class="success-message">
+            <span class="material-icons">check_circle</span>
+            <?php echo htmlspecialchars($message); ?>
+        </div>
+        <?php endif; ?>
+
+        <div class="profile-grid">
+            <!-- Profile Card -->
+            <div class="profile-card">
+                <div class="card-header">
+                    <span class="material-icons">account_circle</span>
+                    <h3>Profile Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="profile-avatar-large">
+                        <div class="avatar-circle-large">
+                            <span class="material-icons">person</span>
                         </div>
                     </div>
+                    <div class="profile-name">
+                        <?php echo htmlspecialchars($clientData['name']); ?>
+                    </div>
+                    <div class="profile-role">Client Account</div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn-cancel" onclick="closeProfileImageModal()">Cancel</button>
-                    <button type="submit" class="btn-save">Upload Image</button>
+            </div>
+
+            <!-- Contact Information Card -->
+            <div class="info-card">
+                <div class="card-header">
+                    <span class="material-icons">contact_phone</span>
+                    <h3>Contact Information</h3>
                 </div>
-            </form>
+                <div class="card-body">
+                    <div class="info-row">
+                        <div class="info-icon">
+                            <span class="material-icons">phone</span>
+                        </div>
+                        <div class="info-details">
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value"><?php echo htmlspecialchars($clientData['contact']); ?></div>
+                        </div>
+                        <a href="?change_contact=1" class="action-btn">
+                            <span class="material-icons">edit</span>
+                        </a>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-icon">
+                            <span class="material-icons">email</span>
+                        </div>
+                        <div class="info-details">
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value"><?php echo htmlspecialchars($clientData['email']); ?></div>
+                        </div>
+                        <a href="?change_email=1" class="action-btn">
+                            <span class="material-icons">edit</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Card -->
+            <div class="security-card">
+                <div class="card-header">
+                    <span class="material-icons">security</span>
+                    <h3>Security Settings</h3>
+                </div>
+                <div class="card-body">
+                    <div class="security-item">
+                        <div class="security-icon">
+                            <span class="material-icons">lock</span>
+                        </div>
+                        <div class="security-details">
+                            <div class="security-title">Password</div>
+                            <div class="security-desc">Change your account password</div>
+                        </div>
+                        <a href="?change_password=1" class="btn-primary">
+                            Change Password
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+</div>
+
 </main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-<script src="<?php echo URL_ROOT; ?>/js/supervisor/profile.js"></script>
-

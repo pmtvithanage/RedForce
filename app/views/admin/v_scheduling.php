@@ -120,6 +120,153 @@
     <button class="add-site">Add Site</button>
   </div>
 </template>
+
+<!-- Officers Table Popup -->
+<div id="officersPopup" class="popup-overlay" style="display: none;">
+  <div class="popup-content">
+    <div class="popup-header">
+      <h3>Available Officers</h3>
+      <button class="close-popup">&times;</button>
+    </div>
+    <div class="popup-body">
+      <table class="officers-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Officer ID</th>
+            <th>Officer</th>
+            <th>Rank</th>
+            <th>Status</th>
+            <th>Assignment</th>
+            <th>Rating</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>PF231</td>
+            <td> Nuwan Perera</td>
+            <td>OIC</td>
+            <td>On Duty</td>
+            <td>People's Bank PLC</td>
+            <td>1403</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>PF416</td>
+            <td> Kasun Silva</td>
+            <td>OIC</td>
+            <td>On Leave</td>
+            <td>Cargills PLC</td>
+            <td>1399</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>PF664</td>
+            <td> Dilan Jayasuriya</td>
+            <td>OIC</td>
+            <td>On Duty</td>
+            <td>Aitken Spence PLC</td>
+            <td>1382</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>PF220</td>
+            <td> Chamika Bandara</td>
+            <td>Level 4</td>
+            <td>On Duty</td>
+            <td>Sri Lanka Telecom</td>
+            <td>1380</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>PF100</td>
+            <td> Suranga Kumara</td>
+            <td>OIC</td>
+            <td>On Duty</td>
+            <td>Petroleum Corporation</td>
+            <td>1376</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td>PF230</td>
+            <td> Tharindu Wickramasinghe</td>
+            <td>Level 3</td>
+            <td>On Break</td>
+            <td>People's Bank PLC</td>
+            <td>1373</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+          <tr>
+            <td>7</td>
+            <td>DE141</td>
+            <td> Malinda Lacash</td>
+            <td>Level 4</td>
+            <td>On Leave</td>
+            <td>Mausloka Locatial</td>
+            <td>1370</td>
+            <td><button class="select-officer">Select</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- New Duty Point Popup -->
+<div id="newDutyPointPopup" class="popup-overlay" style="display: none;">
+  <div class="popup-content new-duty-popup">
+    <div class="popup-header">
+      <h3>Create New Duty Point</h3>
+      <button class="close-popup">&times;</button>
+    </div>
+    <div class="popup-body">
+      <form id="newDutyPointForm" class="duty-point-form">
+        <div class="form-group">
+          <label for="dutyPointName">Duty Point Name</label>
+          <input type="text" id="dutyPointName" placeholder="Enter duty point name" required>
+        </div>
+
+        <div class="supervisors-section">
+          <h4>Supervisors</h4>
+          <div class="form-group">
+            <label>Day Supervisor</label>
+            <div class="supervisor-input-group">
+              <input type="text" id="daySupervisor" placeholder="Select day supervisor" readonly>
+              <button type="button" class="select-supervisor-btn" data-duty="day">Select</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Night Supervisor</label>
+            <div class="supervisor-input-group">
+              <input type="text" id="nightSupervisor" placeholder="Select night supervisor" readonly>
+              <button type="button" class="select-supervisor-btn" data-duty="night">Select</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="officers-section">
+          <h4>Officers</h4>
+          <div id="newOfficersList" class="officers-list">
+            <!-- Officers will be added here dynamically -->
+          </div>
+          <button type="button" class="add-officer-btn">Add Officer</button>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">Cancel</button>
+          <button type="submit" class="create-btn">Create Duty Point</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
     
     </main>
     </div>

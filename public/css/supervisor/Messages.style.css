@@ -63,16 +63,22 @@ body {
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff;
+
   background: #d32f2f;
   flex: 0 0 42px;
+
+  background: #6c757d;
+  flex: 0 0 40px;
+  font-size: 14px;
+
 }
 
 .avatar[data-initials]:before {
@@ -88,11 +94,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .sender {
   font-weight: 600;
+  font-size: 14px;
+  color: #333;
 }
 
 .time {
@@ -102,16 +110,17 @@ body {
 
 .subject {
   font-weight: 600;
-  color: #111;
+  color: #333;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 14px;
 }
 
 .preview {
-  font-size: 13px;
-  color: #555;
+  font-size: 14px;
+  color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
