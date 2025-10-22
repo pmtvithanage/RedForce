@@ -161,37 +161,37 @@ class M_admin {
         return $this->db->single();
     }
 
-// Approve leave request
-public function approveLeaveRequest($id, $admin_id) {
-    $this->db->query("
-        UPDATE leave_requests 
-        SET status = 'Approved', 
-            reviewed_by = :admin_id, 
-            reviewed_at = NOW()
-        WHERE id = :id
-    ");
-    $this->db->bind(':id', $id);
-    $this->db->bind(':admin_id', $admin_id);
-    $this->db->execute();
-    return $this->db->rowCount() > 0;
-}
+    // Approve leave request
+    public function approveLeaveRequest($id, $admin_id) {
+        $this->db->query("
+            UPDATE leave_requests 
+            SET status = 'Approved', 
+                reviewed_by = :admin_id, 
+                reviewed_at = NOW()
+            WHERE id = :id
+        ");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
 
-// Reject leave request
-public function rejectLeaveRequest($id, $admin_id, $reason) {
-    $this->db->query("
-        UPDATE leave_requests 
-        SET status = 'Rejected', 
-            admin_response = :reason,
-            reviewed_by = :admin_id, 
-            reviewed_at = NOW()
-        WHERE id = :id
-    ");
-    $this->db->bind(':id', $id);
-    $this->db->bind(':admin_id', $admin_id);
-    $this->db->bind(':reason', $reason);
-    $this->db->execute();
-    return $this->db->rowCount() > 0;
-}
+    // Reject leave request
+    public function rejectLeaveRequest($id, $admin_id, $reason) {
+        $this->db->query("
+            UPDATE leave_requests 
+            SET status = 'Rejected', 
+                admin_response = :reason,
+                reviewed_by = :admin_id, 
+                reviewed_at = NOW()
+            WHERE id = :id
+        ");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->bind(':reason', $reason);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
 
     // Get leave request statistics
     public function getLeaveRequestStats() {

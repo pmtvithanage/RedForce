@@ -44,7 +44,7 @@ body {
   width: 100%;
   text-align: left;
   padding: 14px 16px;
-  background: #fff;
+  background: #f0f0f0;
   border: 0;
   border-top: 1px solid #f7e1e6;
   cursor: pointer;
@@ -63,16 +63,22 @@ body {
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 600;
   color: #fff;
-  background: #e91e63;
+
+  background: #d32f2f;
   flex: 0 0 42px;
+
+  background: #6c757d;
+  flex: 0 0 40px;
+  font-size: 14px;
+
 }
 
 .avatar[data-initials]:before {
@@ -88,11 +94,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2px;
+  margin-bottom: 4px;
 }
 
 .sender {
   font-weight: 600;
+  font-size: 14px;
+  color: #333;
 }
 
 .time {
@@ -102,16 +110,17 @@ body {
 
 .subject {
   font-weight: 600;
-  color: #111;
+  color: #333;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 14px;
 }
 
 .preview {
-  font-size: 13px;
-  color: #555;
+  font-size: 14px;
+  color: #666;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -140,8 +149,8 @@ body {
 .chat-card {
   width: min(920px, 96vw);
   height: min(560px, 86vh);
-  background: #fff;
-  border: 1px solid #f0d6dc;
+  background: #ffffff;
+  border: 1px solid #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
   display: flex;
@@ -153,8 +162,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #f0d6dc;
-  background: #fff;
+  border-bottom: 1px solid #ddd;
+  background: #f8f9fa;
   gap: 16px;
 }
 
@@ -205,7 +214,7 @@ body {
 .messages {
   flex: 1;
   overflow: auto;
-  background: #fdeff3;
+  background: #ffffff;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -270,9 +279,9 @@ body {
 }
 
 .send {
-  background: #e91e63;
+  background: #c5a7b1;
   color: #fff;
-  border: 1px solid #e91e63;
+  border: 1px solid #cfaab7;
   border-radius: 16px;
   padding: 8px 12px;
   cursor: pointer;

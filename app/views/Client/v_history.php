@@ -270,4 +270,29 @@ if (isset($_GET['year'])) {
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+
+<script>
+// Site filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const siteFilter = document.querySelector('.site-filter');
+    
+    if (siteFilter) {
+        siteFilter.addEventListener('change', function() {
+            const filterValue = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll('.data-table tbody tr');
+            
+            tableRows.forEach(function(row) {
+                const siteName = row.cells[0].textContent.toLowerCase();
+                
+                if (filterValue === '' || siteName.includes(filterValue)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+});
+</script>
+
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
