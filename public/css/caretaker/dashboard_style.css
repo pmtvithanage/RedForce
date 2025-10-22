@@ -67,6 +67,12 @@
   grid-template-columns: 1fr;
   gap: 18px;
 }
+
+.stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
 .stat-card {
   background: #fff;
   border-radius: 10px;
