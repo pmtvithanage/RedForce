@@ -102,21 +102,25 @@ class M_admin {
                     WHEN lr.caretaker_id IS NOT NULL THEN u1.name
                     WHEN lr.supervisor_id IS NOT NULL THEN u2.name
                     WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
                 END as employee_name,
                 CASE 
                     WHEN lr.caretaker_id IS NOT NULL THEN u1.email
                     WHEN lr.supervisor_id IS NOT NULL THEN u2.email
                     WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
                 END as employee_email,
                 CASE 
                     WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
                     WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
                     WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
                 END as employee_role
             FROM leave_requests lr
             LEFT JOIN users u1 ON lr.caretaker_id = u1.id
             LEFT JOIN users u2 ON lr.supervisor_id = u2.id
             LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
@@ -132,58 +136,62 @@ class M_admin {
                     WHEN lr.caretaker_id IS NOT NULL THEN u1.name
                     WHEN lr.supervisor_id IS NOT NULL THEN u2.name
                     WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
                 END as employee_name,
                 CASE 
                     WHEN lr.caretaker_id IS NOT NULL THEN u1.email
                     WHEN lr.supervisor_id IS NOT NULL THEN u2.email
                     WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
                 END as employee_email,
                 CASE 
                     WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
                     WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
                     WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
                 END as employee_role
             FROM leave_requests lr
             LEFT JOIN users u1 ON lr.caretaker_id = u1.id
             LEFT JOIN users u2 ON lr.supervisor_id = u2.id
             LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.id = :id
         ");
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
 
-// Approve leave request
-public function approveLeaveRequest($id, $admin_id) {
-    $this->db->query("
-        UPDATE leave_requests 
-        SET status = 'Approved', 
-            reviewed_by = :admin_id, 
-            reviewed_at = NOW()
-        WHERE id = :id
-    ");
-    $this->db->bind(':id', $id);
-    $this->db->bind(':admin_id', $admin_id);
-    $this->db->execute();
-    return $this->db->rowCount() > 0;
-}
+    // Approve leave request
+    public function approveLeaveRequest($id, $admin_id) {
+        $this->db->query("
+            UPDATE leave_requests 
+            SET status = 'Approved', 
+                reviewed_by = :admin_id, 
+                reviewed_at = NOW()
+            WHERE id = :id
+        ");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
 
-// Reject leave request
-public function rejectLeaveRequest($id, $admin_id, $reason) {
-    $this->db->query("
-        UPDATE leave_requests 
-        SET status = 'Rejected', 
-            admin_response = :reason,
-            reviewed_by = :admin_id, 
-            reviewed_at = NOW()
-        WHERE id = :id
-    ");
-    $this->db->bind(':id', $id);
-    $this->db->bind(':admin_id', $admin_id);
-    $this->db->bind(':reason', $reason);
-    $this->db->execute();
-    return $this->db->rowCount() > 0;
-}
+    // Reject leave request
+    public function rejectLeaveRequest($id, $admin_id, $reason) {
+        $this->db->query("
+            UPDATE leave_requests 
+            SET status = 'Rejected', 
+                admin_response = :reason,
+                reviewed_by = :admin_id, 
+                reviewed_at = NOW()
+            WHERE id = :id
+        ");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->bind(':reason', $reason);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
 
     // Get leave request statistics
     public function getLeaveRequestStats() {
