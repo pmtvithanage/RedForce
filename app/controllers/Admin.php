@@ -31,7 +31,14 @@ class Admin extends Controller {
     }
 
     public function clients() {
-        $data = ['title' => 'Clients'];
+        // Get pending service requests count for notification badge
+        $requestStats = $this->adminModel->getServiceRequestStats();
+        $pendingCount = $requestStats->pending ?? 0;
+        
+        $data = [
+            'title' => 'Clients',
+            'pendingRequestsCount' => $pendingCount
+        ];
         $this->view('admin/v_clients', $data);  
     }
 
