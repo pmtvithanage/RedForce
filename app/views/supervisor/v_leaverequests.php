@@ -2,6 +2,7 @@
 
 <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/supervisor/leaverequest.style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Content will be loaded here -->
      <main class="main-content">
@@ -45,7 +46,7 @@
                                     </div>
                                     <div class="calendar-days" id="startCalendarDays"></div>
                                 </div>
-                                <i class="calendar-icon" onclick="toggleCalendar('startCalendar')">📅</i>
+                                <i class="calendar-icon fas fa-calendar-alt" onclick="toggleCalendar('startCalendar')"></i>
                             </div>
                         </div>
                         
@@ -64,7 +65,7 @@
                                     </div>
                                     <div class="calendar-days" id="endCalendarDays"></div>
                                 </div>
-                                <i class="calendar-icon" onclick="toggleCalendar('endCalendar')">📅</i>
+                                <i class="calendar-icon fas fa-calendar-alt" onclick="toggleCalendar('endCalendar')"></i>
                             </div>
                         </div>
                     </div>
