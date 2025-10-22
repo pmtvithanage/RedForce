@@ -13,7 +13,7 @@
       </div>
     </div>
 
-    <div class="stat-card">
+    <div class="stat-card" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientRequests'" style="cursor: pointer;">
       <div class="stat-pill pill-right"></div>
       <div class="stat-body">
         <div class="stat-value" id="requestsCount">0</div>
