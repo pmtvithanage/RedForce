@@ -44,7 +44,7 @@ body {
   width: 100%;
   text-align: left;
   padding: 14px 16px;
-  background: #f0f0f0;
+  background: #fff;
   border: 0;
   border-top: 1px solid #f7e1e6;
   cursor: pointer;
@@ -72,11 +72,8 @@ body {
   font-weight: 600;
   color: #fff;
 
-  background: #d32f2f;
+  background: #e91e63;
   flex: 0 0 42px;
-
-  background: #6c757d;
-  flex: 0 0 40px;
   font-size: 14px;
 
 }
@@ -110,7 +107,7 @@ body {
 
 .subject {
   font-weight: 600;
-  color: #333;
+  color: #111;
   margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -120,7 +117,7 @@ body {
 
 .preview {
   font-size: 14px;
-  color: #666;
+  color: #555;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -149,8 +146,8 @@ body {
 .chat-card {
   width: min(920px, 96vw);
   height: min(560px, 86vh);
-  background: #ffffff;
-  border: 1px solid #f8f9fa;
+  background: #fff;
+  border: 1px solid #f0d6dc;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
   display: flex;
@@ -162,8 +159,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #ddd;
-  background: #f8f9fa;
+  border-bottom: 1px solid #f0d6dc;
+  background: #fff;
   gap: 16px;
 }
 
@@ -214,7 +211,7 @@ body {
 .messages {
   flex: 1;
   overflow: auto;
-  background: #ffffff;
+  background: #fdeff3;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -279,9 +276,9 @@ body {
 }
 
 .send {
-  background: #c5a7b1;
+  background: #e91e63;
   color: #fff;
-  border: 1px solid #cfaab7;
+  border: 1px solid #e91e63;
   border-radius: 16px;
   padding: 8px 12px;
   cursor: pointer;

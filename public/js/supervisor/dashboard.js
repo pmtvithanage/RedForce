@@ -11,19 +11,33 @@ const officers = [
 
 function renderRows(list) {
   const tbody = document.getElementById('attendanceBody');
+  if (!tbody) return;
+  
   tbody.innerHTML = '';
+  
+  if (list.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
+          No officers found
+        </td>
+      </tr>
+    `;
+    return;
+  }
+  
   list.forEach(({ name, status }) => {
     const tr = document.createElement('tr');
-    const statusChip = status === 'present'
-      ? `<span class="status-chip status-present"><i class="fas fa-circle-check"></i> Present</span>`
-      : `<span class="status-chip status-absent"><i class="fas fa-circle-xmark"></i> Absent</span>`;
+    const statusBadge = status === 'present'
+      ? `<span class="status-badge present">Present</span>`
+      : `<span class="status-badge absent">Absent</span>`;
 
     tr.innerHTML = `
-      <td>${name}</td>
-      <td>${statusChip}</td>
-      <td class="action-icons">
-        <i class="fas fa-check"></i>
-        <i class="fas fa-times fail"></i>
+      <td><a href="#" class="name-link">${name}</a></td>
+      <td>${statusBadge}</td>
+      <td>
+        <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
+        <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -33,17 +47,10 @@ function renderRows(list) {
 function attachHandlers() {
   const searchInput = document.getElementById('searchInput');
   if (searchInput) {
-    searchInput.addEventListener('input', () => {
-      const term = searchInput.value.toLowerCase();
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
       const filtered = officers.filter(o => o.name.toLowerCase().includes(term));
       renderRows(filtered);
-    });
-  }
-
-  const scanBtn = document.getElementById('scanBtn');
-  if (scanBtn) {
-    scanBtn.addEventListener('click', () => {
-      alert('Opening QR Scanner... (placeholder)');
     });
   }
 }
