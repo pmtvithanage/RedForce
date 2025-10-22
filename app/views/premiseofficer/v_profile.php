@@ -47,13 +47,13 @@ if (isset($_GET['change_email'])) {
 }
 ?>
 
-<?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
 
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <!-- Link to Profile CSS -->
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/profile_style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseOfficer/profile_style.css">
 
 <!-- Password Change Modal -->
 <?php if ($showPasswordModal): ?>
