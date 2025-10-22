@@ -128,7 +128,9 @@ CREATE TABLE
 CREATE TABLE
     IF NOT EXISTS leave_requests (
         id INT (11) AUTO_INCREMENT PRIMARY KEY,
-        caretaker_id INT (11) NOT NULL,
+        caretaker_id INT (11) DEFAULT NULL,
+        supervisor_id INT (11) DEFAULT NULL,
+        mobilerider_id INT (11) DEFAULT NULL,
         leave_type VARCHAR(50) NOT NULL,
         reason TEXT NOT NULL,
         start_date DATE NOT NULL,
@@ -137,7 +139,9 @@ CREATE TABLE
         status ENUM ('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (caretaker_id) REFERENCES users (id) ON DELETE CASCADE
+        FOREIGN KEY (caretaker_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (supervisor_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (mobilerider_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
 CREATE TABLE
