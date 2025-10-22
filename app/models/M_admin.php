@@ -93,24 +93,68 @@ class M_admin {
     // Leave Request Management
     // ==============================
     
-    // Get all pending leave requests
+    // Get all pending leave requests (from all roles)
     public function getPendingLeaveRequests() {
         $this->db->query("
-            SELECT lr.*, u.name as caretaker_name, u.email as caretaker_email
+            SELECT 
+                lr.*,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.name
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.name
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
+                END as employee_name,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.email
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.email
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
+                END as employee_email,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
+                    WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
+                    WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
+                END as employee_role
             FROM leave_requests lr
-            JOIN users u ON lr.caretaker_id = u.id
+            LEFT JOIN users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
         return $this->db->resultSet();
     }
 
-    // Get leave request by ID
+    // Get leave request by ID (from all roles)
     public function getLeaveRequestById($id) {
         $this->db->query("
-            SELECT lr.*, u.name as caretaker_name, u.email as caretaker_email
+            SELECT 
+                lr.*,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.name
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.name
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
+                END as employee_name,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.email
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.email
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
+                END as employee_email,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
+                    WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
+                    WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
+                END as employee_role
             FROM leave_requests lr
-            JOIN users u ON lr.caretaker_id = u.id
+            LEFT JOIN users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.id = :id
         ");
         $this->db->bind(':id', $id);
