@@ -13,10 +13,12 @@
       </div>
     </div>
 
-    <div class="stat-card" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientRequests'" style="cursor: pointer;">
+    <div class="stat-card client-requests-card" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientRequests'">
+      <?php if (isset($data['pendingRequestsCount']) && $data['pendingRequestsCount'] > 0): ?>
+        <span class="notification-badge"><?php echo $data['pendingRequestsCount']; ?></span>
+      <?php endif; ?>
       <div class="stat-pill pill-right"></div>
       <div class="stat-body">
-        <div class="stat-value" id="requestsCount">0</div>
         <div class="stat-label">Client Requests</div>
       </div>
     </div>
