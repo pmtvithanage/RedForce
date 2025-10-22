@@ -339,6 +339,6 @@
     
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/components/advertisements_view.js"></script>
+    <script src="<?php echo URL_ROOT; ?>/js/supervisor/dashboard.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/supervisor/qr_scanner.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-<script src="<?= URL_ROOT ?>/js/caretaker/dashboard.js"></script>
