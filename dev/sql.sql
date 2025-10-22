@@ -176,3 +176,16 @@ CREATE TABLE
         INDEX idx_status (status),
         INDEX idx_submitted_date (submitted_date)
     );
+-- Attendance table for QR scanner
+CREATE TABLE IF NOT EXISTS attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    officer_id VARCHAR(50) NOT NULL,
+    supervisor_id INT NOT NULL,
+    timestamp DATETIME NOT NULL,
+    status ENUM('present', 'absent') DEFAULT 'present',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (supervisor_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_officer_id (officer_id),
+    INDEX idx_supervisor_id (supervisor_id),
+    INDEX idx_timestamp (timestamp)
+);
