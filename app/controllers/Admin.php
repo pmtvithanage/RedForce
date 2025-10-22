@@ -35,6 +35,40 @@ class Admin extends Controller {
         $this->view('admin/v_clients', $data);  
     }
 
+    public function clientRequests() {
+        // Handle approve/reject actions
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (isset($_POST['approve_request'])) {
+                $requestId = $_POST['request_id'];
+                if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
+                    flash('request_success', 'Service request approved successfully');
+                } else {
+                    flash('request_error', 'Failed to approve service request');
+                }
+            } elseif (isset($_POST['reject_request'])) {
+                $requestId = $_POST['request_id'];
+                if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
+                    flash('request_success', 'Service request rejected');
+                } else {
+                    flash('request_error', 'Failed to reject service request');
+                }
+            }
+            redirect('admin/clientRequests');
+        }
+
+        // Get all service requests
+        $serviceRequests = $this->adminModel->getAllServiceRequests();
+        $requestStats = $this->adminModel->getServiceRequestStats();
+
+        $data = [
+            'title' => 'Client Service Requests',
+            'serviceRequests' => $serviceRequests,
+            'requestStats' => $requestStats
+        ];
+        
+        $this->view('admin/v_client_requests', $data);
+    }
+
     public function scheduling() {
         $data = ['title' => 'Scheduling'];
         $this->view('admin/v_scheduling', $data);

@@ -161,4 +161,57 @@ public function rejectLeaveRequest($id, $admin_id, $reason) {
         ");
         return $this->db->single();
     }
+
+    // ==============================
+    // Service Request Management
+    // ==============================
+    
+    // Get all service requests from clients
+    public function getAllServiceRequests() {
+        $this->db->query("
+            SELECT sr.*, u.name as client_name, u.email as client_email
+            FROM service_requests sr
+            JOIN users u ON sr.client_id = u.id
+            ORDER BY sr.submitted_date DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    // Get service request by ID
+    public function getServiceRequestById($id) {
+        $this->db->query("
+            SELECT sr.*, u.name as client_name, u.email as client_email
+            FROM service_requests sr
+            JOIN users u ON sr.client_id = u.id
+            WHERE sr.id = :id
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    // Update service request status (Approve/Reject)
+    public function updateServiceRequestStatus($id, $status) {
+        $this->db->query("
+            UPDATE service_requests 
+            SET status = :status, 
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':status', $status);
+        return $this->db->execute();
+    }
+
+    // Get service request statistics
+    public function getServiceRequestStats() {
+        $this->db->query("
+            SELECT 
+                COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending,
+                COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved,
+                COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected,
+                COUNT(*) as total
+            FROM service_requests
+        ");
+        return $this->db->single();
+    }
 }
