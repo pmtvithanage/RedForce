@@ -20,9 +20,7 @@
                         <select id="leaveType" name="leave_type" required>
                             <option value="">Select leave type</option>
                             <option value="Sick Leave">Sick Leave</option>
-                            <option value="Vacation">Vacation</option>
-                            <option value="Personal Leave">Personal Leave</option>
-                            <option value="Emergency Leave">Emergency Leave</option>
+                            <option value="Vacation">Vacation</option>git
                             <option value="Other">Other</option>
                         </select>
                     </div>

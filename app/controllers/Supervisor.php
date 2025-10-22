@@ -282,5 +282,65 @@ class Supervisor extends Controller {
         $this->view('supervisor/v_profile', $data);
     }
 
+    // Mark Attendance via QR Scanner
+    public function markAttendance() {
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        // Get supervisor ID from session
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$supervisor_id) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+            return;
+        }
+        
+        // Get JSON input
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        if (!$input || !isset($input['officer_id']) || !isset($input['name'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid QR code data']);
+            return;
+        }
+        
+        $officer_id = trim($input['officer_id']);
+        $officer_name = trim($input['name']);
+        $timestamp = $input['timestamp'] ?? date('Y-m-d H:i:s');
+        
+        // Validate officer_id
+        if (empty($officer_id)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Officer ID is required']);
+            return;
+        }
+        
+        // Mark attendance in database
+        $result = $this->supervisorModel->markAttendance($officer_id, $supervisor_id, $timestamp);
+        
+        header('Content-Type: application/json');
+        if ($result === true) {
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Attendance marked successfully for ' . $officer_name
+            ]);
+        } elseif ($result === 'duplicate') {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Attendance already marked for today'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Failed to mark attendance. Please try again.'
+            ]);
+        }
+    }
+
 
 }
