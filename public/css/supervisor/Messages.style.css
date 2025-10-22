@@ -44,7 +44,7 @@ body {
   width: 100%;
   text-align: left;
   padding: 14px 16px;
-  background: #fff;
+  background: #f0f0f0;
   border: 0;
   border-top: 1px solid #f7e1e6;
   cursor: pointer;
@@ -71,9 +71,14 @@ body {
   justify-content: center;
   font-weight: 600;
   color: #fff;
+
+  background: #d32f2f;
+  flex: 0 0 42px;
+
   background: #6c757d;
   flex: 0 0 40px;
   font-size: 14px;
+
 }
 
 .avatar[data-initials]:before {
@@ -144,8 +149,8 @@ body {
 .chat-card {
   width: min(920px, 96vw);
   height: min(560px, 86vh);
-  background: #fff;
-  border: 1px solid #f0d6dc;
+  background: #ffffff;
+  border: 1px solid #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
   display: flex;
@@ -157,8 +162,8 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #f0d6dc;
-  background: #fff;
+  border-bottom: 1px solid #ddd;
+  background: #f8f9fa;
   gap: 16px;
 }
 
@@ -209,7 +214,7 @@ body {
 .messages {
   flex: 1;
   overflow: auto;
-  background: #fdeff3;
+  background: #ffffff;
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -274,9 +279,9 @@ body {
 }
 
 .send {
-  background: #e91e63;
+  background: #c5a7b1;
   color: #fff;
-  border: 1px solid #e91e63;
+  border: 1px solid #cfaab7;
   border-radius: 16px;
   padding: 8px 12px;
   cursor: pointer;

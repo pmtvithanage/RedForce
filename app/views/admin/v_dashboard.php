@@ -245,7 +245,8 @@
       <?php foreach(array_slice($data['pendingLeaves'], 0, 3) as $leave): ?>
         <div class="pending-item">
           <div class="pending-info">
-            <strong><?= htmlspecialchars($leave->caretaker_name) ?></strong>
+            <strong><?= htmlspecialchars($leave->employee_name) ?></strong>
+            <span class="pending-role"><?= htmlspecialchars($leave->employee_role) ?></span>
             <span class="pending-type"><?= htmlspecialchars($leave->leave_type) ?></span>
             <small><?= date('d/m/Y', strtotime($leave->start_date)) ?> - <?= date('d/m/Y', strtotime($leave->end_date)) ?></small>
           </div>
@@ -289,8 +290,9 @@
             <div class="leave-detail-card">
               <div class="leave-header">
                 <div class="caretaker-info">
-                  <h4><?= htmlspecialchars($leave->caretaker_name) ?></h4>
-                  <span class="email"><?= htmlspecialchars($leave->caretaker_email) ?></span>
+                  <h4><?= htmlspecialchars($leave->employee_name) ?></h4>
+                  <span class="role-badge"><?= htmlspecialchars($leave->employee_role) ?></span>
+                  <span class="email"><?= htmlspecialchars($leave->employee_email) ?></span>
                 </div>
                 <span class="status-badge pending">Pending</span>
               </div>
