@@ -70,9 +70,11 @@
     </div>
 
     <div class="chat-input">
-      <input type="text" placeholder="Type a message">
-      <button class="sent-btn">^</button>
-    </div>
+  <input type="text" placeholder="Type a message">
+  <button class="sent-btn">
+    <span class="material-icons">send</span>
+  </button>
+</div>
   </div>
 
 </div>
