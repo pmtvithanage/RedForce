@@ -190,4 +190,33 @@ window.onclick = function(event) {
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard loaded successfully');
+    
+    // Initialize search functionality
+    const searchInput = document.querySelector('.search-input');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            filterMessages(this.value);
+        });
+    }
 });
+
+// Filter messages based on search input
+function filterMessages(searchTerm) {
+    const messageItems = document.querySelectorAll('.message-item');
+    const searchLower = searchTerm.toLowerCase().trim();
+    
+    messageItems.forEach(item => {
+        const senderElement = item.querySelector('.message-sender');
+        const textElement = item.querySelector('.message-text');
+        
+        const senderText = senderElement ? senderElement.textContent.toLowerCase() : '';
+        const messageText = textElement ? textElement.textContent.toLowerCase() : '';
+        
+        // Check if search term matches sender name or message text
+        if (senderText.includes(searchLower) || messageText.includes(searchLower)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}

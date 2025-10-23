@@ -307,7 +307,7 @@
             <div class="message-input-container">
                 <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleMessageKeyPress(event)">
                 <button onclick="sendMessage()" class="send-btn">
-                    <span class="material-icons">mic</span>
+                    <span class="material-icons">send</span>
                 </button>
             </div>
         </div>

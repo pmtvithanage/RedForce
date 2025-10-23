@@ -2,7 +2,7 @@
 .main-content {
     flex: 1;
     padding: 2rem;
-    background: #f8f9fa;
+    background: #fde8ec;
     overflow-y: auto;
     min-height: 100vh;
 }

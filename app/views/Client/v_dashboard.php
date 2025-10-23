@@ -60,6 +60,10 @@
                 <h2 class="section-title">Messages</h2>
             </div>
             <div class="section-content">
+                <div class="search-container">
+                    <input type="text" placeholder="Search" class="search-input">
+                </div>
+                
                 <div class="message-item" onclick="openChatModal(1)" data-sender="Admin - Red Force" data-message="Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurune...">
                     <div class="message-avatar">A</div>
                     <div class="message-content">
@@ -224,7 +228,7 @@
             <div class="message-input-container">
                 <input type="text" id="messageInput" placeholder="Type a message" onkeypress="handleMessageKeyPress(event)">
                 <button onclick="sendMessage()" class="send-btn">
-                    <span class="material-icons">mic</span>
+                    <span class="material-icons">send</span>
                 </button>
             </div>
         </div>
