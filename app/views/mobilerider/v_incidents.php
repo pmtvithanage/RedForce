@@ -4,6 +4,8 @@
 
 <?php
 $incident_reports = $data['incident_reports'];
+$incident_stats = $data['incident_stats'] ?? [];
+
 // Sort incidents by created date (newest first)
 usort($incident_reports, function ($a, $b) {
     return strtotime($b->created_at) - strtotime($a->created_at);
@@ -11,6 +13,16 @@ usort($incident_reports, function ($a, $b) {
 
 // Keep only the 4 most recent
 $recent_incidents = array_slice($incident_reports, 0, 4);
+
+// Extract statistics with defaults
+$total_incidents = $incident_stats['total'] ?? 0;
+$open_count = $incident_stats['open'] ?? 0;
+$progress_count = $incident_stats['progress'] ?? 0;
+$resolved_count = $incident_stats['resolved'] ?? 0;
+$critical_count = $incident_stats['critical'] ?? 0;
+$high_count = $incident_stats['high'] ?? 0;
+$medium_count = $incident_stats['medium'] ?? 0;
+$low_count = $incident_stats['low'] ?? 0;
 ?>
 
 <!-- Material Icons -->
@@ -24,34 +36,34 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
     <!-- Stats Grid -->
     <div class="stats-grid">
         <div class="stat-card">
-            <div class="stat-icon incidents">📋</div>
+            <div class="stat-icon incidents"><span class="material-symbols-outlined">report</span></div>
             <div class="stat-content">
                 <div class="stat-label">Total Incidents</div>
-                <div class="stat-value"><?php echo count($incident_reports); ?></div>
+                <div class="stat-value"><?php echo $total_incidents; ?></div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon open">⚠️</div>
+            <div class="stat-icon open"><span class="material-symbols-outlined">warning</span></div>
             <div class="stat-content">
                 <div class="stat-label">Open</div>
-                <div class="stat-value">1</div>
+                <div class="stat-value"><?php echo $open_count; ?></div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon progress">📊</div>
+            <div class="stat-icon progress"><span class="material-symbols-outlined">hourglass_top</span></div>
             <div class="stat-content">
                 <div class="stat-label">In Progress</div>
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?php echo $progress_count; ?></div>
             </div>
         </div>
 
         <div class="stat-card">
-            <div class="stat-icon resolved">✅</div>
+            <div class="stat-icon resolved"><span class="material-symbols-outlined">check_circle</span></div>
             <div class="stat-content">
                 <div class="stat-label">Resolved</div>
-                <div class="stat-value">3</div>
+                <div class="stat-value"><?php echo $resolved_count; ?></div>
             </div>
         </div>
     </div>
@@ -91,11 +103,11 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
 
                         <div class="incident-meta">
                             <div class="meta-item">
-                                <span>🕐</span>
+                                <span class="material-symbols-outlined">schedule</span>
                                 <span><?= $formattedDate ?></span>
                             </div>
                             <div class="meta-item">
-                                <span>📍</span>
+                                <span class="material-symbols-outlined">location_on</span>
                                 <span><?= htmlspecialchars($incident->property_site ?: 'Unknown Location') ?></span>
                             </div>
                             <span class="status-badge status-open">Open</span>
@@ -109,7 +121,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
         <div class="right-column">
             <!-- Report Incident -->
             <div class="report-incident" onclick="reportIncident()">
-                <span class="report-icon">🔺</span>
+                <span class="report-icon material-symbols-outlined">priority_high</span>
                 <div class="report-text">Report Incident</div>
             </div>
 
@@ -120,39 +132,39 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Critical</div>
-                        <div class="severity-bar critical" style="width: 25%;"></div>
+                        <div class="severity-bar critical" style="width: <?php echo $total_incidents > 0 ? ($critical_count / $total_incidents * 100) : 0; ?>%;"></div>
                     </div>
-                    <div class="severity-count">1</div>
+                    <div class="severity-count"><?php echo $critical_count; ?></div>
                 </div>
 
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">High</div>
-                        <div class="severity-bar high" style="width: 25%;"></div>
+                        <div class="severity-bar high" style="width: <?php echo $total_incidents > 0 ? ($high_count / $total_incidents * 100) : 0; ?>%;"></div>
                     </div>
-                    <div class="severity-count">1</div>
+                    <div class="severity-count"><?php echo $high_count; ?></div>
                 </div>
 
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Medium</div>
-                        <div class="severity-bar medium" style="width: 50%;"></div>
+                        <div class="severity-bar medium" style="width: <?php echo $total_incidents > 0 ? ($medium_count / $total_incidents * 100) : 0; ?>%;"></div>
                     </div>
-                    <div class="severity-count">2</div>
+                    <div class="severity-count"><?php echo $medium_count; ?></div>
                 </div>
 
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Low</div>
-                        <div class="severity-bar low" style="width: 0%;"></div>
+                        <div class="severity-bar low" style="width: <?php echo $total_incidents > 0 ? ($low_count / $total_incidents * 100) : 0; ?>%;"></div>
                     </div>
-                    <div class="severity-count">0</div>
+                    <div class="severity-count"><?php echo $low_count; ?></div>
                 </div>
             </div>
 
             <!-- View All Reports -->
             <a href="#" class="view-all" onclick="viewAllReports(); return false;">
-                <span class="view-all-icon">📂</span>
+                <span class="view-all-icon material-symbols-outlined">folder</span>
                 <div class="view-all-text">View All Incident Reports</div>
             </a>
         </div>
@@ -180,7 +192,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                     <input type="hidden" name="incident_id" id="incident_id">
 
                     <div class="section-header">
-                        <span class="section-icon">👤</span>
+                        <span class="section-icon material-symbols-outlined">person</span>
                         <span>Officer Information</span>
                     </div>
                     <div class="form-row">
@@ -209,7 +221,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Incident Type -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">⚠️</span>
+                        <span class="section-icon material-symbols-outlined">warning</span>
                         <span>Incident Type</span>
                     </div>
                     <div class="form-row single">
@@ -232,7 +244,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Date & Time -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">📅</span>
+                        <span class="section-icon material-symbols-outlined">calendar_month</span>
                         <span>Date & Time</span>
                     </div>
                     <div class="form-row">
@@ -250,7 +262,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Incident Description -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">📝</span>
+                        <span class="section-icon material-symbols-outlined">note_alt</span>
                         <span>Incident Description</span>
                     </div>
                     <div class="form-row single">
@@ -263,11 +275,11 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Upload Media -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">📎</span>
+                        <span class="section-icon material-symbols-outlined">attach_file</span>
                         <span>Upload Media (Optional)</span>
                     </div>
                     <div class="upload-area" onclick="document.getElementById('file-input').click()">
-                        <div class="upload-icon">📁</div>
+                        <div class="upload-icon material-symbols-outlined">folder</div>
                         <div class="upload-text">Click to upload or drag and drop files</div>
                         <div class="upload-subtext">PNG, JPG or PDF (Max. 10 MB each)</div>
                     </div>
@@ -278,7 +290,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Action Taken -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">✅</span>
+                        <span class="section-icon material-symbols-outlined">check_circle</span>
                         <span>Action Taken</span>
                     </div>
                     <div class="form-row single">
@@ -291,7 +303,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 <!-- Additional Details -->
                 <div class="form-section">
                     <div class="section-header">
-                        <span class="section-icon">ℹ️</span>
+                        <span class="section-icon material-symbols-outlined">info</span>
                         <span>Additional Details</span>
                     </div>
                     <div class="form-row single">
@@ -324,7 +336,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
             <!-- Submit Section -->
             <div class="submit-section">
                 <button type="submit" class="submit-btn">
-                    <span>📋</span>
+                    <span class="material-symbols-outlined">assignment</span>
                     <span>Submit Incident Report</span>
                 </button>
             </div>
@@ -342,20 +354,20 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
         <div class="modal-body">
             <div class="controls">
                 <div class="search-box">
-                    <span class="search-icon">🔍</span>
+                    <span class="search-icon material-symbols-outlined">search</span>
                     <input type="text" id="searchInput" placeholder="Search incidents...">
                 </div>
                 <div class="filter-group">
                     <button type="button" class="filter-btn" id="statusFilter">
-                        <span>⬇️</span>
+                        <span class="material-symbols-outlined">arrow_downward</span>
                         <span>All Statuses</span>
                     </button>
                     <button type="button" class="filter-btn" id="severityFilter">
-                        <span>⬇️</span>
+                        <span class="material-symbols-outlined">arrow_downward</span>
                         <span>All Severities</span>
                     </button>
                     <button type="button" class="sort-btn" id="sortBtn">
-                        <span>↕️</span>
+                        <span class="material-symbols-outlined">arrow_downward</span>
                         <span>Latest First</span>
                     </button>
                 </div>
@@ -394,8 +406,8 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 </div>
 
                 <div class="detail-actions">
-                    <button type="button" class="edit-btn" onclick="editIncident()">✏️ Edit</button>
-                    <button type="button" class="delete-btn" onclick="deleteIncident()">🗑️ Delete</button>
+                    <button type="button" class="edit-btn" onclick="editIncident()">Edit</button>
+                    <button type="button" class="delete-btn" onclick="deleteIncident()">Delete</button>
                 </div>
             </div>
 
@@ -685,7 +697,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 const next = statuses[nextIndex];
 
                 this.dataset.filter = next;
-                this.innerHTML = `<span>⬇️</span><span>${next === "all" ? "All Statuses" : next.charAt(0).toUpperCase() + next.slice(1)}</span>`;
+                this.innerHTML = `<span class="material-symbols-outlined">arrow_downward</span><span>${next === "all" ? "All Statuses" : next.charAt(0).toUpperCase() + next.slice(1)}</span>`;
                 filterAndRender();
             });
         }
@@ -699,7 +711,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
                 const next = severities[nextIndex];
 
                 this.dataset.filter = next;
-                this.innerHTML = `<span>⬇️</span><span>${next === "all" ? "All Severities" : next.charAt(0).toUpperCase() + next.slice(1)}</span>`;
+                this.innerHTML = `<span class="material-symbols-outlined">arrow_downward</span><span>${next === "all" ? "All Severities" : next.charAt(0).toUpperCase() + next.slice(1)}</span>`;
                 filterAndRender();
             });
         }
@@ -708,7 +720,7 @@ $recent_incidents = array_slice($incident_reports, 0, 4);
         if (sortBtn) {
             sortBtn.addEventListener('click', function() {
                 currentSort = currentSort === "latest" ? "oldest" : "latest";
-                this.innerHTML = `<span>↕️</span><span>${currentSort === "latest" ? "Latest First" : "Oldest First"}</span>`;
+                this.innerHTML = `<span class="material-symbols-outlined">arrow_downward</span><span>${currentSort === "latest" ? "Latest First" : "Oldest First"}</span>`;
                 filterAndRender();
             });
         }

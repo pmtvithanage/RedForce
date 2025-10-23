@@ -225,14 +225,14 @@ $notes = $data['notes'];
 
                 <div class="quick-actions">
                     <a href="#" class="action-btn">
-                        <span class="action-icon">📷</span>
+                        <span class="report-icon material-symbols-outlined">priority_high</span>
                         <div class="action-text">Report Incident</div>
                     </a>
 
 
 
                     <a href="#" class="action-btn">
-                        <span class="action-icon">📝</span>
+                        <span class="action-icon"></span><span class="material-symbols-outlined">request_quote</span>
                         <div class="action-text">Add Notes</div>
                     </a>
                 </div>

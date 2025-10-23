@@ -11,7 +11,7 @@ $message = '';
 $clientData = [
     'name' => "Sanjaya Peiris",
     'contact' => '0112 112 112',
-    'email' => 'peoplesbank@hotmail.com'
+    'email' => 'sanjayapeiris@gmail.com'
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
