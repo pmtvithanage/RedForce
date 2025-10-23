@@ -231,287 +231,292 @@ $notes = $data['notes'];
     </div>
 
     <script>
-    // Sample notes data
-    let notesData = <?= json_encode($notes) ?>;
+        // Sample notes data
+        let notesData = <?= json_encode($notes) ?>;
 
-    let currentNoteId = null;
-    let nextNoteId = 3;
+        let currentNoteId = null;
+        let nextNoteId = 3;
 
-    // Function to open notes popup
-    function openNotesPopup() {
-        document.getElementById('notesModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        showNotesList();
-    }
-
-    // Function to close notes popup
-    function closeNotesPopup() {
-        document.getElementById('notesModal').style.display = 'none';
-        document.body.style.overflow = 'auto';
-        resetForm();
-    }
-
-    // Function to show notes list
-    function showNotesList() {
-        document.getElementById('notesListView').style.display = 'block';
-        document.getElementById('noteFormView').style.display = 'none';
-        document.getElementById('noteViewDetails').style.display = 'none';
-        document.getElementById('modalTitle').textContent = 'My Notes';
-        renderNotesList();
-    }
-
-    // Function to render notes list
-    function renderNotesList() {
-        const notesList = document.getElementById('notesList');
-        const emptyMessage = document.getElementById('emptyNotesMessage');
-
-        if (notesData.length === 0) {
-            notesList.style.display = 'none';
-            emptyMessage.style.display = 'block';
-            return;
+        // Function to open notes popup
+        function openNotesPopup() {
+            document.getElementById('notesModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            showNotesList();
         }
 
-        notesList.style.display = 'block';
-        emptyMessage.style.display = 'none';
+        // Function to close notes popup
+        function closeNotesPopup() {
+            document.getElementById('notesModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            resetForm();
+        }
 
-        notesList.innerHTML = notesData.map(note => {
-            const date = new Date(note.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+        // Function to show notes list
+        function showNotesList() {
+            document.getElementById('notesListView').style.display = 'block';
+            document.getElementById('noteFormView').style.display = 'none';
+            document.getElementById('noteViewDetails').style.display = 'none';
+            document.getElementById('modalTitle').textContent = 'My Notes';
+            renderNotesList();
+        }
 
-            const preview = note.content.length > 100 ?
-                note.content.substring(0, 100) + '...' :
-                note.content;
+        // Function to render notes list
+        function renderNotesList() {
+            const notesList = document.getElementById('notesList');
+            const emptyMessage = document.getElementById('emptyNotesMessage');
 
-            return `
+            if (notesData.length === 0) {
+                notesList.style.display = 'none';
+                emptyMessage.style.display = 'block';
+                return;
+            }
+
+            notesList.style.display = 'block';
+            emptyMessage.style.display = 'none';
+
+            notesList.innerHTML = notesData.map(note => {
+                const date = new Date(note.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const preview = note.content.length > 100 ?
+                    note.content.substring(0, 100) + '...' :
+                    note.content;
+
+                return `
                     <div class="note-item" onclick="viewNote(Number(${note.id}))">
                         <div class="note-item-title">${note.title}</div>
                         <div class="note-item-preview">${preview}</div>
                         <div class="note-item-date">${note.created_at}</div>
                     </div>
                 `;
-        }).join('');
-    }
-
-    // Function to view a specific note
-    function viewNote(noteId) {
-        const note = notesData.find(n => n.id == noteId);
-        if (!note) return;
-
-        currentNoteId = noteId;
-
-        document.getElementById('notesListView').style.display = 'none';
-        document.getElementById('noteFormView').style.display = 'none';
-        document.getElementById('noteViewDetails').style.display = 'block';
-        document.getElementById('modalTitle').textContent = 'View Note';
-
-        document.getElementById('viewNoteTitle').textContent = note.title;
-        document.getElementById('viewNoteContent').textContent = note.content;
-
-        const date = new Date(note.created_at).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        document.getElementById('viewNoteDate').textContent = `Created: ${date}`;
-    }
-
-    // Function to show add note form
-    function showAddNoteForm() {
-        currentNoteId = null;
-        document.getElementById('notesListView').style.display = 'none';
-        document.getElementById('noteViewDetails').style.display = 'none';
-        document.getElementById('noteFormView').style.display = 'block';
-        document.getElementById('modalTitle').textContent = 'Add New Note';
-        resetForm();
-    }
-
-    // Function to edit current note
-    function editCurrentNote() {
-        if (!currentNoteId) return;
-
-        const note = notesData.find(n => n.id == currentNoteId);
-        if (!note) return;
-
-        document.getElementById('noteViewDetails').style.display = 'none';
-        document.getElementById('notesListView').style.display = 'none';
-        document.getElementById('noteFormView').style.display = 'block';
-        document.getElementById('modalTitle').textContent = 'Edit Note';
-
-        document.getElementById('noteId').value = note.id;
-        document.getElementById('noteTitle').value = note.title;
-        document.getElementById('noteContent').value = note.content;
-    }
-
-    // function saveNote(e) {
-    //     e.preventDefault();
-
-    //     const noteId = document.getElementById('noteId').value;
-    //     const title = document.getElementById('noteTitle').value.trim();
-    //     const content = document.getElementById('noteContent').value.trim();
-
-    //     if (!title || !content) {
-    //         alert('Please fill in both title and content.');
-    //         return;
-    //     }
-
-    //     if (noteId) {
-    //         // Edit existing note
-    //         const noteIndex = notesData.findIndex(n => n.id == noteId);
-    //         if (noteIndex !== -1) {
-    //             notesData[noteIndex].title = title;
-    //             notesData[noteIndex].content = content;
-    //             notesData[noteIndex].updated_at = new Date().toISOString();
-    //         }
-
-    //         // Send AJAX to backend to update database
-    //         fetch(`<?= URL_ROOT ?>/MobileRider/editNote`, {
-    //                 method: 'POST',
-    //                 headers: {
-    //                     'Content-Type': 'application/json'
-    //                 },
-    //                 body: JSON.stringify({
-    //                     id: noteId,
-    //                     title,
-    //                     content
-    //                 })
-    //             })
-    //             .then(res => res.json())
-    //             .then(data => {
-    //                 console.log('Note updated on backend', data);
-    //                 // Show updated note in modal
-    //                 viewNote(noteId);
-    //             });
-
-    //     } else {
-    //         // Add new note
-    //         const newNote = {
-    //             id: nextNoteId++,
-    //             title,
-    //             content,
-    //             created_at: new Date().toISOString()
-    //         };
-    //         notesData.push(newNote);
-
-    //         // Send AJAX to backend to add new note
-    //         fetch(`<?= URL_ROOT ?>/MobileRider/addNote`, {
-    //             method: 'POST',
-    //             headers: {
-    //                 'Content-Type': 'application/json'
-    //             },
-    //             body: JSON.stringify({
-    //                 title,
-    //                 content
-    //             })
-    //         }).then(res => res.json()).then(data => {
-    //             console.log('New note added', data);
-    //         });
-    //     }
-
-    //     showNotesList();
-    // }
-
-    
-
-
-    // Function to delete current note
-    function deleteCurrentNote() {
-        if (!currentNoteId) return;
-
-        if (confirm('Are you sure you want to delete this note?')) {
-            currentNote = notesData.filter(n => n.id !== currentNoteId);
-            //currentNoteId = currentNote.id;
-            window.location.href = `<?= URL_ROOT ?>/MobileRider/deleteNote?id=${currentNoteId}`;
-            showNotesList();
-        }
-    }
-
-    // Function to reset form
-    function resetForm() {
-        const form = document.getElementById('noteForm');
-        if (form) {
-            form.reset();
-        }
-        document.getElementById('noteId').value = '';
-        currentNoteId = null;
-    }
-
-
-
-    // Initialize everything when the page loads
-    document.addEventListener('DOMContentLoaded', function() {
-        // Check URL parameters to see if notes popup should be opened
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('notes') === 'open') {
-            openNotesPopup();
-            // Clean up URL by removing the parameter
-            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.history.replaceState({}, document.title, newUrl);
+            }).join('');
         }
 
-        // Add form submit handler
-        // const noteForm = document.getElementById('noteForm');
-        // if (noteForm) {
-        //     noteForm.addEventListener('submit', saveNote);
+        // Function to view a specific note
+        function viewNote(noteId) {
+            const note = notesData.find(n => n.id == noteId);
+            if (!note) return;
+
+            currentNoteId = noteId;
+
+            document.getElementById('notesListView').style.display = 'none';
+            document.getElementById('noteFormView').style.display = 'none';
+            document.getElementById('noteViewDetails').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'View Note';
+
+            document.getElementById('viewNoteTitle').textContent = note.title;
+            document.getElementById('viewNoteContent').textContent = note.content;
+
+            const date = new Date(note.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('viewNoteDate').textContent = `Created: ${date}`;
+        }
+
+        // Function to show add note form
+        function showAddNoteForm() {
+            currentNoteId = null;
+            document.getElementById('notesListView').style.display = 'none';
+            document.getElementById('noteViewDetails').style.display = 'none';
+            document.getElementById('noteFormView').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Add New Note';
+            resetForm();
+        }
+
+        // Function to edit current note
+        function editCurrentNote() {
+            if (!currentNoteId) return;
+
+            const note = notesData.find(n => n.id == currentNoteId);
+            if (!note) return;
+
+            document.getElementById('noteViewDetails').style.display = 'none';
+            document.getElementById('notesListView').style.display = 'none';
+            document.getElementById('noteFormView').style.display = 'block';
+            document.getElementById('modalTitle').textContent = 'Edit Note';
+
+            document.getElementById('noteId').value = note.id;
+            document.getElementById('noteTitle').value = note.title;
+            document.getElementById('noteContent').value = note.content;
+        }
+
+        // function saveNote(e) {
+        //     e.preventDefault();
+
+        //     const noteId = document.getElementById('noteId').value;
+        //     const title = document.getElementById('noteTitle').value.trim();
+        //     const content = document.getElementById('noteContent').value.trim();
+
+        //     if (!title || !content) {
+        //         alert('Please fill in both title and content.');
+        //         return;
+        //     }
+
+        //     if (noteId) {
+        //         // Edit existing note
+        //         const noteIndex = notesData.findIndex(n => n.id == noteId);
+        //         if (noteIndex !== -1) {
+        //             notesData[noteIndex].title = title;
+        //             notesData[noteIndex].content = content;
+        //             notesData[noteIndex].updated_at = new Date().toISOString();
+        //         }
+
+        //         // Send AJAX to backend to update database
+        //         fetch(`<?= URL_ROOT ?>/MobileRider/editNote`, {
+        //                 method: 'POST',
+        //                 headers: {
+        //                     'Content-Type': 'application/json'
+        //                 },
+        //                 body: JSON.stringify({
+        //                     id: noteId,
+        //                     title,
+        //                     content
+        //                 })
+        //             })
+        //             .then(res => res.json())
+        //             .then(data => {
+        //                 console.log('Note updated on backend', data);
+        //                 // Show updated note in modal
+        //                 viewNote(noteId);
+        //             });
+
+        //     } else {
+        //         // Add new note
+        //         const newNote = {
+        //             id: nextNoteId++,
+        //             title,
+        //             content,
+        //             created_at: new Date().toISOString()
+        //         };
+        //         notesData.push(newNote);
+
+        //         // Send AJAX to backend to add new note
+        //         fetch(`<?= URL_ROOT ?>/MobileRider/addNote`, {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json'
+        //             },
+        //             body: JSON.stringify({
+        //                 title,
+        //                 content
+        //             })
+        //         }).then(res => res.json()).then(data => {
+        //             console.log('New note added', data);
+        //         });
+        //     }
+
+        //     showNotesList();
         // }
 
-        // Add functionality to checkboxes (if you have any todo items)
-        document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                const todoText = this.nextElementSibling;
-                if (this.checked) {
-                    todoText.classList.add('todo-completed');
-                } else {
-                    todoText.classList.remove('todo-completed');
-                }
-            });
-        });
 
-        // Add hover effects and click handlers for toolbar buttons
-        document.querySelectorAll('.toolbar-btn, .icon-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                console.log('Button clicked:', this.textContent || this.innerHTML);
-            });
-        });
 
-        // Update the dashboard action buttons
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const actionText = this.querySelector('.action-text').textContent;
 
-                // Check if it's the "Add Notes" button
-                if (actionText === 'Add Notes') {
-                    openNotesPopup();
-                } else {
-                    alert(`${actionText} clicked!`);
-                }
-            });
-        });
+        // Function to delete current note
+        function deleteCurrentNote() {
+            if (!currentNoteId) return;
 
-        // Add click handlers for notifications and messages
-        document.querySelectorAll('.notification-item, .message-item').forEach(item => {
-            item.addEventListener('click', function() {
-                this.style.background = 'rgba(244, 114, 182, 0.1)';
-                setTimeout(() => {
-                    this.style.background = 'rgba(252, 231, 243, 0.8)';
-                }, 200);
-            });
-        });
-
-        // Close modal when pressing ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeNotesPopup();
+            if (confirm('Are you sure you want to delete this note?')) {
+                currentNote = notesData.filter(n => n.id !== currentNoteId);
+                //currentNoteId = currentNote.id;
+                window.location.href = `<?= URL_ROOT ?>/MobileRider/deleteNote?id=${currentNoteId}`;
+                showNotesList();
             }
+        }
+
+        // Function to reset form
+        function resetForm() {
+            const form = document.getElementById('noteForm');
+            if (form) {
+                form.reset();
+            }
+            document.getElementById('noteId').value = '';
+            currentNoteId = null;
+        }
+
+
+
+        // Initialize everything when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check URL parameters to see if notes popup should be opened
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('notes') === 'open') {
+                openNotesPopup();
+                // Clean up URL by removing the parameter
+                const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+                window.history.replaceState({}, document.title, newUrl);
+            }
+
+            // Add form submit handler
+            // const noteForm = document.getElementById('noteForm');
+            // if (noteForm) {
+            //     noteForm.addEventListener('submit', saveNote);
+            // }
+
+            // Add functionality to checkboxes (if you have any todo items)
+            document.querySelectorAll('.todo-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const todoText = this.nextElementSibling;
+                    if (this.checked) {
+                        todoText.classList.add('todo-completed');
+                    } else {
+                        todoText.classList.remove('todo-completed');
+                    }
+                });
+            });
+
+            // Add hover effects and click handlers for toolbar buttons
+            document.querySelectorAll('.toolbar-btn, .icon-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    console.log('Button clicked:', this.textContent || this.innerHTML);
+                });
+            });
+
+            // Update the dashboard action buttons
+            document.querySelectorAll('.action-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const actionText = this.querySelector('.action-text').textContent;
+
+                    // Check if it's the "Report Incident" button
+                    if (actionText === 'Report Incident') {
+                        // Redirect to incident page with a parameter to open the modal
+                        window.location.href = `<?= URL_ROOT ?>/MobileRider/incidents?report=open`;
+                    }
+                    // Check if it's the "Add Notes" button
+                    else if (actionText === 'Add Notes') {
+                        openNotesPopup();
+                    } else {
+                        alert(`${actionText} clicked!`);
+                    }
+                });
+            });
+
+            // Add click handlers for notifications and messages
+            document.querySelectorAll('.notification-item, .message-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.style.background = 'rgba(244, 114, 182, 0.1)';
+                    setTimeout(() => {
+                        this.style.background = 'rgba(252, 231, 243, 0.8)';
+                    }, 200);
+                });
+            });
+
+            // Close modal when pressing ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeNotesPopup();
+                }
+            });
         });
-    });
     </script>
 
 </body>
