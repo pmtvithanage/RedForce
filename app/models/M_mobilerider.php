@@ -113,13 +113,10 @@ class M_mobilerider
     $this->db->bind(':severity', $data['severity']);
     $this->db->bind(':media_files', $data['media_files']);
 
-public function updateNoteById($id, $title, $content) {
-    $this->db->query("UPDATE notes SET title = :title, content = :content WHERE id = :id");
-    $this->db->bind(":id", $id);
-    $this->db->bind(":title", $title);
-    $this->db->bind(":content", $content);
     return $this->db->execute();
 }
+
+
 
     // Leave Request CRUD Methods
     
