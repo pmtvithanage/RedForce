@@ -46,3 +46,48 @@ CREATE TABLE Notes (
   );
    
   ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+  Table structure for table `incident_reports`
+--
+
+CREATE TABLE `incident_reports` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `officer_name` varchar(100) NOT NULL,
+  `officer_role` varchar(100) NOT NULL,
+  `property_site` varchar(50) DEFAULT NULL,
+  `incident_type` varchar(50) NOT NULL,
+  `incident_date` date NOT NULL,
+  `incident_time` time NOT NULL,
+  `incident_description` text NOT NULL,
+  `action_taken` text DEFAULT NULL,
+  `severity` varchar(50) DEFAULT NULL,
+  `additional_details` varchar(255) DEFAULT NULL,
+  `media_files` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+
+ Indexes for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_incident_user` (`user_id`);
+
+
+ AUTO_INCREMENT for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+
+ Constraints for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
+
