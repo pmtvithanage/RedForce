@@ -18,7 +18,7 @@ function renderRows(list) {
   if (list.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="3" style="text-align: center; padding: 20px; color: #999;">
+        <td colspan="2" style="text-align: center; padding: 20px; color: #999;">
           No officers found
         </td>
       </tr>
@@ -35,10 +35,6 @@ function renderRows(list) {
     tr.innerHTML = `
       <td><a href="#" class="name-link">${name}</a></td>
       <td>${statusBadge}</td>
-      <td>
-        <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-        <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-      </td>
     `;
     tbody.appendChild(tr);
   });
