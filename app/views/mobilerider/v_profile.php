@@ -161,7 +161,7 @@ if (isset($_GET['change_email'])) {
                     <div class="profile-name">
                         <?php echo htmlspecialchars($clientData['name']); ?>
                     </div>
-                    <div class="profile-role">Client Account</div>
+                    <div class="profile-role">Mobile Rider</div>
                 </div>
             </div>
 
