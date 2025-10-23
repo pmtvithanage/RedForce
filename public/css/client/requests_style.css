@@ -4,7 +4,7 @@
 }
 
 .request-card {
-  background: #fff0f0;
+  background: #ffffff;
   border-radius: 12px;
   padding: 25px 30px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
@@ -84,3 +84,284 @@ textarea {
 .submit-btn:hover {
   background: #ffeaea;
 }
+
+/* Page Header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* History Button */
+.history-btn {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.history-btn:hover {
+  background: #b71c1c;
+}
+
+/* Popup Styles */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popup-message {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  min-width: 300px;
+  max-width: 500px;
+}
+
+.popup-content h3 {
+  color: #d32f2f;
+  margin-bottom: 15px;
+  font-size: 20px;
+}
+
+.popup-content p {
+  color: #333;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.popup-btn {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.popup-btn:hover {
+  background: #b71c1c;
+}
+
+/* Error popup styling */
+.error-btn {
+  background: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+
+.error-btn:hover {
+  background: #b71c1c;
+}
+
+/* History Popup */
+.history-popup {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  border-bottom: 1px solid #eee;
+  background: #f8f9fa;
+}
+
+.history-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #d32f2f;
+}
+
+.history-content {
+  padding: 20px 25px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.no-requests {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px 20px;
+}
+
+/* Request Item */
+.request-item {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 10px; /* Force same height */
+}
+
+.request-header h4 {
+  margin: 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.status {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  line-height: 1.2;
+  height: 28px;
+  display: flex;
+  align-items: center;
+}
+
+.status-approved {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.status-pending {
+  background: #fff8e1;
+  color: #f57c00;
+
+}
+
+.status-rejected {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.request-details {
+  padding: 20px;
+}
+
+.detail-row {
+  display: flex;
+  margin-bottom: 10px;
+  gap: 10px;
+}
+
+.detail-row .label {
+  font-weight: 500;
+  color: #333;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.detail-row span:last-child {
+  color: #666;
+  flex: 1;
+}
+
+/* Delete button styles */
+.delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    /* EXACT SAME STYLING AS .status */
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    /* Remove the height and display flex - let it be natural */
+    cursor: pointer;
+    transition: background 0.3s;
+    line-height: 1.2; /* Match line-height */
+    height: 200px; /* Force exact same height as status */
+    display: flex;
+    align-items: center;
+}
+
+.delete-btn:hover {
+    background: #c82333;
+}
+
+/* Delete section at bottom of request */
+.delete-section {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+    text-align: center;
+}
+
+.delete-request-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.delete-request-btn:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
