@@ -16,13 +16,14 @@
         }
 
         public function login(){
-
             if($_SERVER['REQUEST_METHOD'] == 'POST'){
-                //form submission
-                $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        
+                $userID = isset($_POST['userID']) ? trim(htmlspecialchars($_POST['userID'])) : '';
+                $password = isset($_POST['password']) ? trim(htmlspecialchars($_POST['password'])) : '';
+        
                 $data = [
-                    'userID' => trim($_POST['userID'] ?? ''),
-                    'password' => trim($_POST['password'] ?? ''),
+                    'userID' => $userID,
+                    'password' => $password,
                     'userID_err' => '',
                     'password_err' => ''
                 ];

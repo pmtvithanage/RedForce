@@ -1,13 +1,11 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
 
-  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
-  <link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
-
-
-    <!-- Content will be loaded here -->
-    <div class="dashboard">
-    <!-- Stats -->
-    <div class="card stat-card">
+<!-- Content will be loaded here -->
+<div class="dashboard">
+<!-- Stats -->
+<div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">group</span>
   <div>
     <div class="stat-value">0</div>
@@ -51,6 +49,7 @@
     <button class="view-button" id="viewActivityBtn">View All</button>
   </div>
 </div>
+
 <!-- Recent Activity Popup -->
 <div id="activityPopup" class="popup-overlay">
   <div class="popup-content activity-popup">
@@ -75,7 +74,7 @@
   </div>
 </div>
 
-    <!-- Quick Actions -->
+<!-- Quick Actions -->
 <div class="card section">
   <h3>Quick Actions</h3>
   <div class="quick-actions">
@@ -99,7 +98,6 @@
     </div>
 
     <div class="popup-body">
-
       <!-- Search Free Officer -->
       <div class="field-row">
         <label>Search Free Officer</label>
@@ -138,7 +136,6 @@
         <label>Description</label>
         <textarea id="description"></textarea>
       </div>
-
     </div>
 
     <div class="popup-footer">
@@ -157,7 +154,6 @@
     </div>
 
     <div class="popup-body">
-
       <!-- Client -->
       <div class="field-box">
         <label>Client</label>
@@ -171,8 +167,6 @@
         <input type="text" id="alertSite" placeholder="Search" />
         <button class="view-btn">View</button>
       </div>
-
-     
 
       <div class="alert-layout">
         <!-- Left: Roles -->
@@ -189,7 +183,6 @@
           <textarea id="alertMessage"></textarea>
         </div>
       </div>
-
     </div>
 
     <div class="popup-footer">
@@ -236,35 +229,116 @@
   </div>
 </div>
 
-    <!-- Pending Activities -->
+<!-- Pending Activities -->
 <div class="card pending section">
-  <h3>Pending Activities</h3>
-  <div class="empty-pending">
-    <span class="material-symbols-outlined">task_alt</span>
-    <p>No pending activities.</p>
-    <small>Any pending tasks will appear here.</small>
-  </div>
+  <h3>Pending Leave Requests</h3>
+  
+  <?php if (!empty($data['pendingLeaves'])): ?>
+    <div class="pending-list">
+      <?php foreach(array_slice($data['pendingLeaves'], 0, 3) as $leave): ?>
+        <div class="pending-item">
+          <div class="pending-info">
+            <strong><?= htmlspecialchars($leave->employee_name ?? 'N/A') ?></strong>
+            <span class="pending-role"><?= htmlspecialchars($leave->employee_role ?? '') ?></span>
+            <span class="pending-type"><?= htmlspecialchars($leave->leave_type) ?></span>
+            <small><?= date('d/m/Y', strtotime($leave->start_date)) ?> - <?= date('d/m/Y', strtotime($leave->end_date)) ?></small>
+          </div>
+          <div class="pending-actions">
+            <form method="POST" action="<?= URL_ROOT ?>/admin/approveLeave/<?= $leave->id ?>" style="display:inline;">
+              <button type="submit" class="approve-btn" title="Approve">
+                <span class="material-symbols-outlined">check_circle</span>
+              </button>
+            </form>
+            <button class="reject-btn" onclick="openRejectModal(<?= $leave->id ?>)" title="Reject">
+              <span class="material-symbols-outlined">cancel</span>
+            </button>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  <?php else: ?>
+    <div class="empty-pending">
+      <span class="material-symbols-outlined">task_alt</span>
+      <p>No pending leave requests.</p>
+      <small>Any pending requests will appear here.</small>
+    </div>
+  <?php endif; ?>
+  
   <div class="view-button-container">
-    <button class="view-button">View All</button>
+    <button class="view-button" id="viewPendingBtn">View All</button>
   </div>
 </div>
 
 <!-- Pending Activities Popup -->
 <div id="pendingPopup" class="popup-overlay">
-  <div class="popup-content">
+  <div class="popup-content pending-details-popup">
     <div class="popup-header">
-      <h3>Pending Activities</h3>
+      <h3>All Pending Leave Requests</h3>
       <span class="close-btn" id="closePendingPopup">&times;</span>
     </div>
     <div class="popup-body">
       <div id="pendingList">
-        <!-- Example pending items -->
-        <div class="empty-pending">
-          <span class="material-symbols-outlined">task_alt</span>
-          <p>No pending activities.</p>
-          <small>Any pending tasks will appear here.</small>
-        </div>
-        <!-- Add more dynamically from your server -->
+        <?php if (!empty($data['pendingLeaves'])): ?>
+          <?php foreach($data['pendingLeaves'] as $leave): ?>
+            <div class="leave-detail-card">
+              <div class="leave-header">
+                <div class="caretaker-info">
+                  <h4><?= htmlspecialchars($leave->employee_name ?? 'N/A') ?></h4>
+                  <span class="role-badge"><?= htmlspecialchars($leave->employee_role ?? '') ?></span>
+                  <span class="email"><?= htmlspecialchars($leave->employee_email ?? '') ?></span>
+                </div>
+                <span class="status-badge pending">Pending</span>
+              </div>
+              
+              <div class="leave-body">
+                <div class="info-row">
+                  <span class="label">Leave Type:</span>
+                  <span class="value"><?= htmlspecialchars($leave->leave_type) ?></span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Duration:</span>
+                  <span class="value">
+                    <?= date('d/m/Y', strtotime($leave->start_date)) ?> - 
+                    <?= date('d/m/Y', strtotime($leave->end_date)) ?>
+                  </span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Reason:</span>
+                  <span class="value"><?= htmlspecialchars($leave->reason) ?></span>
+                </div>
+                <?php if (!empty($leave->proof_file)): ?>
+                  <div class="info-row">
+                    <span class="label">Proof:</span>
+                    <a href="<?= URL_ROOT ?>/<?= $leave->proof_file ?>" target="_blank" class="view-proof">
+                      <span class="material-symbols-outlined">attach_file</span> View File
+                    </a>
+                  </div>
+                <?php endif; ?>
+                <div class="info-row">
+                  <span class="label">Submitted:</span>
+                  <span class="value"><?= date('d/m/Y H:i', strtotime($leave->created_at)) ?></span>
+                </div>
+              </div>
+              
+              <div class="leave-actions-full">
+                <form method="POST" action="<?= URL_ROOT ?>/admin/approveLeave/<?= $leave->id ?>" style="display:inline;">
+                  <button type="submit" class="btn-approve-full" onclick="return confirm('Approve this leave request?')">
+                    <span class="material-symbols-outlined">check</span> Approve
+                  </button>
+                </form>
+                <button class="btn-reject-full" onclick="openRejectModal(<?= $leave->id ?>)">
+                  <span class="material-symbols-outlined">close</span> Reject
+                </button>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <div class="empty-pending">
+            <span class="material-symbols-outlined">task_alt</span>
+            <p>No pending leave requests.</p>
+            <small>Any pending requests will appear here.</small>
+          </div>
+        <?php endif; ?>
       </div>
     </div>
     <div class="popup-footer">
@@ -273,13 +347,56 @@
   </div>
 </div>
 
-  <script src="script.js"></script>
-    
-    </main>
+<!-- Reject Modal -->
+<div id="rejectModal" class="popup-overlay" style="display:none;">
+  <div class="popup-content reject-modal">
+    <div class="popup-header">
+      <h3>Reject Leave Request</h3>
+      <span class="close-btn" onclick="closeRejectModal()">&times;</span>
     </div>
+    <form id="rejectForm" method="POST" action="">
+      <div class="popup-body">
+        <label for="reason">Reason for Rejection *</label>
+        <textarea id="reason" name="reason" rows="4" required placeholder="Please provide a reason for rejecting this leave request..."></textarea>
+      </div>
+      <div class="popup-footer">
+        <button type="button" class="cancel-btn" onclick="closeRejectModal()">Cancel</button>
+        <button type="submit" class="submit-btn reject-confirm">Confirm Rejection</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-    <div class="backdrop" id="backdrop" hidden></div>
+<script>
+function openRejectModal(leaveId) {
+    const modal = document.getElementById('rejectModal');
+    const form = document.getElementById('rejectForm');
+    form.action = '<?= URL_ROOT ?>/admin/rejectLeave/' + leaveId;
+    modal.style.display = 'flex';
+}
 
-    <script src="<?php echo URL_ROOT; ?>/js/admin/dashboard.js"></script>
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.style.display = 'none';
+    document.getElementById('reason').value = '';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('rejectModal');
+    if (event.target === modal) {
+        closeRejectModal();
+    }
+});
+</script>
+
+<script src="script.js"></script>
+
+</main>
+</div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+<script src="<?php echo URL_ROOT; ?>/js/admin/dashboard.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

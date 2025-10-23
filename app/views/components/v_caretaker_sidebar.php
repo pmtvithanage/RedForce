@@ -18,8 +18,12 @@
         <div class="user-card">
             <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
                 <div class="user-meta">
+
+                 
+
                   <div class="user-name"><?php echo getCurrentUserName() ?? 'User'; ?></div>
                   <div class="user-role"><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></div>
+
                 </div>
             </div>
 
@@ -55,8 +59,10 @@
     <div class="profile-info">
       <div class="avatar"><span class="material-symbols-outlined">person</span></div>
       <div>
+
         <h4><?php echo getCurrentUserName() ?? 'User'; ?></h4>
         <p><?php echo getCurrentUserRole() ?? 'Care Taker'; ?></p>
+
       </div>
     </div>
     <hr>

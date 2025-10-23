@@ -1,12 +1,9 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
-
-
-  <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/officers_style.css">
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/officers_style.css">
 
 <div class="container">
-
   <!-- Tabs -->
   <div class="tabs">
     <button class="tab active" data-tab="officers">Officers</button>
@@ -108,22 +105,131 @@
 
   <!-- Bottom Buttons -->
   <div class="actions">
-    <button class="btn open">Open Recruitment: Premise Officer</button>
-    <button class="btn add">+ Add Officers</button>
+    <button class="btn open" id="openRecruitmentBtn">Open Recruitment</button>
+    <button class="btn add" id="addOfficersBtn">+ Add Officers</button>
     <button class="btn apps">4 Applications</button>
   </div>
-
 </div>
 
+<!-- Extra closing tags cleanup -->
 </main>
 </div>
- <div class="backdrop" id="backdrop" hidden></div>
+
+<div class="backdrop" id="backdrop" hidden></div>
+
+<!-- Recruitment Modal -->
+<div id="recruitmentModal" class="recruitment-modal">
+  <div class="overlay" data-close></div>
+  <div class="modal-content">
+    <h3>Recruitment</h3>
+    
+    <!-- Recruitment Type Dropdown -->
+    <div class="recruitment-section">
+      <h4>Recruitment Type</h4>
+      <select id="recruitmentType" class="recruitment-dropdown">
+        <option value="">Select Recruitment Type</option>
+        <option value="premise-officer">Premise Officer</option>
+        <option value="care-taker">Care Taker</option>
+        <option value="mobile-rider">Mobile Rider</option>
+      </select>
+    </div>
+
+    <!-- Description Section -->
+    <div class="recruitment-section">
+      <h4>Description</h4>
+      <textarea class="description-textarea" placeholder="Enter job description..."></textarea>
+    </div>
+
+    <!-- Qualifications Section -->
+    <div class="recruitment-section">
+      <h4>Qualifications</h4>
+      <div class="qualifications-input">
+        <input type="text" id="qualificationInput" placeholder="Add qualification...">
+        <button class="btn add-qualification" id="addQualificationBtn">+ Add</button>
+      </div>
+      <ul class="qualifications-list" id="qualificationsList">
+        <!-- Qualifications will be added here dynamically -->
+      </ul>
+    </div>
+
+    <!-- Publisher Section -->
+    <div class="recruitment-section">
+      <h4>Publisher</h4>
+      <div class="publisher-info">
+        <input type="text" id="publisherInput" placeholder="Enter publisher name...">
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="modal-actions">
+      <button class="btn publish" id="publishRecruitmentBtn">Publish</button>
+      <button class="btn close" id="closeRecruitmentModal">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Applications Modal -->
+<div id="applicationsModal" class="applications-modal">
+  <div class="overlay" data-close></div>
+  <div class="modal-content">
+    <h3>Applications</h3>
+    <div class="applications-list">
+      <!-- Application 1 -->
+      <div class="application-item">
+        <div class="applicant-info">
+          <h4>I.W.Karunarathne</h4>
+          <p>NIC: 19937901880</p>
+          <p>Mobile No: 0775621231</p>
+        </div>
+        <div class="application-actions">
+          <div class="pdf-badge">PDF</div>
+          <div class="cv-file">cv.PDF</div>
+          <div class="application-date">2025/08/10 10:28</div>
+          <button class="btn add-small">Add</button>
+        </div>
+      </div>
+      
+      <!-- Application 2 -->
+      <div class="application-item">
+        <div class="applicant-info">
+          <h4>G.H.Perera</h4>
+          <p>NIC: 20013901880</p>
+          <p>Mobile No: 076621341</p>
+        </div>
+        <div class="application-actions">
+          <div class="pdf-badge">PDF</div>
+          <div class="cv-file">cv.PDF</div>
+          <div class="application-date">2025/08/10 11:42</div>
+          <button class="btn add-small">Add</button>
+        </div>
+      </div>
+      
+      <!-- Application 3 -->
+      <div class="application-item">
+        <div class="applicant-info">
+          <h4>K.D.Jayakody</h4>
+          <p>NIC: 19957361550</p>
+          <p>Mobile No: 0775621231</p>
+        </div>
+        <div class="application-actions">
+          <div class="pdf-badge">PDF</div>
+          <div class="cv-file">cv.PDF</div>
+          <div class="application-date">2025/08/10 12:04</div>
+          <button class="btn add-small">Add</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn close" id="closeApplicationsModal">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- Officer Details Modal -->
-<div id="officerModal" class="modal">
+<div id="officerModal" class="officer-modal">
+  <div class="overlay" data-close></div>
   <div class="modal-content">
     <div class="modal-body">
-      
       <!-- Left Section: Officer Info -->
       <div class="officer-card">
         <div class="avatar">
@@ -142,7 +248,7 @@
       <div class="evaluate-card">
         <h3>Evaluate Officer</h3>
         <textarea id="evaluationDesc" placeholder="Description"></textarea>
-        
+
         <!-- Rating stars -->
         <div class="stars" id="ratingStars">
           <span data-value="1">★</span>
@@ -160,13 +266,13 @@
           <button class="btn close" id="closeModal">Close</button>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <!-- Rating History Modal -->
-<div id="ratingHistoryModal" class="modal">
+<div id="ratingHistoryModal" class="rating-history-modal">
+  <div class="overlay" data-close></div>
   <div class="modal-content">
     <h3>Rating History</h3>
     <table class="history-table">
@@ -185,28 +291,7 @@
   </div>
 </div>
 
-<!-- Rank Update Modal -->
-<div id="rankUpdateModal" class="modal">
-  <div class="modal-content small">
-    <h3>Update Officer Rank</h3>
-    <select id="rankSelect">
-      <option value="OIC">OIC</option>
-      <option value="Level 4">Level 4</option>
-      <option value="Level 3">Level 3</option>
-      <option value="Level 2">Level 2</option>
-      <option value="Level 1">Level 1</option>
-    </select>
-    <div class="modal-actions">
-      <button class="btn save" id="confirmRankUpdate">Update</button>
-      <button class="btn close" id="cancelRankUpdate">Cancel</button>
-    </div>
-  </div>
-</div>
-
-
 <script src="<?php echo URL_ROOT; ?>/js/admin/officers.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 
-   
-
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
