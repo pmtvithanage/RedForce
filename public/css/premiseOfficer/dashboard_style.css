@@ -27,44 +27,60 @@ body {
 .stat-card {
   background: white;
   border-radius: 12px;
-  padding: 20px;
+  padding: 15px;
   display: flex;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-left: 5px solid #ccc;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.6s ease;
 }
 
+.stat-card:nth-child(1) { border-left-color: purple; }
+.stat-card:nth-child(2) { border-left-color: green; }
+.stat-card:nth-child(3) { border-left-color: gold; }
+.stat-card:nth-child(4) { border-left-color: red; }
+
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
 }
 
 .stat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  font-size: 36px;
+  color: inherit;
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+  transform: scale(1.2);
+  color: #555;
 }
 
 .stat-icon .material-icons {
-  font-size: 28px;
-  color: #6c757d;
+  font-size: 36px;
+  color: inherit;
 }
 
 .stat-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
 }
 
 .stat-info h3 {
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: bold;
   color: #0b5210;
   margin: 0 0 5px 0;
+  transition: color 0.3s ease;
+}
+
+.stat-card:hover .stat-info h3 {
+  color: #555;
 }
 
 .stat-info p {
