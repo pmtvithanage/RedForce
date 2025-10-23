@@ -179,6 +179,66 @@ CREATE TABLE
         INDEX idx_submitted_date (submitted_date)
     );
 
+CREATE TABLE Notes (
+  id INT(11) NOT NULL AUTO_INCREMENT,
+  userID VARCHAR(50) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  is_deleted TINYINT(1) DEFAULT 0,
+  PRIMARY KEY (id),
+  KEY fk_notes_user_id (userID),
+  CONSTRAINT fk_notes_user_id FOREIGN KEY (userID) REFERENCES Users(userID) ON DELETE CASCADE ON UPDATE CASCADE
+  );
+   
+  ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+  Table structure for table `incident_reports`
+--
+
+CREATE TABLE `incident_reports` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `officer_name` varchar(100) NOT NULL,
+  `officer_role` varchar(100) NOT NULL,
+  `property_site` varchar(50) DEFAULT NULL,
+  `incident_type` varchar(50) NOT NULL,
+  `incident_date` date NOT NULL,
+  `incident_time` time NOT NULL,
+  `incident_description` text NOT NULL,
+  `action_taken` text DEFAULT NULL,
+  `severity` varchar(50) DEFAULT NULL,
+  `additional_details` varchar(255) DEFAULT NULL,
+  `media_files` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+
+ Indexes for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_incident_user` (`user_id`);
+
+
+ AUTO_INCREMENT for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+
+ Constraints for table `incident_reports`
+
+ALTER TABLE `incident_reports`
+  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+COMMIT;
+
+
 -- Attendance table for QR scanner
 CREATE TABLE
     IF NOT EXISTS attendance (
@@ -193,3 +253,5 @@ CREATE TABLE
         INDEX idx_supervisor_id (supervisor_id),
         INDEX idx_timestamp (timestamp)
     );
+
+
