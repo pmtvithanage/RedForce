@@ -11,7 +11,7 @@ $message = '';
 $clientData = [
     'name' => "Sanjaya Peiris",
     'contact' => '0112 112 112',
-    'email' => 'peoplesbank@hotmail.com'
+    'email' => 'sanjayapeiris@gmail.com'
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -161,7 +161,7 @@ if (isset($_GET['change_email'])) {
                     <div class="profile-name">
                         <?php echo htmlspecialchars($clientData['name']); ?>
                     </div>
-                    <div class="profile-role">Client Account</div>
+                    <div class="profile-role">Mobile Rider Account</div>
                 </div>
             </div>
 

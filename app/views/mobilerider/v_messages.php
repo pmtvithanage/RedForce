@@ -19,7 +19,7 @@
 
     <div class="chat-list">
       <div class="chat-item">
-        <div class="avatar"></div>
+        <div class="avatar"><span class="material-symbols-outlined">person</span></div>
         <div class="chat-info">
           <p class="name">Ashen Fernando <span class="role">Premise Officer</span></p>
           <p class="preview">I was present on duty on 18th July...</p>
@@ -28,7 +28,7 @@
       </div>
 
       <div class="chat-item">
-        <div class="avatar"></div>
+        <div class="avatar"><span class="material-symbols-outlined">person</span></div>
         <div class="chat-info">
           <p class="name">John Silva <span class="role">Supervisor</span></p>
           <p class="preview">Officer Ravindu Fernando was...</p>
@@ -37,7 +37,7 @@
       </div>
 
       <div class="chat-item">
-        <div class="avatar"></div>
+        <div class="avatar"><span class="material-symbols-outlined">person</span></div>
         <div class="chat-info">
           <p class="name">Naduni Senanayake <span class="role">HR Officer</span></p>
           <p class="preview">Officer training certificates...</p>
@@ -46,7 +46,7 @@
       </div>
 
       <div class="chat-item">
-        <div class="avatar"></div>
+        <div class="avatar"><span class="material-symbols-outlined">person</span></div>
         <div class="chat-info">
           <p class="name">Nishadi Dissanayake <span class="role">Admin</span></p>
           <p class="preview">Updated shift schedules for all...</p>
