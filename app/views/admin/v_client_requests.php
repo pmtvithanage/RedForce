@@ -12,7 +12,7 @@ $errorMessage = flash('request_error');
 
 <div class="main-content">
   <div class="page-header">
-    <h2 class="page-title">Client Service Requests</h2>
+    
     <a href="<?php echo URL_ROOT; ?>/admin/clients" class="back-btn">
       <span class="material-symbols-outlined">arrow_back</span> Back to Clients
     </a>
