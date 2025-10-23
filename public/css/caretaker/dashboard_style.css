@@ -67,6 +67,12 @@
   grid-template-columns: 1fr;
   gap: 18px;
 }
+
+.stat-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+}
+
 .stat-card {
   background: #fff;
   border-radius: 10px;
@@ -392,6 +398,18 @@
   gap: 16px;
   margin-bottom: 24px;
 }
+
+.profile-image-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.upload-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a52a2a 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 53, 69, 0.3);
+}
+
 
 .upload-option {
   display: flex;

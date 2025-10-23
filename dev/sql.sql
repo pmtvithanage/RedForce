@@ -26,7 +26,7 @@ CREATE TABLE
 
 -- Insert sample users with hashed passwords
 -- Password for all users is '1234' (hashed)
--- NOTES TABLE
+NOTES TABLE
 CREATE TABLE
     Notes (
         id INT (11) NOT NULL AUTO_INCREMENT,
@@ -124,11 +124,14 @@ CREATE TABLE
         FOREIGN KEY (created_by) REFERENCES Users (id) ON DELETE CASCADE
     );
 
---leaverequests table
+-- Leave requests table
 CREATE TABLE
     IF NOT EXISTS leave_requests (
         id INT (11) AUTO_INCREMENT PRIMARY KEY,
-        caretaker_id INT (11) NOT NULL,
+        caretaker_id INT (11) DEFAULT NULL,
+        supervisor_id INT (11) DEFAULT NULL,
+        mobilerider_id INT (11) DEFAULT NULL,
+        premiseofficer_id INT (11) DEFAULT NULL,
         leave_type VARCHAR(50) NOT NULL,
         reason TEXT NOT NULL,
         start_date DATE NOT NULL,
@@ -137,9 +140,13 @@ CREATE TABLE
         status ENUM ('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        FOREIGN KEY (caretaker_id) REFERENCES users (id) ON DELETE CASCADE
+        FOREIGN KEY (caretaker_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (supervisor_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (mobilerider_id) REFERENCES users (id) ON DELETE CASCADE,
+        FOREIGN KEY (premiseofficer_id) REFERENCES users (id) ON DELETE CASCADE
     );
 
+-- Service requests table
 CREATE TABLE
     service_requests (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -170,4 +177,19 @@ CREATE TABLE
         INDEX idx_client_id (client_id),
         INDEX idx_status (status),
         INDEX idx_submitted_date (submitted_date)
+    );
+
+-- Attendance table for QR scanner
+CREATE TABLE
+    IF NOT EXISTS attendance (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        officer_id VARCHAR(50) NOT NULL,
+        supervisor_id INT NOT NULL,
+        timestamp DATETIME NOT NULL,
+        status ENUM ('present', 'absent') DEFAULT 'present',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (supervisor_id) REFERENCES users (id) ON DELETE CASCADE,
+        INDEX idx_officer_id (officer_id),
+        INDEX idx_supervisor_id (supervisor_id),
+        INDEX idx_timestamp (timestamp)
     );

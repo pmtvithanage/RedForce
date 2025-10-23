@@ -85,5 +85,32 @@ class M_supervisor {
         $this->db->bind(':limit', $limit);
         return $this->db->resultSet();
     }
+    // Mark attendance for an officer via QR scanner
+    public function markAttendance($officer_id, $supervisor_id, $timestamp) {
+        // Check if attendance already marked for today
+        $this->db->query("SELECT id FROM attendance 
+                         WHERE officer_id = :officer_id 
+                         AND DATE(timestamp) = CURDATE()");
+        $this->db->bind(':officer_id', $officer_id);
+        $existing = $this->db->single();
+        
+        if ($existing) {
+            return 'duplicate'; // Already marked today
+        }
+        
+        // Insert new attendance record
+        $this->db->query("INSERT INTO attendance (officer_id, supervisor_id, timestamp, status, created_at) 
+                         VALUES (:officer_id, :supervisor_id, :timestamp, 'present', NOW())");
+        
+        $this->db->bind(':officer_id', $officer_id);
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        $this->db->bind(':timestamp', $timestamp);
+        
+        if ($this->db->execute()) {
+            return true;
+        }
+        
+        return false;
+    }
 }
 ?>

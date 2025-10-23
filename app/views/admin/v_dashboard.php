@@ -1,13 +1,11 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
 
-  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
-  <link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
-
-
-    <!-- Content will be loaded here -->
-    <div class="dashboard">
-    <!-- Stats -->
-    <div class="card stat-card">
+<!-- Content will be loaded here -->
+<div class="dashboard">
+<!-- Stats -->
+<div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">group</span>
   <div>
     <div class="stat-value">0</div>
@@ -51,6 +49,7 @@
     <button class="view-button" id="viewActivityBtn">View All</button>
   </div>
 </div>
+
 <!-- Recent Activity Popup -->
 <div id="activityPopup" class="popup-overlay">
   <div class="popup-content activity-popup">
@@ -75,7 +74,7 @@
   </div>
 </div>
 
-    <!-- Quick Actions -->
+<!-- Quick Actions -->
 <div class="card section">
   <h3>Quick Actions</h3>
   <div class="quick-actions">
@@ -99,7 +98,6 @@
     </div>
 
     <div class="popup-body">
-
       <!-- Search Free Officer -->
       <div class="field-row">
         <label>Search Free Officer</label>
@@ -138,7 +136,6 @@
         <label>Description</label>
         <textarea id="description"></textarea>
       </div>
-
     </div>
 
     <div class="popup-footer">
@@ -157,7 +154,6 @@
     </div>
 
     <div class="popup-body">
-
       <!-- Client -->
       <div class="field-box">
         <label>Client</label>
@@ -171,8 +167,6 @@
         <input type="text" id="alertSite" placeholder="Search" />
         <button class="view-btn">View</button>
       </div>
-
-     
 
       <div class="alert-layout">
         <!-- Left: Roles -->
@@ -189,7 +183,6 @@
           <textarea id="alertMessage"></textarea>
         </div>
       </div>
-
     </div>
 
     <div class="popup-footer">
@@ -236,7 +229,7 @@
   </div>
 </div>
 
-    <!-- Pending Activities -->
+<!-- Pending Activities -->
 <div class="card pending section">
   <h3>Pending Leave Requests</h3>
   
@@ -245,7 +238,8 @@
       <?php foreach(array_slice($data['pendingLeaves'], 0, 3) as $leave): ?>
         <div class="pending-item">
           <div class="pending-info">
-            <strong><?= htmlspecialchars($leave->caretaker_name) ?></strong>
+            <strong><?= htmlspecialchars($leave->employee_name ?? 'N/A') ?></strong>
+            <span class="pending-role"><?= htmlspecialchars($leave->employee_role ?? '') ?></span>
             <span class="pending-type"><?= htmlspecialchars($leave->leave_type) ?></span>
             <small><?= date('d/m/Y', strtotime($leave->start_date)) ?> - <?= date('d/m/Y', strtotime($leave->end_date)) ?></small>
           </div>
@@ -289,8 +283,9 @@
             <div class="leave-detail-card">
               <div class="leave-header">
                 <div class="caretaker-info">
-                  <h4><?= htmlspecialchars($leave->caretaker_name) ?></h4>
-                  <span class="email"><?= htmlspecialchars($leave->caretaker_email) ?></span>
+                  <h4><?= htmlspecialchars($leave->employee_name ?? 'N/A') ?></h4>
+                  <span class="role-badge"><?= htmlspecialchars($leave->employee_role ?? '') ?></span>
+                  <span class="email"><?= htmlspecialchars($leave->employee_email ?? '') ?></span>
                 </div>
                 <span class="status-badge pending">Pending</span>
               </div>
@@ -395,13 +390,13 @@ window.addEventListener('click', function(event) {
 });
 </script>
 
-  <script src="script.js"></script>
-    
-    </main>
-    </div>
+<script src="script.js"></script>
 
-    <div class="backdrop" id="backdrop" hidden></div>
+</main>
+</div>
 
-    <script src="<?php echo URL_ROOT; ?>/js/admin/dashboard.js"></script>
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<div class="backdrop" id="backdrop" hidden></div>
+
+<script src="<?php echo URL_ROOT; ?>/js/admin/dashboard.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

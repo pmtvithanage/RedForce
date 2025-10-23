@@ -1,7 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-<?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
-<link rel="stylesheet" href="<?= URL_ROOT ?>/css/mobilerider/leaverequest_style.css">
+<?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/premiseofficer/leaverequest_style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Content will be loaded here -->
@@ -14,13 +14,13 @@
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
-                <form id="leaveForm" action="<?= URL_ROOT ?>/mobilerider/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
+                <form action="<?= URL_ROOT ?>/premiseofficer/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
                     <div class="form-group">
                         <label for="leaveType">Leave Type</label>
                         <select id="leaveType" name="leave_type" required>
                             <option value="">Select leave type</option>
                             <option value="Sick Leave">Sick Leave</option>
-                            <option value="Vacation">Vacation</option>
+                            <option value="Vacation">Vacation</option>git
                             <option value="Other">Other</option>
                         </select>
                     </div>
@@ -37,9 +37,9 @@
                                 <input type="text" id="startDate" name="start_date" placeholder="Select start date" class="date-picker" readonly required>
                                 <div class="inline-calendar" id="startCalendar">
                                     <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('startCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
+                                        <button type="button" class="calendar-nav prev" onclick="changeMonth('startCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
                                         <span class="calendar-title" id="startCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('startCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
+                                        <button type="button" class="calendar-nav next" onclick="changeMonth('startCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
                                     </div>
                                     <div class="calendar-weekdays">
                                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
@@ -56,9 +56,9 @@
                                 <input type="text" id="endDate" name="end_date" placeholder="Select end date" class="date-picker" readonly required>
                                 <div class="inline-calendar" id="endCalendar">
                                     <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('endCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
+                                        <button type="button" class="calendar-nav prev" onclick="changeMonth('endCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
                                         <span class="calendar-title" id="endCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('endCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
+                                        <button type="button" class="calendar-nav next" onclick="changeMonth('endCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
                                     </div>
                                     <div class="calendar-weekdays">
                                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
@@ -140,13 +140,9 @@
             </section>
         </main>
     </div>
-    
-    </main>
-    </div>
 
     <div class="backdrop" id="backdrop" hidden></div>
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+    <script src="<?= URL_ROOT ?>/js/premiseofficer/leaverequest.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-
- <script src="<?= URL_ROOT ?>/js/mobilerider/leaverequest.js"></script>

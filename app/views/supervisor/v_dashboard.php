@@ -3,6 +3,7 @@
 <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/dashboard.style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/qr_scanner.css">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/advertisement_view.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
@@ -298,15 +299,46 @@
 
     <!-- Mark Attendance Button -->
     <section class="scan-qr">
-        <button id="scanBtn" class="scan-btn">Mark Attendance</button>
+        <button id="openQRScanner" class="scan-btn">
+            <i class="fas fa-qrcode"></i> Mark Attendance
+        </button>
     </section>
+
+    <!-- QR Scanner Modal -->
+    <div id="qrScannerModal" class="qr-modal-overlay">
+        <div class="qr-modal-content">
+            <div class="qr-modal-header">
+                <h3><i class="fas fa-qrcode"></i> Scan QR Code</h3>
+                <button class="qr-close-btn" id="closeQRScanner">&times;</button>
+            </div>
+            <div class="qr-modal-body">
+                <div id="qr-reader" class="qr-reader-container"></div>
+                <div class="qr-scanner-frame">
+                    <div class="corner top-left"></div>
+                    <div class="corner top-right"></div>
+                    <div class="corner bottom-left"></div>
+                    <div class="corner bottom-right"></div>
+                    <div class="scan-line"></div>
+                </div>
+                <div id="qr-status" class="qr-status"></div>
+            </div>
+            <div class="qr-modal-footer">
+                <p class="qr-instruction">Position the QR code within the frame</p>
+            </div>
+        </div>
+    </div>
+
         </main>
     </div>
 
     
      
 
+    <!-- Include html5-qrcode library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/components/advertisements_view.js"></script>
+    <script src="<?php echo URL_ROOT; ?>/js/supervisor/dashboard.js"></script>
+    <script src="<?php echo URL_ROOT; ?>/js/supervisor/qr_scanner.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-<script src="<?= URL_ROOT ?>/js/caretaker/dashboard.js"></script>
