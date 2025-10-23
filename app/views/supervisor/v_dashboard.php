@@ -64,57 +64,32 @@
                         <tr>
                             <th>Name</th>
                             <th>Status</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="attendanceBody">
                         <tr>
                             <td><a href="#" class="name-link">John Smith</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                         <tr>
                             <td><a href="#" class="name-link">Sarah Johnson</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                         <tr>
                             <td><a href="#" class="name-link">Mitchell Brown</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                         <tr>
                             <td><a href="#" class="name-link">Jennifer Thompson</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                         <tr>
                             <td><a href="#" class="name-link">David Martinez</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                         <tr>
                             <td><a href="#" class="name-link">Lisa Anderson</a></td>
                             <td><span class="status-badge present">Present</span></td>
-                            <td>
-                                <button class="action-btn approve" title="Approve"><i class="fas fa-check"></i></button>
-                                <button class="action-btn reject" title="Reject"><i class="fas fa-times"></i></button>
-                            </td>
                         </tr>
                     </tbody>
                 </table>

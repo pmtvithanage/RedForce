@@ -91,16 +91,17 @@ body {
 }
 
 .avatar {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: bold;
   color: #fff;
   background: #d32f2f;
-  flex: 0 0 42px;
+  flex: 0 0 40px;
+  margin-right: 15px;
 }
 
 .avatar[data-initials]:before {
@@ -284,10 +285,10 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  border: 1px solid #ddd;
-  border-radius: 20px;
-  padding: 8px 10px;
-  background: #f1f1f1;
+  border: 1px solid #e0e0e0;
+  border-radius: 25px;
+  padding: 10px 15px;
+  background: #fff;
 }
 
 .input-wrap input {
@@ -295,6 +296,14 @@ body {
   border: 0;
   outline: none;
   font-family: inherit;
+  background: transparent;
+  padding: 5px 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.input-wrap input::placeholder {
+  color: #999;
 }
 
 .send {

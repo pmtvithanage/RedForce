@@ -391,10 +391,18 @@
   font-size: 13px;
 }
 
+.attendance-table thead th:last-child {
+  text-align: right;
+}
+
 .attendance-table tbody td {
   padding: 10px;
   border-bottom: 1px solid #f7d1d7;
   font-size: 13px;
+}
+
+.attendance-table tbody td:last-child {
+  text-align: right;
 }
 
 /* --- Status Chips --- */

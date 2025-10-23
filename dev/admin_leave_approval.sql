@@ -1,5 +1,3 @@
--- SQL to add admin approval columns to leave_requests table
--- Run this in phpMyAdmin or MySQL command line
 
 USE REDFORCE_db;
 
