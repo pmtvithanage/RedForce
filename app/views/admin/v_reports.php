@@ -113,8 +113,10 @@
                                 <tbody>
                                     <tr>
                                         <td>EMP001</td>
-                                        <td>Kasun Cahamara</td>
-                                        <td>Z1123</td>
+
+                                        <td>Chamika Karunarathna</td>
+                                        <td>Security</td>
+
                                         <td>08:00 AM</td>
                                         <td>05:00 PM</td>
                                         <td><span class="status present">Present</span></td>
@@ -122,8 +124,9 @@
                                     </tr>
                                     <tr>
                                         <td>EMP002</td>
-                                        <td>I.L. Kumara</td>
-                                        <td>Z4432</td>
+
+                                        <td>Saman Edirimunee</td>
+
                                         <td>08:15 AM</td>
                                         <td>05:15 PM</td>
                                         <td><span class="status late">Late</span></td>
@@ -131,15 +134,62 @@
                                     </tr>
                                     <tr>
                                         <td>EMP003</td>
-                                        <td>Amal Perera</td>
-                                        <td>Z2214</td>
+
+                                        <td>Roy Dias</td>
+                                        <td>Operations</td>
                                         <td>--</td>
                                         <td>--</td>
                                         <td><span class="status absent">Absent</span></td>
                                         <td>0.0 hrs</td>
                                     </tr>
-        
-                           
+                                    <tr>
+                                        <td>EMP004</td>
+                                        <td>Lionel Mendis</td>
+                                        <td>Security</td>
+                                        <td>07:45 AM</td>
+                                        <td>05:30 PM</td>
+                                        <td><span class="status present">Present</span></td>
+                                        <td>9.75 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>EMP005</td>
+                                        <td>Dimuth Gamage</td>
+                                        <td>Administration</td>
+                                        <td>08:30 AM</td>
+                                        <td>05:00 PM</td>
+                                        <td><span class="status late">Late</span></td>
+                                        <td>8.5 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>EMP006</td>
+                                        <td>Ravin Kanishka</td>
+                                        <td>Operations</td>
+                                        <td>08:00 AM</td>
+                                        <td>05:00 PM</td>
+                                        <td><span class="status present">Present</span></td>
+                                        <td>9.0 hrs</td>
+                                    </tr>
+                                    <tr>
+                                        <td>EMP007</td>
+                                        <td>Charith Asalanka</td>
+                                        <td>Security</td>
+
+                                        <td>--</td>
+                                        <td>--</td>
+                                        <td><span class="status absent">Absent</span></td>
+                                        <td>0.0 hrs</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>EMP008</td>
+                                        <td>Pathum Nissanka</td>
+                                        <td>Administration</td>
+                                        <td>07:30 AM</td>
+                                        <td>05:15 PM</td>
+                                        <td><span class="status present">Present</span></td>
+                                        <td>9.75 hrs</td>
+                                    </tr>
+
                                 </tbody>
                             </table>
                         </div>
@@ -215,7 +265,9 @@
                                         
                                         <td>Z4332</td>
                                         <td>Unauthorized access attempt by unknown person</td>
-                                        <td>Nuwan Perera</td>
+
+                                        <td>Officer Chamika</td>
+
                                         <td>2024-01-15 14:30</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Person escorted off premises</td>
@@ -225,7 +277,9 @@
                                         
                                         <td>Z2231</td>
                                         <td>Employee fainted due to heat exhaustion</td>
-                                        <td>Manjula Gayan</td>
+
+                                        <td>Manager Kasun</td>
+
                                         <td>2024-01-14 11:15</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>First aid provided, employee sent home</td>
@@ -235,7 +289,9 @@
                                        
                                         <td>Z33221</td>
                                         <td>Vehicle break-in reported</td>
-                                        <td>Saman Edirimuni</td>
+
+                                        <td>Employee Dimuth</td>
+
                                         <td>2024-01-13 18:45</td>
                                         <td><span class="status pending">Pending</span></td>
                                         <td>Police report filed</td>
@@ -245,7 +301,9 @@
                                         
                                         <td>Z55443</td>
                                         <td>Small grease fire in cafeteria kitchen</td>
-                                        <td>Chamath Kalhara</td>
+
+                                        <td>Officer Madura</td>
+
                                         <td>2024-01-12 12:30</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Fire extinguished, no damage</td>
@@ -255,7 +313,9 @@
                                         
                                         <td>Z44332</td>
                                         <td>Employee complained of chest pain</td>
-                                        <td>Bandula Padmakumara</td>
+
+                                        <td>Officer Saman</td>
+
                                         <td>2024-01-11 15:20</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Ambulance called, employee hospitalized</td>
@@ -265,7 +325,9 @@
                                         
                                         <td>Z55544</td>
                                         <td>Unauthorized access to restricted area</td>
-                                        <td>Imalka Shehan</td>
+
+                                        <td>Officer Padme</td>
+
                                         <td>2024-01-10 09:45</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Access revoked, investigation completed</td>
@@ -292,8 +354,8 @@
                 <div class="report-filters">
                     <select id="officer-select">
                         <option value="all">All Officers</option>
-                        <option value="officer1">Officer Smith</option>
-                        <option value="officer2">Officer Johnson</option>
+                        <option value="officer1">Officer Wanidu</option>
+                        <option value="officer2">Officer Matheesha</option>
                     </select>
                     <select id="performance-period">
                         <option value="month">This Month</option>
@@ -334,10 +396,10 @@
                 <div class="report-filters">
                     <select id="site-select">
                         <option value="all">All Sites</option>
-                        <option value="site1">Downtown Office</option>
-                        <option value="site2">Warehouse A</option>
+                        <option value="site1">Bank</option>
+                        <option value="site2">School</option>
                         <option value="site3">Retail Center</option>
-                        <option value="site4">Manufacturing Plant</option>
+                        <option value="site4">Communication Center</option>
                         <option value="site5">Data Center</option>
                     </select>
                     <select id="site-period">
@@ -390,47 +452,47 @@
                                 <tbody>
                                     <tr>
                                         <td>SITE001</td>
-                                        <td>Downtown Office</td>
+                                        <td>Bank</td>
                                         <td>123 Main St, City Center</td>
                                         <td>156</td>
                                         <td>12</td>
                                         <td>0</td>
                                         <td><span class="status active">Active</span></td>
                                         <td>2024-01-15 16:30</td>
-                                        <td>Officer Smith</td>
+                                        <td>Officer Wanidu</td>
                                     </tr>
                                     <tr>
                                         <td>SITE002</td>
-                                        <td>Warehouse A</td>
-                                        <td>456 Industrial Blvd</td>
+                                        <td>School</td>
+                                        <td>456 ,Maradana RD</td>
                                         <td>89</td>
                                         <td>8</td>
                                         <td>1</td>
                                         <td><span class="status active">Active</span></td>
                                         <td>2024-01-15 15:45</td>
-                                        <td>Officer Johnson</td>
+                                        <td>Officer Kamal</td>
                                     </tr>
                                     <tr>
                                         <td>SITE003</td>
                                         <td>Retail Center</td>
-                                        <td>789 Shopping Ave</td>
+                                        <td>789 Sisil Ave</td>
                                         <td>234</td>
                                         <td>15</td>
                                         <td>2</td>
                                         <td><span class="status active">Active</span></td>
                                         <td>2024-01-15 17:15</td>
-                                        <td>Officer Davis</td>
+                                        <td>Officer Chasun</td>
                                     </tr>
                                     <tr>
                                         <td>SITE004</td>
-                                        <td>Manufacturing Plant</td>
+                                        <td>Communication Center</td>
                                         <td>321 Factory Rd</td>
                                         <td>67</td>
                                         <td>6</td>
                                         <td>0</td>
                                         <td><span class="status active">Active</span></td>
                                         <td>2024-01-15 14:20</td>
-                                        <td>Officer Wilson</td>
+                                        <td>Officer Adith</td>
                                     </tr>
                                     <tr>
                                         <td>SITE005</td>
@@ -441,7 +503,7 @@
                                         <td>0</td>
                                         <td><span class="status active">Active</span></td>
                                         <td>2024-01-15 13:55</td>
-                                        <td>Officer Brown</td>
+                                        <td>Officer Supun</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -467,9 +529,9 @@
                                 <tbody>
                                     <tr>
                                         <td>CHK001</td>
-                                        <td>Downtown Office</td>
+                                        <td>Bank</td>
                                         <td>Perimeter Check</td>
-                                        <td>Officer Smith</td>
+                                        <td>Officer Wanidu</td>
                                         <td>2024-01-15 08:00</td>
                                         <td>All clear</td>
                                         <td><span class="status resolved">Completed</span></td>
@@ -477,9 +539,9 @@
                                     </tr>
                                     <tr>
                                         <td>CHK002</td>
-                                        <td>Warehouse A</td>
+                                        <td>School</td>
                                         <td>Equipment Check</td>
-                                        <td>Officer Johnson</td>
+                                        <td>Officer Kamal</td>
                                         <td>2024-01-15 10:30</td>
                                         <td>Minor damage to fence</td>
                                         <td><span class="status pending">Pending</span></td>
@@ -489,7 +551,7 @@
                                         <td>CHK003</td>
                                         <td>Retail Center</td>
                                         <td>Access Control</td>
-                                        <td>Officer Davis</td>
+                                        <td>Officer Chasun</td>
                                         <td>2024-01-15 12:15</td>
                                         <td>Unauthorized vehicle</td>
                                         <td><span class="status resolved">Resolved</span></td>
@@ -497,9 +559,9 @@
                                     </tr>
                                     <tr>
                                         <td>CHK004</td>
-                                        <td>Manufacturing Plant</td>
+                                        <td>Communication Center</td>
                                         <td>Safety Inspection</td>
-                                        <td>Officer Wilson</td>
+                                        <td>Officer Adith</td>
                                         <td>2024-01-15 14:00</td>
                                         <td>All clear</td>
                                         <td><span class="status resolved">Completed</span></td>
@@ -509,7 +571,7 @@
                                         <td>CHK005</td>
                                         <td>Data Center</td>
                                         <td>System Check</td>
-                                        <td>Officer Brown</td>
+                                        <td>Officer Supun</td>
                                         <td>2024-01-15 16:00</td>
                                         <td>All clear</td>
                                         <td><span class="status resolved">Completed</span></td>
@@ -560,8 +622,8 @@
                                 <tbody>
                                     <tr>
                                         <td>08:15</td>
-                                        <td>Downtown Office</td>
-                                        <td>John Smith (EMP001)</td>
+                                        <td>Bank</td>
+                                        <td>Wanidu (EMP001)</td>
                                         <td>Employee Entry</td>
                                         <td>Regular Work</td>
                                         <td>8.5 hrs</td>
@@ -569,7 +631,7 @@
                                     </tr>
                                     <tr>
                                         <td>09:30</td>
-                                        <td>Warehouse A</td>
+                                        <td>School</td>
                                         <td>Delivery Truck (DLV001)</td>
                                         <td>Vehicle Entry</td>
                                         <td>Supply Delivery</td>
@@ -587,8 +649,8 @@
                                     </tr>
                                     <tr>
                                         <td>14:20</td>
-                                        <td>Manufacturing Plant</td>
-                                        <td>Sarah Johnson (EMP002)</td>
+                                        <td>Communication Center</td>
+                                        <td>Chasun (EMP002)</td>
                                         <td>Employee Entry</td>
                                         <td>Regular Work</td>
                                         <td>6.5 hrs</td>
@@ -613,7 +675,7 @@
                         <div class="metrics-chart">
                             <div class="chart-placeholder">
                                 <p>📊 Site Security Performance Dashboard</p>
-                                <p>Downtown Office: 98% | Warehouse A: 95% | Retail Center: 92% | Manufacturing Plant: 97% | Data Center: 99%</p>
+                                <p>Bank: 98% | School: 95% | Retail Center: 92% | Communication Center: 97% | Data Center: 99%</p>
                             </div>
                         </div>
                     </div>
@@ -645,7 +707,7 @@
                     <div class="payment-summary">
                         <div class="payment-stat">
                             <span class="stat-label">Total Revenue</span>
-                            <span class="stat-value">$45,230</span>
+                            <span class="stat-value">Rs45,230</span>
                         </div>
                         <div class="payment-stat">
                             <span class="stat-label">Transactions</span>
@@ -687,12 +749,12 @@
                     <div class="transaction-list">
                         <div class="transaction-item">
                             <span class="client-name">ABC Corporation</span>
-                            <span class="transaction-amount">$2,500</span>
+                            <span class="transaction-amount">Rs2,500</span>
                             <span class="transaction-date">2024-01-15</span>
                         </div>
                         <div class="transaction-item">
                             <span class="client-name">XYZ Industries</span>
-                            <span class="transaction-amount">$1,800</span>
+                            <span class="transaction-amount">Rs1,800</span>
                             <span class="transaction-date">2024-01-14</span>
                         </div>
                     </div>
