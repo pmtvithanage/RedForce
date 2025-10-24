@@ -149,5 +149,70 @@
                 return false;
             }
         }
+
+        // Find user by email (returns boolean)
+        public function findUserByEmail($email) {
+            $this->db->query("SELECT id FROM Users WHERE email = :email");
+            $this->db->bind(":email", $email);
+            $this->db->single();
+            return $this->db->rowCount() > 0;
+        }
+
+        // Get count of users by role
+        public function getUserCountByRole($role) {
+            $this->db->query("SELECT COUNT(*) as count FROM Users WHERE role = :role");
+            $this->db->bind(":role", $role);
+            $result = $this->db->single();
+            return $result->count ?? 0;
+        }
+
+        // Register new user with details
+        public function register($data) {
+            try {
+                // Start transaction
+                $this->db->beginTransaction();
+                
+                // Insert into users table
+                $this->db->query("INSERT INTO Users (userID, name, email, password, role, status, created_at) 
+                                 VALUES (:userID, :name, :email, :password, :role, 'active', NOW())");
+                
+                $this->db->bind(':userID', $data['userID']);
+                $this->db->bind(':name', $data['name']);
+                $this->db->bind(':email', $data['email']);
+                $this->db->bind(':password', $data['password']);
+                $this->db->bind(':role', $data['role']);
+                
+                if (!$this->db->execute()) {
+                    throw new Exception('Failed to insert user');
+                }
+                
+                // Get the inserted user ID
+                $userId = $this->db->lastInsertId();
+                
+                // Insert into user_details table
+                $this->db->query("INSERT INTO user_details (user_id, nic, mobile, address, additional_info) 
+                                 VALUES (:user_id, :nic, :mobile, :address, :additional_info)");
+                
+                $this->db->bind(':user_id', $userId);
+                $this->db->bind(':nic', $data['nic'] ?? null);
+                $this->db->bind(':mobile', $data['mobile'] ?? null);
+                $this->db->bind(':address', $data['address'] ?? null);
+                $this->db->bind(':additional_info', $data['additional_info'] ?? null);
+                
+                if (!$this->db->execute()) {
+                    throw new Exception('Failed to insert user details');
+                }
+                
+                // Commit transaction
+                $this->db->commit();
+                return true;
+                
+            } catch (Exception $e) {
+                // Rollback on error
+                $this->db->rollBack();
+                error_log("User registration error: " . $e->getMessage());
+                return false;
+            }
+        }
     }
 ?>

@@ -421,99 +421,153 @@ public function rejectLeave($id) {
 
     public function createUser() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            header('Content-Type: application/json');
+            // Clean all output buffers
+            while (ob_get_level()) ob_end_clean();
             
-            // Sanitize POST data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
-            $data = [
-                'userID' => $this->generateUserID($_POST['role']),
-                'name' => trim($_POST['name']),
-                'email' => trim($_POST['email']),
-                'password' => trim($_POST['password']),
-                'confirm_password' => trim($_POST['confirm_password']),
-                'role' => trim($_POST['role']),
-                'nic' => trim($_POST['nic']),
-                'mobile' => trim($_POST['mobile']),
-                'address' => trim($_POST['address']),
-                'additional_info' => $this->getAdditionalInfo($_POST),
-                'name_err' => '',
-                'email_err' => '',
-                'password_err' => '',
-                'confirm_password_err' => '',
-                'role_err' => ''
-            ];
-
-            // Validate data
-            if (empty($data['name'])) {
-                $data['name_err'] = 'Please enter name';
-            }
-
-            if (empty($data['email'])) {
-                $data['email_err'] = 'Please enter email';
-            } elseif ($this->adminModel->findUserByEmail($data['email'])) {
-                $data['email_err'] = 'Email is already taken';
-            }
-
-            if (empty($data['password'])) {
-                $data['password_err'] = 'Please enter password';
-            } elseif (strlen($data['password']) < 6) {
-                $data['password_err'] = 'Password must be at least 6 characters';
-            }
-
-            if (empty($data['confirm_password'])) {
-                $data['confirm_password_err'] = 'Please confirm password';
-            } elseif ($data['password'] != $data['confirm_password']) {
-                $data['confirm_password_err'] = 'Passwords do not match';
-            }
-
-            if (empty($data['role'])) {
-                $data['role_err'] = 'Please select role';
-            }
-
-            // If no errors
-            if (empty($data['name_err']) && empty($data['email_err']) && 
-                empty($data['password_err']) && empty($data['confirm_password_err']) && 
-                empty($data['role_err'])) {
+            header('Content-Type: application/json; charset=utf-8');
+            
+            try {
+                // Get POST data
+                $name = trim($_POST['name'] ?? '');
+                $email = trim($_POST['email'] ?? '');
+                $password = trim($_POST['password'] ?? '');
+                $confirm_password = trim($_POST['confirm_password'] ?? '');
+                $role = trim($_POST['role'] ?? '');
+                $nic = trim($_POST['nic'] ?? '');
+                $mobile = trim($_POST['mobile'] ?? '');
+                $address = trim($_POST['address'] ?? '');
                 
-                // Hash password
-                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-
-                // Create user using adminModel
-                if ($this->adminModel->createUser($data)) {
-                    echo json_encode(['success' => true, 'message' => 'User created successfully']);
-                } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to create user']);
+                // Validation errors array
+                $errors = [];
+                
+                // Validate name
+                if (empty($name)) {
+                    $errors['name'] = 'Please enter name';
                 }
-            } else {
+                
+                // Validate NIC - must be exactly 12 digits
+                if (!empty($nic)) {
+                    if (!preg_match('/^\d{12}$/', $nic)) {
+                        $errors['nic'] = 'NIC must be exactly 12 digits with no letters';
+                    }
+                }
+                
+                // Validate mobile - must be exactly 10 digits
+                if (!empty($mobile)) {
+                    if (!preg_match('/^\d{10}$/', $mobile)) {
+                        $errors['mobile'] = 'Mobile number must be exactly 10 digits with no letters';
+                    }
+                }
+                
+                // Validate email
+                if (empty($email)) {
+                    $errors['email'] = 'Please enter email';
+                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $errors['email'] = 'Please enter a valid email';
+                } elseif ($this->userModel->findUserByEmail($email)) {
+                    $errors['email'] = 'Email is already taken';
+                }
+                
+                // Validate password
+                if (empty($password)) {
+                    $errors['password'] = 'Please enter password';
+                } elseif (strlen($password) < 4) {
+                    $errors['password'] = 'Password must be at least 4 characters';
+                }
+                
+                // Validate confirm password
+                if (empty($confirm_password)) {
+                    $errors['confirm_password'] = 'Please confirm password';
+                } elseif ($password !== $confirm_password) {
+                    $errors['confirm_password'] = 'Passwords do not match';
+                }
+                
+                // Validate role
+                if (empty($role)) {
+                    $errors['role'] = 'Please select a role';
+                }
+                
+                // If there are validation errors, return them
+                if (!empty($errors)) {
+                    echo json_encode([
+                        'success' => false,
+                        'errors' => $errors
+                    ]);
+                    exit;
+                }
+                
+                // Generate userID based on role
+                $userID = $this->generateUserID($role);
+                
+                // Prepare user data
+                $userData = [
+                    'userID' => $userID,
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => password_hash($password, PASSWORD_DEFAULT),
+                    'role' => $role,
+                    'nic' => $nic,
+                    'mobile' => $mobile,
+                    'address' => $address,
+                    'additional_info' => $this->getAdditionalInfo($_POST)
+                ];
+                
+                // Create user
+                if ($this->userModel->register($userData)) {
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'User created successfully'
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Failed to create user. Please try again.'
+                    ]);
+                }
+                
+            } catch (Exception $e) {
                 echo json_encode([
-                    'success' => false, 
-                    'errors' => [
-                        'name' => $data['name_err'],
-                        'email' => $data['email_err'],
-                        'password' => $data['password_err'],
-                        'confirm_password' => $data['confirm_password_err'],
-                        'role' => $data['role_err']
-                    ]
+                    'success' => false,
+                    'message' => 'Server error: ' . $e->getMessage()
                 ]);
             }
+            exit;
         }
     }
 
     private function generateUserID($role) {
+        // Define prefix based on role
         $prefix = '';
         switch($role) {
-            case 'admin': $prefix = 'ADM'; break;
-            case 'supervisor': $prefix = 'SUP'; break;
-            case 'premise officer': $prefix = 'PO'; break;
-            case 'mobile rider': $prefix = 'MR'; break;
-            case 'client': $prefix = 'CLT'; break;
-            case 'caretaker': $prefix = 'CT'; break;
-            default: $prefix = 'USR';
+            case 'admin': 
+                $prefix = 'ADMIN'; 
+                break;
+            case 'supervisor': 
+                $prefix = 'SUPERVISOR'; 
+                break;
+            case 'premise officer': 
+                $prefix = 'PREMISEOFFICER'; 
+                break;
+            case 'mobile rider': 
+                $prefix = 'MOBILERIDER'; 
+                break;
+            case 'client': 
+                $prefix = 'CLIENT'; 
+                break;
+            case 'caretaker': 
+                $prefix = 'CARETAKER'; 
+                break;
+            default: 
+                $prefix = 'USER';
         }
         
-        $random = mt_rand(1000, 9999);
-        return $prefix . $random . time();
+        // Get the count of existing users with this role
+        $count = $this->userModel->getUserCountByRole($role);
+        
+        // Generate the next number (count + 1) with leading zeros
+        $number = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
+        
+        return $prefix . $number;
     }
 
     private function getAdditionalInfo($postData) {
@@ -551,12 +605,14 @@ public function rejectLeave($id) {
         } else {
             echo json_encode(['success' => false, 'message' => 'User not found']);
         }
+        exit;
     }
 
     public function getAdmins() {
         header('Content-Type: application/json');
-        $admins = $this->adminModel->getAdmins(); // Now using adminModel
+        $admins = $this->adminModel->getAdmins();
         echo json_encode($admins);
+        exit;
     }
 
     public function debugAdvertisement() {
