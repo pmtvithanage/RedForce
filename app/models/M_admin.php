@@ -118,11 +118,6 @@ class M_admin {
             // Insert into user_details table
             $this->insertUserDetails($userID, $data);
 
-            // Insert permissions if any
-            if (!empty($data['permissions'])) {
-                $this->insertPermissions($userID, $data['permissions']);
-            }
-
             $this->db->commit();
             return true;
 
@@ -146,18 +141,6 @@ class M_admin {
         $this->db->bind(':additional_info', $data['additional_info'] ?? null);
         
         return $this->db->execute();
-    }
-
-    // Insert user permissions
-    private function insertPermissions($userID, $permissions) {
-        $query = "INSERT INTO user_permissions (user_id, permission) VALUES (:user_id, :permission)";
-        $this->db->query($query);
-        
-        foreach ($permissions as $permission) {
-            $this->db->bind(':user_id', $userID);
-            $this->db->bind(':permission', $permission);
-            $this->db->execute();
-        }
     }
 
     // Check if email already exists
@@ -229,11 +212,6 @@ class M_admin {
             }
 
             $userId = $user->id;
-
-            // Delete from user_permissions
-            $this->db->query("DELETE FROM user_permissions WHERE user_id = :user_id");
-            $this->db->bind(':user_id', $userId);
-            $this->db->execute();
 
             // Delete from user_details
             $this->db->query("DELETE FROM user_details WHERE user_id = :user_id");

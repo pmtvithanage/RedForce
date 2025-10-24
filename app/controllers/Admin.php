@@ -414,7 +414,7 @@ public function rejectLeave($id) {
     public function settings() {
         $data = [
             'title' => 'Settings',
-            'admins' => $this->adminModel->getAdmins() // Now using adminModel instead of settingsModel
+            'admins' => $this->adminModel->getAdmins()
         ];
         $this->view('admin/v_settings', $data);
     }
@@ -436,7 +436,6 @@ public function rejectLeave($id) {
                 'nic' => trim($_POST['nic']),
                 'mobile' => trim($_POST['mobile']),
                 'address' => trim($_POST['address']),
-                'permissions' => isset($_POST['permissions']) ? $_POST['permissions'] : [],
                 'additional_info' => $this->getAdditionalInfo($_POST),
                 'name_err' => '',
                 'email_err' => '',
@@ -452,7 +451,7 @@ public function rejectLeave($id) {
 
             if (empty($data['email'])) {
                 $data['email_err'] = 'Please enter email';
-            } elseif ($this->adminModel->findUserByEmail($data['email'])) { // Now using adminModel
+            } elseif ($this->adminModel->findUserByEmail($data['email'])) {
                 $data['email_err'] = 'Email is already taken';
             }
 
@@ -542,6 +541,16 @@ public function rejectLeave($id) {
         }
         
         return json_encode($additionalInfo);
+    }
+
+    public function getUserDetails($userID) {
+        header('Content-Type: application/json');
+        $user = $this->adminModel->getUserByID($userID);
+        if ($user) {
+            echo json_encode(['success' => true, 'user' => $user]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'User not found']);
+        }
     }
 
     public function getAdmins() {
