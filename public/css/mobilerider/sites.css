@@ -6,7 +6,7 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: linear-gradient(135deg, #fce7f3, #fed7e2, #fbb6ce);
+
   min-height: 100vh;
   padding: 0px;
 }

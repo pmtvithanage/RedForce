@@ -169,7 +169,7 @@ class M_mobilerider
     }
 
     // Leave Request CRUD Methods
-
+    
     // Get all leave requests for a mobile rider
     public function getLeaveRequests($mobilerider_id)
     {

@@ -52,6 +52,9 @@ if (isset($_GET['change_email'])) {
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
+<!-- QR Code Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
 <!-- Link to Profile CSS -->
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseOfficer/profile_style.css">
 
@@ -161,7 +164,18 @@ if (isset($_GET['change_email'])) {
                     <div class="profile-name">
                         <?php echo htmlspecialchars($clientData['name']); ?>
                     </div>
-                    <div class="profile-role">Client Account</div>
+                    <div class="profile-role">Premise Officer</div>
+                    
+                    <!-- QR Code Section -->
+                    <div class="qr-code-section">
+                        <div class="qr-code-label">Attendance QR Code</div>
+                        <div class="qr-code-info">Valid for: <span id="qrDate"></span></div>
+                        <div id="qrcode"></div>
+                        <button type="button" class="generate-qr-btn" onclick="generateQRCode()">
+                            <span class="material-icons">refresh</span>
+                            Generate New QR Code
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -231,4 +245,72 @@ if (isset($_GET['change_email'])) {
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+
+<!-- QR Code Generation Script -->
+<script>
+let qrCodeInstance = null;
+
+function generateQRCode() {
+    // Get current date (YYYY-MM-DD format)
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0];
+    
+    // Clear existing QR code
+    const qrcodeElement = document.getElementById("qrcode");
+    qrcodeElement.innerHTML = '';
+    
+    // Generate unique daily code using date + officer ID
+    const qrcodeData = {
+        type: 'attendance',
+        officer_id: '<?php echo $_SESSION['user_id'] ?? 'PO-' . uniqid(); ?>',
+        name: '<?php echo htmlspecialchars($clientData['name']); ?>',
+        role: 'premiseofficer',
+        date: dateString,
+        dailyToken: btoa(dateString + '-<?php echo $_SESSION['user_id'] ?? 'PO'; ?>'),
+        timestamp: new Date().toISOString()
+    };
+    
+    // Create new QR code
+    qrCodeInstance = new QRCode(qrcodeElement, {
+        text: JSON.stringify(qrcodeData),
+        width: 140,
+        height: 140,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    // Update date display
+    document.getElementById('qrDate').textContent = today.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
+    // Show success message
+    showQRMessage('QR Code generated successfully!');
+}
+
+function showQRMessage(message) {
+    // Create temporary message element
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'qr-success-message';
+    msgDiv.innerHTML = '<span class="material-icons">check_circle</span>' + message;
+    
+    const qrSection = document.querySelector('.qr-code-section');
+    qrSection.insertBefore(msgDiv, qrSection.firstChild);
+    
+    // Remove message after 3 seconds
+    setTimeout(() => {
+        msgDiv.remove();
+    }, 3000);
+}
+
+// Auto-generate QR code on page load
+document.addEventListener('DOMContentLoaded', function() {
+    generateQRCode();
+});
+</script>
+
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
