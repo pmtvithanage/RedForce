@@ -101,9 +101,9 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Employee ID</th>
+                                        <th>Officer ID</th>
                                         <th>Name</th>
-                                        <th>Department</th>
+                                        <th>Site</th>
                                         <th>Check-in Time</th>
                                         <th>Check-out Time</th>
                                         <th>Status</th>
@@ -113,8 +113,8 @@
                                 <tbody>
                                     <tr>
                                         <td>EMP001</td>
-                                        <td>John Smith</td>
-                                        <td>Security</td>
+                                        <td>Kasun Cahamara</td>
+                                        <td>Z1123</td>
                                         <td>08:00 AM</td>
                                         <td>05:00 PM</td>
                                         <td><span class="status present">Present</span></td>
@@ -122,8 +122,8 @@
                                     </tr>
                                     <tr>
                                         <td>EMP002</td>
-                                        <td>Sarah Johnson</td>
-                                        <td>Administration</td>
+                                        <td>I.L. Kumara</td>
+                                        <td>Z4432</td>
                                         <td>08:15 AM</td>
                                         <td>05:15 PM</td>
                                         <td><span class="status late">Late</span></td>
@@ -131,93 +131,23 @@
                                     </tr>
                                     <tr>
                                         <td>EMP003</td>
-                                        <td>Mike Davis</td>
-                                        <td>Operations</td>
+                                        <td>Amal Perera</td>
+                                        <td>Z2214</td>
                                         <td>--</td>
                                         <td>--</td>
                                         <td><span class="status absent">Absent</span></td>
                                         <td>0.0 hrs</td>
                                     </tr>
-                                    <tr>
-                                        <td>EMP004</td>
-                                        <td>Lisa Wilson</td>
-                                        <td>Security</td>
-                                        <td>07:45 AM</td>
-                                        <td>05:30 PM</td>
-                                        <td><span class="status present">Present</span></td>
-                                        <td>9.75 hrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>EMP005</td>
-                                        <td>David Brown</td>
-                                        <td>Administration</td>
-                                        <td>08:30 AM</td>
-                                        <td>05:00 PM</td>
-                                        <td><span class="status late">Late</span></td>
-                                        <td>8.5 hrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>EMP006</td>
-                                        <td>Emma Taylor</td>
-                                        <td>Operations</td>
-                                        <td>08:00 AM</td>
-                                        <td>05:00 PM</td>
-                                        <td><span class="status present">Present</span></td>
-                                        <td>9.0 hrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>EMP007</td>
-                                        <td>James Anderson</td>
-                                        <td>Security</td>
-                                        <td>--</td>
-                                        <td>--</td>
-                                        <td><span class="status absent">Absent</span></td>
-                                        <td>0.0 hrs</td>
-                                    </tr>
-                                    <tr>
-                                        <td>EMP008</td>
-                                        <td>Maria Garcia</td>
-                                        <td>Administration</td>
-                                        <td>07:30 AM</td>
-                                        <td>05:15 PM</td>
-                                        <td><span class="status present">Present</span></td>
-                                        <td>9.75 hrs</td>
-                                    </tr>
+        
+                           
                                 </tbody>
                             </table>
                         </div>
                     </div>
                     
-                    <div class="detailed-section">
-                        <h3>Department Summary</h3>
-                        <div class="department-stats">
-                            <div class="dept-stat">
-                                <h4>Security Department</h4>
-                                <p>Total Employees: 15 | Present: 13 | Late: 1 | Absent: 1</p>
-                                <p>Average Hours: 8.9 | Attendance Rate: 93.3%</p>
-                            </div>
-                            <div class="dept-stat">
-                                <h4>Administration Department</h4>
-                                <p>Total Employees: 12 | Present: 10 | Late: 2 | Absent: 0</p>
-                                <p>Average Hours: 9.1 | Attendance Rate: 100%</p>
-                            </div>
-                            <div class="dept-stat">
-                                <h4>Operations Department</h4>
-                                <p>Total Employees: 18 | Present: 16 | Late: 0 | Absent: 2</p>
-                                <p>Average Hours: 8.8 | Attendance Rate: 88.9%</p>
-                            </div>
-                        </div>
-                    </div>
                     
-                    <div class="detailed-section">
-                        <h3>Attendance Trends</h3>
-                        <div class="trends-chart">
-                            <div class="chart-placeholder">
-                                <p>📊 Weekly Attendance Trend Chart</p>
-                                <p>Monday: 94% | Tuesday: 96% | Wednesday: 92% | Thursday: 95% | Friday: 93%</p>
-                            </div>
-                        </div>
-                    </div>
+                    
+                   
                 </div>
             </div>
         </div>
@@ -234,9 +164,9 @@
                 <div class="report-filters">
                     <select id="incident-type">
                         <option value="all">All Types</option>
-                        <option value="security">Security</option>
-                        <option value="medical">Medical</option>
-                        <option value="fire">Fire</option>
+                        <option value="security">Pending</option>
+                        <option value="medical">Resolved</option>
+                        <option value="fire">Rejected</option>
                     </select>
                     <input type="date" id="incident-date">
                     <button class="generate-btn">Generate Report</button>
@@ -251,15 +181,15 @@
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">8</span>
-                                <span class="stat-label">Security</span>
+                                <span class="stat-label">Pending</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">3</span>
-                                <span class="stat-label">Medical</span>
+                                <span class="stat-label">Resolved</span>
                             </div>
                             <div class="stat-item">
                                 <span class="stat-number">1</span>
-                                <span class="stat-label">Fire</span>
+                                <span class="stat-label">Rejected</span>
                             </div>
                         </div>
                     </div>
@@ -271,7 +201,6 @@
                                 <thead>
                                     <tr>
                                         <th>Incident ID</th>
-                                        <th>Type</th>
                                         <th>Location</th>
                                         <th>Description</th>
                                         <th>Reported By</th>
@@ -283,60 +212,60 @@
                                 <tbody>
                                     <tr>
                                         <td>INC001</td>
-                                        <td><span class="incident-type security">Security</span></td>
-                                        <td>Main Gate</td>
+                                        
+                                        <td>Z4332</td>
                                         <td>Unauthorized access attempt by unknown person</td>
-                                        <td>Officer Smith</td>
+                                        <td>Nuwan Perera</td>
                                         <td>2024-01-15 14:30</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Person escorted off premises</td>
                                     </tr>
                                     <tr>
                                         <td>INC002</td>
-                                        <td><span class="incident-type medical">Medical</span></td>
-                                        <td>Building A</td>
+                                        
+                                        <td>Z2231</td>
                                         <td>Employee fainted due to heat exhaustion</td>
-                                        <td>Manager Johnson</td>
+                                        <td>Manjula Gayan</td>
                                         <td>2024-01-14 11:15</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>First aid provided, employee sent home</td>
                                     </tr>
                                     <tr>
                                         <td>INC003</td>
-                                        <td><span class="incident-type security">Security</span></td>
-                                        <td>Parking Lot</td>
+                                       
+                                        <td>Z33221</td>
                                         <td>Vehicle break-in reported</td>
-                                        <td>Employee Davis</td>
+                                        <td>Saman Edirimuni</td>
                                         <td>2024-01-13 18:45</td>
                                         <td><span class="status pending">Pending</span></td>
                                         <td>Police report filed</td>
                                     </tr>
                                     <tr>
                                         <td>INC004</td>
-                                        <td><span class="incident-type fire">Fire</span></td>
-                                        <td>Kitchen</td>
+                                        
+                                        <td>Z55443</td>
                                         <td>Small grease fire in cafeteria kitchen</td>
-                                        <td>Chef Wilson</td>
+                                        <td>Chamath Kalhara</td>
                                         <td>2024-01-12 12:30</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Fire extinguished, no damage</td>
                                     </tr>
                                     <tr>
                                         <td>INC005</td>
-                                        <td><span class="incident-type medical">Medical</span></td>
-                                        <td>Office Floor 3</td>
+                                        
+                                        <td>Z44332</td>
                                         <td>Employee complained of chest pain</td>
-                                        <td>Colleague Brown</td>
+                                        <td>Bandula Padmakumara</td>
                                         <td>2024-01-11 15:20</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Ambulance called, employee hospitalized</td>
                                     </tr>
                                     <tr>
                                         <td>INC006</td>
-                                        <td><span class="incident-type security">Security</span></td>
-                                        <td>Server Room</td>
+                                        
+                                        <td>Z55544</td>
                                         <td>Unauthorized access to restricted area</td>
-                                        <td>IT Manager</td>
+                                        <td>Imalka Shehan</td>
                                         <td>2024-01-10 09:45</td>
                                         <td><span class="status resolved">Resolved</span></td>
                                         <td>Access revoked, investigation completed</td>
@@ -346,27 +275,7 @@
                         </div>
                     </div>
                     
-                    <div class="detailed-section">
-                        <h3>Incident Analysis</h3>
-                        <div class="analysis-grid">
-                            <div class="analysis-item">
-                                <h4>Most Common Incident Type</h4>
-                                <p>Security incidents account for 67% of all reported incidents</p>
-                            </div>
-                            <div class="analysis-item">
-                                <h4>Peak Incident Hours</h4>
-                                <p>Most incidents occur between 2:00 PM - 4:00 PM</p>
-                            </div>
-                            <div class="analysis-item">
-                                <h4>Average Resolution Time</h4>
-                                <p>Security: 2.5 hours | Medical: 1.2 hours | Fire: 0.5 hours</p>
-                            </div>
-                            <div class="analysis-item">
-                                <h4>High-Risk Areas</h4>
-                                <p>Main Gate, Parking Lot, Server Room</p>
-                            </div>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </div>

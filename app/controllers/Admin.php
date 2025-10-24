@@ -7,6 +7,7 @@ class Admin extends Controller {
         requireAuth('admin');
         $this->adminModel = $this->model('M_admin');
         $this->userModel = $this->model('M_users');
+        // Removed: $this->settingsModel = $this->model('SettingsModel');
     }
 
     public function index() {
@@ -407,13 +408,147 @@ public function rejectLeave($id) {
         $this->view('admin/v_reports', $data);  
     }
 
+    // ==============================
+    // Settings
+    // ==============================
     public function settings() {
-        $data = ['title' => 'Settings'];
+        $data = [
+            'title' => 'Settings',
+            'admins' => $this->adminModel->getAdmins() // Now using adminModel instead of settingsModel
+        ];
         $this->view('admin/v_settings', $data);
     }
 
+    public function createUser() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
+            $data = [
+                'userID' => $this->generateUserID($_POST['role']),
+                'name' => trim($_POST['name']),
+                'email' => trim($_POST['email']),
+                'password' => trim($_POST['password']),
+                'confirm_password' => trim($_POST['confirm_password']),
+                'role' => trim($_POST['role']),
+                'nic' => trim($_POST['nic']),
+                'mobile' => trim($_POST['mobile']),
+                'address' => trim($_POST['address']),
+                'permissions' => isset($_POST['permissions']) ? $_POST['permissions'] : [],
+                'additional_info' => $this->getAdditionalInfo($_POST),
+                'name_err' => '',
+                'email_err' => '',
+                'password_err' => '',
+                'confirm_password_err' => '',
+                'role_err' => ''
+            ];
 
+            // Validate data
+            if (empty($data['name'])) {
+                $data['name_err'] = 'Please enter name';
+            }
+
+            if (empty($data['email'])) {
+                $data['email_err'] = 'Please enter email';
+            } elseif ($this->adminModel->findUserByEmail($data['email'])) { // Now using adminModel
+                $data['email_err'] = 'Email is already taken';
+            }
+
+            if (empty($data['password'])) {
+                $data['password_err'] = 'Please enter password';
+            } elseif (strlen($data['password']) < 6) {
+                $data['password_err'] = 'Password must be at least 6 characters';
+            }
+
+            if (empty($data['confirm_password'])) {
+                $data['confirm_password_err'] = 'Please confirm password';
+            } elseif ($data['password'] != $data['confirm_password']) {
+                $data['confirm_password_err'] = 'Passwords do not match';
+            }
+
+            if (empty($data['role'])) {
+                $data['role_err'] = 'Please select role';
+            }
+
+            // If no errors
+            if (empty($data['name_err']) && empty($data['email_err']) && 
+                empty($data['password_err']) && empty($data['confirm_password_err']) && 
+                empty($data['role_err'])) {
+                
+                // Hash password
+                $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
+
+                // Create user using adminModel
+                if ($this->adminModel->createUser($data)) {
+                    echo json_encode(['success' => true, 'message' => 'User created successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to create user']);
+                }
+            } else {
+                echo json_encode([
+                    'success' => false, 
+                    'errors' => [
+                        'name' => $data['name_err'],
+                        'email' => $data['email_err'],
+                        'password' => $data['password_err'],
+                        'confirm_password' => $data['confirm_password_err'],
+                        'role' => $data['role_err']
+                    ]
+                ]);
+            }
+        }
+    }
+
+    private function generateUserID($role) {
+        $prefix = '';
+        switch($role) {
+            case 'admin': $prefix = 'ADM'; break;
+            case 'supervisor': $prefix = 'SUP'; break;
+            case 'premise officer': $prefix = 'PO'; break;
+            case 'mobile rider': $prefix = 'MR'; break;
+            case 'client': $prefix = 'CLT'; break;
+            case 'caretaker': $prefix = 'CT'; break;
+            default: $prefix = 'USR';
+        }
+        
+        $random = mt_rand(1000, 9999);
+        return $prefix . $random . time();
+    }
+
+    private function getAdditionalInfo($postData) {
+        $additionalInfo = [];
+        
+        switch($postData['role']) {
+            case 'mobile rider':
+                $additionalInfo = [
+                    'vehicle_type' => $postData['vehicle_type'] ?? '',
+                    'license_number' => $postData['license_number'] ?? ''
+                ];
+                break;
+            case 'caretaker':
+                $additionalInfo = [
+                    'qualifications' => $postData['qualifications'] ?? '',
+                    'experience' => $postData['experience'] ?? ''
+                ];
+                break;
+            case 'premise officer':
+                $additionalInfo = [
+                    'premise_id' => $postData['premise_id'] ?? '',
+                    'shift' => $postData['shift'] ?? ''
+                ];
+                break;
+        }
+        
+        return json_encode($additionalInfo);
+    }
+
+    public function getAdmins() {
+        header('Content-Type: application/json');
+        $admins = $this->adminModel->getAdmins(); // Now using adminModel
+        echo json_encode($admins);
+    }
 
     public function debugAdvertisement() {
     // Enable error reporting temporarily

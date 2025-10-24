@@ -1,6 +1,6 @@
 :root {
-  --primary: #ff6b6b;
-  --primary-dark: #ff5252;
+  --primary: #ffeaea;
+  --primary-dark: #242323;
   --primary-light: #ffe6e6;
   --primary-bg: #fff5f5;
   --success: #4caf50;
@@ -102,16 +102,17 @@
   background: var(--primary-dark);
   transform: scale(1.05);
 }
+
 .view-btn:focus {
   outline: 2px solid var(--primary-dark);
   outline-offset: 2px;
 }
 
-/* ===== Create Admin Section ===== */
+/* ===== Create User Section ===== */
 .form-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 30px;
+  grid-template-columns: auto 1fr;
+  gap: 40px;
   align-items: start;
 }
 
@@ -184,12 +185,18 @@
 }
 
 .form-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
-.input-group input {
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group input,
+.input-group select {
   width: 100%;
   padding: 12px 15px;
   border: 2px solid var(--primary);
@@ -201,7 +208,8 @@
   box-sizing: border-box;
 }
 
-.input-group input:focus {
+.input-group input:focus,
+.input-group select:focus {
   outline: none;
   border-color: var(--primary-dark);
   background: white;
@@ -212,6 +220,15 @@
   color: var(--text-muted);
 }
 
+/* ===== Permissions Section ===== */
+.permissions {
+  margin-top: 25px;
+  padding: 20px;
+  background: var(--primary-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
 .permissions h4 {
   color: var(--text);
   margin-bottom: 15px;
@@ -220,8 +237,8 @@
 }
 
 .checkbox-group {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
 }
 
@@ -251,7 +268,7 @@
   transform: translateY(-50%);
   height: 20px;
   width: 20px;
-  background: var(--primary-bg);
+  background: white;
   border: 2px solid var(--primary);
   border-radius: 4px;
   transition: all 0.3s ease;
@@ -283,13 +300,36 @@
   display: block;
 }
 
+/* ===== Role Specific Fields ===== */
+.role-specific-fields {
+  margin-top: 25px;
+  padding: 20px;
+  background: var(--primary-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.role-specific-fields h4 {
+  color: var(--text);
+  margin-bottom: 15px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.additional-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
 .form-actions {
   margin-top: 30px;
   text-align: right;
+  grid-column: 1 / -1;
 }
 
 .create-btn {
-  background: var(--primary);
+  background: rgb(200, 0, 0);
   color: white;
   border: none;
   padding: 12px 30px;
@@ -302,7 +342,7 @@
 }
 
 .create-btn:hover {
-  background: var(--primary-dark);
+  background: rgb(255, 34, 34);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(255, 82, 82, 0.4);
 }
@@ -366,6 +406,11 @@
     gap: 20px;
   }
 
+  .form-fields {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
   .admins-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 15px;
@@ -385,6 +430,14 @@
     width: 120px;
     height: 120px;
   }
+
+  .checkbox-group {
+    grid-template-columns: 1fr;
+  }
+
+  .additional-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 480px) {
@@ -403,5 +456,14 @@
 
   .section h2 {
     font-size: 20px;
+  }
+
+  .form-actions {
+    text-align: center;
+  }
+
+  .create-btn {
+    width: 100%;
+    padding: 15px 30px;
   }
 }

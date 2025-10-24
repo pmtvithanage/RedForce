@@ -30,17 +30,17 @@
     </div>
   </div>
 
-  <!-- Create Admin Section -->
-  <div class="section create-admin">
-    <h2>Create Admin</h2>
+  <!-- Create User Section -->
+  <div class="section create-user">
+    <h2>Create User</h2>
 
     <!-- Success Message (hidden by default) -->
     <div id="successMessage" class="success-message" style="display: none;">
       <span class="success-icon">✅</span>
-      <span class="success-text">Admin created successfully!</span>
+      <span class="success-text">User created successfully!</span>
     </div>
 
-    <form id="createAdminForm">
+    <form id="createUserForm">
       <div class="form-content">
         <div class="photo-upload">
           <div class="upload-area" id="uploadArea" tabindex="0" role="button" aria-label="Upload profile photo">
@@ -55,63 +55,58 @@
 
         <div class="form-fields">
           <div class="input-group">
-            <input type="text" id="adminName" placeholder="Name" required>
+            <input type="text" id="userName" name="name" placeholder="Full Name" required>
           </div>
           <div class="input-group">
-            <input type="text" id="adminNIC" placeholder="NIC" required>
+            <input type="text" id="userNIC" name="nic" placeholder="NIC" required>
           </div>
           <div class="input-group">
-            <input type="email" id="adminEmail" placeholder="Email" required>
+            <input type="email" id="userEmail" name="email" placeholder="Email" required>
           </div>
           <div class="input-group">
-            <input type="tel" id="adminMobile" placeholder="Mobile Number" required>
+            <input type="tel" id="userMobile" name="mobile" placeholder="Mobile Number" required>
+          </div>
+          <div class="input-group">
+            <input type="text" id="userAddress" name="address" placeholder="Address">
+          </div>
+          <div class="input-group">
+            <select id="userRole" name="role" required>
+              <option value="">Select Role</option>
+              <option value="admin">Admin</option>
+              <option value="client">Client</option>
+              <option value="mobile rider">Mobile Rider</option>
+              <option value="caretaker">Caretaker</option>
+              <option value="supervisor">Supervisor</option>
+              <option value="premise officer">Premise Officer</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <input type="password" id="userPassword" name="password" placeholder="Password" required>
+          </div>
+          <div class="input-group">
+            <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm Password" required>
           </div>
         </div>
 
-        <div class="permissions">
+        <!-- Dynamic Permissions Section based on Role -->
+        <div class="permissions" id="permissionsSection" style="display: none;">
           <h4>Permissions</h4>
-          <div class="checkbox-group">
-            <label class="checkbox-item">
-              <input type="checkbox" id="addOfficers" checked>
-              <span class="checkmark"></span>
-              Add Officers
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="addClients" checked>
-              <span class="checkmark"></span>
-              Add Clients
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="scheduling">
-              <span class="checkmark"></span>
-              Scheduling
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="salaryAdjustment">
-              <span class="checkmark"></span>
-              Salary Adjustment
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="resolveIncidents">
-              <span class="checkmark"></span>
-              Resolve Incidents
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="publishAdvertisements">
-              <span class="checkmark"></span>
-              Publish Advertisements
-            </label>
-            <label class="checkbox-item">
-              <input type="checkbox" id="updateProfiles">
-              <span class="checkmark"></span>
-              Update Profiles
-            </label>
+          <div class="checkbox-group" id="permissionsCheckboxGroup">
+            <!-- Permissions will be dynamically populated based on role -->
+          </div>
+        </div>
+
+        <!-- Additional Fields for Specific Roles -->
+        <div class="role-specific-fields" id="roleSpecificFields" style="display: none;">
+          <h4>Additional Information</h4>
+          <div class="additional-fields" id="additionalFields">
+            <!-- Additional fields will be dynamically populated based on role -->
           </div>
         </div>
       </div>
 
       <div class="form-actions">
-        <button type="submit" class="create-btn">Create</button>
+        <button type="submit" class="create-btn">Create User</button>
       </div>
     </form>
   </div>
