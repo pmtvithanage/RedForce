@@ -140,7 +140,7 @@ $previousRequests = $formattedRequests;
                 <form method="POST" onsubmit="return confirm('Are you sure you want to delete this request?');">
                   <input type="hidden" name="request_id" value="<?php echo $request['id']; ?>">
                   <button type="submit" name="delete_request" class="delete-request-btn">
-                    🗑️ Delete Request
+                     Delete Request
                   </button>
                 </form>
               </div>

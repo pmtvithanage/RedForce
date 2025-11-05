@@ -96,6 +96,8 @@ class M_admin {
     // Create new user
     public function createUser($data) {
         try {
+            error_log("Starting user creation for: " . $data['email']);
+            
             $this->db->beginTransaction();
 
             // Insert into users table
@@ -110,20 +112,24 @@ class M_admin {
             $this->db->bind(':role', $data['role']);
             
             if (!$this->db->execute()) {
-                throw new Exception('Failed to insert user');
+                throw new Exception('Failed to insert user into users table');
             }
 
             $userID = $this->db->lastInsertId();
+            error_log("User inserted with ID: " . $userID);
 
             // Insert into user_details table
             $this->insertUserDetails($userID, $data);
+            error_log("User details inserted successfully");
 
             $this->db->commit();
+            error_log("Transaction committed successfully");
             return true;
 
         } catch (Exception $e) {
             $this->db->rollBack();
             error_log("User creation error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
             return false;
         }
     }
@@ -140,7 +146,11 @@ class M_admin {
         $this->db->bind(':address', $data['address'] ?? null);
         $this->db->bind(':additional_info', $data['additional_info'] ?? null);
         
-        return $this->db->execute();
+        if (!$this->db->execute()) {
+            throw new Exception('Failed to insert user details');
+        }
+        
+        return true;
     }
 
     // Check if email already exists

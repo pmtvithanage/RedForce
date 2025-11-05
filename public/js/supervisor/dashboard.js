@@ -1,12 +1,12 @@
 // Supervisor Dashboard JS
 
 const officers = [
-  { name: 'John Smith', status: 'present' },
-  { name: 'Sarah Johnson', status: 'present' },
-  { name: 'Mitchell Brown', status: 'present' },
-  { name: 'Jennifer Thompson', status: 'present' },
-  { name: 'David Martinez', status: 'present' },
-  { name: 'Lisa Anderson', status: 'present' }
+  { name: 'Athula Adikari', status: 'present' },
+  { name: 'Saman kumara', status: 'present' },
+  { name: 'Amara bandu', status: 'present' },
+  { name: 'wanidu Hasaranga', status: 'present' },
+  { name: 'Amantha Perera', status: 'present' },
+  { name: 'Samitha Vithana', status: 'present' }
 ];
 
 function renderRows(list) {

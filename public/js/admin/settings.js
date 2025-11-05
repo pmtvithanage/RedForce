@@ -511,8 +511,25 @@ document.addEventListener("DOMContentLoaded", function () {
       method: "POST",
       body: formData,
     })
-      .then((response) => response.json())
+      .then((response) => {
+        console.log("Response status:", response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((text) => {
+        console.log("Raw response:", text);
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse JSON:", e);
+          console.error("Response text:", text);
+          throw new Error("Invalid JSON response from server");
+        }
+      })
       .then((data) => {
+        console.log("Parsed data:", data);
         if (data.success) {
           showSuccessMessage();
           createUserForm.reset();
@@ -525,12 +542,18 @@ document.addEventListener("DOMContentLoaded", function () {
             location.reload();
           }, 2000);
         } else {
-          displayErrors(data.errors);
+          if (data.errors) {
+            displayErrors(data.errors);
+          } else if (data.message) {
+            showNotification(data.message, "error");
+          } else {
+            showNotification("Error creating user", "error");
+          }
         }
       })
       .catch((error) => {
         console.error("Error:", error);
-        showNotification("Error creating user", "error");
+        showNotification("Error creating user: " + error.message, "error");
       })
       .finally(() => {
         submitBtn.textContent = originalText;
