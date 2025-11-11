@@ -3,6 +3,11 @@
 <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
+
+
 <?php
 $notes = $data['notes'];
 ?>

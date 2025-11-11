@@ -10,6 +10,11 @@ if (!isset($data['title'])) {
 
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
+
 <?php
 // Get data passed from controller
 $showSuccessMessage = $data['showSuccessMessage'] ?? false;
