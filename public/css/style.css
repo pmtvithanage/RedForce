@@ -1,1 +1,14 @@
-@import url(components/buttons.css);
+/* Import Google Material Icons */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined");
+
+/* Import other component CSS */
+@import url("components/buttons.css");
+
+/* Define global colors and variables */
+:root {
+  --primary-color: #a40000;
+  --secondary-color: #fff;
+  --border-color: #ddd;
+  --text-color: #333;
+  --background-color: #f9f9f9;
+}
