@@ -90,6 +90,160 @@ class M_admin {
     }
 
     // ==============================
+    // User Management (For Settings)
+    // ==============================
+    
+    // Create new user
+    public function createUser($data) {
+        try {
+            error_log("Starting user creation for: " . $data['email']);
+            
+            $this->db->beginTransaction();
+
+            // Insert into users table
+            $query = "INSERT INTO users (userID, name, email, password, role, status, created_at) 
+                     VALUES (:userID, :name, :email, :password, :role, 'active', NOW())";
+            
+            $this->db->query($query);
+            $this->db->bind(':userID', $data['userID']);
+            $this->db->bind(':name', $data['name']);
+            $this->db->bind(':email', $data['email']);
+            $this->db->bind(':password', $data['password']);
+            $this->db->bind(':role', $data['role']);
+            
+            if (!$this->db->execute()) {
+                throw new Exception('Failed to insert user into users table');
+            }
+
+            $userID = $this->db->lastInsertId();
+            error_log("User inserted with ID: " . $userID);
+
+            // Insert into user_details table
+            $this->insertUserDetails($userID, $data);
+            error_log("User details inserted successfully");
+
+            $this->db->commit();
+            error_log("Transaction committed successfully");
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("User creation error: " . $e->getMessage());
+            error_log("Stack trace: " . $e->getTraceAsString());
+            return false;
+        }
+    }
+
+    // Insert user details
+    private function insertUserDetails($userID, $data) {
+        $query = "INSERT INTO user_details (user_id, nic, mobile, address, additional_info) 
+                 VALUES (:user_id, :nic, :mobile, :address, :additional_info)";
+        
+        $this->db->query($query);
+        $this->db->bind(':user_id', $userID);
+        $this->db->bind(':nic', $data['nic'] ?? null);
+        $this->db->bind(':mobile', $data['mobile'] ?? null);
+        $this->db->bind(':address', $data['address'] ?? null);
+        $this->db->bind(':additional_info', $data['additional_info'] ?? null);
+        
+        if (!$this->db->execute()) {
+            throw new Exception('Failed to insert user details');
+        }
+        
+        return true;
+    }
+
+    // Check if email already exists
+    public function findUserByEmail($email) {
+        $this->db->query("SELECT id FROM users WHERE email = :email");
+        $this->db->bind(':email', $email);
+        $this->db->execute();
+        return $this->db->rowCount() > 0;
+    }
+
+    // Get all admins
+    public function getAdmins() {
+        $this->db->query("
+            SELECT u.userID, u.name, u.email, u.role, u.status, u.created_at, 
+                   ud.mobile, ud.nic, ud.address
+            FROM users u 
+            LEFT JOIN user_details ud ON u.id = ud.user_id 
+            WHERE u.role = 'admin' AND u.status = 'active'
+            ORDER BY u.created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    // Get user by userID
+    public function getUserByID($userID) {
+        $this->db->query("
+            SELECT u.*, ud.nic, ud.mobile, ud.address, ud.additional_info 
+            FROM users u 
+            LEFT JOIN user_details ud ON u.id = ud.user_id 
+            WHERE u.userID = :userID
+        ");
+        $this->db->bind(':userID', $userID);
+        return $this->db->single();
+    }
+
+    // Get all users by role
+    public function getUsersByRole($role) {
+        $this->db->query("
+            SELECT u.*, ud.nic, ud.mobile, ud.address 
+            FROM users u 
+            LEFT JOIN user_details ud ON u.id = ud.user_id 
+            WHERE u.role = :role AND u.status = 'active'
+            ORDER BY u.name
+        ");
+        $this->db->bind(':role', $role);
+        return $this->db->resultSet();
+    }
+
+    // Update user status
+    public function updateUserStatus($userID, $status) {
+        $this->db->query("UPDATE users SET status = :status, updated_at = NOW() WHERE userID = :userID");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':status', $status);
+        return $this->db->execute();
+    }
+
+    // Delete user
+    public function deleteUser($userID) {
+        try {
+            $this->db->beginTransaction();
+
+            // Get user id first
+            $this->db->query("SELECT id FROM users WHERE userID = :userID");
+            $this->db->bind(':userID', $userID);
+            $user = $this->db->single();
+            
+            if (!$user) {
+                throw new Exception('User not found');
+            }
+
+            $userId = $user->id;
+
+            // Delete from user_details
+            $this->db->query("DELETE FROM user_details WHERE user_id = :user_id");
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            // Delete from users
+            $this->db->query("DELETE FROM users WHERE id = :user_id");
+            $this->db->bind(':user_id', $userId);
+            $this->db->execute();
+
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("User deletion error: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    // ==============================
     // Leave Request Management
     // ==============================
     

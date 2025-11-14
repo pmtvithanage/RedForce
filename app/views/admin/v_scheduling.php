@@ -7,10 +7,6 @@
     <!-- Content will be loaded here -->
   <div class="container">
 
-    <!-- Header -->
-    <header class="header">
-      <div class="requests-box">5 Requests</div>
-    </header>
 
     <!-- Client / Site search -->
     <div class="search-section">

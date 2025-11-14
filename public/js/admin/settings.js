@@ -1,86 +1,164 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
-    const uploadArea = document.getElementById('uploadArea');
-    const profilePhotoInput = document.getElementById('profilePhoto');
-    const previewImage = document.getElementById('previewImage');
-    const previewImg = document.getElementById('previewImg');
-    const removePhotoBtn = document.getElementById('removePhoto');
-    const createAdminForm = document.getElementById('createAdminForm');
-    const viewButtons = document.querySelectorAll('.view-btn');
+document.addEventListener("DOMContentLoaded", function () {
+  // DOM Elements
+  const uploadArea = document.getElementById("uploadArea");
+  const profilePhotoInput = document.getElementById("profilePhoto");
+  const previewImage = document.getElementById("previewImage");
+  const previewImg = document.getElementById("previewImg");
+  const removePhotoBtn = document.getElementById("removePhoto");
+  const createUserForm = document.getElementById("createUserForm");
+  const viewButtons = document.querySelectorAll(".view-btn");
+  const userRoleSelect = document.getElementById("userRole");
+  const roleSpecificFields = document.getElementById("roleSpecificFields");
+  const additionalFields = document.getElementById("additionalFields");
 
-    // Image Upload Functionality
-    uploadArea.addEventListener('click', function() {
-        profilePhotoInput.click();
-    });
+  // Image Upload Functionality
+  uploadArea.addEventListener("click", function () {
+    profilePhotoInput.click();
+  });
 
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ff5252';
-        uploadArea.style.background = '#ffe6e6';
-    });
+  uploadArea.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = "#ff5252";
+    uploadArea.style.background = "#ffe6e6";
+  });
 
-    uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ff6b6b';
-        uploadArea.style.background = '#fff5f5';
-    });
+  uploadArea.addEventListener("dragleave", function (e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = "#ff6b6b";
+    uploadArea.style.background = "#fff5f5";
+  });
 
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.style.borderColor = '#ff6b6b';
-        uploadArea.style.background = '#fff5f5';
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            handleImageUpload(files[0]);
-        }
-    });
+  uploadArea.addEventListener("drop", function (e) {
+    e.preventDefault();
+    uploadArea.style.borderColor = "#ff6b6b";
+    uploadArea.style.background = "#fff5f5";
 
-    profilePhotoInput.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            handleImageUpload(e.target.files[0]);
-        }
-    });
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      handleImageUpload(files[0]);
+    }
+  });
 
-    function handleImageUpload(file) {
-        if (!file.type.startsWith('image/')) {
-            showNotification('Please select an image file', 'error');
-            return;
-        }
+  profilePhotoInput.addEventListener("change", function (e) {
+    if (e.target.files.length > 0) {
+      handleImageUpload(e.target.files[0]);
+    }
+  });
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            previewImg.src = e.target.result;
-            uploadArea.style.display = 'none';
-            previewImage.style.display = 'block';
-        };
-        reader.readAsDataURL(file);
+  function handleImageUpload(file) {
+    if (!file.type.startsWith("image/")) {
+      showNotification("Please select an image file", "error");
+      return;
     }
 
-    removePhotoBtn.addEventListener('click', function() {
-        previewImage.style.display = 'none';
-        uploadArea.style.display = 'flex';
-        profilePhotoInput.value = '';
-    });
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      previewImg.src = e.target.result;
+      uploadArea.style.display = "none";
+      previewImage.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  }
 
-    // View Button Functionality
-    viewButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const adminCard = this.closest('.admin-card');
-            const adminName = adminCard.querySelector('h3').textContent;
-            showAdminDetails(adminName);
-        });
-    });
+  removePhotoBtn.addEventListener("click", function () {
+    previewImage.style.display = "none";
+    uploadArea.style.display = "flex";
+    profilePhotoInput.value = "";
+  });
 
-    function showAdminDetails(adminName) {
-        // Create modal for admin details
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.innerHTML = `
+  // Role-specific fields
+  userRoleSelect.addEventListener("change", function () {
+    const role = this.value;
+    updateRoleSpecificFields(role);
+  });
+
+  function updateRoleSpecificFields(role) {
+    additionalFields.innerHTML = "";
+
+    if (role === "mobile rider") {
+      additionalFields.innerHTML = `
+                <div class="input-group">
+                    <input type="text" name="vehicle_type" placeholder="Vehicle Type" required>
+                </div>
+                <div class="input-group">
+                    <input type="text" name="license_number" placeholder="License Number" required>
+                </div>
+            `;
+      roleSpecificFields.style.display = "block";
+    } else if (role === "caretaker") {
+      additionalFields.innerHTML = `
+                <div class="input-group">
+                    <input type="text" name="qualifications" placeholder="Qualifications">
+                </div>
+                <div class="input-group">
+                    <input type="text" name="experience" placeholder="Experience (years)">
+                </div>
+            `;
+      roleSpecificFields.style.display = "block";
+    } else if (role === "premise officer") {
+      additionalFields.innerHTML = `
+                <div class="input-group">
+                    <input type="text" name="premise_id" placeholder="Premise ID">
+                </div>
+                <div class="input-group">
+                    <select name="shift">
+                        <option value="">Select Shift</option>
+                        <option value="morning">Morning</option>
+                        <option value="evening">Evening</option>
+                        <option value="night">Night</option>
+                    </select>
+                </div>
+            `;
+      roleSpecificFields.style.display = "block";
+    } else {
+      roleSpecificFields.style.display = "none";
+    }
+  }
+
+  // View Button Functionality
+  viewButtons.forEach((button) => {
+    button.addEventListener("click", function () {
+      const userID = this.getAttribute("data-userid");
+      showUserDetails(userID);
+    });
+  });
+
+  function showUserDetails(userID) {
+    // Fetch user details via AJAX
+    fetch(`${URL_ROOT}/admin/getUserDetails/${userID}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          createUserModal(data.user);
+        } else {
+          showNotification("Failed to load user details", "error");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showNotification("Error loading user details", "error");
+      });
+  }
+
+  function createUserModal(user) {
+    const modal = document.createElement("div");
+    modal.className = "modal";
+
+    // Parse additional_info if it exists
+    let additionalInfo = {};
+    try {
+      additionalInfo = user.additional_info
+        ? JSON.parse(user.additional_info)
+        : {};
+    } catch (e) {
+      console.error("Error parsing additional info:", e);
+    }
+
+    modal.innerHTML = `
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <div class="modal-header">
-                    <h2>Admin Profile</h2>
+                    <h2>User Profile - ${user.role}</h2>
                     <button class="edit-toggle-btn" id="editToggleBtn">
                         <span class="edit-icon">✏️</span>
                         <span class="edit-text">Edit</span>
@@ -90,71 +168,136 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="profile-section">
                         <div class="profile-photo-container">
                             <div class="profile-photo">
-                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" alt="${adminName}" id="profileImage">
+                                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=face" alt="${
+                                  user.name
+                                }" id="profileImage">
                             </div>
                             <div class="photo-upload-overlay" id="photoUploadOverlay" style="display: none;">
                                 <input type="file" id="profilePhotoUpload" accept="image/*" hidden>
                                 <span>Change Photo</span>
                             </div>
                         </div>
-                        <h2 class="admin-name" id="adminNameDisplay">${adminName}</h2>
+                        <h2 class="user-name" id="userNameDisplay">${
+                          user.name
+                        }</h2>
                         <div class="contact-details">
                             <div class="contact-item">
-                                <strong>NIC :</strong> 
-                                <span class="contact-value" id="nicDisplay">199027881997</span>
-                                <input type="text" class="contact-input" id="nicInput" value="199027881997" style="display: none;">
+                                <strong>User ID:</strong> 
+                                <span class="contact-value" id="userIDDisplay">${
+                                  user.userID
+                                }</span>
                             </div>
                             <div class="contact-item">
-                                <strong>Email :</strong> 
-                                <span class="contact-value" id="emailDisplay">adikari11@gmail.com</span>
-                                <input type="email" class="contact-input" id="emailInput" value="adikari11@gmail.com" style="display: none;">
+                                <strong>NIC:</strong> 
+                                <span class="contact-value" id="nicDisplay">${
+                                  user.nic || "N/A"
+                                }</span>
+                                <input type="text" class="contact-input" id="nicInput" value="${
+                                  user.nic || ""
+                                }" style="display: none;">
                             </div>
                             <div class="contact-item">
-                                <strong>Mobile No :</strong> 
-                                <span class="contact-value" id="mobileDisplay">0778912342</span>
-                                <input type="tel" class="contact-input" id="mobileInput" value="0778912342" style="display: none;">
+                                <strong>Email:</strong> 
+                                <span class="contact-value" id="emailDisplay">${
+                                  user.email
+                                }</span>
+                                <input type="email" class="contact-input" id="emailInput" value="${
+                                  user.email
+                                }" style="display: none;">
                             </div>
-                        </div>
-                    </div>
-                    
-                    <div class="permissions-section">
-                        <h3>Permissions</h3>
-                        <div class="permissions-list">
-                            <div class="permission-item" data-permission="addOfficers">
-                                <span class="permission-text">Add Officers</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
+                            <div class="contact-item">
+                                <strong>Mobile No:</strong> 
+                                <span class="contact-value" id="mobileDisplay">${
+                                  user.mobile || "N/A"
+                                }</span>
+                                <input type="tel" class="contact-input" id="mobileInput" value="${
+                                  user.mobile || ""
+                                }" style="display: none;">
                             </div>
-                            <div class="permission-item" data-permission="addClients">
-                                <span class="permission-text">Add Clients</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
+                            <div class="contact-item">
+                                <strong>Address:</strong> 
+                                <span class="contact-value" id="addressDisplay">${
+                                  user.address || "N/A"
+                                }</span>
+                                <input type="text" class="contact-input" id="addressInput" value="${
+                                  user.address || ""
+                                }" style="display: none;">
                             </div>
-                            <div class="permission-item" data-permission="scheduling">
-                                <span class="permission-text">Scheduling</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
+                            <div class="contact-item">
+                                <strong>Status:</strong> 
+                                <span class="contact-value status-${
+                                  user.status
+                                }">${user.status}</span>
+                                <select class="contact-input" id="statusInput" style="display: none;">
+                                    <option value="active" ${
+                                      user.status === "active" ? "selected" : ""
+                                    }>Active</option>
+                                    <option value="inactive" ${
+                                      user.status === "inactive"
+                                        ? "selected"
+                                        : ""
+                                    }>Inactive</option>
+                                    <option value="suspended" ${
+                                      user.status === "suspended"
+                                        ? "selected"
+                                        : ""
+                                    }>Suspended</option>
+                                </select>
                             </div>
-                            <div class="permission-item" data-permission="salaryAdjustment">
-                                <span class="permission-text">Salary Adjustment</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
-                            </div>
-                            <div class="permission-item" data-permission="resolveIncidents">
-                                <span class="permission-text">Resolve Incidents</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
-                            </div>
-                            <div class="permission-item" data-permission="publishAdvertisements">
-                                <span class="permission-text">Publish Advertisements</span>
-                                <span class="permission-status granted">✓</span>
-                                <input type="checkbox" class="permission-checkbox" checked style="display: none;">
-                            </div>
-                            <div class="permission-item" data-permission="updateProfiles">
-                                <span class="permission-text">Update Profiles</span>
-                                <span class="permission-status denied">✗</span>
-                                <input type="checkbox" class="permission-checkbox" style="display: none;">
-                            </div>
+                            ${
+                              user.role === "mobile rider"
+                                ? `
+                                <div class="contact-item">
+                                    <strong>Vehicle Type:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.vehicle_type || "N/A"
+                                    }</span>
+                                </div>
+                                <div class="contact-item">
+                                    <strong>License Number:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.license_number || "N/A"
+                                    }</span>
+                                </div>
+                            `
+                                : ""
+                            }
+                            ${
+                              user.role === "caretaker"
+                                ? `
+                                <div class="contact-item">
+                                    <strong>Qualifications:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.qualifications || "N/A"
+                                    }</span>
+                                </div>
+                                <div class="contact-item">
+                                    <strong>Experience:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.experience || "N/A"
+                                    }</span>
+                                </div>
+                            `
+                                : ""
+                            }
+                            ${
+                              user.role === "premise officer"
+                                ? `
+                                <div class="contact-item">
+                                    <strong>Premise ID:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.premise_id || "N/A"
+                                    }</span>
+                                </div>
+                                <div class="contact-item">
+                                    <strong>Shift:</strong> 
+                                    <span class="contact-value">${
+                                      additionalInfo.shift || "N/A"
+                                    }</span>
+                                </div>
+                            `
+                                : ""
+                            }
                         </div>
                     </div>
                 </div>
@@ -162,205 +305,402 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="modal-actions">
                     <button class="save-btn" id="saveBtn" style="display: none;">Save Changes</button>
                     <button class="cancel-btn" id="cancelBtn" style="display: none;">Cancel</button>
-                    <button class="remove-btn" id="removeBtn">Remove Admin</button>
+                    <button class="remove-btn" id="removeBtn">Remove User</button>
                     <button class="close-btn" id="closeBtn">Close</button>
                 </div>
             </div>
         `;
 
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-        // Get modal elements
-        const editToggleBtn = modal.querySelector('#editToggleBtn');
-        const saveBtn = modal.querySelector('#saveBtn');
-        const cancelBtn = modal.querySelector('#cancelBtn');
-        const removeBtn = modal.querySelector('#removeBtn');
-        const closeBtn = modal.querySelector('#closeBtn');
-        const photoUploadOverlay = modal.querySelector('#photoUploadOverlay');
-        const profilePhotoUpload = modal.querySelector('#profilePhotoUpload');
-        const profileImage = modal.querySelector('#profileImage');
+    // Get modal elements
+    const editToggleBtn = modal.querySelector("#editToggleBtn");
+    const saveBtn = modal.querySelector("#saveBtn");
+    const cancelBtn = modal.querySelector("#cancelBtn");
+    const removeBtn = modal.querySelector("#removeBtn");
+    const closeBtn = modal.querySelector("#closeBtn");
+    const photoUploadOverlay = modal.querySelector("#photoUploadOverlay");
+    const profilePhotoUpload = modal.querySelector("#profilePhotoUpload");
 
-        // Store original values for cancel functionality
-        const originalValues = {
-            nic: modal.querySelector('#nicInput').value,
-            email: modal.querySelector('#emailInput').value,
-            mobile: modal.querySelector('#mobileInput').value,
-            permissions: {}
-        };
+    // Store original values for cancel functionality
+    const originalValues = {
+      nic: user.nic || "",
+      email: user.email,
+      mobile: user.mobile || "",
+      address: user.address || "",
+      status: user.status,
+    };
 
-        // Store original permission states
-        modal.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-            const permissionItem = checkbox.closest('.permission-item');
-            const permissionName = permissionItem.dataset.permission;
-            originalValues.permissions[permissionName] = checkbox.checked;
-        });
+    let isEditing = false;
 
-        let isEditing = false;
+    // Edit toggle functionality
+    editToggleBtn.addEventListener("click", function () {
+      isEditing = !isEditing;
 
-        // Edit toggle functionality
-        editToggleBtn.addEventListener('click', function() {
-            isEditing = !isEditing;
-            
-            if (isEditing) {
-                // Enter edit mode
-                editToggleBtn.classList.add('editing');
-                editToggleBtn.querySelector('.edit-text').textContent = 'Cancel Edit';
-                editToggleBtn.querySelector('.edit-icon').textContent = '❌';
-                
-                // Show edit elements
-                modal.querySelectorAll('.contact-value').forEach(span => span.style.display = 'none');
-                modal.querySelectorAll('.contact-input').forEach(input => input.style.display = 'block');
-                modal.querySelectorAll('.permission-status').forEach(status => status.style.display = 'none');
-                modal.querySelectorAll('.permission-checkbox').forEach(checkbox => checkbox.style.display = 'block');
-                modal.querySelectorAll('.permission-item').forEach(item => item.classList.add('editing'));
-                photoUploadOverlay.style.display = 'flex';
-                
-                // Show save/cancel buttons
-                saveBtn.style.display = 'block';
-                cancelBtn.style.display = 'block';
-                closeBtn.style.display = 'none';
-            } else {
-                // Exit edit mode
-                exitEditMode();
-            }
-        });
+      if (isEditing) {
+        // Enter edit mode
+        editToggleBtn.classList.add("editing");
+        editToggleBtn.querySelector(".edit-text").textContent = "Cancel Edit";
+        editToggleBtn.querySelector(".edit-icon").textContent = "❌";
 
-        // Save functionality
-        saveBtn.addEventListener('click', function() {
-            // Validate inputs
-            const nic = modal.querySelector('#nicInput').value.trim();
-            const email = modal.querySelector('#emailInput').value.trim();
-            const mobile = modal.querySelector('#mobileInput').value.trim();
+        // Show edit elements
+        modal
+          .querySelectorAll(".contact-value")
+          .forEach((span) => (span.style.display = "none"));
+        modal
+          .querySelectorAll(".contact-input, #statusInput")
+          .forEach((input) => (input.style.display = "block"));
+        photoUploadOverlay.style.display = "flex";
 
-            if (!nic || !email || !mobile) {
-                showNotification('Please fill in all fields', 'error');
-                return;
-            }
+        // Show save/cancel buttons
+        saveBtn.style.display = "block";
+        cancelBtn.style.display = "block";
+        closeBtn.style.display = "none";
+        removeBtn.style.display = "none";
+      } else {
+        // Exit edit mode
+        exitEditMode();
+      }
+    });
 
-            if (!isValidEmail(email)) {
-                showNotification('Please enter a valid email', 'error');
-                return;
-            }
+    // Save functionality
+    saveBtn.addEventListener("click", function () {
+      // Validate inputs
+      const email = modal.querySelector("#emailInput").value.trim();
+      const mobile = modal.querySelector("#mobileInput").value.trim();
 
-            if (!isValidMobile(mobile)) {
-                showNotification('Please enter a valid mobile number', 'error');
-                return;
-            }
+      if (!email) {
+        showNotification("Please enter email", "error");
+        return;
+      }
 
-            // Update display values
-            modal.querySelector('#nicDisplay').textContent = nic;
-            modal.querySelector('#emailDisplay').textContent = email;
-            modal.querySelector('#mobileDisplay').textContent = mobile;
+      if (!isValidEmail(email)) {
+        showNotification("Please enter a valid email", "error");
+        return;
+      }
 
-            // Update permission displays
-            modal.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-                const permissionItem = checkbox.closest('.permission-item');
-                const statusElement = permissionItem.querySelector('.permission-status');
-                
-                if (checkbox.checked) {
-                    statusElement.textContent = '✓';
-                    statusElement.className = 'permission-status granted';
-                } else {
-                    statusElement.textContent = '✗';
-                    statusElement.className = 'permission-status denied';
-                }
-            });
+      if (mobile && !isValidMobile(mobile)) {
+        showNotification("Please enter a valid mobile number", "error");
+        return;
+      }
 
-            // Exit edit mode
-            exitEditMode();
-            
-            // Show success message
-            showNotification('Admin profile updated successfully!', 'success');
-        });
+      // Update display values
+      modal.querySelector("#nicDisplay").textContent =
+        modal.querySelector("#nicInput").value || "N/A";
+      modal.querySelector("#emailDisplay").textContent = email;
+      modal.querySelector("#mobileDisplay").textContent =
+        modal.querySelector("#mobileInput").value || "N/A";
+      modal.querySelector("#addressDisplay").textContent =
+        modal.querySelector("#addressInput").value || "N/A";
 
-        // Cancel functionality
-        cancelBtn.addEventListener('click', function() {
-            // Restore original values
-            modal.querySelector('#nicInput').value = originalValues.nic;
-            modal.querySelector('#emailInput').value = originalValues.email;
-            modal.querySelector('#mobileInput').value = originalValues.mobile;
+      const newStatus = modal.querySelector("#statusInput").value;
+      modal.querySelector("#statusDisplay").textContent = newStatus;
+      modal.querySelector(
+        "#statusDisplay"
+      ).className = `contact-value status-${newStatus}`;
 
-            // Restore original permissions
-            modal.querySelectorAll('.permission-checkbox').forEach(checkbox => {
-                const permissionItem = checkbox.closest('.permission-item');
-                const permissionName = permissionItem.dataset.permission;
-                checkbox.checked = originalValues.permissions[permissionName];
-            });
+      // Exit edit mode
+      exitEditMode();
 
-            exitEditMode();
-        });
+      // Show success message
+      showNotification("User profile updated successfully!", "success");
 
-        function exitEditMode() {
-            isEditing = false;
-            
-            // Reset edit button
-            editToggleBtn.classList.remove('editing');
-            editToggleBtn.querySelector('.edit-text').textContent = 'Edit';
-            editToggleBtn.querySelector('.edit-icon').textContent = '✏️';
-            
-            // Hide edit elements
-            modal.querySelectorAll('.contact-value').forEach(span => span.style.display = 'block');
-            modal.querySelectorAll('.contact-input').forEach(input => input.style.display = 'none');
-            modal.querySelectorAll('.permission-status').forEach(status => status.style.display = 'flex');
-            modal.querySelectorAll('.permission-checkbox').forEach(checkbox => checkbox.style.display = 'none');
-            modal.querySelectorAll('.permission-item').forEach(item => item.classList.remove('editing'));
-            photoUploadOverlay.style.display = 'none';
-            
-            // Show close button
-            saveBtn.style.display = 'none';
-            cancelBtn.style.display = 'none';
-            closeBtn.style.display = 'block';
+      // TODO: Send update to server via AJAX
+      // updateUserOnServer(user.userID, updatedData);
+    });
+
+    // Cancel functionality
+    cancelBtn.addEventListener("click", function () {
+      // Restore original values
+      modal.querySelector("#nicInput").value = originalValues.nic;
+      modal.querySelector("#emailInput").value = originalValues.email;
+      modal.querySelector("#mobileInput").value = originalValues.mobile;
+      modal.querySelector("#addressInput").value = originalValues.address;
+      modal.querySelector("#statusInput").value = originalValues.status;
+
+      exitEditMode();
+    });
+
+    function exitEditMode() {
+      isEditing = false;
+
+      // Reset edit button
+      editToggleBtn.classList.remove("editing");
+      editToggleBtn.querySelector(".edit-text").textContent = "Edit";
+      editToggleBtn.querySelector(".edit-icon").textContent = "✏️";
+
+      // Hide edit elements
+      modal
+        .querySelectorAll(".contact-value")
+        .forEach((span) => (span.style.display = "block"));
+      modal
+        .querySelectorAll(".contact-input, #statusInput")
+        .forEach((input) => (input.style.display = "none"));
+      photoUploadOverlay.style.display = "none";
+
+      // Show close button
+      saveBtn.style.display = "none";
+      cancelBtn.style.display = "none";
+      removeBtn.style.display = "block";
+      closeBtn.style.display = "block";
+    }
+
+    // Photo upload functionality
+    photoUploadOverlay.addEventListener("click", function () {
+      profilePhotoUpload.click();
+    });
+
+    profilePhotoUpload.addEventListener("change", function (e) {
+      if (e.target.files.length > 0) {
+        const file = e.target.files[0];
+        if (!file.type.startsWith("image/")) {
+          showNotification("Please select an image file", "error");
+          return;
         }
 
-        // Photo upload functionality
-        photoUploadOverlay.addEventListener('click', function() {
-            profilePhotoUpload.click();
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          modal.querySelector("#profileImage").src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Remove user functionality
+    removeBtn.addEventListener("click", function () {
+      showConfirmationModal(user.name, modal, user.userID);
+    });
+
+    // Close modal functionality
+    closeBtn.addEventListener("click", function () {
+      document.body.removeChild(modal);
+    });
+
+    modal.querySelector(".close").addEventListener("click", function () {
+      document.body.removeChild(modal);
+    });
+
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        document.body.removeChild(modal);
+      }
+    });
+
+    // Add modal styles
+    addModalStyles();
+  }
+
+  // Form Submission
+  createUserForm.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    // Clear previous errors
+    clearErrors();
+
+    // Get form data
+    const formData = new FormData(this);
+
+    // Show loading state
+    const submitBtn = createUserForm.querySelector(".create-btn");
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = "Creating...";
+    submitBtn.disabled = true;
+
+    // Submit via AJAX
+    fetch(this.action, {
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => {
+        console.log("Response status:", response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((text) => {
+        console.log("Raw response:", text);
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse JSON:", e);
+          console.error("Response text:", text);
+          throw new Error("Invalid JSON response from server");
+        }
+      })
+      .then((data) => {
+        console.log("Parsed data:", data);
+        if (data.success) {
+          showSuccessMessage();
+          createUserForm.reset();
+          previewImage.style.display = "none";
+          uploadArea.style.display = "flex";
+          roleSpecificFields.style.display = "none";
+
+          // Refresh page to show new user
+          setTimeout(() => {
+            location.reload();
+          }, 2000);
+        } else {
+          if (data.errors) {
+            displayErrors(data.errors);
+          } else if (data.message) {
+            showNotification(data.message, "error");
+          } else {
+            showNotification("Error creating user", "error");
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        showNotification("Error creating user: " + error.message, "error");
+      })
+      .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      });
+  });
+
+  function clearErrors() {
+    document.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+    });
+  }
+
+  function displayErrors(errors) {
+    for (const [field, message] of Object.entries(errors)) {
+      const errorElement = document.getElementById(field + "Error");
+      if (errorElement && message) {
+        errorElement.textContent = message;
+      }
+    }
+  }
+
+  function showSuccessMessage() {
+    const successMessage = document.getElementById("successMessage");
+    successMessage.style.display = "block";
+
+    setTimeout(() => {
+      successMessage.style.display = "none";
+    }, 5000);
+  }
+
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  function isValidMobile(mobile) {
+    const mobileRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    return mobileRegex.test(mobile.replace(/\s/g, ""));
+  }
+
+  // Notification System
+  function showNotification(message, type = "info") {
+    const notification = document.createElement("div");
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Remove notification after 3 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 3000);
+  }
+
+  // Confirmation Modal Function
+  function showConfirmationModal(userName, parentModal, userID) {
+    const confirmationModal = document.createElement("div");
+    confirmationModal.className = "confirmation-modal";
+    confirmationModal.innerHTML = `
+            <div class="confirmation-content">
+                <div class="confirmation-header">
+                    <h3>⚠️ Remove User</h3>
+                </div>
+                <div class="confirmation-body">
+                    <p>Are you sure you want to remove <strong>${userName}</strong>?</p>
+                    <p class="warning-text">This action cannot be undone.</p>
+                </div>
+                <div class="confirmation-actions">
+                    <button class="confirm-remove-btn">Remove User</button>
+                    <button class="cancel-remove-btn">Cancel</button>
+                </div>
+            </div>
+        `;
+
+    document.body.appendChild(confirmationModal);
+
+    // Confirmation modal event handlers
+    const confirmBtn = confirmationModal.querySelector(".confirm-remove-btn");
+    const cancelBtn = confirmationModal.querySelector(".cancel-remove-btn");
+
+    confirmBtn.addEventListener("click", function () {
+      // Remove user via AJAX
+      fetch(`${URL_ROOT}/admin/deleteUser/${userID}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            // Remove user from the grid
+            removeUserFromGrid(userID);
+
+            // Close both modals
+            document.body.removeChild(confirmationModal);
+            document.body.removeChild(parentModal);
+
+            // Show success message
+            showNotification(
+              `${userName} has been removed successfully`,
+              "success"
+            );
+          } else {
+            showNotification("Failed to remove user", "error");
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          showNotification("Error removing user", "error");
         });
+    });
 
-        profilePhotoUpload.addEventListener('change', function(e) {
-            if (e.target.files.length > 0) {
-                const file = e.target.files[0];
-                if (!file.type.startsWith('image/')) {
-                    showNotification('Please select an image file', 'error');
-                    return;
-                }
+    cancelBtn.addEventListener("click", function () {
+      document.body.removeChild(confirmationModal);
+    });
 
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    profileImage.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+    // Close confirmation modal when clicking outside
+    confirmationModal.addEventListener("click", function (e) {
+      if (e.target === confirmationModal) {
+        document.body.removeChild(confirmationModal);
+      }
+    });
+  }
 
-        // Permission toggle functionality
-        modal.querySelectorAll('.permission-item').forEach(item => {
-            item.addEventListener('click', function() {
-                if (isEditing) {
-                    const checkbox = this.querySelector('.permission-checkbox');
-                    checkbox.checked = !checkbox.checked;
-                }
-            });
-        });
+  // Function to remove user from the grid
+  function removeUserFromGrid(userID) {
+    const userCards = document.querySelectorAll(".admin-card");
+    userCards.forEach((card) => {
+      const cardUserID = card
+        .querySelector(".view-btn")
+        .getAttribute("data-userid");
+      if (cardUserID === userID) {
+        card.style.animation = "fadeOut 0.3s ease";
+        setTimeout(() => {
+          card.remove();
+        }, 300);
+      }
+    });
+  }
 
-        // Remove admin functionality
-        removeBtn.addEventListener('click', function() {
-            showConfirmationModal(adminName, modal);
-        });
-
-        // Close modal functionality
-        closeBtn.addEventListener('click', function() {
-            document.body.removeChild(modal);
-        });
-
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                document.body.removeChild(modal);
-            }
-        });
-
-        // Add modal styles
-        const modalStyles = `
+  // Add modal styles
+  function addModalStyles() {
+    const modalStyles = `
             <style>
                 .modal {
                     position: fixed;
@@ -383,6 +723,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     position: relative;
                     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
                     overflow: hidden;
+                    max-height: 90vh;
+                    overflow-y: auto;
                 }
                 .close {
                     position: absolute;
@@ -432,13 +774,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     background: #ff5252;
                 }
                 .modal-body {
-                    display: flex;
-                    min-height: 400px;
+                    padding: 30px;
                 }
                 .profile-section {
-                    flex: 1;
-                    padding: 30px;
-                    background: #fafafa;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -481,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .photo-upload-overlay:hover {
                     opacity: 1;
                 }
-                .admin-name {
+                .user-name {
                     font-size: 24px;
                     font-weight: 700;
                     color: #333;
@@ -492,7 +830,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     width: 100%;
                 }
                 .contact-item {
-                    padding: 8px 0;
+                    padding: 10px 0;
                     font-size: 14px;
                     color: #333;
                     border-bottom: 1px solid #eee;
@@ -506,7 +844,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 .contact-value {
                     flex: 1;
                 }
-                .contact-input {
+                .contact-input, #statusInput {
                     flex: 1;
                     padding: 6px 10px;
                     border: 2px solid #ff6b6b;
@@ -514,72 +852,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     font-size: 14px;
                     background: white;
                 }
-                .contact-input:focus {
+                .contact-input:focus, #statusInput:focus {
                     outline: none;
                     border-color: #ff5252;
                     box-shadow: 0 0 0 2px rgba(255, 82, 82, 0.1);
                 }
-                .permissions-section {
-                    flex: 1;
-                    padding: 30px;
-                    background: white;
-                }
-                .permissions-section h3 {
-                    font-size: 18px;
-                    font-weight: 600;
-                    color: #333;
-                    margin-bottom: 20px;
-                }
-                .permissions-list {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 12px;
-                }
-                .permission-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 12px 15px;
-                    background: #fff5f5;
-                    border-radius: 8px;
-                    border: 1px solid #ffe6e6;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                }
-                .permission-item:hover {
-                    background: #ffe6e6;
-                }
-                .permission-item.editing {
-                    background: #ffe6e6;
-                    border-color: #ff6b6b;
-                }
-                .permission-text {
-                    font-size: 14px;
-                    color: #333;
-                    font-weight: 500;
-                }
-                .permission-status {
-                    font-size: 16px;
-                    font-weight: bold;
-                    width: 20px;
-                    height: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-radius: 50%;
-                }
-                .permission-status.granted {
+                .status-active {
                     color: #4CAF50;
-                    background: #e8f5e8;
+                    font-weight: 600;
                 }
-                .permission-status.denied {
+                .status-inactive {
+                    color: #ff9800;
+                    font-weight: 600;
+                }
+                .status-suspended {
                     color: #f44336;
-                    background: #ffe6e6;
-                }
-                .permission-checkbox {
-                    width: 18px;
-                    height: 18px;
-                    accent-color: #ff6b6b;
+                    font-weight: 600;
                 }
                 .modal-actions {
                     display: flex;
@@ -630,180 +918,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     background: #d32f2f;
                     transform: translateY(-2px);
                 }
-                @media (max-width: 768px) {
-                    .modal-body {
-                        flex-direction: column;
-                    }
-                    .profile-section, .permissions-section {
-                        padding: 20px;
-                    }
-                    .modal-actions {
-                        flex-direction: column;
-                        gap: 10px;
-                    }
-                    .modal-header {
-                        padding: 15px 20px;
-                    }
-                }
-            </style>
-        `;
-        document.head.insertAdjacentHTML('beforeend', modalStyles);
-    }
-
-    // Form Submission
-    createAdminForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // Get form data
-        const formData = {
-            name: document.getElementById('adminName').value,
-            nic: document.getElementById('adminNIC').value,
-            email: document.getElementById('adminEmail').value,
-            mobile: document.getElementById('adminMobile').value,
-            profilePhoto: profilePhotoInput.files[0],
-            permissions: {
-                addOfficers: document.getElementById('addOfficers').checked,
-                addClients: document.getElementById('addClients').checked,
-                scheduling: document.getElementById('scheduling').checked,
-                salaryAdjustment: document.getElementById('salaryAdjustment').checked,
-                resolveIncidents: document.getElementById('resolveIncidents').checked,
-                publishAdvertisements: document.getElementById('publishAdvertisements').checked,
-                updateProfiles: document.getElementById('updateProfiles').checked
-            }
-        };
-
-        // Validate form
-        if (!validateForm(formData)) {
-            return;
-        }
-
-        // Simulate form submission
-        submitForm(formData);
-    });
-
-    function validateForm(data) {
-        if (!data.name.trim()) {
-            showNotification('Please enter admin name', 'error');
-            return false;
-        }
-        if (!data.nic.trim()) {
-            showNotification('Please enter NIC', 'error');
-            return false;
-        }
-        if (!data.email.trim()) {
-            showNotification('Please enter email', 'error');
-            return false;
-        }
-        if (!isValidEmail(data.email)) {
-            showNotification('Please enter a valid email', 'error');
-            return false;
-        }
-        if (!data.mobile.trim()) {
-            showNotification('Please enter mobile number', 'error');
-            return false;
-        }
-        if (!isValidMobile(data.mobile)) {
-            showNotification('Please enter a valid mobile number', 'error');
-            return false;
-        }
-        return true;
-    }
-
-    function isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    function isValidMobile(mobile) {
-        const mobileRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        return mobileRegex.test(mobile.replace(/\s/g, ''));
-    }
-
-    function submitForm(data) {
-        // Show loading state
-        const submitBtn = createAdminForm.querySelector('.create-btn');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Creating...';
-        submitBtn.disabled = true;
-
-        // Remove any existing success message
-        const existingMessage = createAdminForm.querySelector('.success-message');
-        if (existingMessage) {
-            existingMessage.remove();
-        }
-
-        // Simulate API call
-        setTimeout(() => {
-            // Create success message
-            const successMessage = document.createElement('div');
-            successMessage.className = 'success-message';
-            successMessage.innerHTML = `
-                <div class="success-content">
-                    <span class="success-icon">✅</span>
-                    <span class="success-text">Admin created successfully!</span>
-                </div>
-            `;
-            
-            // Insert success message after the form actions
-            const formActions = createAdminForm.querySelector('.form-actions');
-            formActions.parentNode.insertBefore(successMessage, formActions.nextSibling);
-            
-            // Reset form
-            createAdminForm.reset();
-            previewImage.style.display = 'none';
-            uploadArea.style.display = 'flex';
-            
-            // Reset button
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-            
-            // Add new admin to the grid (simulation)
-            addNewAdminToGrid(data);
-            
-            // Remove success message after 5 seconds
-            setTimeout(() => {
-                if (successMessage.parentNode) {
-                    successMessage.style.animation = 'fadeOut 0.5s ease';
-                    setTimeout(() => {
-                        if (successMessage.parentNode) {
-                            successMessage.remove();
-                        }
-                    }, 500);
-                }
-            }, 5000);
-        }, 2000);
-    }
-
-    function addNewAdminToGrid(data) {
-        const adminsGrid = document.querySelector('.admins-grid');
-        const newAdminCard = document.createElement('div');
-        newAdminCard.className = 'admin-card';
-        newAdminCard.innerHTML = `
-            <div class="admin-photo">
-                <img src="${previewImg.src || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'}" alt="${data.name}">
-            </div>
-            <h3>${data.name}</h3>
-            <button class="view-btn">View</button>
-        `;
-
-        // Add click event to new view button
-        const newViewBtn = newAdminCard.querySelector('.view-btn');
-        newViewBtn.addEventListener('click', function() {
-            showAdminDetails(data.name);
-        });
-
-        adminsGrid.appendChild(newAdminCard);
-    }
-
-    // Notification System
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.textContent = message;
-
-        // Add notification styles
-        const notificationStyles = `
-            <style>
                 .notification {
                     position: fixed;
                     top: 20px;
@@ -813,7 +927,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     color: white;
                     font-weight: 500;
                     z-index: 1001;
-                    animation: slideIn 0.3s ease;
                 }
                 .notification.success {
                     background: #4CAF50;
@@ -824,90 +937,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .notification.info {
                     background: #2196F3;
                 }
-                @keyframes slideIn {
-                    from {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                    to {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                }
-            </style>
-        `;
-        
-        if (!document.querySelector('.notification-styles')) {
-            const styleElement = document.createElement('style');
-            styleElement.className = 'notification-styles';
-            styleElement.textContent = notificationStyles;
-            document.head.appendChild(styleElement);
-        }
-
-        document.body.appendChild(notification);
-
-        // Remove notification after 3 seconds
-        setTimeout(() => {
-            notification.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    document.body.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    // Add slideOut animation
-    const slideOutStyles = `
-        <style>
-                            @keyframes slideOut {
-                    from {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
-                    to {
-                        transform: translateX(100%);
-                        opacity: 0;
-                    }
-                }
-                @keyframes fadeOut {
-                    from {
-                        opacity: 1;
-                        transform: scale(1);
-                    }
-                    to {
-                        opacity: 0;
-                        transform: scale(0.8);
-                    }
-                }
-        </style>
-    `;
-            document.head.insertAdjacentHTML('beforeend', slideOutStyles);
-    });
-
-    // Confirmation Modal Function
-    function showConfirmationModal(adminName, parentModal) {
-        const confirmationModal = document.createElement('div');
-        confirmationModal.className = 'confirmation-modal';
-        confirmationModal.innerHTML = `
-            <div class="confirmation-content">
-                <div class="confirmation-header">
-                    <h3>⚠️ Remove Admin</h3>
-                </div>
-                <div class="confirmation-body">
-                    <p>Are you sure you want to remove <strong>${adminName}</strong> from the admin panel?</p>
-                    <p class="warning-text">This action cannot be undone.</p>
-                </div>
-                <div class="confirmation-actions">
-                    <button class="confirm-remove-btn">Remove Admin</button>
-                    <button class="cancel-remove-btn">Cancel</button>
-                </div>
-            </div>
-        `;
-
-        // Add confirmation modal styles
-        const confirmationStyles = `
-            <style>
                 .confirmation-modal {
                     position: fixed;
                     top: 0;
@@ -989,7 +1018,30 @@ document.addEventListener('DOMContentLoaded', function() {
                     background: #757575;
                     transform: translateY(-2px);
                 }
-                @media (max-width: 480px) {
+                .error-message {
+                    color: #f44336;
+                    font-size: 12px;
+                    margin-top: 5px;
+                    display: block;
+                }
+                @keyframes fadeOut {
+                    from {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: scale(0.8);
+                    }
+                }
+                @media (max-width: 768px) {
+                    .modal-actions {
+                        flex-direction: column;
+                        gap: 10px;
+                    }
+                    .modal-header {
+                        padding: 15px 20px;
+                    }
                     .confirmation-actions {
                         flex-direction: column;
                         gap: 10px;
@@ -997,48 +1049,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             </style>
         `;
-        document.head.insertAdjacentHTML('beforeend', confirmationStyles);
 
-        document.body.appendChild(confirmationModal);
-
-        // Confirmation modal event handlers
-        const confirmBtn = confirmationModal.querySelector('.confirm-remove-btn');
-        const cancelBtn = confirmationModal.querySelector('.cancel-remove-btn');
-
-        confirmBtn.addEventListener('click', function() {
-            // Remove admin from the grid
-            removeAdminFromGrid(adminName);
-            
-            // Close both modals
-            document.body.removeChild(confirmationModal);
-            document.body.removeChild(parentModal);
-            
-            // Show success message
-            showNotification(`${adminName} has been removed from the admin panel`, 'success');
-        });
-
-        cancelBtn.addEventListener('click', function() {
-            document.body.removeChild(confirmationModal);
-        });
-
-        // Close confirmation modal when clicking outside
-        confirmationModal.addEventListener('click', function(e) {
-            if (e.target === confirmationModal) {
-                document.body.removeChild(confirmationModal);
-            }
-        });
+    if (!document.querySelector(".modal-styles")) {
+      const styleElement = document.createElement("style");
+      styleElement.className = "modal-styles";
+      styleElement.textContent = modalStyles;
+      document.head.appendChild(styleElement);
     }
-
-    // Function to remove admin from the grid
-    function removeAdminFromGrid(adminName) {
-        const adminCards = document.querySelectorAll('.admin-card');
-        adminCards.forEach(card => {
-            const cardName = card.querySelector('h3').textContent;
-            if (cardName === adminName) {
-                card.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => {
-                    card.remove();
-                }, 300);
-            }
-        });
-    }
+  }
+});
