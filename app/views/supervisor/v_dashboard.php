@@ -68,27 +68,27 @@
                     </thead>
                     <tbody id="attendanceBody">
                         <tr>
-                            <td><a href="#" class="name-link">John Smith</a></td>
+                            <td><a href="#" class="name-link">Athula Adikari</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                         <tr>
-                            <td><a href="#" class="name-link">Sarah Johnson</a></td>
+                            <td><a href="#" class="name-link">Saman kumara</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                         <tr>
-                            <td><a href="#" class="name-link">Mitchell Brown</a></td>
+                            <td><a href="#" class="name-link">Amara bandu</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                         <tr>
-                            <td><a href="#" class="name-link">Jennifer Thompson</a></td>
+                            <td><a href="#" class="name-link">wanidu Hasaranga</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                         <tr>
-                            <td><a href="#" class="name-link">David Martinez</a></td>
+                            <td><a href="#" class="name-link">Amantha Perera</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                         <tr>
-                            <td><a href="#" class="name-link">Lisa Anderson</a></td>
+                            <td><a href="#" class="name-link">Samitha Vithana</a></td>
                             <td><span class="status-badge present">Present</span></td>
                         </tr>
                     </tbody>

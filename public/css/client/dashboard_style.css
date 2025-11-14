@@ -616,6 +616,7 @@ body {
   }
 }
 .material-icons {
+
   font-family: "Material Icons";
   font-weight: normal;
   font-style: normal;
@@ -630,6 +631,7 @@ body {
   -webkit-font-feature-settings: "liga";
   font-feature-settings: "liga"; /* Standard property for compatibility */
   -webkit-font-smoothing: antialiased;
+
 }
 
 .stat-icon .material-icons {
