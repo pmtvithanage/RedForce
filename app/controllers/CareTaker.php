@@ -24,6 +24,7 @@ class Caretaker extends Controller {
 
         $data = [
             'title' => 'Dashboard',
+            'pageTitle' => 'Dashboard',
             'advertisements' => $advertisements
         ];
         $this->view('caretaker/v_dashboard', $data);
@@ -33,6 +34,7 @@ class Caretaker extends Controller {
     public function messages() {
         $data = [
             'title' => 'Messages',
+            'pageTitle' => 'Messages'
         ];
         $this->view('caretaker/v_messages', $data);
     }
@@ -50,6 +52,7 @@ class Caretaker extends Controller {
         
         $data = [
             'title' => 'Leave Requests',
+            'pageTitle' => 'Leave Requests',
             'leaveRequests' => $leaveRequests
         ];
         $this->view('caretaker/v_leaverequests', $data);  
@@ -266,6 +269,7 @@ class Caretaker extends Controller {
     public function profile() {
         $data = [
             'title' => 'Profile',
+            'pageTitle' => 'My Profile'
         ];
         $this->view('caretaker/v_profile', $data);
     }

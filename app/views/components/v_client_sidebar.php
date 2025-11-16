@@ -28,7 +28,7 @@
           <a class="menu-item <?php echo ($data['title'] === 'View Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">View Officers</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/requests"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Requests</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'View History') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/history"><span class="icon"></span><span class="material-symbols-outlined">history</span><span class="label">View History</span>
-          <a class="menu-item <?php echo ($data['title'] === 'profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
+          <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
           
         </nav>
       </aside>
@@ -38,7 +38,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['title']; ?></h1>
+          <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
 
           <div class="topbar-right">
 

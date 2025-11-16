@@ -110,7 +110,7 @@
 
   <!-- Bottom Buttons -->
   <div class="actions">
-    <button class="btn open" id="openRecruitmentBtn">Open Recruitment</button>
+    <button class="btn open" id="openRecruitmentBtn">Open Recruitment </button>
     <button class="btn add" id="addOfficersBtn">+ Add Officers</button>
     <button class="btn apps">4 Applications</button>
   </div>

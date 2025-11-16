@@ -20,6 +20,7 @@ class Client extends Controller {
         // Sample data - replace with actual database queries
         $data = [
             'title' => 'Dashboard',
+            'pageTitle' => 'Dashboard'
         ];
         
         $this->view('client/v_dashboard', $data);
@@ -29,7 +30,8 @@ class Client extends Controller {
     public function officers() {
         // Sample data - replace with actual database queries
         $data = [
-            'title' => 'View Guards',
+            'title' => 'View Officers',
+            'pageTitle' => 'View Guards'
         ];
         
         $this->view('client/v_officers', $data);
@@ -44,6 +46,8 @@ class Client extends Controller {
 
         // Initialize variables
         $data = [
+            'title' => 'Requests',
+            'pageTitle' => 'Service Requests',
             'showSuccessMessage' => false,
             'errorMessage' => '',
             'previousRequests' => [],
@@ -114,6 +118,7 @@ class Client extends Controller {
     public function history() {
         $data = [
             'title' => 'View History',
+            'pageTitle' => 'Service History'
         ];
         $this->view('client/v_history', $data);
     }
@@ -122,6 +127,7 @@ class Client extends Controller {
     public function profile() {
         $data = [
             'title' => 'Profile',
+            'pageTitle' => 'My Profile'
         ];
         $this->view('client/v_profile', $data); 
     }
