@@ -1,6 +1,10 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 

@@ -30,6 +30,7 @@ class MobileRider extends Controller
 
         $data = [
             'title' => 'Dashboard',
+            'pageTitle' => 'Dashboard',
             'advertisements' => $advertisements,
             'notes' => $notes,
         ];
@@ -41,6 +42,7 @@ class MobileRider extends Controller
     {
         $data = [
             'title' => 'Sites',
+            'pageTitle' => 'Assigned Sites'
         ];
         $this->view('mobilerider/v_sites', $data);
     }
@@ -50,6 +52,7 @@ class MobileRider extends Controller
     {
         $data = [
             'title' => 'Messages',
+            'pageTitle' => 'Messages'
         ];
         $this->view('mobilerider/v_messages', $data);
     }
@@ -62,6 +65,7 @@ class MobileRider extends Controller
 
         $data = [
             'title' => 'Incidents',
+            'pageTitle' => 'Incident Reports',
             'incident_reports' => $incident_reports,
             'incident_stats' => $incident_stats,
         ];
@@ -80,6 +84,7 @@ class MobileRider extends Controller
         
         $data = [
             'title' => 'Leave Requests',
+            'pageTitle' => 'Leave Requests',
             'leaveRequests' => $leaveRequests
         ];
         $this->view('mobilerider/v_leaverequests', $data);
@@ -282,6 +287,7 @@ class MobileRider extends Controller
     {
         $data = [
             'title' => 'Profile',
+            'pageTitle' => 'My Profile'
         ];
         $this->view('mobilerider/v_profile', $data);
     }

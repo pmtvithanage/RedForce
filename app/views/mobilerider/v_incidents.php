@@ -2,6 +2,11 @@
 
 <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
+
 <?php
 $incident_reports = $data['incident_reports'];
 $incident_stats = $data['incident_stats'] ?? [];

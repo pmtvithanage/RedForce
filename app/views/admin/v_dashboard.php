@@ -1,5 +1,9 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
 
 <!-- Content will be loaded here -->

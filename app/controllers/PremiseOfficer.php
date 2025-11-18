@@ -26,6 +26,7 @@ class PremiseOfficer extends Controller {
 
         $data = [
             'title' => 'Dashboard',
+            'pageTitle' => 'Dashboard',
             'advertisements' => $advertisements
         ];
 
@@ -36,6 +37,7 @@ class PremiseOfficer extends Controller {
     public function schedule() {
         $data = [
             'title' => 'Schedule',
+            'pageTitle' => 'My Schedule'
         ];
         $this->view('premiseofficer/v_schedule', $data);
     }
@@ -51,6 +53,7 @@ class PremiseOfficer extends Controller {
         
         $data = [
             'title' => 'Leave Requests',
+            'pageTitle' => 'Leave Requests',
             'leaveRequests' => $leaveRequests
         ];
         $this->view('premiseofficer/v_leaverequests', $data);
@@ -256,7 +259,8 @@ class PremiseOfficer extends Controller {
         }
 
         $data = [
-            'title' => 'Profile'
+            'title' => 'Profile',
+            'pageTitle' => 'My Profile'
         ];
 
         // Load view

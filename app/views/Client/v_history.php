@@ -1,5 +1,9 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <?php
 // Mock data for history periods - replace with actual database query
 $historyPeriods = [

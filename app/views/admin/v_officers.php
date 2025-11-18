@@ -1,6 +1,11 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/officers_style.css">
 
 <div class="container">
@@ -105,7 +110,7 @@
 
   <!-- Bottom Buttons -->
   <div class="actions">
-    <button class="btn open" id="openRecruitmentBtn">Open Recruitment</button>
+    <button class="btn open" id="openRecruitmentBtn">Open Recruitment </button>
     <button class="btn add" id="addOfficersBtn">+ Add Officers</button>
     <button class="btn apps">4 Applications</button>
   </div>
