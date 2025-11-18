@@ -1,6 +1,11 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
+
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/premiseofficer/leaverequest_style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 

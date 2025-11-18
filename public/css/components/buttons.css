@@ -1,0 +1,56 @@
+/* General button reset */
+button {
+  font-family: "Poppins", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Primary Button */
+.primary-btn {
+  background-color: #a40000;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(164, 0, 0, 0.3);
+}
+.primary-btn:hover {
+  background-color: #b50000;
+  box-shadow: 0 6px 14px rgba(164, 0, 0, 0.4);
+}
+.primary-btn:active {
+  background-color: #800000;
+  transform: scale(0.97);
+}
+
+/* Secondary Button */
+.secondary-btn {
+  background-color: transparent;
+  color: #a40000;
+  border: 2px solid #a40000;
+}
+.secondary-btn:hover {
+  background-color: #a40000;
+  color: #ffffff;
+}
+.secondary-btn:active {
+  background-color: #800000;
+  border-color: #800000;
+}
+
+/* Tertiary Button */
+.tertiary-btn {
+  background-color: transparent;
+  color: #333;
+  border: 1px solid #ddd;
+}
+.tertiary-btn:hover {
+  border-color: #a40000;
+  color: #a40000;
+}
+.tertiary-btn:active {
+  color: #800000;
+  border-color: #800000;
+}

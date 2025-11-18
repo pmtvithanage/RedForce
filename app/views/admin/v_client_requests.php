@@ -2,6 +2,9 @@
 
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/client_requests_style.css">
 
 <?php

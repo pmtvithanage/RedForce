@@ -3,6 +3,11 @@
 <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
+
+
 <!-- Content will be loaded here -->
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

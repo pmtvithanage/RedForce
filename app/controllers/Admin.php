@@ -14,22 +14,43 @@ class Admin extends Controller {
         redirect('admin/dashboard');
     }
 
+// ======================================================================== //
+// =======================      Admin Dashboard       ====================== //
+// ======================================================================== //
+
     public function dashboard() {
         $pendingLeaves = $this->adminModel->getPendingLeaveRequests();
         $leaveStats = $this->adminModel->getLeaveRequestStats();
     
         $data = [
             'title' => 'Dashboard',
+            'pageTitle' => 'Admin Dashboard',
             'pendingLeaves' => $pendingLeaves,
             'leaveStats' => $leaveStats
         ];
         $this->view('admin/v_dashboard', $data);
     }
 
+// ======================================================================== //
+// =======================      Admin Officers       ====================== //
+// ======================================================================== //
+
     public function officers() {
-        $data = ['title' => 'Officers'];
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Manage Officers'
+    ];
         $this->view('admin/v_officers', $data);
     }
+
+    public function Jobs() {
+        $data = ['title' => 'Officers'];
+        $this->view('admin/officers/jobs', $data);
+    }
+
+// ======================================================================== //
+// =======================      Admin Clients       ====================== //
+// ======================================================================== //
 
     public function clients() {
         // Get pending service requests count for notification badge
@@ -38,6 +59,7 @@ class Admin extends Controller {
         
         $data = [
             'title' => 'Clients',
+            'pageTitle' => 'Manage Clients',
             'pendingRequestsCount' => $pendingCount
         ];
         $this->view('admin/v_clients', $data);  
@@ -69,7 +91,8 @@ class Admin extends Controller {
         $requestStats = $this->adminModel->getServiceRequestStats();
 
         $data = [
-            'title' => 'Client Service Requests',
+            'title' => 'Clients',
+            'pageTitle' => 'Client Service Requests',
             'serviceRequests' => $serviceRequests,
             'requestStats' => $requestStats
         ];
@@ -77,13 +100,26 @@ class Admin extends Controller {
         $this->view('admin/v_client_requests', $data);
     }
 
+// ======================================================================== //
+// =======================      Admin Scheduling       ====================== //
+// ======================================================================== //
+
     public function scheduling() {
-        $data = ['title' => 'Scheduling'];
+        $data = [
+            'title' => 'Scheduling',
+            'pageTitle' => 'Manage Scheduling'
+        ];
         $this->view('admin/v_scheduling', $data);
     }
 
+// ======================================================================== //
+// =======================      Admin Salary       ====================== //
+// ======================================================================== //
+
     public function salary() {
-        $data = ['title' => 'Salary'];
+        $data = [
+            'title' => 'Salary',
+            'pageTitle' => 'Manage Salary'];
         $this->view('admin/v_salary', $data);
     }
 
@@ -140,13 +176,16 @@ public function rejectLeave($id) {
         redirect('admin/dashboard');
     }
 }
-// ==============================
-// Advertisements
-// ==============================
+
+// ======================================================================== //
+// =======================      Admin Advertisements       ====================== //
+// ======================================================================== //
+
     public function advertisements() {
         $advertisements = $this->adminModel->getAdvertisements();
         $data = [
             'title' => 'Advertisements',
+            'pageTitle' => 'Manage Advertisements',
             'advertisements' => $advertisements
         ];
         $this->view('admin/v_advertisements', $data);
@@ -408,12 +447,13 @@ public function rejectLeave($id) {
         $this->view('admin/v_reports', $data);  
     }
 
-    // ==============================
-    // Settings
-    // ==============================
+// ======================================================================== //
+// =======================      Admin Settings       ====================== //
+// ======================================================================== //
     public function settings() {
         $data = [
             'title' => 'Settings',
+            'pageTitle' => 'System Settings',
             'admins' => $this->adminModel->getAdmins()
         ];
         $this->view('admin/v_settings', $data);

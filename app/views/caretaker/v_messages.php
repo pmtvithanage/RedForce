@@ -1,6 +1,11 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
+
+
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+
+
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/caretaker/message_style.css">
 
 <!-- Messages Content -->

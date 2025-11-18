@@ -352,7 +352,6 @@ tbody td:nth-child(3)::before {
 .qualifications-list li:last-child {
   border-bottom: none;
 }
-
 .remove-qualification {
   background: #dc3545;
   color: white;
