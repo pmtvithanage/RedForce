@@ -150,10 +150,6 @@
   margin-left: auto;
     writing-mode: vertical-rl;
     padding: 12px 10px;
-    background: #fff;
-    border: 2px solid #a40000 ;
-    border-radius: 12px;
-    cursor: pointer;
 }
 
 .address {
@@ -251,7 +247,7 @@
               <span class="officer-label">Care-Takers</span>
           </div>
 
-          <button class="view-btn">View</button>
+          <button class=" primary-btn view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile'">View</button>
       </div>
 
       <p class="address">No.75 Sir Chittampalam A. Gardiner Mawatha, Colombo 2</p>
@@ -259,7 +255,7 @@
 </div>
 
 <div>
-  <button class="add-btn">
+  <button class="add-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addclients'">
     <span class="material-icons">add</span>
   </button>
 </div>
