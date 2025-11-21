@@ -28,7 +28,39 @@ class Admin extends Controller {
             'pendingLeaves' => $pendingLeaves,
             'leaveStats' => $leaveStats
         ];
-        $this->view('admin/v_dashboard', $data);
+        $this->view('admin/dashboard/v_dashboard', $data);
+    }
+
+    public function messages(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Messages'
+        ];
+        $this->view('admin/dashboard/v_messages', $data);
+    }
+
+    public function pendings(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Pending Leave Requests'
+        ];
+        $this->view('admin/dashboard/v_pendings', $data);
+    }
+
+    public function assign(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Officer Assignment'
+        ];
+        $this->view('admin/dashboard/v_assign', $data);
+    }
+
+    public function alerts(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Send Alerts'
+        ];
+        $this->view('admin/dashboard/v_alerts', $data);
     }
 
 // ======================================================================== //
