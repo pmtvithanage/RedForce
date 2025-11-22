@@ -113,6 +113,14 @@ class Admin extends Controller {
         $this->view('admin/clients/v_clientProfile', $data);
     }
 
+    public function viewsites(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Client Name - Site Name'
+        ];
+        $this->view('admin/clients/v_viewsites', $data);
+    }
+
     public function clientRequests() {
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
