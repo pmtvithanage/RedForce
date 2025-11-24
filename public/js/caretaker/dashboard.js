@@ -4,6 +4,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Caretaker Dashboard loaded');
     
+    // Update notification count
+    updateNotificationCount();
+    
     // File upload functionality
     const uploadBtn = document.getElementById('uploadBtn');
     const fileInput = document.getElementById('photoUpload');
@@ -40,6 +43,60 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Notification functions
+function dismissNotification(button) {
+    const notificationItem = button.closest('.notification-item');
+    notificationItem.style.opacity = '0';
+    notificationItem.style.transform = 'translateX(100px)';
+    
+    setTimeout(() => {
+        notificationItem.remove();
+        updateNotificationCount();
+        checkEmptyState();
+    }, 300);
+}
+
+function markAllAsRead() {
+    const notifications = document.querySelectorAll('.notification-item');
+    notifications.forEach((notification, index) => {
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100px)';
+            
+            setTimeout(() => {
+                notification.remove();
+                if (index === notifications.length - 1) {
+                    updateNotificationCount();
+                    checkEmptyState();
+                }
+            }, 300);
+        }, index * 100);
+    });
+}
+
+function updateNotificationCount() {
+    const badge = document.getElementById('notificationCount');
+    const notifications = document.querySelectorAll('.notification-item');
+    const count = notifications.length;
+    
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? 'inline-block' : 'none';
+    }
+}
+
+function checkEmptyState() {
+    const container = document.querySelector('.notifications-container');
+    const notifications = document.querySelectorAll('.notification-item');
+    const emptyState = document.querySelector('.notifications-empty');
+    const footer = document.querySelector('.notifications-footer');
+    
+    if (notifications.length === 0 && emptyState) {
+        emptyState.style.display = 'block';
+        if (footer) footer.style.display = 'none';
+    }
+}
 
 // Remove file from list
 function removeFile(index) {
