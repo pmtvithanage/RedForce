@@ -109,10 +109,62 @@
         }
 
         // Update user password (hashed expected or raw to be hashed here)
-        public function updatePassword($id, $rawPassword) {
-            $hashed = password_hash($rawPassword, PASSWORD_DEFAULT);
+        public function updatePassword($id, $currentPassword, $newPassword) {
+            // Get current password hash
+            $this->db->query("SELECT password FROM Users WHERE id = :id");
+            $this->db->bind(":id", $id);
+            $user = $this->db->single();
+            
+            if (!$user) {
+                return false;
+            }
+            
+            // Verify current password
+            if (!password_verify($currentPassword, $user->password)) {
+                return false;
+            }
+            
+            // Hash new password
+            $hashed = password_hash($newPassword, PASSWORD_DEFAULT);
+            
+            // Update password
             $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
             $this->db->bind(":password", $hashed);
+            $this->db->bind(":id", $id);
+            return $this->db->execute();
+        }
+        
+        // Update contact number
+        public function updateContact($id, $contact) {
+            $this->db->query("UPDATE Users SET contact = :contact WHERE id = :id");
+            $this->db->bind(":contact", $contact);
+            $this->db->bind(":id", $id);
+            return $this->db->execute();
+        }
+        
+        // Update email
+        public function updateEmail($id, $email) {
+            // Check if email already exists for another user
+            $this->db->query("SELECT id FROM Users WHERE email = :email AND id != :id");
+            $this->db->bind(":email", $email);
+            $this->db->bind(":id", $id);
+            $existing = $this->db->single();
+            
+            if ($existing) {
+                return false; // Email already exists
+            }
+            
+            // Update email
+            $this->db->query("UPDATE Users SET email = :email WHERE id = :id");
+            $this->db->bind(":email", $email);
+            $this->db->bind(":id", $id);
+            return $this->db->execute();
+        }
+        
+        // Update profile image
+        public function updateProfileImage($id, $image_path) {
+            $this->db->query("UPDATE Users SET profile_image = :profile_image WHERE id = :id");
+            $this->db->bind(":profile_image", $image_path);
             $this->db->bind(":id", $id);
             return $this->db->execute();
         }

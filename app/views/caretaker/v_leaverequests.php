@@ -19,7 +19,7 @@
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
-                <form action="<?= URL_ROOT ?>/caretaker/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
+                <form action="<?= URL_ROOT ?>/caretaker/addLeave" method="POST" enctype="multipart/form-data" class="leave-form" id="leaveForm">
                     <div class="form-group">
                         <label for="leaveType">Leave Type</label>
                         <select id="leaveType" name="leave_type" required>
@@ -39,38 +39,46 @@
                         <div class="form-group">
                             <label for="startDate">Starting Date</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="startDate" name="start_date" placeholder="Select start date" class="date-picker" readonly required>
+                                <input type="text" id="startDate" name="start_date" placeholder="Select start date" readonly required>
+                                <i class="fas fa-calendar-alt calendar-icon"></i>
                                 <div class="inline-calendar" id="startCalendar">
                                     <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('startCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
-                                        <span class="calendar-title" id="startCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('startCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
+                                        <button type="button" class="calendar-nav" data-calendar="startCalendar" data-direction="-1">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <span class="calendar-title"></span>
+                                        <button type="button" class="calendar-nav" data-calendar="startCalendar" data-direction="1">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
                                     </div>
                                     <div class="calendar-weekdays">
                                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
                                     </div>
-                                    <div class="calendar-days" id="startCalendarDays"></div>
+                                    <div class="calendar-days"></div>
                                 </div>
-                                <i class="fas fa-calendar-alt calendar-icon" onclick="toggleCalendar('startCalendar')"></i>
                             </div>
                         </div>
                         
                         <div class="form-group">
                             <label for="endDate">End Date</label>
                             <div class="date-input-wrapper">
-                                <input type="text" id="endDate" name="end_date" placeholder="Select end date" class="date-picker" readonly required>
+                                <input type="text" id="endDate" name="end_date" placeholder="Select end date" readonly required>
+                                <i class="fas fa-calendar-alt calendar-icon"></i>
                                 <div class="inline-calendar" id="endCalendar">
                                     <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('endCalendar', -1)"><i class="fas fa-chevron-left"></i></button>
-                                        <span class="calendar-title" id="endCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('endCalendar', 1)"><i class="fas fa-chevron-right"></i></button>
+                                        <button type="button" class="calendar-nav" data-calendar="endCalendar" data-direction="-1">
+                                            <i class="fas fa-chevron-left"></i>
+                                        </button>
+                                        <span class="calendar-title"></span>
+                                        <button type="button" class="calendar-nav" data-calendar="endCalendar" data-direction="1">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </button>
                                     </div>
                                     <div class="calendar-weekdays">
                                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
                                     </div>
-                                    <div class="calendar-days" id="endCalendarDays"></div>
+                                    <div class="calendar-days"></div>
                                 </div>
-                                <i class="fas fa-calendar-alt calendar-icon" onclick="toggleCalendar('endCalendar')"></i>
                             </div>
                         </div>
                     </div>

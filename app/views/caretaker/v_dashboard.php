@@ -16,21 +16,9 @@
 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
-                <!-- Top Section - User Profile and Instructions -->
-                <section class="top-section">
-                    <div class="instructions-section">
-                        <h2>Instructions from Admin</h2>
-                        <div class="instructions-content">
-                            <p>Good morning!</p>
-                            <p>Please ensure that all security officers at Site A have submitted their attendance by 9:00 AM.</p>
-                            <p>Also, don't forget to update the incident report if there were any issues during the night shift.</p>
-                            <p>Let me know once it's done.</p>
-                            <p>Thank you.</p>
-                        </div>
-                    </div>
-
-                    <!-- Right-side stat cards -->
-                    <div class="stats-column">
+                <!-- Stat Cards at Top -->
+                <section class="stats-section">
+                    <div class="stats-row">
                         <div class="stat-card purple">
                             <div class="stat-icon"><span class="material-icons">groups</span></div>
                             <div class="stat-text">
@@ -58,6 +46,20 @@
                                 <div class="stat-value">0</div>
                                 <div class="stat-label">Incidents</div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Instructions Section -->
+                <section class="instructions-section-wrapper">
+                    <div class="instructions-section">
+                        <h2>Instructions from Admin</h2>
+                        <div class="instructions-content">
+                            <p>Good morning!</p>
+                            <p>Please ensure that all security officers at Site A have submitted their attendance by 9:00 AM.</p>
+                            <p>Also, don't forget to update the incident report if there were any issues during the night shift.</p>
+                            <p>Let me know once it's done.</p>
+                            <p>Thank you.</p>
                         </div>
                     </div>
                 </section>

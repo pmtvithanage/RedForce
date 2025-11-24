@@ -53,19 +53,20 @@
   padding: 30px;
 }
 
-/* Top Section */
-.top-section {
-  display: grid;
-  grid-template-columns: 1fr 360px; /* left content + right stats column */
-  gap: 30px;
+/* Stats Section at Top */
+.stats-section {
   margin-bottom: 30px;
 }
 
-/* Stats column and cards */
-.stats-column {
+.stats-row {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+/* Instructions Section */
+.instructions-section-wrapper {
+  margin-bottom: 30px;
 }
 
 .stat-card:hover {
