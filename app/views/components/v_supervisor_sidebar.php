@@ -27,6 +27,7 @@
             
             <div class="menu-section"></div>
             <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
+            <a class="menu-item <?php echo ($data['title'] === 'Attendance') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/attendance"><span class="icon"></span><span class="material-symbols-outlined">fact_check</span><span class="label">Attendance</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/officers"><span class="icon"></span><span class="material-symbols-outlined">groups</span><span class="label">Officers</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Leave Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/leave_requests"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Request Leaves</span></a>
@@ -41,7 +42,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
+          <h1 class="page-title"><?php echo $data['title'] ?? 'Dashboard'; ?></h1>
 
           <div class="topbar-right">
   <!-- Profile Toggle -->
