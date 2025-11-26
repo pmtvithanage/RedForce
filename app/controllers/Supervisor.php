@@ -21,10 +21,43 @@ class Supervisor extends Controller {
     public function dashboard() {
         $role = 'supervisor';
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+        
+        // Get supervisor ID from session
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        
+        // Get today's attendance records
+        $todayAttendance = [];
+        $attendanceStats = [
+            'total' => 0,
+            'present' => 0,
+            'absent' => 0,
+            'late' => 0
+        ];
+        
+        if ($supervisor_id) {
+            // Get today's date
+            $today = date('Y-m-d');
+            
+            // Fetch attendance records for today
+            $todayAttendance = $this->supervisorModel->getAttendanceRecords($supervisor_id, ['date' => $today]);
+            
+            // Get attendance statistics
+            $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
+            if ($stats) {
+                $attendanceStats = [
+                    'total' => $stats->total ?? 0,
+                    'present' => $stats->present ?? 0,
+                    'absent' => $stats->absent ?? 0,
+                    'late' => $stats->late ?? 0
+                ];
+            }
+        }
 
         $data = [
             'title' => 'Dashboard',
-            'advertisements' => $advertisements
+            'advertisements' => $advertisements,
+            'todayAttendance' => $todayAttendance,
+            'attendanceStats' => $attendanceStats
         ];
         $this->view('supervisor/v_dashboard', $data);
     }
@@ -339,6 +372,209 @@ class Supervisor extends Controller {
                 'success' => false, 
                 'message' => 'Failed to mark attendance. Please try again.'
             ]);
+        }
+    }
+
+    // ==========================================
+    // OFFICER ATTENDANCE CRUD METHODS
+    // ==========================================
+
+    // Display attendance page
+    public function attendance() {
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$supervisor_id) {
+            redirect('users/login');
+            return;
+        }
+        
+        // Get filters from GET request
+        $filters = [
+            'date' => $_GET['date'] ?? '',
+            'status' => $_GET['status'] ?? '',
+            'officer_id' => $_GET['officer_id'] ?? ''
+        ];
+        
+        // Fetch attendance records with filters
+        $attendanceRecords = $this->supervisorModel->getAttendanceRecords($supervisor_id, $filters);
+        
+        // Get today's statistics
+        $today = date('Y-m-d');
+        $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
+        
+        $data = [
+            'title' => 'Attendance',
+            'pageTitle' => 'Officer Attendance',
+            'attendanceRecords' => $attendanceRecords,
+            'stats' => $stats,
+            'filters' => $filters
+        ];
+        
+        $this->view('supervisor/v_attendance', $data);
+    }
+
+    // Show mark attendance form page
+    public function markAttendancePage() {
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$supervisor_id) {
+            redirect('users/login');
+            return;
+        }
+        
+        $data = [
+            'title' => 'Mark Attendance',
+            'pageTitle' => 'Mark Attendance'
+        ];
+        
+        $this->view('supervisor/v_mark_attendance', $data);
+    }
+
+    // Show edit attendance form page
+    public function editAttendancePage($id) {
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$supervisor_id) {
+            redirect('users/login');
+            return;
+        }
+        
+        // Get attendance record
+        $attendance = $this->supervisorModel->getAttendanceById($id);
+        
+        // Verify ownership
+        if (!$attendance || $attendance->supervisor_id != $supervisor_id) {
+            flash('attendance_error', 'Unauthorized access');
+            redirect('supervisor/attendance');
+            return;
+        }
+        
+        $data = [
+            'title' => 'Edit Attendance',
+            'pageTitle' => 'Edit Attendance',
+            'attendance' => $attendance
+        ];
+        
+        $this->view('supervisor/v_edit_attendance', $data);
+    }
+
+    // CREATE - Add new attendance record
+    public function addAttendance() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $supervisor_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$supervisor_id) {
+                flash('attendance_error', 'User not authenticated');
+                redirect('supervisor/markAttendancePage');
+                return;
+            }
+            
+            $data = [
+                'supervisor_id' => $supervisor_id,
+                'officer_id' => trim($_POST['officer_id']),
+                'officer_name' => trim($_POST['officer_name']),
+                'attendance_date' => trim($_POST['attendance_date']),
+                'check_in_time' => !empty($_POST['check_in_time']) ? trim($_POST['check_in_time']) : null,
+                'check_out_time' => !empty($_POST['check_out_time']) ? trim($_POST['check_out_time']) : null,
+                'status' => trim($_POST['status']),
+                'notes' => trim($_POST['notes'])
+            ];
+            
+            // Validate required fields
+            if (empty($data['officer_id']) || empty($data['officer_name']) || 
+                empty($data['attendance_date']) || empty($data['status'])) {
+                flash('attendance_error', 'Please fill all required fields');
+                redirect('supervisor/markAttendancePage');
+                return;
+            }
+            
+            if ($this->supervisorModel->addAttendance($data)) {
+                flash('attendance_success', 'Attendance record added successfully');
+            } else {
+                flash('attendance_error', 'Failed to add attendance record. Officer may already have attendance for this date.');
+            }
+            
+            redirect('supervisor/attendance');
+        } else {
+            redirect('supervisor/markAttendancePage');
+        }
+    }
+
+    // UPDATE - Edit attendance record
+    public function updateAttendance($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $supervisor_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$supervisor_id) {
+                flash('attendance_error', 'User not authenticated');
+                redirect('supervisor/attendance');
+                return;
+            }
+            
+            // Verify ownership
+            $existingRecord = $this->supervisorModel->getAttendanceById($id);
+            if (!$existingRecord || $existingRecord->supervisor_id != $supervisor_id) {
+                flash('attendance_error', 'Unauthorized access');
+                redirect('supervisor/attendance');
+                return;
+            }
+            
+            $data = [
+                'id' => $id,
+                'supervisor_id' => $supervisor_id,
+                'officer_id' => trim($_POST['officer_id']),
+                'officer_name' => trim($_POST['officer_name']),
+                'attendance_date' => trim($_POST['attendance_date']),
+                'check_in_time' => !empty($_POST['check_in_time']) ? trim($_POST['check_in_time']) : null,
+                'check_out_time' => !empty($_POST['check_out_time']) ? trim($_POST['check_out_time']) : null,
+                'status' => trim($_POST['status']),
+                'notes' => trim($_POST['notes'])
+            ];
+            
+            if ($this->supervisorModel->updateAttendance($data)) {
+                flash('attendance_success', 'Attendance record updated successfully');
+            } else {
+                flash('attendance_error', 'Failed to update attendance record');
+            }
+            
+            redirect('supervisor/attendance');
+        } else {
+            redirect('supervisor/attendance');
+        }
+    }
+
+    // DELETE - Remove attendance record
+    public function deleteAttendance($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $supervisor_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$supervisor_id) {
+                flash('attendance_error', 'User not authenticated');
+                redirect('supervisor/attendance');
+                return;
+            }
+            
+            // Verify ownership
+            $record = $this->supervisorModel->getAttendanceById($id);
+            if (!$record || $record->supervisor_id != $supervisor_id) {
+                flash('attendance_error', 'Unauthorized access');
+                redirect('supervisor/attendance');
+                return;
+            }
+            
+            if ($this->supervisorModel->deleteAttendance($id, $supervisor_id)) {
+                flash('attendance_success', 'Attendance record deleted successfully');
+            } else {
+                flash('attendance_error', 'Failed to delete attendance record');
+            }
+            
+            redirect('supervisor/attendance');
+        } else {
+            redirect('supervisor/attendance');
         }
     }
 

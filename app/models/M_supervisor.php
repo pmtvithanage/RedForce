@@ -112,5 +112,119 @@ class M_supervisor {
         
         return false;
     }
+
+    // ==========================================
+    // OFFICER ATTENDANCE CRUD METHODS
+    // ==========================================
+
+    // CREATE - Add new attendance record
+    public function addAttendance($data) {
+        $this->db->query('INSERT INTO officer_attendance 
+                          (supervisor_id, officer_id, officer_name, attendance_date, check_in_time, check_out_time, status, notes) 
+                          VALUES (:supervisor_id, :officer_id, :officer_name, :attendance_date, :check_in_time, :check_out_time, :status, :notes)');
+        
+        $this->db->bind(':supervisor_id', $data['supervisor_id']);
+        $this->db->bind(':officer_id', $data['officer_id']);
+        $this->db->bind(':officer_name', $data['officer_name']);
+        $this->db->bind(':attendance_date', $data['attendance_date']);
+        $this->db->bind(':check_in_time', $data['check_in_time']);
+        $this->db->bind(':check_out_time', $data['check_out_time']);
+        $this->db->bind(':status', $data['status']);
+        $this->db->bind(':notes', $data['notes']);
+        
+        return $this->db->execute();
+    }
+
+    // READ - Get all attendance records with optional filters
+    public function getAttendanceRecords($supervisor_id, $filters = []) {
+        $query = 'SELECT * FROM officer_attendance WHERE supervisor_id = :supervisor_id';
+        
+        // Add filters if provided
+        if (!empty($filters['date'])) {
+            $query .= ' AND attendance_date = :date';
+        }
+        if (!empty($filters['status'])) {
+            $query .= ' AND status = :status';
+        }
+        if (!empty($filters['officer_id'])) {
+            $query .= ' AND officer_id LIKE :officer_id';
+        }
+        
+        $query .= ' ORDER BY attendance_date DESC, check_in_time DESC';
+        
+        $this->db->query($query);
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        
+        if (!empty($filters['date'])) {
+            $this->db->bind(':date', $filters['date']);
+        }
+        if (!empty($filters['status'])) {
+            $this->db->bind(':status', $filters['status']);
+        }
+        if (!empty($filters['officer_id'])) {
+            $this->db->bind(':officer_id', '%' . $filters['officer_id'] . '%');
+        }
+        
+        return $this->db->resultSet();
+    }
+
+    // READ - Get single attendance record by ID
+    public function getAttendanceById($id) {
+        $this->db->query('SELECT * FROM officer_attendance WHERE id = :id');
+        $this->db->bind(':id', $id);
+        
+        return $this->db->single();
+    }
+
+    // UPDATE - Update existing attendance record
+    public function updateAttendance($data) {
+        $this->db->query('UPDATE officer_attendance 
+                          SET officer_id = :officer_id,
+                              officer_name = :officer_name,
+                              attendance_date = :attendance_date, 
+                              check_in_time = :check_in_time, 
+                              check_out_time = :check_out_time, 
+                              status = :status, 
+                              notes = :notes 
+                          WHERE id = :id AND supervisor_id = :supervisor_id');
+        
+        $this->db->bind(':id', $data['id']);
+        $this->db->bind(':supervisor_id', $data['supervisor_id']);
+        $this->db->bind(':officer_id', $data['officer_id']);
+        $this->db->bind(':officer_name', $data['officer_name']);
+        $this->db->bind(':attendance_date', $data['attendance_date']);
+        $this->db->bind(':check_in_time', $data['check_in_time']);
+        $this->db->bind(':check_out_time', $data['check_out_time']);
+        $this->db->bind(':status', $data['status']);
+        $this->db->bind(':notes', $data['notes']);
+        
+        return $this->db->execute();
+    }
+
+    // DELETE - Delete attendance record
+    public function deleteAttendance($id, $supervisor_id) {
+        $this->db->query('DELETE FROM officer_attendance WHERE id = :id AND supervisor_id = :supervisor_id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        
+        return $this->db->execute();
+    }
+
+    // READ - Get today's attendance statistics
+    public function getAttendanceStats($supervisor_id, $date) {
+        $this->db->query('SELECT 
+                            COUNT(*) as total_officers,
+                            SUM(CASE WHEN status = "Present" THEN 1 ELSE 0 END) as present,
+                            SUM(CASE WHEN status = "Absent" THEN 1 ELSE 0 END) as absent,
+                            SUM(CASE WHEN status = "Late" THEN 1 ELSE 0 END) as late,
+                            SUM(CASE WHEN status = "Half Day" THEN 1 ELSE 0 END) as half_day
+                          FROM officer_attendance 
+                          WHERE supervisor_id = :supervisor_id AND attendance_date = :date');
+        
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        $this->db->bind(':date', $date);
+        
+        return $this->db->single();
+    }
 }
 ?>
