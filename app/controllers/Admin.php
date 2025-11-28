@@ -2,6 +2,7 @@
 class Admin extends Controller {
     private $adminModel;
     private $userModel;
+    
 
     public function __construct() {
         requireAuth('admin');
@@ -28,7 +29,39 @@ class Admin extends Controller {
             'pendingLeaves' => $pendingLeaves,
             'leaveStats' => $leaveStats
         ];
-        $this->view('admin/v_dashboard', $data);
+        $this->view('admin/dashboard/v_dashboard', $data);
+    }
+
+    public function messages(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Messages'
+        ];
+        $this->view('admin/dashboard/v_messages', $data);
+    }
+
+    public function pendings(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Pending Leave Requests'
+        ];
+        $this->view('admin/dashboard/v_pendings', $data);
+    }
+
+    public function assign(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Officer Assignment'
+        ];
+        $this->view('admin/dashboard/v_assign', $data);
+    }
+
+    public function alerts(){
+        $data = [
+            'title' => 'Dashboard',
+            'pageTitle' => 'Send Alerts'
+        ];
+        $this->view('admin/dashboard/v_alerts', $data);
     }
 
 // ======================================================================== //
@@ -40,12 +73,29 @@ class Admin extends Controller {
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers'
     ];
-        $this->view('admin/v_officers', $data);
+        $this->view('admin/officers/v_officers', $data);
     }
 
-    public function Jobs() {
-        $data = ['title' => 'Officers'];
-        $this->view('admin/officers/jobs', $data);
+    public function porecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Premise Officers Recruitment'
+        ];
+        $this->view('admin/officers/v_po_recruitment', $data);
+    }
+    public function mrrecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Mobile Riders Recruitment'
+        ];
+        $this->view('admin/officers/v_mr_recruitment', $data);
+    }
+    public function ctrecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Care Takers Recruitment'
+        ];
+        $this->view('admin/officers/v_ct_recruitment', $data);
     }
 
 // ======================================================================== //
@@ -62,7 +112,47 @@ class Admin extends Controller {
             'pageTitle' => 'Manage Clients',
             'pendingRequestsCount' => $pendingCount
         ];
-        $this->view('admin/v_clients', $data);  
+        $this->view('admin/clients/v_clients', $data);  
+    }
+
+     public function addclients(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Add Clients'
+        ];
+        $this->view('admin/clients/v_addClient', $data);
+    }
+
+     public function clientprofile(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Client Name'
+        ];
+        $this->view('admin/clients/v_clientProfile', $data);
+    }
+
+    public function viewsites(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Client Name - Site Name'
+        ];
+        $this->view('admin/clients/v_viewsites', $data);
+    }
+
+    public function editassignment(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Assignment'
+        ];
+        $this->view('admin/clients/v_editAssignment', $data);
+    }
+
+    public function adddutypoint(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Add Duty Point'
+        ];
+        $this->view('admin/clients/v_addDutyPoint', $data);
     }
 
     public function clientRequests() {
@@ -438,13 +528,70 @@ public function rejectLeave($id) {
     }
 
     public function incidents() {
-        $data = ['title' => 'Incidents'];
+        $data = [
+            'title' => 'Incidents',
+            'pageTitle' => 'Incidents Dashboard'
+        ];
         $this->view('admin/v_incidents', $data);
     }
 
+// ======================================================================== //
+// =======================      Admin Reports        ====================== //
+// ======================================================================== //
     public function reports() {
-        $data = ['title' => 'Reports'];
-        $this->view('admin/v_reports', $data);  
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Admin Reports'
+        ];
+        $this->view('admin/reports/v_reports', $data);  
+    }
+
+    public function attendencereports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Atendence Reports'
+        ];
+        $this->view('admin/reports/v_attendence', $data);  
+    }
+
+    public function paymentsreports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Client Payment Reports'
+        ];
+        $this->view('admin/reports/v_clientpayments', $data);  
+    }
+
+    public function requestsreports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Client Requests Reports'
+        ];
+        $this->view('admin/reports/v_clientrequests', $data);  
+    }
+
+    public function incidentsreports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Incidents Reports'
+        ];
+        $this->view('admin/reports/v_incidents', $data);  
+    }
+
+    public function sitereports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Site Reports'
+        ];
+        $this->view('admin/reports/v_site', $data);  
+    }
+
+    public function performancereports() {
+        $data = [
+            'title' => 'Reports',
+            'pageTitle' => 'Officer Performance Reports'
+        ];
+        $this->view('admin/reports/v_performance', $data);  
     }
 
 // ======================================================================== //
