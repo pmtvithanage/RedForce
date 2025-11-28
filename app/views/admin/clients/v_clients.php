@@ -8,58 +8,75 @@
 
 <!--<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/clients_style.css">-->
 <style>
+/* ===== Global Enhancements ===== */
+:root {
+  --primary: #a40000;
+  --primary-light: #c90000;
+  --bg-soft: #fafafa;
+  --card-bg: #ffffff;
+  --ink: #222;
+  --shadow-soft: 0 4px 14px rgba(0,0,0,0.08);
+  --shadow-hover: 0 6px 18px rgba(0,0,0,0.12);
+}
+
+
+/* ===== Stats Section ===== */
 .stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
   gap: 24px;
-  margin : 12px;
-  margin-bottom: 18px;
+  margin: 18px;
 }
 
 .stat-card {
-  position: relative;
-  background: #fff;
-  border-radius: 20px;
-  box-shadow: #f5f4f4ff;
-  height: 110px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow: var(--shadow-soft);
+  height: 120px;
   display: flex;
   align-items: center;
+  padding: 0 18px;
+  position: relative;
   overflow: hidden;
+  transition: 0.25s;
 }
 
-.client-requests-card:hover {
-  cursor: pointer;
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
-.stat-pill {
-  position: absolute;
-  left: 12px;
-  top: 12px;
-  bottom: 12px;
-  width: 10px;
-  background: #a40000;
-  border-radius: 12px;
-  box-shadow: inset 0 0 0 4px #fff;
-}
-.pill-right {
-  left: auto;
-  right: 12px;
-}
+
 .stat-body {
   display: flex;
+  justify-content: space-between; /* pushes content to edges */
   align-items: center;
-  justify-content: center;
   width: 100%;
-  gap: 18px;
 }
 .stat-value {
+  margin-left: auto; /* forces value to the far right */
+  margin-right: 30px;
   font-size: 42px;
   font-weight: 800;
-}
-.stat-label {
-  font-size: 22px;
-  color: var(--ink);
+  color: var(--primary);
 }
 
+.stat-label {
+  margin-left: 30px;
+  font-size: 20px;
+  color: #333;
+}
+
+.stat-label span.material-icons {
+  vertical-align: middle;
+  font-size: 50px;
+  margin-right: 10px;
+}
+
+.client-requests-card{
+  cursor: pointer;
+}
+
+/* ===== Search Bar ===== */
 .search-wrap {
   position: relative;
   width: 100%;
@@ -69,7 +86,7 @@
 .search {
   width: 100%;
   height: 38px;
-  border: 2px solid #000;
+  border: 1px solid #ccccccff;
   border-radius: 8px;
   background: #fff;
   padding: 0 36px 0 36px;
@@ -89,105 +106,131 @@
   pointer-events: none;
 }
 
+/* ===== Clients Listing ===== */
 .card-wrapper {
-    display: flex;
-    justify-content: center;   /* centers horizontally */
-    align-items: center;       /* optional: centers vertically */
-    flex-wrap: wrap;
-    gap: 20px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 20px;
 }
 
 .client-card {
-    justify: center;
-    width: 650px;
-    padding: 20px;
-    border-radius: 16px;
-    background: #fff;
-    border: 2px solid #a40000 ;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    font-family: Arial, sans-serif;
+  width: 670px;
+  background: var(--card-bg);
+  border-radius: 18px;
+  border: 1px solid #ddd;
+  box-shadow: var(--shadow-soft);
+  padding: 22px;
+  transition: 0.28s ease-in-out;
 }
 
+.client-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--primary);
+}
+
+/* Client Title */
 .client-title {
-    margin: 0 0 10px 0;
+  margin-bottom: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink);
 }
 
-.badge {
-    width: 150px;
-    background: #fc5050ff;
-    margin-bottom: 15px;
+/* Badge */
+.badge img{
+  width: 160px;
+  
 }
 
+/* Stats Panel inside client card */
 .client-stats {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
 }
 
 .stat-box {
-    background: #fff;
-    padding: 15px 22px;
-    width: 100px;
-    height: 100px;
-    border-radius: 12px;
-    text-align: center;
-    border: 2px solid #ddd;
+  background: #fff;
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #eee;
+  transition: 0.25s;
+}
+
+.stat-box:hover {
+  transform: scale(1.07);
 }
 
 .number {
-    display: block;
-    font-size: 22px;
-    font-weight: bold;
+  display: block;
+  margin-top: 22px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--primary);
 }
-
 .officer-label {
-    font-size: 12px;
-    color: #444;
+  font-size: 12px;
+  color: #444;
 }
 
+/* View Button */
 .view-btn {
   margin-left: auto;
-    writing-mode: vertical-rl;
-    padding: 12px 10px;
+  writing-mode: vertical-rl;
+  padding: 14px 12px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s;
 }
 
+.view-btn:hover {
+  background: var(--primary-light);
+  transform: scale(1.1);
+}
+
+/* Address */
 .address {
-    margin-top: 10px;
-    color: #555;
-    font-size: 13px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #666;
 }
 
-
+/* ===== Floating Add Button ===== */
 .add-btn {
   position: fixed;
   bottom: 24px;
   right: 24px;
-
-  width: 58px;
-  height: 58px;
-
-  background: #a40000;
-  border: none;
+  width: 64px;
+  height: 64px;
+  background: var(--primary);
   border-radius: 50%;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-
+  box-shadow: var(--shadow-hover);
+  transition: 0.28s;
   cursor: pointer;
-  transition: 0.2s;
 }
 
 .add-btn:hover {
-  background: #c90000;
-  transform: scale(1.07);
+  background: var(--primary-light);
+  transform: scale(1.12);
 }
 
 .add-btn span {
   color: #fff;
-  font-size: 32px;
+  font-size: 34px;
 }
 
 </style>
@@ -200,18 +243,18 @@
     <div class="stat-card">
       <div class="stat-pill"></div>
       <div class="stat-body">
+        <div class="stat-label"><span class="material-icons">group</span>Clients</div>
         <div class="stat-value" id="clientsCount">0</div>
-        <div class="stat-label">Clients</div>
       </div>
     </div>
 
     <div class="stat-card client-requests-card" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientRequests'">
-      <?php if (isset($data['pendingRequestsCount']) && $data['pendingRequestsCount'] > 0): ?>
+      <?php if (isset($data['pendingRequestsCount']) && $data['pendingRequestsCount'] > 0):?>
         <span class="notification-badge"><?php echo $data['pendingRequestsCount']; ?></span>
       <?php endif; ?>
       <div class="stat-pill pill-right"></div>
       <div class="stat-body">
-        <div class="stat-label">Client Requests</div>
+        <div class="stat-label"><span class="material-icons">pending_actions</span>Client Requests</div>
       </div>
     </div>
   </header>
@@ -225,12 +268,12 @@
       <!-- Client cards-->
 <div class="card-wrapper">
   <div class="client-card">
-      <h2 class="client-title">People's Bank PLC</h2>
-
-      
+      <div class="client-title">People's Bank</div>
 
       <div class="client-stats">
-        <div class="badge">PEOPLE'S</div>
+        <div class="badge">
+          <img src="<?php echo URL_ROOT; ?>/img/peoples-bank.png" alt="People's Bank">
+        </div>
 
           <div class="stat-box">
               <span class="number">142</span>

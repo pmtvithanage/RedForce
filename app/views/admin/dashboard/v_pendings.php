@@ -4,6 +4,10 @@
 
 
     <!-- Content will be loaded here -->
+    <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+        Back
+    </button>
     
     </main>
     </div>

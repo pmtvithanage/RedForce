@@ -1,9 +1,16 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+<!-- <span class="material-icons">face</span> -->
+
 
 
     <!-- Content will be loaded here -->
+
     <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back

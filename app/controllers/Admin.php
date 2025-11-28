@@ -2,6 +2,7 @@
 class Admin extends Controller {
     private $adminModel;
     private $userModel;
+    
 
     public function __construct() {
         requireAuth('admin');
@@ -72,12 +73,29 @@ class Admin extends Controller {
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers'
     ];
-        $this->view('admin/v_officers', $data);
+        $this->view('admin/officers/v_officers', $data);
     }
 
-    public function Jobs() {
-        $data = ['title' => 'Officers'];
-        $this->view('admin/officers/jobs', $data);
+    public function porecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Premise Officers Recruitment'
+        ];
+        $this->view('admin/officers/v_po_recruitment', $data);
+    }
+    public function mrrecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Mobile Riders Recruitment'
+        ];
+        $this->view('admin/officers/v_mr_recruitment', $data);
+    }
+    public function ctrecruitment() {
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Care Takers Recruitment'
+        ];
+        $this->view('admin/officers/v_ct_recruitment', $data);
     }
 
 // ======================================================================== //
@@ -119,6 +137,22 @@ class Admin extends Controller {
             'pageTitle' => 'Client Name - Site Name'
         ];
         $this->view('admin/clients/v_viewsites', $data);
+    }
+
+    public function editassignment(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Assignment'
+        ];
+        $this->view('admin/clients/v_editAssignment', $data);
+    }
+
+    public function adddutypoint(){
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Add Duty Point'
+        ];
+        $this->view('admin/clients/v_addDutyPoint', $data);
     }
 
     public function clientRequests() {

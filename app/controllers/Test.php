@@ -6,18 +6,18 @@ class Test extends Controller {
     }
     public function index() {
         $data = [
-            'title' => 'Reports',
+            'title' => 'Officers',
             'pageTitle' => 'Test Model Page'
         ];
 
-        $this->view('admin/reports/v_reports', $data);
+        $this->view('admin/officers/v_officers', $data);
     }
 
-    public function addclients(){
+    public function jobs(){
         $data = [
-            'title' => 'Clients',
-            'pageTitle' => 'Add Clients'
+            'title' => 'Officers',
+            'pageTitle' => 'Jobs Page'
         ];
-        $this->view('admin/clients/v_addClient', $data);
+        $this->view('admin/officers/v_jobs', $data);
     }
 }
