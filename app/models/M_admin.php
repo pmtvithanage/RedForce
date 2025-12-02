@@ -7,16 +7,19 @@ class M_admin {
     }
 
     public function getClientById($id) {
-    // Get client with contact person name
-    $this->db->query("
-        SELECT u.*, c.contact_person_name 
-        FROM Users u 
-        LEFT JOIN Clients c ON u.id = c.user_id 
-        WHERE u.id = :id
-    ");
-    $this->db->bind(':id', $id);
-    return $this->db->single();
-}
+        // Get client with contact person name and profile image
+        $this->db->query("
+            SELECT 
+                u.*, 
+                c.contact_person_name,
+                u.profile_image as client_profile
+            FROM Users u 
+            LEFT JOIN Clients c ON u.id = c.user_id 
+            WHERE u.id = :id
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
 
     // Get all Clients
     public function getAllClients() {
@@ -24,6 +27,7 @@ class M_admin {
         $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
         return $this->db->resultSet();
     }
+
 
     // Accept Client Request
     public function acceptClient($client_request_id, $approved_by_user_id) {
@@ -107,6 +111,56 @@ class M_admin {
         return $this->db->execute();
     }
 
+    // Add Site
+    public function addSite($data){
+        $this->db->query("INSERT INTO Sites (client_id, site_name, address, city, phone_number, image) 
+                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name)");
+        
+        $this->db->bind(':client_id', $data['client_id']);
+        $this->db->bind(':site_name', $data['site_name']);
+        $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':site_city', $data['site_city']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        $this->db->bind(':image_name', $data['image_name']);
+        
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId(); // Return the new site ID
+        }
+        return false;
+
+    }
+    public function deleteSite($siteId){
+        $this->db->query("DELETE FROM Sites WHERE id = :site_id");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->execute();
+    }
+    public function updateSite($data){
+        $this->db->query("UPDATE Sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
+        $this->db->bind(':site_name', $data['site_name']);
+        $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':site_city', $data['site_city']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':site_id', $data['site_id']);
+
+        if ($this->db->execute()) {
+            return true;
+        }
+        return false;
+    }
+    // Get All Sites
+    public function getSiteByClientId($client_id) {
+        $this->db->query("SELECT * FROM Sites WHERE client_id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
+    // Get Site
+    public function getSiteById($site_id) {
+        $this->db->query("SELECT * FROM Sites WHERE id = :site_id");
+        $this->db->bind(':site_id', $site_id);
+        return $this->db->single();
+    }
+    // Update Site
 
 // ======================================================================== //
 // =======================      Admin Advertisements       ====================== //

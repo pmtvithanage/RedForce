@@ -227,7 +227,7 @@
 
 <div class="client-profile-container">
     <div class="top-client-profile">
-        <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="history.back()"> 
+        <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clients'"> 
             <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
             Back
         </button>
@@ -257,191 +257,33 @@
         
     </div>
 
+    <button style="float: right;" class="secondary-btn" id="addSiteBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addsite/<?php echo $client->id?>'">Add Site</button>
+
         <div class="search-wrap">
             <input id="searchInput" class="search" type="text" placeholder="Search" />
             <span class="search-icon"><span class="material-symbols-outlined">search</span></span>
         </div>
+        
       <div class="bottom-cards">
 
-          
-              <div class="site-card">
+        <?php foreach($data['sites'] as $site): ?>
+                <div class="site-card">
 
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
+                <img class="site-img" src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $site->image?>" alt="Site Image">
 
-                  <h3>2r42r422rwr 34t34rt43</h3>
+                    <h3><?php echo $site->site_name?></h3>
 
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
+                    <p><strong>Location:</strong> <?php echo $site->address?></p>
+                    <p><strong>City:</strong> <?php echo $site->city?></p>
+                    <p><strong>phone_number:</strong> <?php echo $site->phone_number?></p>
+                    <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
 
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewsites'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>2r42r422rwr 34t34rt43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-          <div class="site-card">
-
-            <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>2r42r422rwr 34t34rt43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>2r42r422rwr 34t34rt43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>2r42r422rwr 34t34rt43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>2r42r422rwr 34t34rt43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
-
-              <div class="site-card">
-
-              <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
-
-                  <h3>rwqerwer r34r3w4rfw43</h3>
-
-                  <p><strong>Location:</strong> t434t35t 453yt4536t45t45</p>
-                  <p><strong>Status:</strong> 324t35t 235t4y5rhg rtjnthjn</p>
-                  <p><strong>Last Updated:</strong> fewrtwert </p>
-
-                  <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/sites/view'">
-                      View Site
-                  </button>
-              </div>
+                    <button class="view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewsites/<?php echo $site->id; ?>'">
+                        View Site
+                    </button>
+                </div>
+        <?php endforeach; ?>
+            
       </div>
 
   </div>

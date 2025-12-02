@@ -37,13 +37,12 @@ class Home extends Controller {
             ];
 
             // Validate inputs
-
-            if(empty($data['image'])){
-                $data['image_err'] = 'Please upload a logo';
-            }elseif($data['image']['size'] > 0){
+            if(empty($data['image']['name'])){
+                $data['image_err'] = 'Please upload an image';
+            } elseif($data['image']['size'] > 0){
                 if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/clientLogos/')){
-                    
-                }else{
+                    // Image uploaded successfully
+                } else {
                     $data['image_err'] = 'Failed to upload image';
                 }
             }

@@ -186,22 +186,265 @@ class Admin extends Controller {
 
      public function clientprofile($Id){
         $client = $this->adminModel->getClientById($Id);
+        $sites = $this->adminModel->getSiteByClientId($Id);
         $data = [
             
             'title' => 'Clients',
-            'pageTitle' => 'Client Name',
+            'pageTitle' => $client->name . ' Profile',
             'client' => $client
+            ,'sites' => $sites
         ];
         $this->view('admin/clients/v_clientProfile', $data);
     }
 
-    public function viewsites(){
+    public function addsite($Id){
+        if($_SERVER['REQUEST_METHOD']=='POST'){
+            $data = [
+                'client_id' => $Id, // Use the parameter from URL
+                'title' => 'Clients',
+                'pageTitle' => 'Add Site',
+
+                'image' => $_FILES['image'],
+                'image_name' => time(). '_' . $_FILES['image']['name'],
+
+                'site_name' => $this->sanitizeInput($_POST['site_name'] ?? ''),
+                'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
+                'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+                'image_err' => '',
+                'site_name_err' => '',
+                'site_address_err' => '',
+                'site_city_err' => '',
+                'phone_number_err' => '',
+            ];
+
+            // Validate form
+            if(empty($data['image']['name'])){
+                $data['image_err'] = 'Please upload an image';
+            } elseif($data['image']['size'] > 0){
+                if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/siteImages/')){
+                    // Image uploaded successfully
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                }
+            }
+
+            if(empty($data['site_name'])){
+                $data['site_name_err'] = 'Please enter site name';
+            }
+
+            if(empty($data['site_address'])){
+                $data['site_address_err'] = 'Please enter site address';
+            }
+
+            if(empty($data['site_city'])){
+                $data['site_city_err'] = 'Please enter site city';
+            }
+
+            if(empty($data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter phone number';
+            } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Make sure there are no errors
+            if(empty($data['image_err']) && 
+            empty($data['site_name_err']) && 
+            empty($data['site_address_err']) && 
+            empty($data['site_city_err']) && 
+            empty($data['phone_number_err'])){
+
+                // Insert site and get the new site ID
+            $siteId = $this->adminModel->addSite($data);
+                
+                if($siteId){
+                    flash('admin_message', 'Site added successfully', 'alert-success');
+                    redirect('admin/viewsites/'.$siteId); // Redirect properly
+                } else {
+                    flash('admin_message', 'Failed to add site', 'alert-danger');
+                    $this->view('admin/clients/v_addSite',$data);
+                }
+            } else {
+                $this->view('admin/clients/v_addSite',$data);
+            }
+
+        } else {
+            $data = [
+                'client_id' => $Id, // Add client_id here too
+                'title' => 'Clients',
+                'pageTitle' => 'Add Site',
+
+                'image' => '', 
+                'image_name' => '',
+
+                'site_name' => '',
+                'site_address' => '',
+                'site_city' => '',
+                'phone_number' => '',
+
+                'image_err' => '',
+                'site_name_err' => '',
+                'site_address_err' => '',
+                'site_city_err' => '',
+                'phone_number_err' => '',
+            ];
+            
+            $this->view('admin/clients/v_addSite', $data);
+        }
+    }
+
+    public function viewsites($site_id){
+        $site = $this->adminModel->getSiteById($site_id);
+        $clients = $this->adminModel->getClientById($site->client_id);
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Client Name - Site Name'
+            'pageTitle' => $clients->name . ' - ' . $site->site_name,
+            'site' => $site,
+            'client' => $clients
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }
+public function editSite($site_id){
+    // First get the existing site data
+    $existingSite = $this->adminModel->getSiteById($site_id);
+    
+    if(!$existingSite) {
+        flash('site_message', 'Site not found', 'alert-danger');
+        redirect('admin/clients');
+        return;
+    }
+    
+    if($_SERVER['REQUEST_METHOD']=='POST'){
+        $data = [
+            'site_id' => $site_id, // Important: include site_id for update
+            'client_id' => $existingSite->client_id, // Use existing client_id
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Site',
+
+            'image' => $_FILES['image'],
+            'image_name' => time(). '_' . $_FILES['image']['name'],
+            'current_image' => $existingSite->image, // Store current image
+
+            'site_name' => $this->sanitizeInput($_POST['site_name'] ?? ''),
+            'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
+            'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
+            'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+            'image_err' => '',
+            'site_name_err' => '',
+            'site_address_err' => '',
+            'site_city_err' => '',
+            'phone_number_err' => '',
+        ];
+
+        // Validation
+        if(empty($data['site_name'])){
+            $data['site_name_err'] = 'Please enter site name';
+        }
+
+        if(empty($data['site_address'])){
+            $data['site_address_err'] = 'Please enter site address';
+        }
+
+        if(empty($data['site_city'])){
+            $data['site_city_err'] = 'Please enter site city';
+        }
+
+        if(empty($data['phone_number'])){
+            $data['phone_number_err'] = 'Please enter phone number';
+        } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+            $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+        }
+
+        // Handle image upload (optional for edit)
+        // Check if new image was uploaded
+        if($data['image']['size'] > 0){
+            if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/siteImages/')){
+                // Image uploaded successfully
+                // Delete old image if it exists
+                if(!empty($existingSite->image)) {
+                    $oldImagePath = PUB_ROOT . '/uploads/siteImages/' . $existingSite->image;
+                    if(file_exists($oldImagePath)) {
+                        @unlink($oldImagePath);
+                    }
+                }
+            } else {
+                $data['image_err'] = 'Failed to upload image';
+            }
+        } else {
+            // Keep the current image
+            $data['image_name'] = $existingSite->image;
+        }
+
+        // Check for errors
+        if(empty($data['site_name_err']) && 
+           empty($data['site_address_err']) && 
+           empty($data['site_city_err']) && 
+           empty($data['phone_number_err']) &&
+           empty($data['image_err'])) {
+
+            // Update site - use editSite method in model
+            if($this->adminModel->updateSite($data)){
+                flash('site_message', 'Site updated successfully', 'alert-success');
+                redirect('admin/viewsites/'.$site_id);
+            } else {
+                flash('site_message', 'Failed to update site', 'alert-danger');
+                $this->view('admin/clients/v_editSite', $data);
+            }
+        } else {
+            $this->view('admin/clients/v_editSite', $data);
+        }
+
+    } else {
+        // Load existing data into form - FIX FIELD NAMES HERE
+        $data = [
+            'site_id' => $site_id,
+            'client_id' => $existingSite->client_id,
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Site',
+
+            'image' => '', 
+            'image_name' => $existingSite->image,
+            'current_image' => $existingSite->image,
+
+            'site_name' => $existingSite->site_name,
+            'site_address' => $existingSite->address, // Changed from address
+            'site_city' => $existingSite->city,       // Changed from city
+            'phone_number' => $existingSite->phone_number,
+
+            'image_err' => '',
+            'site_name_err' => '',
+            'site_address_err' => '',
+            'site_city_err' => '',
+            'phone_number_err' => '',
+        ];
+        
+        $this->view('admin/clients/v_editSite', $data);
+    }
+}
+    public function deleteSite($siteId){
+    
+    // First get the site to get client_id before deleting
+    $site = $this->adminModel->getSiteById($siteId);
+    
+    if(!$site) {
+        flash('site_message', 'Site not found', 'alert-danger');
+        redirect('admin/sites');
+        return;
+    }
+    
+    $clientId = $site->client_id;
+    
+    if($this->adminModel->deleteSite($siteId)){
+        flash('site_message', 'Site deleted successfully', 'alert-success');
+        redirect('admin/clientprofile/' . $clientId);
+    } else {
+        flash('site_message', 'Failed to delete site', 'alert-danger');
+        redirect('admin/clientprofile/' . $clientId);
+    }
+}
+    
 
     public function editassignment(){
         $data = [
@@ -915,4 +1158,31 @@ public function rejectLeave($id) {
     }
     exit;
 }
+
+
+
+// ---------------------------------------For all--------------------------------------//
+
+    /**
+     * Sanitize input data
+     * Replacement for FILTER_SANITIZE_STRING
+     */
+    private function sanitizeInput($input) {
+        $input = trim($input ?? '');
+        $input = htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Remove or encode potentially dangerous characters
+        $input = strip_tags($input);
+        return $input;
+    }
 }
+
+
+
+//For create folders 
+
+//.  sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/
+
+//. # If the clientLogos directory doesn't exist yet, create it with proper permissions
+//. sudo mkdir -p /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
+//. sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
+//. sudo chmod -R 755 /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
