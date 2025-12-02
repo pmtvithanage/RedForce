@@ -27,45 +27,59 @@
     </div>
 
     <div class="form-and-photo">
-      <!-- Logo Upload Section -->
-      <div class="photo-upload">
-        <div class="photo-frame" id="photoFrame">
-          <img id="photoPreview" alt="Uploaded logo preview" hidden />
-        </div>
-        <input type="file" id="photoInput" accept="image/*" hidden />
-        <label for="photoInput" class="btn-upload">Upload Logo / Photo</label>
-      </div>
 
       <!-- Company Info Form -->
-      <form class="application-form" id="serviceForm">
+      <form class="application-form" id="serviceForm" method="POST" action="<?php echo URL_ROOT; ?>/home/service" enctype="multipart/form-data">
+        <!-- Logo Upload Section -->
+        <div class="photo-upload">
+          
+        <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/public/img/photo.png" 
+         alt="Uploaded logo preview" 
+         id="imagePlaceholder"
+         data-default-src="<?php echo URL_ROOT; ?>/public/img/photo.png" />
+         <span class="form-input-error"><?php echo $data['image_err'];?></span>
+
+          
+          <div class="btn-upload" id="addImageBtn" onClick="toggleBrowse()">Add Logo</div>
+          <div class="btn-upload" id="removeImageBtn" style="display: none;" onClick="removeImage()">Remove</div>
+          <input type="file" name="image" id="image" accept="image/*" hidden />
+        </div>
+
         <div class="field">
           <div class="field-label">Company Name:</div>
-          <input type="text" class="field-input" id="company-name" placeholder="Enter company name">
+          <input type="text" class="field-input" id="company-name" name="company_name" value="<?php echo $data['company_name']; ?>" placeholder="Enter company name">
+          <span class="form-input-error"><?php echo $data['company_name_err'];?></span>
         </div>
 
         <div class="field">
           <div class="field-label">Email:</div>
-          <input type="email" class="field-input" id="email" placeholder="Enter email address">
+          <input type="text" class="field-input" id="email" name="email" value="<?php echo $data['email'] ?>" placeholder="Enter email address">
+          <span class="form-input-error"><?php echo $data['email_err'];?></span>
         </div>
 
         <div class="field">
           <div class="field-label">Phone Number:</div>
-          <input type="tel" class="field-input" id="phone" placeholder="Enter phone number">
+          <input type="tel" class="field-input" id="phone" name="phone_number" value="<?php echo $data['phone_number'] ?>" placeholder="Enter phone number">
+          <span class="form-input-error"><?php echo $data['phone_number_err'];?></span>
         </div>
 
         <div class="field">
-          <div class="field-label">Owner's Name:</div>
-          <input type="text" class="field-input" id="owner-name" placeholder="Enter owner's name">
+          <div class="field-label">Contact person's Name:</div>
+          <input type="text" class="field-input" id="owner-name" name="contact_person_name" value="<?php echo $data['contact_person_name'] ?>" placeholder="Enter contact person's name" >
+          <span class="form-input-error"><?php echo $data['contact_person_name_err'];?></span>
+        </div>
+        
+        <input type="hidden" id="logo_path" name="logo_path">
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-light" onclick="window.history.back()">Cancel</button>
+          <input type="submit" value="Submit" class="btn btn-primary">
         </div>
       </form>
     </div>
   </section>
 
-
-  <div class="form-actions">
-    <button class="btn btn-light" onclick="cancel()">Cancel</button>
-    <button class="btn btn-primary" onclick="submitForm()">Submit</button>
-  </div>
+  
 </main>
 
 <script src="<?php echo URL_ROOT; ?>/js/home/getservice.js"></script>

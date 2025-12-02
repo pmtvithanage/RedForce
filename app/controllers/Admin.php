@@ -2,12 +2,14 @@
 class Admin extends Controller {
     private $adminModel;
     private $userModel;
+    private $homeModel;
     
 
     public function __construct() {
         requireAuth('admin');
         $this->adminModel = $this->model('M_admin');
         $this->userModel = $this->model('M_users');
+        $this->homeModel = $this->model('M_home');
         // Removed: $this->settingsModel = $this->model('SettingsModel');
     }
 
@@ -106,27 +108,89 @@ class Admin extends Controller {
         // Get pending service requests count for notification badge
         $requestStats = $this->adminModel->getServiceRequestStats();
         $pendingCount = $requestStats->pending ?? 0;
+
+        $clients = $this->adminModel->getAllClients();
         
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Manage Clients',
-            'pendingRequestsCount' => $pendingCount
+            'pendingRequestsCount' => $pendingCount,
+            'clients' => $clients
         ];
         $this->view('admin/clients/v_clients', $data);  
     }
 
-     public function addclients(){
+    public function addclients(){
+        $clients = $this->homeModel->getPendingRequest();
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Add Clients'
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
         ];
-        $this->view('admin/clients/v_addClient', $data);
+
+        $this->view('admin/clients/v_requests-pending', $data);
+    }
+    public function acceptClient($clientId) {
+    // Get the logged-in admin ID (you need to adjust this based on your auth system)
+    $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+    
+    if ($this->adminModel->acceptClient($clientId, $adminId)) {
+        flash('client_message', 'Client accepted successfully');
+        redirect('admin/addclients');
+    } else {
+        flash('client_message', 'Failed to accept client', 'alert-danger');
+        redirect('admin/addclients');
+    }
+}
+    public function rejectClient($clientId){
+        if($this->adminModel->rejectClient($clientId)){
+            flash('client_message', 'Client rejected successfully');
+            redirect('admin/addclients');
+        } else {
+            flash('client_message', 'Failed to reject client', 'alert-danger');
+            redirect('admin/addclients');
+        }
+    }
+    public function deleterequest($clientId){
+        if($this->adminModel->deleteRequest($clientId)){
+            flash('client_message', 'Client request deleted successfully');
+            redirect('admin/rejected');
+        } else {
+            flash('client_message', 'Failed to delete client request', 'alert-danger');
+            redirect('admin/rejected');
+        }
+    }
+    public function accepted(){
+        $clients = $this->homeModel->getApprovedRequest();
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
+        ];
+
+        $this->view('admin/clients/v_requests-accepted', $data);
     }
 
-     public function clientprofile(){
+    public function rejected(){
+        $clients = $this->homeModel->getRejectedRequest();
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Client Name'
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
+        ];
+
+        $this->view('admin/clients/v_requests-rejected', $data);
+    }
+
+    
+
+     public function clientprofile($Id){
+        $client = $this->adminModel->getClientById($Id);
+        $data = [
+            
+            'title' => 'Clients',
+            'pageTitle' => 'Client Name',
+            'client' => $client
         ];
         $this->view('admin/clients/v_clientProfile', $data);
     }

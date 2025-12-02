@@ -231,29 +231,26 @@
             <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
             Back
         </button>
-        <img src="<?php echo URL_ROOT; ?>/img/peoples-bank.png" alt="People's Bank">
+        <img src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $client->profile_image; ?>" alt="Client Logo">
         
         <div class="client-profile-info">
-            <h2>People's Bank</h2>
+            <h2><?php echo $client->name?></h2>
 
-            <p><span class="material-symbols-outlined info-icon">location_on</span>
-                <strong>Address:</strong> aaaaaaaaaaaaaadssssssssss
-            </p>
 
             <p><span class="material-symbols-outlined info-icon">call</span>
-                <strong>Phone:</strong> rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr
+                <strong>Phone:</strong> <?php echo $client->phone_number?>
             </p>
 
             <p><span class="material-symbols-outlined info-icon">mail</span>
-                <strong>Email:</strong> errrrr rrrrrrrrrrrt  tttt
+                <strong>Email:</strong> <?php echo $client->email?>
             </p>
 
             <p><span class="material-symbols-outlined info-icon">person</span>
-                <strong>Contact Person:</strong> t3ewt4535v 45h6y56hgeryr
+                <strong>Contact Person:</strong> <?php echo $client->contact_person_name?>
             </p>
 
             <p><span class="material-symbols-outlined info-icon">event</span>
-                <strong>Added Date:</strong> 34rt234 w45gy4t54
+                <strong>Added Date:</strong> <?php echo time_convert($client->created_at)?>
             </p>
         </div>
         

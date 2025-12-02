@@ -266,36 +266,39 @@
 </div>
 
       <!-- Client cards-->
-<div class="card-wrapper">
-  <div class="client-card">
-      <div class="client-title">People's Bank</div>
+<?php foreach($data['clients'] as $clients) : ?>
+  <div class="card-wrapper">
+    <div class="client-card">
+        <div class="client-title"><?php echo $clients->name?></div>
 
-      <div class="client-stats">
-        <div class="badge">
-          <img src="<?php echo URL_ROOT; ?>/img/peoples-bank.png" alt="People's Bank">
+        <div class="client-stats">
+          <div class="badge">
+            <img src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $clients->profile_image; ?>" alt="Client Logo">
+          </div>
+
+            <div class="stat-box">
+                <span class="number">142</span>
+                <span class="officer-label">Premise <br> officers</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="number">13</span>
+                <span class="officer-label">Supervisors</span>
+            </div>
+
+            <div class="stat-box">
+                <span class="number">3</span>
+                <span class="officer-label">Care-Takers</span>
+            </div>
+
+            <button class=" primary-btn view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile/<?php echo $clients->id ?>'">View</button>
         </div>
 
-          <div class="stat-box">
-              <span class="number">142</span>
-              <span class="officer-label">Premise <br> officers</span>
-          </div>
-
-          <div class="stat-box">
-              <span class="number">13</span>
-              <span class="officer-label">Supervisors</span>
-          </div>
-
-          <div class="stat-box">
-              <span class="number">3</span>
-              <span class="officer-label">Care-Takers</span>
-          </div>
-
-          <button class=" primary-btn view-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile'">View</button>
-      </div>
-
-      <p class="address">No.75 Sir Chittampalam A. Gardiner Mawatha, Colombo 2</p>
+        <p class="address"><?php echo $clients->email?></p>
+        <p class="address"><?php echo $clients->phone_number?></p>
+    </div>
   </div>
-</div>
+<?php endforeach; ?>
 
 <div>
   <button class="add-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addclients'">

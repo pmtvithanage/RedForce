@@ -6,6 +6,111 @@ class M_admin {
         $this->db = new Database();
     }
 
+    public function getClientById($id) {
+    // Get client with contact person name
+    $this->db->query("
+        SELECT u.*, c.contact_person_name 
+        FROM Users u 
+        LEFT JOIN Clients c ON u.id = c.user_id 
+        WHERE u.id = :id
+    ");
+    $this->db->bind(':id', $id);
+    return $this->db->single();
+}
+
+    // Get all Clients
+    public function getAllClients() {
+        // Simple: Get all users with role 'client'
+        $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
+        return $this->db->resultSet();
+    }
+
+    // Accept Client Request
+    public function acceptClient($client_request_id, $approved_by_user_id) {
+        // 1. Get the client request
+        $this->db->query("SELECT * FROM client_requests WHERE id = :id");
+        $this->db->bind(':id', $client_request_id);
+        $request = $this->db->single();
+        
+        if (!$request) {
+            return false;
+        }
+        
+        // 2. Create user account
+        // Generate CLIENT001, CLIENT002, etc.
+        // Get last CLIENT number
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE 'CLIENT%' ORDER BY userID DESC LIMIT 1");
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = 'CLIENT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '1234'; // Simple temp password
+        
+        // Insert into Users table
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                        VALUES (:userID, :name, :email, :phone, :profile_image,:password, 'client')");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $request->company_name);
+        $this->db->bind(':email', $request->email);
+        $this->db->bind(':phone', $request->phone_number);
+        $this->db->bind(':profile_image', $request->logo_path);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // Get the new user ID
+        $new_user_id = $this->db->lastInsertId();
+        
+        // 3. Add to Clients table
+        $this->db->query("INSERT INTO Clients (user_id, contact_person_name) 
+                        VALUES (:user_id, :contact_name)");
+        $this->db->bind(':user_id', $new_user_id);
+        $this->db->bind(':contact_name', $request->contact_person_name);
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // 4. Update client_requests table
+        $this->db->query("UPDATE client_requests 
+                        SET status = 'approved', 
+                            approved_by = :approved_by, 
+                            approved_at = NOW(),
+                            client_id = :client_id
+                        WHERE id = :id");
+        $this->db->bind(':approved_by', $approved_by_user_id);
+        $this->db->bind(':client_id', $new_user_id);
+        $this->db->bind(':id', $client_request_id);
+        
+        return $this->db->execute();
+    }
+
+    // Reject Client Request
+    public function rejectClient($client_id) {
+        $this->db->query("UPDATE client_requests SET status = 'rejected' WHERE id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->execute();
+    }
+    // Delete Client Request
+    public function deleteRequest($client_id) {
+        $this->db->query("DELETE FROM client_requests WHERE id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->execute();
+    }
+
+
+// ======================================================================== //
+// =======================      Admin Advertisements       ====================== //
+// ======================================================================== //
     // Get single advertisement by ID
     public function getAdvertisementById($id) {
         $this->db->query('

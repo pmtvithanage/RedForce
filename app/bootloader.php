@@ -6,6 +6,7 @@
     // Load helpers
     require_once 'helpers/auth_helper.php';
     require_once 'helpers/image_upload_helper.php';
+    require_once 'helpers/Time_Convert_Helper.php';
     
     // Load libraries and configurations
     require_once 'libraries/Core.php';

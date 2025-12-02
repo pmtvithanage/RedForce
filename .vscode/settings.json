@@ -1,9 +1,18 @@
 {
     "cSpell.words": [
+        "addclients",
+        "adddutypoint",
+        "clientprofile",
+        "ctrecruitment",
+        "deleterequest",
+        "editassignment",
         "leaverequests",
         "mobilerider",
+        "mrrecruitment",
+        "porecruitment",
         "premiseofficer",
         "REDFORCE",
-        "topbar"
+        "topbar",
+        "viewsites"
     ]
 }
