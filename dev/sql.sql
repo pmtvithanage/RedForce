@@ -276,3 +276,80 @@ CREATE TABLE IF NOT EXISTS user_permissions (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+
+--================================================2025-12-3 Start(Pasan)========================================
+-- Create database
+CREATE DATABASE IF NOT EXISTS REDFORCE_db;
+
+USE REDFORCE_db;
+
+-- Users table
+CREATE TABLE
+  IF NOT EXISTS Users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userID VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE,
+    phone_number VARCHAR(20),
+    profile_image VARCHAR(255),
+    password VARCHAR(255) NOT NULL,
+    role ENUM (
+      'admin',
+      'supervisor',
+      'premise officer',
+      'mobile rider',
+      'client',
+      'caretaker'
+    ) NOT NULL,
+    status ENUM ('active', 'inactive', 'suspended') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  );
+
+CREATE TABLE
+  IF NOT EXISTS client_requests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    company_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone_number VARCHAR(50),
+    contact_person_name VARCHAR(255) NOT NULL,
+    logo_path VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending'
+  );
+
+-- Clients table
+CREATE TABLE
+  IF NOT EXISTS Clients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    contact_person_name VARCHAR(255) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES Users (id) ON DELETE CASCADE
+  );
+
+-- Add columns to track approval details
+ALTER TABLE client_requests
+ADD COLUMN approved_by INT NULL AFTER status,
+ADD COLUMN approved_at TIMESTAMP NULL,
+ADD COLUMN client_id INT NULL,
+ADD FOREIGN KEY (approved_by) REFERENCES Users (id)
+--
+-- Create sites table with foreign key to clients
+CREATE TABLE
+  IF NOT EXISTS sites (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL REFERENCES Clients (id) ON DELETE CASCADE,
+    site_name VARCHAR(255) NOT NULL,
+    address VARCHAR(500),
+    city VARCHAR(100),
+    phone_number VARCHAR(20),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (client_id, site_name) -- Optional: prevent duplicate site names per client
+  );
+
+ALTER TABLE sites
+ADD COLUMN IF NOT EXISTS image VARCHAR(255);
+
+--================================================2025-12-3 End(Pasan)========================================

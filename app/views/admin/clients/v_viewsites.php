@@ -352,7 +352,7 @@
           <h1><?php echo $site->site_name?></h1>
           <p><strong>Location:</strong> <?php echo $site->address?></p>
           <p><strong>City:</strong> <?php echo $site->city?></p>
-          <p><strong>phone_number:</strong> <?php echo $site->phone_number?></p>
+          <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
           <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
 
         </div>
