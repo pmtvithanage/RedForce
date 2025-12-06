@@ -5,7 +5,65 @@ class M_admin {
     public function __construct() {
         $this->db = new Database();
     }
+// ======================================================================== //
+// =======================      Admin Officers       ====================== //
+// ======================================================================== //
 
+//Insert Job Application
+public function insertJobApplication($data,$role) {
+    $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null
+    $this->db->query("INSERT INTO jobApplication (role, completed,description, qualifications, due_date, created_at) 
+                    VALUES (:role, :completed, :description, :qualifications, :due_date, NOW())");
+    
+    $this->db->bind(':role', $role);
+    $this->db->bind(':completed', $data['completed']);
+    $this->db->bind(':description', $data['description']);
+    $this->db->bind(':qualifications', $data['qualifications']);
+    $this->db->bind(':due_date', $data['due_date']);
+    
+    return $this->db->execute();
+}
+
+// Edit Job Application
+public function editJobApplication($data,$role) {
+    $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null
+    $this->db->query("UPDATE jobApplication SET role = :role, completed = :completed, description = :description, qualifications = :qualifications, due_date = :due_date, updated_at = NOW() WHERE role = :role");
+
+
+    $this->db->bind(':role', $role);
+    $this->db->bind(':completed', $data['completed']);
+    $this->db->bind(':description', $data['description']);
+    $this->db->bind(':qualifications', $data['qualifications']);
+    $this->db->bind(':due_date', $data['due_date']);
+
+    return $this->db->execute();
+}
+
+// Delete Job Application
+public function deleteJobApplication($role) {
+    $this->db->query("DELETE FROM jobApplication WHERE role = :role");
+    $this->db->bind(':role', $role);
+    return $this->db->execute();
+}
+
+// Get Job Applications by Role
+public function getJobApplication($role) {
+    $this->db->query("SELECT id, role, completed, description, qualifications, status, due_date FROM jobApplication WHERE role = :role");
+    $this->db->bind(':role', $role);
+    return $this->db->single(); 
+}
+
+// Change Status of Job Application
+public function changeStatus($role, $status) {
+    $this->db->query("UPDATE jobApplication SET status = :status WHERE role = :role");
+    $this->db->bind(':role', $role);
+    $this->db->bind(':status', $status);
+    return $this->db->execute();
+}
+
+// ======================================================================== //
+// =======================      Admin Clients       ====================== //
+// ======================================================================== //
     public function getClientById($id) {
         // Get client with contact person name and profile image
         $this->db->query("
@@ -571,4 +629,6 @@ class M_admin {
         ");
         return $this->db->single();
     }
+
+    
 }

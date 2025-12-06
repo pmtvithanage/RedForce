@@ -353,3 +353,22 @@ ALTER TABLE sites
 ADD COLUMN IF NOT EXISTS image VARCHAR(255);
 
 --================================================2025-12-3 End(Pasan)========================================
+
+CREATE TABLE
+  IF NOT EXISTS jobApplication (
+    id SERIAL PRIMARY KEY,
+    role VARCHAR(100) NOT NULL,
+    description TEXT NOT NULL,
+    qualifications TEXT NOT NULL,
+    due_date DATE NOT NULL,
+    status ENUM ('open', 'closed') DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+ALTER TABLE jobApplication
+ADD COLUMN IF NOT EXISTS completed VARCHAR(255);
+
+ALTER TABLE jobApplication 
+ALTER COLUMN status SET DEFAULT 'closed';
+
+ALTER TABLE jobApplication MODIFY due_date DATE NULL;

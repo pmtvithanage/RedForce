@@ -71,6 +71,7 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function officers() {
+        
         $data = [
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers'
@@ -79,25 +80,127 @@ class Admin extends Controller {
     }
 
     public function porecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Premise Officers Recruitment'
-        ];
-        $this->view('admin/officers/v_po_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('po');
+        if($exists) {
+            $this->edit_job_application($exists,'po');
+        }
+        else{
+            $this->add_job_application('po');
+        }
     }
     public function mrrecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Mobile Riders Recruitment'
-        ];
-        $this->view('admin/officers/v_mr_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('mr');
+        if($exists) {
+            $this->edit_job_application($exists,'mr');
+        }
+        else{
+            $this->add_job_application('mr');
+        }
     }
     public function ctrecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Care Takers Recruitment'
-        ];
-        $this->view('admin/officers/v_ct_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('ct');
+        if($exists) {
+            $this->edit_job_application($exists,'ct');
+        }
+        else{
+            $this->add_job_application('ct');
+        }
+    }
+
+    public function add_job_application($role) {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $this->sanitizeInput($_POST['description'] ?? ''),
+                'qualifications' => $this->sanitizeInput($_POST['qualifications'] ?? ''),
+                'due_date' => $this->sanitizeInput($_POST['due_date'] ?? ''),
+                'completed' => ''
+
+            ];
+            $this->adminModel->insertJobApplication($data, $role);
+            // Validate form
+            if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
+                $data['completed'] = 'true';
+                
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            else{
+                $data['completed'] = 'false';
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+            }
+            
+        }
+        else {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => '',
+                'qualifications' => '',
+                'due_date' => '',
+                
+
+            ];
+            $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+        }
+
+        
+    }
+    public function edit_job_application($exists,$role) {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $this->sanitizeInput($_POST['description'] ?? ''),
+                'qualifications' => $this->sanitizeInput($_POST['qualifications'] ?? ''),
+                'due_date' => $this->sanitizeInput($_POST['due_date'] ?? ''),
+                'completed' => '',
+                'status' => $exists->status
+
+            ];
+
+            // Validate form
+            if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
+                $data['completed'] = 'true';
+                
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            else {
+                $data['completed'] = 'false';
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            $this->adminModel->editJobApplication($data, $role);
+        }
+        else {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $exists->description,
+                'qualifications' =>  $exists->qualifications,
+                'due_date' => $exists->due_date,
+                'completed' => $exists->completed,
+                'status' => $exists->status
+                
+
+            ];
+            $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+        }
+    }
+    public function changeStatus($role,$status) {
+        $this->adminModel->changeStatus($role,$status);
+        $data = $this->adminModel->getJobApplication($role);
+        $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+    }
+    public function delete_job_application($role) {
+        $this->adminModel->deleteJobApplication($role);
+        redirect('admin/'.$role.'recruitment');
     }
 
 // ======================================================================== //
