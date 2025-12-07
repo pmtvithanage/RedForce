@@ -168,9 +168,18 @@ class Admin extends Controller {
             if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
                 $data['completed'] = 'true';
                 
+                // Check if due date has passed
+                $dueDate = date('Y-m-d', strtotime($data['due_date']));
+                $today = date('Y-m-d');
+                if ($dueDate < $today) {
+                    // If due date has passed, close the status
+                    $this->adminModel->changeStatus($role, 'closed');
+                }
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
             else {
+                
+                $this->adminModel->changeStatus($role,'closed');
                 $data['completed'] = 'false';
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
@@ -255,6 +264,10 @@ class Admin extends Controller {
         }
     }
     public function deleterequest($clientId){
+        $client =  $this->adminModel->getClientById($clientId); // NOT WORKING DELETE IMAGE FILE 🥲
+        
+        $imagePath = PUB_ROOT . '/uploads/clientLogos/' . $client->client_profile;
+        deleteImage($imagePath);
         if($this->adminModel->deleteRequest($clientId)){
             flash('client_message', 'Client request deleted successfully');
             redirect('admin/rejected');
@@ -538,6 +551,8 @@ public function editSite($site_id){
     }
     
     $clientId = $site->client_id;
+    $imagePath = PUB_ROOT . '/uploads/siteImages/' . $site->image;
+    deleteImage($imagePath);
     
     if($this->adminModel->deleteSite($siteId)){
         flash('site_message', 'Site deleted successfully', 'alert-success');

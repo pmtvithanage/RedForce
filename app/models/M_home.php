@@ -5,7 +5,22 @@ class M_home {
     public function __construct() {
         $this->db = new Database();
     }
+// Save job application
+    public function saveJobApplication($data, $role) {
+        $this->db->query("INSERT INTO submittedApplications (role, name, email, phone_number, photo, cv, submitted_at) 
+                        VALUES (:role, :name, :email, :phone, :photo, :cv, NOW())");
+        $this->db->bind(':role', $role);
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':email', $data['email']);
+        $this->db->bind(':phone', $data['phone']);
+        $this->db->bind(':photo', $data['image_name']);
+        $this->db->bind(':cv', $data['cv_name']);
 
+        return $this->db->execute();
+    }
+
+
+    // Save client requests from service page
     public function getPendingRequest() {
     $this->db->query("SELECT * FROM client_requests WHERE status = 'pending' ORDER BY created_at DESC");
     return $this->db->resultSet();

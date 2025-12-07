@@ -29,10 +29,10 @@
   <section class="card-section">
     <div class="section-head">
       <h2>Job Description</h2>
-      <div class="due-badge" id="dueBadge" title="Application deadline">Due 2025 July 08</div>
+      <div class="due-badge" id="dueBadge" title="Application deadline">Due <?php echo $data['due_date'];?></div>
     </div>
     <div class="card large-card" aria-label="Job description">
-      <p class="placeholder">Description</p>
+      <p style="font-family: 'Courier New', monospace; font-size:18px;"class="placeholder"><?php echo $data['description'];?></p>
     </div>
   </section>
 
@@ -41,7 +41,7 @@
       <h2>Qualifications</h2>
     </div>
     <div class="card large-card" aria-label="Qualifications">
-      <p class="placeholder">Qualifications</p>
+      <p style="font-family: 'Courier New', monospace; font-size:18px;" class="placeholder"><?php echo nl2br(htmlspecialchars($data['qualifications'])); ?></p>
     </div>
   </section>
 

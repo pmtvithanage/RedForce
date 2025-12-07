@@ -1,9 +1,11 @@
 <?php
 class Home extends Controller {
     private $homeModel;
+    private $adminModel;
 
     public function __construct() {
         $this->homeModel = $this->model('M_home');
+        $this->adminModel = $this->model('M_admin');
     }
 
     // Default action
@@ -106,15 +108,125 @@ class Home extends Controller {
 
     // job applications
     public function premise_officer() {
-        $this->view('home/v_premise_officer_job');
+        $this->submit_application('po');
     }
     public function care_taker() {
-        $this->view('home/v_care_taker_job');
+        $this->submit_application('ct'); 
     }
     public function mobile_rider() {
-        $this->view('home/v_mobile_rider_job');
+        $this->submit_application('mr');
     }
 
+    public function submit_application($role) {
+        $exist = $this->adminModel->getJobApplication($role);
+        
+        // Check if due date has passed
+        if ($exist && !empty($exist->due_date)) { 
+            $dueDate = date('Y-m-d', strtotime($exist->due_date));
+                $today = date('Y-m-d');
+            if ($dueDate < $today) {
+                // If due date has passed, close the status
+                $this->adminModel->changeStatus($role, 'closed');
+            }
+        }
+        
+        if(!$exist || $exist->status != 'open') {
+            $this->view('home/v_not_opened');
+            return;
+        }
+        else{
+            if($_SERVER['REQUEST_METHOD']=='POST'){
+                // Process the application form submission
+                $data = [
+                    'description' => $exist->description,
+                    'qualifications' => $exist->qualifications,
+                    'due_date' => $exist->due_date,
+                    'role' => $role,
+
+                    'name' => $this->sanitizeInput($_POST['name'] ?? ''),
+                    'email' => $this->sanitizeInput($_POST['email'] ?? ''),
+                    'phone' => $this->sanitizeInput($_POST['phone'] ?? ''),
+                    'image' => $_FILES['image'],
+                    'image_name' => time(). '_' . $_FILES['image']['name'],
+                    'cv' => $_FILES['cv'],
+                    'cv_name' => time(). '_' . $_FILES['cv']['name'],
+
+                    'image_err' => '',
+                    'name_err' => '',
+                    'email_err' => '',
+                    'phone_err' => '',
+                    'cv_err' => '',
+                    
+                ];
+
+                // Validate inputs
+                if(empty($data['name'])){
+                    $data['name_err'] = 'Please enter your name';
+                }
+                if(empty($data['email'])){
+                    $data['email_err'] = 'Please enter email';
+                } elseif(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
+                    $data['email_err'] = 'Please enter a valid email address';
+                }
+                if(empty($data['phone'])){
+                    $data['phone_err'] = 'Please enter phone number';
+                }elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone'])){
+                    $data['phone_err'] = 'Please enter a valid phone number';
+                }
+                if(empty($data['image']['name'])){
+                    $data['image_err'] = 'Please upload a photo';
+                } 
+                if(empty($data['cv']['name'])){
+                    $data['cv_err'] = 'Please attach your CV';
+                }
+
+                // Make sure no errors
+                if(empty($data['name_err']) && empty($data['image_err']) && empty($data['cv_err']) && empty($data['email_err']) && empty($data['phone_err'])){
+                    uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/applicantPhotos/');
+                    uploadImage($data['cv']['tmp_name'], $data['cv_name'], '/uploads/applicantCVs/');
+                    // Validated
+                    if($this->homeModel->saveJobApplication($data, $role)){
+                        flash('application_message', 'Application submitted successfully.');
+                        $this->view('home/v_success_application', $data);
+                        return;
+                    } else {
+                        die('Something went wrong. Please try again.');
+                    }
+                }
+                else{
+                    // Load the form with errors
+                    $this->view('home/v_job_application',$data);
+                }
+            }
+            else{
+                $data = [
+                    'description' => $exist->description,
+                    'qualifications' => $exist->qualifications,
+                    'due_date' => $exist->due_date,
+                    'role' => $role,
+
+                    'name' => '',
+                    'email' => '',
+                    'phone' => '',
+                    'image' => '',
+                    'image_name' => '',
+                    'cv' => '',
+                    'cv_name' => '',
+
+                    'image_err' => '',
+                    'name_err' => '',
+                    'email_err' => '',
+                    'phone_err' => '',
+                    'cv_err' => '',
+                    
+
+                ];
+
+                $this->view('home/v_job_application',$data);
+            }
+        }   
+        
+    }
 
     /**
      * Sanitize input data

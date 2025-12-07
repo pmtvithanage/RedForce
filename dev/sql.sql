@@ -372,3 +372,17 @@ ALTER TABLE jobApplication
 ALTER COLUMN status SET DEFAULT 'closed';
 
 ALTER TABLE jobApplication MODIFY due_date DATE NULL;
+
+CREATE TABLE
+  IF NOT EXISTS submittedApplications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone_number VARCHAR(20),
+    cv VARCHAR(255),
+    photo VARCHAR(255),
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  ALTER TABLE submittedApplications
+ADD COLUMN IF NOT EXISTS role VARCHAR(100);
