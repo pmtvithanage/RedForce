@@ -386,3 +386,12 @@ CREATE TABLE
 
   ALTER TABLE submittedApplications
 ADD COLUMN IF NOT EXISTS role VARCHAR(100);
+
+ALTER TABLE submittedApplications
+ADD COLUMN IF NOT EXISTS status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending';
+
+  ALTER TABLE submittedApplications
+ADD COLUMN IF NOT EXISTS approved_by INT NULL AFTER status;
+
+  ALTER TABLE submittedApplications
+ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP NULL;

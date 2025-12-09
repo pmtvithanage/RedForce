@@ -51,7 +51,7 @@
         </div>
 
         <div class="field">
-          <div class="field-label"><strong>Company Name: </strong> <?php echo $data['name']; ?></div>
+          <div class="field-label"><strong>Name: </strong> <?php echo $data['name']; ?></div>
         </div>
 
         <div class="field">

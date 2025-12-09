@@ -19,6 +19,41 @@ class M_home {
         return $this->db->execute();
     }
 
+    // Get job application details
+    public function getPendingOfficerApplications($role) {
+        $this->db->query("SELECT * FROM submittedApplications WHERE role = :role AND status = 'pending' ORDER BY submitted_at DESC");
+        $this->db->bind(':role', $role);
+        return $this->db->resultSet();
+    }
+    // Get job application details
+    public function getAllPendingOfficerApplications() {
+        $this->db->query("SELECT * FROM submittedApplications WHERE status = 'pending' ORDER BY submitted_at DESC");
+        return $this->db->resultSet();
+    }
+    // Get job application details
+    public function getApprovedOfficerApplications($role) {
+        $this->db->query("SELECT * FROM submittedApplications WHERE role = :role AND status = 'approved' ORDER BY submitted_at DESC");
+        $this->db->bind(':role', $role);
+        return $this->db->resultSet();
+    }
+    // Get job application details
+    public function getAllApprovedOfficerApplications() {
+        $this->db->query("SELECT * FROM submittedApplications WHERE status = 'approved' ORDER BY submitted_at DESC");
+        return $this->db->resultSet();
+    }
+
+    // Get job application details
+    public function getRejectedOfficerApplications($role) {
+        $this->db->query("SELECT * FROM submittedApplications WHERE role = :role AND status = 'rejected' ORDER BY submitted_at DESC");
+        $this->db->bind(':role', $role);
+        return $this->db->resultSet();
+    }
+    // Get job application details
+    public function getAllRejectedOfficerApplications() {
+        $this->db->query("SELECT * FROM submittedApplications WHERE status = 'rejected' ORDER BY submitted_at DESC");
+        return $this->db->resultSet();
+    }
+
 
     // Save client requests from service page
     public function getPendingRequest() {

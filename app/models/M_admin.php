@@ -61,6 +61,99 @@ public function changeStatus($role, $status) {
     return $this->db->execute();
 }
 
+// Accept officer application
+    public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
+        // 1. Get the client request
+        $this->db->query("SELECT * FROM submittedApplications WHERE id = :id");
+        $this->db->bind(':id', $id);
+        $request = $this->db->single();
+        
+        if (!$request) {
+            return false;
+        }
+        
+        // 2. Create user account
+
+        $this->db->query("SELECT userID FROM Users WHERE email = :email");
+        $this->db->bind(':email', $request->email);
+        $existingUser = $this->db->single();
+
+        if ($existingUser) {
+            // Email already exists, return error or handle appropriately
+            return [
+                'success' => false,
+                'message' => 'Email already exists in the system'
+            ];
+        }
+        // Generate CLIENT001, CLIENT002, etc.
+        // Get last CLIENT number
+        if($request->role == 'po'){
+            $rolePrefix = 'PO';
+            $role_name = 'Premise Officer';
+        } elseif($request->role == 'ct'){
+            $rolePrefix = 'CT';
+            $role_name = 'Care Taker';
+        } elseif($request->role == 'mr'){
+            $rolePrefix = 'MR';
+            $role_name = 'Mobile Rider';
+        } else{
+            $rolePrefix = 'OF';
+        }
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE :prefix ORDER BY userID DESC LIMIT 1");
+        $this->db->bind(':prefix', $rolePrefix . '%');
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 2); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '1234'; // Simple temp password
+        
+        // Insert into Users table
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                        VALUES (:userID, :name, :email, :phone, :profile_image,:password, :role)");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $request->name);
+        $this->db->bind(':email', $request->email);
+        $this->db->bind(':phone', $request->phone_number);
+        $this->db->bind(':profile_image', $request->photo);
+        $this->db->bind(':role', $role_name);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // 4. Update client_requests table
+        $this->db->query("UPDATE submittedApplications 
+                        SET status = 'approved', 
+                            approved_by = :approved_by, 
+                            approved_at = NOW()
+                        WHERE id = :id");
+        $this->db->bind(':approved_by', $approved_by_user_id);
+        $this->db->bind(':id', $id);
+        
+        return $this->db->execute();
+    }
+
+    // Reject Client Request
+    public function rejectOfficerApplication($id) {
+        $this->db->query("UPDATE submittedApplications SET status = 'rejected' WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+
+    // Delete officer application
+    public function deleteOfficerApplication($id) {
+        $this->db->query("DELETE FROM submittedApplications WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
 // ======================================================================== //
 // =======================      Admin Clients       ====================== //
 // ======================================================================== //
@@ -377,7 +470,6 @@ public function changeStatus($role, $status) {
         $this->db->execute();
         return $this->db->rowCount() > 0;
     }
-
     // Get all admins
     public function getAdmins() {
         $this->db->query("

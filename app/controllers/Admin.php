@@ -78,6 +78,22 @@ class Admin extends Controller {
     ];
         $this->view('admin/officers/v_officers', $data);
     }
+    public function mobileriders() {
+        
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Manage Officers'
+    ];
+        $this->view('admin/officers/v_mobileriders', $data);
+    }
+    public function caretakers() {
+        
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Manage Officers'
+    ];
+        $this->view('admin/officers/v_caretakers', $data);
+    }
 
     public function porecruitment() {
         $exists = $this->adminModel->getJobApplication('po');
@@ -212,6 +228,77 @@ class Admin extends Controller {
         redirect('admin/'.$role.'recruitment');
     }
 
+
+    public function pending_officer_applications($type) {
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getPendingOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllPendingOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Pending Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_pending_officer_applications', $data);
+    }
+    public function accepted_officer_applications($type) {
+       
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getApprovedOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllApprovedOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Approved Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_accepted_officer_applications', $data);
+    }
+    public function rejected_officer_applications($type) {
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getRejectedOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllRejectedOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Rejected Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_rejected_officer_applications', $data);
+    }
+    public function accept_officer_applications($id,$role) {
+        // Get the logged-in admin ID (you need to adjust this based on your auth system)
+        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+        
+        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+            flash('officer_message', 'Officer application accepted successfully');
+            redirect('admin/pending_officer_applications/all');
+        } else {
+            flash('officer_message', 'Failed to accept officer application', 'alert-danger');
+            redirect('admin/pending_officer_applications/all');
+        }
+    }
+    public function reject_officer_applications($id) {
+        if ($this->adminModel->rejectOfficerApplication($id)) {
+            flash('officer_message', 'Officer application rejected successfully');
+            redirect('admin/pending_officer_applications/all');
+        } else {
+            flash('officer_message', 'Failed to reject officer application', 'alert-danger');
+            redirect('admin/pending_officer_applications/all');
+        }
+    }
+    public function deleteOfficerApplication($id){
+        if ($this->adminModel->deleteOfficerApplication($id)) {
+            flash('officer_message', 'Officer application rejected successfully');
+            redirect('admin/rejected_officer_applications/all');
+        } else {
+            flash('officer_message', 'Failed to reject officer application', 'alert-danger');
+            redirect('admin/rejected_officer_applications/all');
+        }
+    }
 // ======================================================================== //
 // =======================      Admin Clients       ====================== //
 // ======================================================================== //
