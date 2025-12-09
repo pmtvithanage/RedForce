@@ -274,5 +274,243 @@ class Caretaker extends Controller {
         $this->view('caretaker/v_profile', $data);
     }
 
+    // ==================== EQUIPMENT REQUESTS METHODS ====================
+
+    // Equipment Requests - Display page with all equipment requests
+    public function equipmentRequests() {
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$caretaker_id) {
+            flash('equipment_error', 'User not authenticated');
+            redirect('caretaker/dashboard');
+            return;
+        }
+        
+        // Fetch all equipment requests
+        $equipmentRequests = $this->caretakerModel->getEquipmentRequests($caretaker_id);
+        
+        // Get statistics
+        $stats = $this->caretakerModel->getEquipmentStats($caretaker_id);
+        
+        $data = [
+            'title' => 'Equipment Requests',
+            'pageTitle' => 'Equipment Requests',
+            'requests' => $equipmentRequests,
+            'stats' => $stats
+        ];
+        
+        $this->view('caretaker/v_equipment_requests', $data);
+    }
+
+    // Show add equipment request form page
+    public function addEquipmentPage() {
+        $data = [
+            'title' => 'Request Equipment',
+            'pageTitle' => 'Request Equipment'
+        ];
+        $this->view('caretaker/v_add_equipment', $data);
+    }
+
+    // CREATE - Add new equipment request
+    public function addEquipmentRequest() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$caretaker_id) {
+                flash('equipment_error', 'User not authenticated', 'alert alert-danger');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Validate required fields
+            if (empty($_POST['equipment_name']) || 
+                empty($_POST['quantity']) || 
+                empty($_POST['estimated_cost']) ||
+                empty($_POST['reason']) ||
+                empty($_POST['priority'])) {
+                
+                flash('equipment_error', 'Please fill in all required fields', 'alert alert-danger');
+                redirect('caretaker/addEquipmentPage');
+                return;
+            }
+            
+            // Validate quantity
+            if (!is_numeric($_POST['quantity']) || $_POST['quantity'] < 1) {
+                flash('equipment_error', 'Quantity must be at least 1', 'alert alert-danger');
+                redirect('caretaker/addEquipmentPage');
+                return;
+            }
+            
+            // Validate cost
+            if (!is_numeric($_POST['estimated_cost']) || $_POST['estimated_cost'] < 0) {
+                flash('equipment_error', 'Estimated cost must be a valid positive number', 'alert alert-danger');
+                redirect('caretaker/addEquipmentPage');
+                return;
+            }
+            
+            // Validate reason length
+            if (strlen(trim($_POST['reason'])) < 10) {
+                flash('equipment_error', 'Please provide a detailed reason (minimum 10 characters)', 'alert alert-danger');
+                redirect('caretaker/addEquipmentPage');
+                return;
+            }
+            
+            // Prepare data
+            $data = [
+                'caretaker_id' => $caretaker_id,
+                'equipment_name' => trim($_POST['equipment_name']),
+                'quantity' => (int)$_POST['quantity'],
+                'estimated_cost' => (float)$_POST['estimated_cost'],
+                'reason' => trim($_POST['reason']),
+                'priority' => $_POST['priority'],
+                'requested_date' => date('Y-m-d')
+            ];
+            
+            // Add equipment request
+            if ($this->caretakerModel->addEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request submitted successfully. You will be notified once reviewed.', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to submit request. Please try again.', 'alert alert-danger');
+            }
+            
+            redirect('caretaker/equipmentRequests');
+        } else {
+            redirect('caretaker/equipmentRequests');
+        }
+    }
+
+    // Show edit equipment request form page
+    public function editEquipmentPage($id) {
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$caretaker_id) {
+            flash('equipment_error', 'User not authenticated', 'alert alert-danger');
+            redirect('caretaker/equipmentRequests');
+            return;
+        }
+        
+        // Get the request from database
+        $request = $this->caretakerModel->getEquipmentRequestById($id);
+        
+        // Verify ownership
+        if (!$request || $request->caretaker_id != $caretaker_id) {
+            flash('equipment_error', 'Request not found or access denied', 'alert alert-danger');
+            redirect('caretaker/equipmentRequests');
+            return;
+        }
+        
+        $data = [
+            'title' => 'Edit Equipment Request',
+            'pageTitle' => 'Edit Equipment Request',
+            'request' => $request
+        ];
+        
+        $this->view('caretaker/v_edit_equipment', $data);
+    }
+
+    // UPDATE - Update equipment request
+    public function updateEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$caretaker_id) {
+                flash('equipment_error', 'User not authenticated', 'alert alert-danger');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Get existing request
+            $request = $this->caretakerModel->getEquipmentRequestById($id);
+            
+            // Verify ownership and status
+            if (!$request || $request->caretaker_id != $caretaker_id) {
+                flash('equipment_error', 'Cannot edit this request', 'alert alert-danger');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Only allow editing if status is Pending
+            if ($request->status != 'Pending') {
+                flash('equipment_error', 'Cannot edit ' . $request->status . ' requests', 'alert alert-warning');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Validate
+            if (empty($_POST['equipment_name']) || empty($_POST['quantity']) || 
+                empty($_POST['estimated_cost']) || empty($_POST['reason'])) {
+                flash('equipment_error', 'Please fill all required fields', 'alert alert-danger');
+                redirect('caretaker/editEquipmentPage/' . $id);
+                return;
+            }
+            
+            // Prepare update data
+            $data = [
+                'id' => $id,
+                'equipment_name' => trim($_POST['equipment_name']),
+                'quantity' => (int)$_POST['quantity'],
+                'estimated_cost' => (float)$_POST['estimated_cost'],
+                'reason' => trim($_POST['reason']),
+                'priority' => $_POST['priority']
+            ];
+            
+            // Update in database
+            if ($this->caretakerModel->updateEquipmentRequest($data)) {
+                flash('equipment_message', 'Request updated successfully', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to update request', 'alert alert-danger');
+            }
+            
+            redirect('caretaker/equipmentRequests');
+        } else {
+            redirect('caretaker/equipmentRequests');
+        }
+    }
+
+    // DELETE - Delete equipment request
+    public function deleteEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$caretaker_id) {
+                flash('equipment_error', 'User not authenticated', 'alert alert-danger');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Get request
+            $request = $this->caretakerModel->getEquipmentRequestById($id);
+            
+            // Verify ownership and status
+            if (!$request || $request->caretaker_id != $caretaker_id) {
+                flash('equipment_error', 'Cannot delete this request', 'alert alert-danger');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Only allow deleting Pending requests
+            if ($request->status != 'Pending') {
+                flash('equipment_error', 'Cannot delete ' . $request->status . ' requests', 'alert alert-warning');
+                redirect('caretaker/equipmentRequests');
+                return;
+            }
+            
+            // Delete from database
+            if ($this->caretakerModel->deleteEquipmentRequest($id)) {
+                flash('equipment_message', 'Request deleted successfully', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to delete request', 'alert alert-danger');
+            }
+            
+            redirect('caretaker/equipmentRequests');
+        } else {
+            redirect('caretaker/equipmentRequests');
+        }
+    }
+
 
 }
