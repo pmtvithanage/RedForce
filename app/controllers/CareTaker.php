@@ -274,5 +274,225 @@ class Caretaker extends Controller {
         $this->view('caretaker/v_profile', $data);
     }
 
+    // ==================== NOTES METHODS ====================
+
+    // Display notes page
+    public function notes() {
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        
+        // Get filters from GET request
+        $filters = [
+            'category' => $_GET['category'] ?? 'All',
+            'priority' => $_GET['priority'] ?? 'All',
+            'search' => $_GET['search'] ?? ''
+        ];
+        
+        // Fetch notes and statistics
+        $notes = $this->caretakerModel->getNotes($caretaker_id, $filters);
+        $stats = $this->caretakerModel->getNotesStats($caretaker_id);
+        
+        $data = [
+            'title' => 'My Notes',
+            'pageTitle' => 'My Notes',
+            'notes' => $notes,
+            'stats' => $stats,
+            'filters' => $filters
+        ];
+        
+        $this->view('caretaker/v_notes', $data);
+    }
+
+    // Add note page
+    public function addNotePage() {
+        $data = [
+            'title' => 'Add Note',
+            'pageTitle' => 'Add New Note'
+        ];
+        $this->view('caretaker/v_add_note', $data);
+    }
+
+    // Process add note
+    public function addNote() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            // Validate inputs
+            $errors = [];
+            
+            if (empty(trim($_POST['title']))) {
+                $errors[] = 'Please enter a title';
+            }
+            
+            if (empty(trim($_POST['note_content']))) {
+                $errors[] = 'Please enter note content';
+            }
+            
+            if (strlen(trim($_POST['title'])) > 255) {
+                $errors[] = 'Title must be less than 255 characters';
+            }
+            
+            if (strlen(trim($_POST['note_content'])) < 10) {
+                $errors[] = 'Note content must be at least 10 characters';
+            }
+            
+            // If no errors, add note
+            if (empty($errors)) {
+                $data = [
+                    'caretaker_id' => $caretaker_id,
+                    'title' => trim($_POST['title']),
+                    'note_content' => trim($_POST['note_content']),
+                    'category' => $_POST['category'] ?? 'General',
+                    'priority' => $_POST['priority'] ?? 'Medium',
+                    'reminder_date' => !empty($_POST['reminder_date']) ? $_POST['reminder_date'] : null
+                ];
+                
+                if ($this->caretakerModel->addNote($data)) {
+                    flash('note_message', 'Note added successfully', 'alert-success');
+                    redirect('caretaker/notes');
+                } else {
+                    flash('note_error', 'Failed to add note', 'alert-danger');
+                    redirect('caretaker/addNotePage');
+                }
+            } else {
+                flash('note_error', implode('<br>', $errors), 'alert-danger');
+                redirect('caretaker/addNotePage');
+            }
+        } else {
+            redirect('caretaker/notes');
+        }
+    }
+
+    // Edit note page
+    public function editNotePage($id) {
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        $note = $this->caretakerModel->getNoteById($id);
+        
+        // Verify ownership
+        if (!$note || $note->caretaker_id != $caretaker_id) {
+            flash('note_error', 'Note not found or access denied', 'alert-danger');
+            redirect('caretaker/notes');
+        }
+        
+        $data = [
+            'title' => 'Edit Note',
+            'pageTitle' => 'Edit Note',
+            'note' => $note
+        ];
+        
+        $this->view('caretaker/v_edit_note', $data);
+    }
+
+    // Process update note
+    public function updateNote($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            // Verify ownership
+            $note = $this->caretakerModel->getNoteById($id);
+            if (!$note || $note->caretaker_id != $caretaker_id) {
+                flash('note_error', 'Note not found or access denied', 'alert-danger');
+                redirect('caretaker/notes');
+            }
+            
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            // Validate inputs
+            $errors = [];
+            
+            if (empty(trim($_POST['title']))) {
+                $errors[] = 'Please enter a title';
+            }
+            
+            if (empty(trim($_POST['note_content']))) {
+                $errors[] = 'Please enter note content';
+            }
+            
+            if (strlen(trim($_POST['title'])) > 255) {
+                $errors[] = 'Title must be less than 255 characters';
+            }
+            
+            if (strlen(trim($_POST['note_content'])) < 10) {
+                $errors[] = 'Note content must be at least 10 characters';
+            }
+            
+            // If no errors, update note
+            if (empty($errors)) {
+                $data = [
+                    'id' => $id,
+                    'caretaker_id' => $caretaker_id,
+                    'title' => trim($_POST['title']),
+                    'note_content' => trim($_POST['note_content']),
+                    'category' => $_POST['category'] ?? 'General',
+                    'priority' => $_POST['priority'] ?? 'Medium',
+                    'reminder_date' => !empty($_POST['reminder_date']) ? $_POST['reminder_date'] : null
+                ];
+                
+                if ($this->caretakerModel->updateNote($data)) {
+                    flash('note_message', 'Note updated successfully', 'alert-success');
+                    redirect('caretaker/notes');
+                } else {
+                    flash('note_error', 'Failed to update note', 'alert-danger');
+                    redirect('caretaker/editNotePage/' . $id);
+                }
+            } else {
+                flash('note_error', implode('<br>', $errors), 'alert-danger');
+                redirect('caretaker/editNotePage/' . $id);
+            }
+        } else {
+            redirect('caretaker/notes');
+        }
+    }
+
+    // Delete note
+    public function deleteNote($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            // Verify ownership
+            $note = $this->caretakerModel->getNoteById($id);
+            if (!$note || $note->caretaker_id != $caretaker_id) {
+                flash('note_error', 'Note not found or access denied', 'alert-danger');
+                redirect('caretaker/notes');
+            }
+            
+            if ($this->caretakerModel->deleteNote($id, $caretaker_id)) {
+                flash('note_message', 'Note deleted successfully', 'alert-success');
+            } else {
+                flash('note_error', 'Failed to delete note', 'alert-danger');
+            }
+            
+            redirect('caretaker/notes');
+        } else {
+            redirect('caretaker/notes');
+        }
+    }
+
+    // Toggle pin
+    public function togglePin($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $caretaker_id = $_SESSION['user_id'] ?? null;
+            
+            // Verify ownership
+            $note = $this->caretakerModel->getNoteById($id);
+            if (!$note || $note->caretaker_id != $caretaker_id) {
+                flash('note_error', 'Note not found or access denied', 'alert-danger');
+                redirect('caretaker/notes');
+            }
+            
+            if ($this->caretakerModel->togglePin($id, $caretaker_id)) {
+                flash('note_message', $note->is_pinned ? 'Note unpinned' : 'Note pinned to top', 'alert-success');
+            } else {
+                flash('note_error', 'Failed to update pin status', 'alert-danger');
+            }
+            
+            redirect('caretaker/notes');
+        } else {
+            redirect('caretaker/notes');
+        }
+    }
 
 }
