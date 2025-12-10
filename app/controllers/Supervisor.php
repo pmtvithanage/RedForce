@@ -578,5 +578,128 @@ class Supervisor extends Controller {
         }
     }
 
+    // ==================== EQUIPMENT REQUESTS METHODS ====================
+
+    // View all equipment requests
+    public function equipmentRequests() {
+        // Get filters
+        $filters = [];
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $filters['status'] = $_GET['status'];
+        }
+        if (isset($_GET['priority']) && !empty($_GET['priority'])) {
+            $filters['priority'] = $_GET['priority'];
+        }
+        if (isset($_GET['caretaker_id']) && !empty($_GET['caretaker_id'])) {
+            $filters['caretaker_id'] = $_GET['caretaker_id'];
+        }
+        if (isset($_GET['date_from']) && !empty($_GET['date_from'])) {
+            $filters['date_from'] = $_GET['date_from'];
+        }
+        if (isset($_GET['date_to']) && !empty($_GET['date_to'])) {
+            $filters['date_to'] = $_GET['date_to'];
+        }
+
+        // Get data
+        $requests = $this->supervisorModel->getAllEquipmentRequests($filters);
+        $stats = $this->supervisorModel->getEquipmentRequestStats();
+        $caretakers = $this->supervisorModel->getAllCaretakers();
+
+        $data = [
+            'title' => 'Equipment Requests',
+            'pageTitle' => 'Equipment Requests Management',
+            'requests' => $requests,
+            'stats' => $stats,
+            'caretakers' => $caretakers,
+            'filters' => $filters
+        ];
+
+        $this->view('supervisor/v_equipment_requests', $data);
+    }
+
+    // View single equipment request details for review
+    public function reviewEquipmentRequest($id) {
+        $request = $this->supervisorModel->getEquipmentRequestDetails($id);
+
+        if (!$request) {
+            flash('equipment_error', 'Request not found', 'alert alert-danger');
+            redirect('supervisor/equipmentRequests');
+            return;
+        }
+
+        $data = [
+            'title' => 'Review Equipment Request',
+            'pageTitle' => 'Review Equipment Request',
+            'request' => $request
+        ];
+
+        $this->view('supervisor/v_review_equipment', $data);
+    }
+
+    // Approve equipment request
+    public function approveEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Validate
+            if (empty($_POST['actual_cost']) || !is_numeric($_POST['actual_cost']) || $_POST['actual_cost'] < 0) {
+                flash('equipment_error', 'Please enter a valid actual cost', 'alert alert-danger');
+                redirect('supervisor/reviewEquipmentRequest/' . $id);
+                return;
+            }
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'actual_cost' => floatval($_POST['actual_cost']),
+                'supervisor_notes' => trim($_POST['supervisor_notes'] ?? ''),
+                'supervisor_id' => $_SESSION['user_id']
+            ];
+
+            // Approve
+            if ($this->supervisorModel->approveEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request approved successfully', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to approve request', 'alert alert-danger');
+            }
+
+            redirect('supervisor/equipmentRequests');
+        } else {
+            redirect('supervisor/equipmentRequests');
+        }
+    }
+
+    // Reject equipment request
+    public function rejectEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Validate
+            if (empty($_POST['supervisor_notes'])) {
+                flash('equipment_error', 'Please provide a reason for rejection', 'alert alert-danger');
+                redirect('supervisor/reviewEquipmentRequest/' . $id);
+                return;
+            }
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'supervisor_notes' => trim($_POST['supervisor_notes']),
+                'supervisor_id' => $_SESSION['user_id']
+            ];
+
+            // Reject
+            if ($this->supervisorModel->rejectEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request rejected', 'alert alert-info');
+            } else {
+                flash('equipment_error', 'Failed to reject request', 'alert alert-danger');
+            }
+
+            redirect('supervisor/equipmentRequests');
+        } else {
+            redirect('supervisor/equipmentRequests');
+        }
+    }
+
 
 }
