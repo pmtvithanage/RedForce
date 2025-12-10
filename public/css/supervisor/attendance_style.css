@@ -21,6 +21,22 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.live-datetime {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+    padding: 8px 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
 .page-header h1 {
     font-size: 1.5rem;
     color: #333;
