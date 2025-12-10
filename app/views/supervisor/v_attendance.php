@@ -9,9 +9,11 @@
     <main class="main-content">
         <div class="attendance-container">
             <div class="page-header">
-                <h1><span class="material-symbols-outlined">assignment</span> <?php echo $data['pageTitle']; ?></h1>
+                <div class="page-header-left">
+                    <div class="live-datetime" id="liveDateTime"></div>
+                </div>
                 <a href="<?php echo URL_ROOT; ?>/supervisor/markAttendancePage" class="btn-add">
-                    <span class="material-symbols-outlined">add</span> Mark Attendance
+                    Mark Attendance
                 </a>
             </div>
 
@@ -173,5 +175,32 @@
     </main>
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+
+    <script>
+        // Live Date and Time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            document.getElementById('liveDateTime').textContent = now.toLocaleDateString('en-US', options);
+        }
+        updateDateTime();
+        setInterval(updateDateTime, 1000);
+
+        // Auto-hide flash messages
+        setTimeout(() => {
+            const flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(msg => {
+                msg.style.display = 'none';
+            });
+        }, 5000);
+    </script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
