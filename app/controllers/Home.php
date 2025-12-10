@@ -74,7 +74,7 @@ class Home extends Controller {
                 // Make sure no errors
                 if(empty($data['image_err']) && empty($data['company_name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) && empty($data['contact_person_name_err'])){
                     if($this->homeModel->saveServiceRequest($data)){
-                        flash('service_message', 'Service request submitted successfully.');
+                        flash('msg', 'Service request sent successfully', 'alert-success');
                         $this->view('home/v_success', $data);
                         return;
                     } else {
@@ -202,7 +202,7 @@ class Home extends Controller {
                         }
                         
                         if($this->homeModel->saveJobApplication($data, $role)){
-                            flash('application_message', 'Application submitted successfully.');
+                            flash('msg', 'Application submitted successfully', 'alert-success');
                             $this->view('home/v_success_application', $data);
                             return;
                         } else {

@@ -1,6 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <!-- External Styles -->
+ <link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap">
 <link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/home/getservice_style.css">
@@ -83,4 +84,27 @@
 </main>
 
 <script src="<?php echo URL_ROOT; ?>/js/home/getservice.js"></script>
+<?php flash('msg')?>
+
+<script>
+  // Wait for DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('msg-flash');
+    
+    if (flashMessage) {
+      // Auto-remove after 5 seconds (5000ms)
+      setTimeout(function() {
+        // Add fade-out animation
+        flashMessage.classList.add('fade-out');
+        
+        // Remove element after animation completes
+        setTimeout(function() {
+          if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+          }
+        }, 300); // Match animation duration (300ms from CSS)
+      }, 5000); // Display for 5 seconds
+    }
+  });
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

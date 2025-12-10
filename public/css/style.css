@@ -3,7 +3,7 @@
 
 /* Import other component CSS */
 @import url("components/buttons.css");
-
+@import url("components/flash_msg.css");
 /* Define global colors and variables */
 :root {
   --primary-color: #a40000;

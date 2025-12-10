@@ -136,6 +136,7 @@ class Admin extends Controller {
 
             ];
             $this->adminModel->insertJobApplication($data, $role);
+            flash('msg', 'Job Application Added Successfully', 'alert-success');
             // Validate form
             if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
                 $data['completed'] = 'true';
@@ -200,6 +201,7 @@ class Admin extends Controller {
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
             $this->adminModel->editJobApplication($data, $role);
+            flash('msg', 'Job Application Updated Successfully', 'alert-success');
         }
         else {
             $data = [
@@ -221,10 +223,12 @@ class Admin extends Controller {
     public function changeStatus($role,$status) {
         $this->adminModel->changeStatus($role,$status);
         $data = $this->adminModel->getJobApplication($role);
+        flash('msg', 'Job Application Status Updated Successfully', 'alert-success');
         $this->view('admin/officers/v_'.$role.'_recruitment', $data);
     }
     public function delete_job_application($role) {
         $this->adminModel->deleteJobApplication($role);
+        flash('msg', 'Job Application Deleted Successfully', 'alert-success');
         redirect('admin/'.$role.'recruitment');
     }
 
@@ -274,16 +278,16 @@ class Admin extends Controller {
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
         if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
-            flash('officer_message', 'Officer application accepted successfully');
+            flash('msg', 'Officer application accepted successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
-            flash('officer_message', 'Failed to accept officer application', 'alert-danger');
+            flash('msg', 'Failed to accept officer application', 'alert-danger');
             redirect('admin/pending_officer_applications/all');
         }
     }
     public function reject_officer_applications($id) {
         if ($this->adminModel->rejectOfficerApplication($id)) {
-            flash('officer_message', 'Officer application rejected successfully');
+            flash('msg', 'Officer application rejected successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
             flash('officer_message', 'Failed to reject officer application', 'alert-danger');
@@ -292,7 +296,7 @@ class Admin extends Controller {
     }
     public function deleteOfficerApplication($id){
         if ($this->adminModel->deleteOfficerApplication($id)) {
-            flash('officer_message', 'Officer application rejected successfully');
+            flash('msg', 'Officer application deleted successfully', 'alert-success');
             redirect('admin/rejected_officer_applications/all');
         } else {
             flash('officer_message', 'Failed to reject officer application', 'alert-danger');
@@ -334,7 +338,7 @@ class Admin extends Controller {
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
     if ($this->adminModel->acceptClient($clientId, $adminId)) {
-        flash('client_message', 'Client accepted successfully');
+        flash('msg', 'Client accepted successfully', 'alert-success');
         redirect('admin/addclients');
     } else {
         flash('client_message', 'Failed to accept client', 'alert-danger');
@@ -343,7 +347,7 @@ class Admin extends Controller {
 }
     public function rejectClient($clientId){
         if($this->adminModel->rejectClient($clientId)){
-            flash('client_message', 'Client rejected successfully');
+            flash('msg', 'Client rejected successfully', 'alert-success');
             redirect('admin/addclients');
         } else {
             flash('client_message', 'Failed to reject client', 'alert-danger');
@@ -356,7 +360,7 @@ class Admin extends Controller {
         $imagePath = PUB_ROOT . '/uploads/clientLogos/' . $client->client_profile;
         deleteImage($imagePath);
         if($this->adminModel->deleteRequest($clientId)){
-            flash('client_message', 'Client request deleted successfully');
+            flash('msg', 'Client request deleted successfully', 'alert-success');
             redirect('admin/rejected');
         } else {
             flash('client_message', 'Failed to delete client request', 'alert-danger');
@@ -462,10 +466,10 @@ class Admin extends Controller {
             $siteId = $this->adminModel->addSite($data);
                 
                 if($siteId){
-                    flash('admin_message', 'Site added successfully', 'alert-success');
+                    flash('msg', 'Site added successfully', 'alert-success');
                     redirect('admin/viewsites/'.$siteId); // Redirect properly
                 } else {
-                    flash('admin_message', 'Failed to add site', 'alert-danger');
+                    flash('msg', 'Failed to add site', 'alert-danger');
                     $this->view('admin/clients/v_addSite',$data);
                 }
             } else {
@@ -513,7 +517,7 @@ public function editSite($site_id){
     $existingSite = $this->adminModel->getSiteById($site_id);
     
     if(!$existingSite) {
-        flash('site_message', 'Site not found', 'alert-danger');
+        flash('msg', 'Site not found', 'alert-danger');
         redirect('admin/clients');
         return;
     }
@@ -589,10 +593,10 @@ public function editSite($site_id){
 
             // Update site - use editSite method in model
             if($this->adminModel->updateSite($data)){
-                flash('site_message', 'Site updated successfully', 'alert-success');
+                flash('msg', 'Site updated successfully', 'alert-success');
                 redirect('admin/viewsites/'.$site_id);
             } else {
-                flash('site_message', 'Failed to update site', 'alert-danger');
+                flash('msg', 'Failed to update site', 'alert-danger');
                 $this->view('admin/clients/v_editSite', $data);
             }
         } else {
@@ -632,7 +636,7 @@ public function editSite($site_id){
     $site = $this->adminModel->getSiteById($siteId);
     
     if(!$site) {
-        flash('site_message', 'Site not found', 'alert-danger');
+        flash('msg', 'Site not found', 'alert-danger');
         redirect('admin/sites');
         return;
     }
@@ -642,10 +646,10 @@ public function editSite($site_id){
     deleteImage($imagePath);
     
     if($this->adminModel->deleteSite($siteId)){
-        flash('site_message', 'Site deleted successfully', 'alert-success');
+        flash('msg', 'Site deleted successfully', 'alert-success');
         redirect('admin/clientprofile/' . $clientId);
     } else {
-        flash('site_message', 'Failed to delete site', 'alert-danger');
+        flash('msg', 'Failed to delete site', 'alert-danger');
         redirect('admin/clientprofile/' . $clientId);
     }
 }
