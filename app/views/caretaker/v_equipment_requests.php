@@ -4,6 +4,7 @@
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/equipment_style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <main class="main-content">
     <div class="equipment-container">
@@ -23,49 +24,43 @@
         <?php flash('equipment_error'); ?>
 
         <!-- Statistics Cards -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon yellow">
-                    <span class="material-symbols-outlined">pending</span>
+        <section class="stats-section">
+            <div class="stats-row">
+                <div class="stat-card yellow">
+                    <div class="stat-icon"><span class="material-icons">pending</span></div>
+                    <div class="stat-text">
+                        <div class="stat-value"><?php echo $data['stats']->pending ?? 0; ?></div>
+                        <div class="stat-label">Pending Requests</div>
+                        <div class="stat-sublabel">Rs. <?php echo number_format($data['stats']->pending_cost ?? 0, 2); ?></div>
+                    </div>
                 </div>
-                <div class="stat-info">
-                    <h3><?php echo $data['stats']->pending ?? 0; ?></h3>
-                    <p>Pending Requests</p>
-                    <small>Rs. <?php echo number_format($data['stats']->pending_cost ?? 0, 2); ?></small>
-                </div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-icon green">
-                    <span class="material-symbols-outlined">check_circle</span>
+                <div class="stat-card green">
+                    <div class="stat-icon"><span class="material-icons">check_circle</span></div>
+                    <div class="stat-text">
+                        <div class="stat-value"><?php echo $data['stats']->approved ?? 0; ?></div>
+                        <div class="stat-label">Approved</div>
+                        <div class="stat-sublabel">Rs. <?php echo number_format($data['stats']->approved_cost ?? 0, 2); ?></div>
+                    </div>
                 </div>
-                <div class="stat-info">
-                    <h3><?php echo $data['stats']->approved ?? 0; ?></h3>
-                    <p>Approved</p>
-                    <small>Rs. <?php echo number_format($data['stats']->approved_cost ?? 0, 2); ?></small>
-                </div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-icon red">
-                    <span class="material-symbols-outlined">cancel</span>
+                <div class="stat-card red">
+                    <div class="stat-icon"><span class="material-icons">cancel</span></div>
+                    <div class="stat-text">
+                        <div class="stat-value"><?php echo $data['stats']->rejected ?? 0; ?></div>
+                        <div class="stat-label">Rejected</div>
+                    </div>
                 </div>
-                <div class="stat-info">
-                    <h3><?php echo $data['stats']->rejected ?? 0; ?></h3>
-                    <p>Rejected</p>
-                </div>
-            </div>
 
-            <div class="stat-card">
-                <div class="stat-icon blue">
-                    <span class="material-symbols-outlined">inventory_2</span>
-                </div>
-                <div class="stat-info">
-                    <h3><?php echo $data['stats']->total ?? 0; ?></h3>
-                    <p>Total Requests</p>
+                <div class="stat-card purple">
+                    <div class="stat-icon"><span class="material-icons">inventory_2</span></div>
+                    <div class="stat-text">
+                        <div class="stat-value"><?php echo $data['stats']->total ?? 0; ?></div>
+                        <div class="stat-label">Total Requests</div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- Requests Table -->
         <div class="table-container">
