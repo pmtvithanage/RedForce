@@ -2,12 +2,14 @@
 class Admin extends Controller {
     private $adminModel;
     private $userModel;
+    private $homeModel;
     
 
     public function __construct() {
         requireAuth('admin');
         $this->adminModel = $this->model('M_admin');
         $this->userModel = $this->model('M_users');
+        $this->homeModel = $this->model('M_home');
         // Removed: $this->settingsModel = $this->model('SettingsModel');
     }
 
@@ -69,35 +71,238 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function officers() {
+        
         $data = [
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers'
     ];
         $this->view('admin/officers/v_officers', $data);
     }
+    public function mobileriders() {
+        
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Manage Officers'
+    ];
+        $this->view('admin/officers/v_mobileriders', $data);
+    }
+    public function caretakers() {
+        
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Manage Officers'
+    ];
+        $this->view('admin/officers/v_caretakers', $data);
+    }
 
     public function porecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Premise Officers Recruitment'
-        ];
-        $this->view('admin/officers/v_po_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('po');
+        if($exists) {
+            $this->edit_job_application($exists,'po');
+        }
+        else{
+            $this->add_job_application('po');
+        }
     }
     public function mrrecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Mobile Riders Recruitment'
-        ];
-        $this->view('admin/officers/v_mr_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('mr');
+        if($exists) {
+            $this->edit_job_application($exists,'mr');
+        }
+        else{
+            $this->add_job_application('mr');
+        }
     }
     public function ctrecruitment() {
-        $data = [
-            'title' => 'Officers',
-            'pageTitle' => 'Care Takers Recruitment'
-        ];
-        $this->view('admin/officers/v_ct_recruitment', $data);
+        $exists = $this->adminModel->getJobApplication('ct');
+        if($exists) {
+            $this->edit_job_application($exists,'ct');
+        }
+        else{
+            $this->add_job_application('ct');
+        }
     }
 
+    public function add_job_application($role) {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $this->sanitizeInput($_POST['description'] ?? ''),
+                'qualifications' => $this->sanitizeInput($_POST['qualifications'] ?? ''),
+                'due_date' => $this->sanitizeInput($_POST['due_date'] ?? ''),
+                'completed' => ''
+
+            ];
+            $this->adminModel->insertJobApplication($data, $role);
+            flash('msg', 'Job Application Added Successfully', 'alert-success');
+            // Validate form
+            if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
+                $data['completed'] = 'true';
+                
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            else{
+                $data['completed'] = 'false';
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+            }
+            
+        }
+        else {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => '',
+                'qualifications' => '',
+                'due_date' => '',
+                
+
+            ];
+            $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+        }
+
+        
+    }
+    public function edit_job_application($exists,$role) {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $this->sanitizeInput($_POST['description'] ?? ''),
+                'qualifications' => $this->sanitizeInput($_POST['qualifications'] ?? ''),
+                'due_date' => $this->sanitizeInput($_POST['due_date'] ?? ''),
+                'completed' => '',
+                'status' => $exists->status
+
+            ];
+
+            // Validate form
+            if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
+                $data['completed'] = 'true';
+                
+                // Check if due date has passed
+                $dueDate = date('Y-m-d', strtotime($data['due_date']));
+                $today = date('Y-m-d');
+                if ($dueDate < $today) {
+                    // If due date has passed, close the status
+                    $this->adminModel->changeStatus($role, 'closed');
+                }
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            else {
+                
+                $this->adminModel->changeStatus($role,'closed');
+                $data['completed'] = 'false';
+                $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+            }
+            $this->adminModel->editJobApplication($data, $role);
+            flash('msg', 'Job Application Updated Successfully', 'alert-success');
+        }
+        else {
+            $data = [
+                'title' => 'Officers',
+                'pageTitle' => 'Add Job Application',
+
+                'description' => $exists->description,
+                'qualifications' =>  $exists->qualifications,
+                'due_date' => $exists->due_date,
+                'completed' => $exists->completed,
+                'status' => $exists->status
+                
+
+            ];
+            $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+
+        }
+    }
+    public function changeStatus($role,$status) {
+        $this->adminModel->changeStatus($role,$status);
+        $data = $this->adminModel->getJobApplication($role);
+        flash('msg', 'Job Application Status Updated Successfully', 'alert-success');
+        $this->view('admin/officers/v_'.$role.'_recruitment', $data);
+    }
+    public function delete_job_application($role) {
+        $this->adminModel->deleteJobApplication($role);
+        flash('msg', 'Job Application Deleted Successfully', 'alert-success');
+        redirect('admin/'.$role.'recruitment');
+    }
+
+
+    public function pending_officer_applications($type) {
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getPendingOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllPendingOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Pending Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_pending_officer_applications', $data);
+    }
+    public function accepted_officer_applications($type) {
+       
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getApprovedOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllApprovedOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Approved Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_accepted_officer_applications', $data);
+    }
+    public function rejected_officer_applications($type) {
+        if($type == 'po' || $type == 'ct' || $type == 'mr') {
+            $officer = $this->homeModel->getRejectedOfficerApplications($type);
+        } else {
+            $officer = $this->homeModel->getAllRejectedOfficerApplications();
+        }
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Rejected Officer Applications',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_rejected_officer_applications', $data);
+    }
+    public function accept_officer_applications($id,$role) {
+        // Get the logged-in admin ID (you need to adjust this based on your auth system)
+        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+        
+        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+            flash('msg', 'Officer application accepted successfully', 'alert-success');
+            redirect('admin/pending_officer_applications/all');
+        } else {
+            flash('msg', 'Failed to accept officer application', 'alert-danger');
+            redirect('admin/pending_officer_applications/all');
+        }
+    }
+    public function reject_officer_applications($id) {
+        if ($this->adminModel->rejectOfficerApplication($id)) {
+            flash('msg', 'Officer application rejected successfully', 'alert-success');
+            redirect('admin/pending_officer_applications/all');
+        } else {
+            flash('officer_message', 'Failed to reject officer application', 'alert-danger');
+            redirect('admin/pending_officer_applications/all');
+        }
+    }
+    public function deleteOfficerApplication($id){
+        if ($this->adminModel->deleteOfficerApplication($id)) {
+            flash('msg', 'Officer application deleted successfully', 'alert-success');
+            redirect('admin/rejected_officer_applications/all');
+        } else {
+            flash('officer_message', 'Failed to reject officer application', 'alert-danger');
+            redirect('admin/rejected_officer_applications/all');
+        }
+    }
 // ======================================================================== //
 // =======================      Admin Clients       ====================== //
 // ======================================================================== //
@@ -106,38 +311,349 @@ class Admin extends Controller {
         // Get pending service requests count for notification badge
         $requestStats = $this->adminModel->getServiceRequestStats();
         $pendingCount = $requestStats->pending ?? 0;
+
+        $clients = $this->adminModel->getAllClients();
         
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Manage Clients',
-            'pendingRequestsCount' => $pendingCount
+            'pendingRequestsCount' => $pendingCount,
+            'clients' => $clients
         ];
         $this->view('admin/clients/v_clients', $data);  
     }
 
-     public function addclients(){
+    public function addclients(){
+        $clients = $this->homeModel->getPendingRequest();
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Add Clients'
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
         ];
-        $this->view('admin/clients/v_addClient', $data);
+
+        $this->view('admin/clients/v_requests-pending', $data);
+    }
+    public function acceptClient($clientId) {
+    // Get the logged-in admin ID (you need to adjust this based on your auth system)
+    $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+    
+    if ($this->adminModel->acceptClient($clientId, $adminId)) {
+        flash('msg', 'Client accepted successfully', 'alert-success');
+        redirect('admin/addclients');
+    } else {
+        flash('client_message', 'Failed to accept client', 'alert-danger');
+        redirect('admin/addclients');
+    }
+}
+    public function rejectClient($clientId){
+        if($this->adminModel->rejectClient($clientId)){
+            flash('msg', 'Client rejected successfully', 'alert-success');
+            redirect('admin/addclients');
+        } else {
+            flash('client_message', 'Failed to reject client', 'alert-danger');
+            redirect('admin/addclients');
+        }
+    }
+    public function deleterequest($clientId){
+        $client =  $this->adminModel->getClientById($clientId); // NOT WORKING DELETE IMAGE FILE 🥲
+        
+        $imagePath = PUB_ROOT . '/uploads/clientLogos/' . $client->client_profile;
+        deleteImage($imagePath);
+        if($this->adminModel->deleteRequest($clientId)){
+            flash('msg', 'Client request deleted successfully', 'alert-success');
+            redirect('admin/rejected');
+        } else {
+            flash('client_message', 'Failed to delete client request', 'alert-danger');
+            redirect('admin/rejected');
+        }
+    }
+    public function accepted(){
+        $clients = $this->homeModel->getApprovedRequest();
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
+        ];
+
+        $this->view('admin/clients/v_requests-accepted', $data);
     }
 
-     public function clientprofile(){
+    public function rejected(){
+        $clients = $this->homeModel->getRejectedRequest();
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Client Name'
+            'pageTitle' => 'Add Clients',
+            'clients' => $clients
+        ];
+
+        $this->view('admin/clients/v_requests-rejected', $data);
+    }
+
+    
+
+     public function clientprofile($Id){
+        $client = $this->adminModel->getClientById($Id);
+        $sites = $this->adminModel->getSiteByClientId($Id);
+        $data = [
+            
+            'title' => 'Clients',
+            'pageTitle' => $client->name . ' Profile',
+            'client' => $client
+            ,'sites' => $sites
         ];
         $this->view('admin/clients/v_clientProfile', $data);
     }
 
-    public function viewsites(){
+    public function addsite($Id){
+        if($_SERVER['REQUEST_METHOD']=='POST'){
+            $data = [
+                'client_id' => $Id, // Use the parameter from URL
+                'title' => 'Clients',
+                'pageTitle' => 'Add Site',
+
+                'image' => $_FILES['image'],
+                'image_name' => time(). '_' . $_FILES['image']['name'],
+
+                'site_name' => $this->sanitizeInput($_POST['site_name'] ?? ''),
+                'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
+                'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+                'image_err' => '',
+                'site_name_err' => '',
+                'site_address_err' => '',
+                'site_city_err' => '',
+                'phone_number_err' => '',
+            ];
+
+            // Validate form
+            if(empty($data['image']['name'])){
+                $data['image_err'] = 'Please upload an image';
+            } elseif($data['image']['size'] > 0){
+                if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/siteImages/')){
+                    // Image uploaded successfully
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                }
+            }
+
+            if(empty($data['site_name'])){
+                $data['site_name_err'] = 'Please enter site name';
+            }
+
+            if(empty($data['site_address'])){
+                $data['site_address_err'] = 'Please enter site address';
+            }
+
+            if(empty($data['site_city'])){
+                $data['site_city_err'] = 'Please enter site city';
+            }
+
+            if(empty($data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter phone number';
+            } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Make sure there are no errors
+            if(empty($data['image_err']) && 
+            empty($data['site_name_err']) && 
+            empty($data['site_address_err']) && 
+            empty($data['site_city_err']) && 
+            empty($data['phone_number_err'])){
+
+                // Insert site and get the new site ID
+            $siteId = $this->adminModel->addSite($data);
+                
+                if($siteId){
+                    flash('msg', 'Site added successfully', 'alert-success');
+                    redirect('admin/viewsites/'.$siteId); // Redirect properly
+                } else {
+                    flash('msg', 'Failed to add site', 'alert-danger');
+                    $this->view('admin/clients/v_addSite',$data);
+                }
+            } else {
+                $this->view('admin/clients/v_addSite',$data);
+            }
+
+        } else {
+            $data = [
+                'client_id' => $Id, // Add client_id here too
+                'title' => 'Clients',
+                'pageTitle' => 'Add Site',
+
+                'image' => '', 
+                'image_name' => '',
+
+                'site_name' => '',
+                'site_address' => '',
+                'site_city' => '',
+                'phone_number' => '',
+
+                'image_err' => '',
+                'site_name_err' => '',
+                'site_address_err' => '',
+                'site_city_err' => '',
+                'phone_number_err' => '',
+            ];
+            
+            $this->view('admin/clients/v_addSite', $data);
+        }
+    }
+
+    public function viewsites($site_id){
+        $site = $this->adminModel->getSiteById($site_id);
+        $clients = $this->adminModel->getClientById($site->client_id);
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Client Name - Site Name'
+            'pageTitle' => $clients->name . ' - ' . $site->site_name,
+            'site' => $site,
+            'client' => $clients
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }
+public function editSite($site_id){
+    // First get the existing site data
+    $existingSite = $this->adminModel->getSiteById($site_id);
+    
+    if(!$existingSite) {
+        flash('msg', 'Site not found', 'alert-danger');
+        redirect('admin/clients');
+        return;
+    }
+    
+    if($_SERVER['REQUEST_METHOD']=='POST'){
+        $data = [
+            'site_id' => $site_id, // Important: include site_id for update
+            'client_id' => $existingSite->client_id, // Use existing client_id
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Site',
+
+            'image' => $_FILES['image'],
+            'image_name' => time(). '_' . $_FILES['image']['name'],
+            'current_image' => $existingSite->image, // Store current image
+
+            'site_name' => $this->sanitizeInput($_POST['site_name'] ?? ''),
+            'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
+            'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
+            'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+            'image_err' => '',
+            'site_name_err' => '',
+            'site_address_err' => '',
+            'site_city_err' => '',
+            'phone_number_err' => '',
+        ];
+
+        // Validation
+        if(empty($data['site_name'])){
+            $data['site_name_err'] = 'Please enter site name';
+        }
+
+        if(empty($data['site_address'])){
+            $data['site_address_err'] = 'Please enter site address';
+        }
+
+        if(empty($data['site_city'])){
+            $data['site_city_err'] = 'Please enter site city';
+        }
+
+        if(empty($data['phone_number'])){
+            $data['phone_number_err'] = 'Please enter phone number';
+        } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+            $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+        }
+
+        // Handle image upload (optional for edit)
+        // Check if new image was uploaded
+        if($data['image']['size'] > 0){
+            if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/siteImages/')){
+                // Image uploaded successfully
+                // Delete old image if it exists
+                if(!empty($existingSite->image)) {
+                    $oldImagePath = PUB_ROOT . '/uploads/siteImages/' . $existingSite->image;
+                    if(file_exists($oldImagePath)) {
+                        @unlink($oldImagePath);
+                    }
+                }
+            } else {
+                $data['image_err'] = 'Failed to upload image';
+            }
+        } else {
+            // Keep the current image
+            $data['image_name'] = $existingSite->image;
+        }
+
+        // Check for errors
+        if(empty($data['site_name_err']) && 
+           empty($data['site_address_err']) && 
+           empty($data['site_city_err']) && 
+           empty($data['phone_number_err']) &&
+           empty($data['image_err'])) {
+
+            // Update site - use editSite method in model
+            if($this->adminModel->updateSite($data)){
+                flash('msg', 'Site updated successfully', 'alert-success');
+                redirect('admin/viewsites/'.$site_id);
+            } else {
+                flash('msg', 'Failed to update site', 'alert-danger');
+                $this->view('admin/clients/v_editSite', $data);
+            }
+        } else {
+            $this->view('admin/clients/v_editSite', $data);
+        }
+
+    } else {
+        // Load existing data into form - FIX FIELD NAMES HERE
+        $data = [
+            'site_id' => $site_id,
+            'client_id' => $existingSite->client_id,
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Site',
+
+            'image' => '', 
+            'image_name' => $existingSite->image,
+            'current_image' => $existingSite->image,
+
+            'site_name' => $existingSite->site_name,
+            'site_address' => $existingSite->address, // Changed from address
+            'site_city' => $existingSite->city,       // Changed from city
+            'phone_number' => $existingSite->phone_number,
+
+            'image_err' => '',
+            'site_name_err' => '',
+            'site_address_err' => '',
+            'site_city_err' => '',
+            'phone_number_err' => '',
+        ];
+        
+        $this->view('admin/clients/v_editSite', $data);
+    }
+}
+    public function deleteSite($siteId){
+    
+    // First get the site to get client_id before deleting
+    $site = $this->adminModel->getSiteById($siteId);
+    
+    if(!$site) {
+        flash('msg', 'Site not found', 'alert-danger');
+        redirect('admin/sites');
+        return;
+    }
+    
+    $clientId = $site->client_id;
+    $imagePath = PUB_ROOT . '/uploads/siteImages/' . $site->image;
+    deleteImage($imagePath);
+    
+    if($this->adminModel->deleteSite($siteId)){
+        flash('msg', 'Site deleted successfully', 'alert-success');
+        redirect('admin/clientprofile/' . $clientId);
+    } else {
+        flash('msg', 'Failed to delete site', 'alert-danger');
+        redirect('admin/clientprofile/' . $clientId);
+    }
+}
+    
 
     public function editassignment(){
         $data = [
@@ -851,4 +1367,31 @@ public function rejectLeave($id) {
     }
     exit;
 }
+
+
+
+// ---------------------------------------For all--------------------------------------//
+
+    /**
+     * Sanitize input data
+     * Replacement for FILTER_SANITIZE_STRING
+     */
+    private function sanitizeInput($input) {
+        $input = trim($input ?? '');
+        $input = htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Remove or encode potentially dangerous characters
+        $input = strip_tags($input);
+        return $input;
+    }
 }
+
+
+
+//For create folders 
+
+//.  sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/
+
+//. # If the clientLogos directory doesn't exist yet, create it with proper permissions
+//. sudo mkdir -p /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
+//. sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
+//. sudo chmod -R 755 /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 

@@ -3,7 +3,7 @@
 
 
 <link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/components/sidebar_topbar_style.css">
-
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
 <div class="app">
       <aside class="sidebar" aria-label="Primary">
         <div class="brand">
@@ -30,7 +30,6 @@
           <div class="menu-section">MANAGEMENT</div>
           <a class="menu-item <?php echo ($data['title'] === 'Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">Officers</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Clients') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/clients"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Clients</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Scheduling') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/scheduling"><span class="icon"></span><span class="material-symbols-outlined">schedule</span><span class="label">Scheduling</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Salary') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/salary"><span class="icon"></span><span class="material-symbols-outlined">payments</span><span class="label">Salary</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Advertisements') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/advertisements"><span class="icon"></span><span class="material-symbols-outlined">campaign</span><span class="label">Advertisements</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Incidents') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/incidents"><span class="icon"></span><span class="material-symbols-outlined">report</span><span class="label">Incidents</span></a>
@@ -98,4 +97,27 @@
     </form>
   </div>
 </div>
+<?php flash('msg')?>
+
+<script>
+  // Wait for DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('msg-flash');
+    
+    if (flashMessage) {
+      // Auto-remove after 5 seconds (5000ms)
+      setTimeout(function() {
+        // Add fade-out animation
+        flashMessage.classList.add('fade-out');
+        
+        // Remove element after animation completes
+        setTimeout(function() {
+          if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+          }
+        }, 300); // Match animation duration (300ms from CSS)
+      }, 5000); // Display for 5 seconds
+    }
+  });
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

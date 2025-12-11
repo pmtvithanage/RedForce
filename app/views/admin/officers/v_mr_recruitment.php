@@ -13,7 +13,7 @@
         background:#fff;
         padding:20px;
         border-radius:10px;
-        width:95%;
+        width:60%;
         box-shadow:0 3px 10px rgba(0,0,0,0.1);
     }
     .input-group{
@@ -54,6 +54,30 @@
     gap:10px;
     margin-top:15px;
 }
+.form-container {
+    display: flex;
+    margin: 20px;
+    width: 95%;
+}
+
+.left-side {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.left-side img {
+    max-width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
 
 </style>
 
@@ -71,27 +95,40 @@
 </div>
 
 <!-- New Job Details Section -->
-<div class="job-form">
-    <div class="input-group">
-        <label>Job Description</label>
-        <textarea placeholder="Example – Responsible for ensuring site security, patrolling, access monitoring..."></textarea>
+<div class="form-container">
+    <div class="left-side">
+        <img src="<?php echo URL_ROOT; ?>/img/mobile-rider.png" alt="Mobile Rider">
     </div>
+    <form class="job-form" action="<?php echo URL_ROOT; ?>/admin/mrrecruitment" method="post">
+        <div class="input-group">
+            <label>Job Description</label>
+            <textarea type="text" name="description" placeholder="Example – Responsible for ensuring site security, patrolling, access monitoring..."><?php echo $data['description'] ?? '';?></textarea>
+        </div>
 
-    <div class="input-group">
-        <label>Qualifications Required</label>
-        <textarea placeholder="Example – Minimum 1 year experience, Physical fitness, Good communication skills..."></textarea>
-    </div>
+        <div class="input-group">
+            <label>Qualifications Required</label>
+            <textarea type="text" name="qualifications" placeholder="Example – Minimum 1 year experience, Physical fitness, Good communication skills..."><?php echo $data['qualifications'] ?? '';?></textarea>
+        </div>
 
-    <div class="input-group">
-        <label>Due Date</label>
-        <input type="date" id="dueDate">
-    </div>
+        <div class="input-group">
+            <label>Due Date</label>
+            <input type="date" name="due_date" id="dueDate" value="<?php echo $data['due_date'] ?? ''; ?>" required>
+        </div>
 
-    <div class="form-actions">
-        <button class="primary-btn">Save</button>
-        <button class="secondary-btn" type="reset">Clear</button>
-    </div>
+        <div class="form-actions">
+            <?php if (isset($data['completed']) && $data['completed'] == 'true' && isset($data['status']) && $data['status'] == 'closed'): ?>
+                <button class="primary-btn" style="margin-right: 45%;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/changeStatus/mr/open'">Open Application</button>
+            <?php endif; ?>
+
+            <?php if (isset($data['completed']) && $data['completed'] == 'true' && isset($data['status']) && $data['status'] == 'open'): ?>
+                <button class="primary-btn" style="margin-right: 45%;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/changeStatus/mr/closed'">Close Application</button>
+            <?php endif; ?>
+            <button type="submit" class="primary-btn" name="submit">Save</button>
+            <button class="secondary-btn" type="reset" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/delete_job_application/mr/'">Clear</button>
+        </div>
+    </form>
 </div>
+
 
 </main>
 </div>

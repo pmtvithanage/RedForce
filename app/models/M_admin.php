@@ -5,7 +5,317 @@ class M_admin {
     public function __construct() {
         $this->db = new Database();
     }
+// ======================================================================== //
+// =======================      Admin Officers       ====================== //
+// ======================================================================== //
 
+//Insert Job Application
+public function insertJobApplication($data,$role) {
+    $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null
+    $this->db->query("INSERT INTO jobApplication (role, completed,description, qualifications, due_date, created_at) 
+                    VALUES (:role, :completed, :description, :qualifications, :due_date, NOW())");
+    
+    $this->db->bind(':role', $role);
+    $this->db->bind(':completed', $data['completed']);
+    $this->db->bind(':description', $data['description']);
+    $this->db->bind(':qualifications', $data['qualifications']);
+    $this->db->bind(':due_date', $data['due_date']);
+    
+    return $this->db->execute();
+}
+
+// Edit Job Application
+public function editJobApplication($data,$role) {
+    $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null
+    $this->db->query("UPDATE jobApplication SET role = :role, completed = :completed, description = :description, qualifications = :qualifications, due_date = :due_date, updated_at = NOW() WHERE role = :role");
+
+
+    $this->db->bind(':role', $role);
+    $this->db->bind(':completed', $data['completed']);
+    $this->db->bind(':description', $data['description']);
+    $this->db->bind(':qualifications', $data['qualifications']);
+    $this->db->bind(':due_date', $data['due_date']);
+
+    return $this->db->execute();
+}
+
+// Delete Job Application
+public function deleteJobApplication($role) {
+    $this->db->query("DELETE FROM jobApplication WHERE role = :role");
+    $this->db->bind(':role', $role);
+    return $this->db->execute();
+}
+
+// Get Job Applications by Role
+public function getJobApplication($role) {
+    $this->db->query("SELECT id, role, completed, description, qualifications, status, due_date FROM jobApplication WHERE role = :role");
+    $this->db->bind(':role', $role);
+    return $this->db->single(); 
+}
+
+// Change Status of Job Application
+public function changeStatus($role, $status) {
+    $this->db->query("UPDATE jobApplication SET status = :status WHERE role = :role");
+    $this->db->bind(':role', $role);
+    $this->db->bind(':status', $status);
+    return $this->db->execute();
+}
+
+// Accept officer application
+    public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
+        // 1. Get the client request
+        $this->db->query("SELECT * FROM submittedApplications WHERE id = :id");
+        $this->db->bind(':id', $id);
+        $request = $this->db->single();
+        
+        if (!$request) {
+            return false;
+        }
+        
+        // 2. Create user account
+
+        $this->db->query("SELECT userID FROM Users WHERE email = :email");
+        $this->db->bind(':email', $request->email);
+        $existingUser = $this->db->single();
+
+        if ($existingUser) {
+            // Email already exists, return error or handle appropriately
+            return [
+                'success' => false,
+                'message' => 'Email already exists in the system'
+            ];
+        }
+        // Generate CLIENT001, CLIENT002, etc.
+        // Get last CLIENT number
+        if($request->role == 'po'){
+            $rolePrefix = 'PO';
+            $role_name = 'Premise Officer';
+        } elseif($request->role == 'ct'){
+            $rolePrefix = 'CT';
+            $role_name = 'Care Taker';
+        } elseif($request->role == 'mr'){
+            $rolePrefix = 'MR';
+            $role_name = 'Mobile Rider';
+        } else{
+            $rolePrefix = 'OF';
+        }
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE :prefix ORDER BY userID DESC LIMIT 1");
+        $this->db->bind(':prefix', $rolePrefix . '%');
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 2); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '1234'; // Simple temp password
+        
+        // Insert into Users table
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                        VALUES (:userID, :name, :email, :phone, :profile_image,:password, :role)");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $request->name);
+        $this->db->bind(':email', $request->email);
+        $this->db->bind(':phone', $request->phone_number);
+        $this->db->bind(':profile_image', $request->photo);
+        $this->db->bind(':role', $role_name);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // 4. Update client_requests table
+        $this->db->query("UPDATE submittedApplications 
+                        SET status = 'approved', 
+                            approved_by = :approved_by, 
+                            approved_at = NOW()
+                        WHERE id = :id");
+        $this->db->bind(':approved_by', $approved_by_user_id);
+        $this->db->bind(':id', $id);
+        
+        return $this->db->execute();
+    }
+
+    // Reject Client Request
+    public function rejectOfficerApplication($id) {
+        $this->db->query("UPDATE submittedApplications SET status = 'rejected' WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+
+    // Delete officer application
+    public function deleteOfficerApplication($id) {
+        $this->db->query("DELETE FROM submittedApplications WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+// ======================================================================== //
+// =======================      Admin Clients       ====================== //
+// ======================================================================== //
+    public function getClientById($id) {
+        // Get client with contact person name and profile image
+        $this->db->query("
+            SELECT 
+                u.*, 
+                c.contact_person_name,
+                u.profile_image as client_profile
+            FROM Users u 
+            LEFT JOIN Clients c ON u.id = c.user_id 
+            WHERE u.id = :id
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    // Get all Clients
+    public function getAllClients() {
+        // Simple: Get all users with role 'client'
+        $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
+        return $this->db->resultSet();
+    }
+
+
+    // Accept Client Request
+    public function acceptClient($client_request_id, $approved_by_user_id) {
+        // 1. Get the client request
+        $this->db->query("SELECT * FROM client_requests WHERE id = :id");
+        $this->db->bind(':id', $client_request_id);
+        $request = $this->db->single();
+        
+        if (!$request) {
+            return false;
+        }
+        
+        // 2. Create user account
+        // Generate CLIENT001, CLIENT002, etc.
+        // Get last CLIENT number
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE 'CLIENT%' ORDER BY userID DESC LIMIT 1");
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = 'CLIENT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '1234'; // Simple temp password
+        
+        // Insert into Users table
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                        VALUES (:userID, :name, :email, :phone, :profile_image,:password, 'client')");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $request->company_name);
+        $this->db->bind(':email', $request->email);
+        $this->db->bind(':phone', $request->phone_number);
+        $this->db->bind(':profile_image', $request->logo_path);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // Get the new user ID
+        $new_user_id = $this->db->lastInsertId();
+        
+        // 3. Add to Clients table
+        $this->db->query("INSERT INTO Clients (user_id, contact_person_name) 
+                        VALUES (:user_id, :contact_name)");
+        $this->db->bind(':user_id', $new_user_id);
+        $this->db->bind(':contact_name', $request->contact_person_name);
+        
+        if (!$this->db->execute()) {
+            return false;
+        }
+        
+        // 4. Update client_requests table
+        $this->db->query("UPDATE client_requests 
+                        SET status = 'approved', 
+                            approved_by = :approved_by, 
+                            approved_at = NOW(),
+                            client_id = :client_id
+                        WHERE id = :id");
+        $this->db->bind(':approved_by', $approved_by_user_id);
+        $this->db->bind(':client_id', $new_user_id);
+        $this->db->bind(':id', $client_request_id);
+        
+        return $this->db->execute();
+    }
+
+    // Reject Client Request
+    public function rejectClient($client_id) {
+        $this->db->query("UPDATE client_requests SET status = 'rejected' WHERE id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->execute();
+    }
+    // Delete Client Request
+    public function deleteRequest($client_id) {
+        $this->db->query("DELETE FROM client_requests WHERE id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->execute();
+    }
+
+    // Add Site
+    public function addSite($data){
+        $this->db->query("INSERT INTO Sites (client_id, site_name, address, city, phone_number, image) 
+                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name)");
+        
+        $this->db->bind(':client_id', $data['client_id']);
+        $this->db->bind(':site_name', $data['site_name']);
+        $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':site_city', $data['site_city']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        $this->db->bind(':image_name', $data['image_name']);
+        
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId(); // Return the new site ID
+        }
+        return false;
+
+    }
+    public function deleteSite($siteId){
+        $this->db->query("DELETE FROM Sites WHERE id = :site_id");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->execute();
+    }
+    public function updateSite($data){
+        $this->db->query("UPDATE Sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
+        $this->db->bind(':site_name', $data['site_name']);
+        $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':site_city', $data['site_city']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':site_id', $data['site_id']);
+
+        if ($this->db->execute()) {
+            return true;
+        }
+        return false;
+    }
+    // Get All Sites
+    public function getSiteByClientId($client_id) {
+        $this->db->query("SELECT * FROM Sites WHERE client_id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
+    // Get Site
+    public function getSiteById($site_id) {
+        $this->db->query("SELECT * FROM Sites WHERE id = :site_id");
+        $this->db->bind(':site_id', $site_id);
+        return $this->db->single();
+    }
+    // Update Site
+
+// ======================================================================== //
+// =======================      Admin Advertisements       ====================== //
+// ======================================================================== //
     // Get single advertisement by ID
     public function getAdvertisementById($id) {
         $this->db->query('
@@ -160,7 +470,6 @@ class M_admin {
         $this->db->execute();
         return $this->db->rowCount() > 0;
     }
-
     // Get all admins
     public function getAdmins() {
         $this->db->query("
@@ -412,4 +721,6 @@ class M_admin {
         ");
         return $this->db->single();
     }
+
+    
 }

@@ -16,7 +16,7 @@
         <span class="material-symbols-outlined">arrow_back</span>
         Go Back
       </button>
-      <span>Premise Officer</span>
+      <span>Care-Taker</span>
     </div>
     <div class="topbar__brand">Red Force Security Service</div>
     <div class="topbar__logo" aria-label="Company logo" title="Red Force">
@@ -29,10 +29,10 @@
   <section class="card-section">
     <div class="section-head">
       <h2>Job Description</h2>
-      <div class="due-badge" id="dueBadge" title="Application deadline">Due 2025 July 08</div>
+      <div class="due-badge" id="dueBadge" title="Application deadline">Due <?php echo $data['due_date'];?></div>
     </div>
     <div class="card large-card" aria-label="Job description">
-      <p class="placeholder">Description</p>
+      <p style="font-family: 'Courier New', monospace; font-size:18px;"class="placeholder"><?php echo $data['description'];?></p>
     </div>
   </section>
 
@@ -41,7 +41,7 @@
       <h2>Qualifications</h2>
     </div>
     <div class="card large-card" aria-label="Qualifications">
-      <p class="placeholder">Qualifications</p>
+      <p style="font-family: 'Courier New', monospace; font-size:18px;" class="placeholder"><?php echo nl2br(htmlspecialchars($data['qualifications'])); ?></p>
     </div>
   </section>
 
@@ -88,5 +88,27 @@
 </main>
 
 <script src="<?php echo URL_ROOT; ?>/js/home/jobapplication.js"></script>
+<?php flash('msg')?>
 
+<script>
+  // Wait for DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('msg-flash');
+    
+    if (flashMessage) {
+      // Auto-remove after 5 seconds (5000ms)
+      setTimeout(function() {
+        // Add fade-out animation
+        flashMessage.classList.add('fade-out');
+        
+        // Remove element after animation completes
+        setTimeout(function() {
+          if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+          }
+        }, 300); // Match animation duration (300ms from CSS)
+      }, 5000); // Display for 5 seconds
+    }
+  });
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

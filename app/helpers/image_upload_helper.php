@@ -16,7 +16,7 @@
 
     function deleteImage($img) {
         if (file_exists($img)) {
-            unlink($img);
+            @unlink($img);
             return true;
         }
         return false;

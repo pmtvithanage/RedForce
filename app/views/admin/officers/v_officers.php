@@ -99,9 +99,9 @@ thead th{ background:#f9e9e9; }
 
     <!-- Tabs -->
     <div class="tabs">
-        <button class="tab primary-btn">Officers</button>
-        <button class="tab secondary-btn">Mobile Riders</button>
-        <button class="tab secondary-btn">Care-Takers</button>
+        <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officers'">Officers</button> 
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/mobileriders'">Mobile Riders</button>
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/caretakers'">Care-Takers</button>
     </div>
 
     <!-- Table Card -->
@@ -180,7 +180,7 @@ thead th{ background:#f9e9e9; }
     <!-- Bottom Buttons -->
     <div class="actions">
         <button class="tertiary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/porecruitment'">Open Recruitment</button>
-        <button class="tertiary-btn">+ Add Officers</button>
+        <button class="tertiary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/pending_officer_applications/all'">+ Add Officers</button>
     </div>
 
 </div>

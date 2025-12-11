@@ -14,6 +14,12 @@
         margin-left: 10vw;
     }
     
+    .tabs{
+        display:flex; 
+        gap:10px; 
+        margin-bottom:20px; 
+        margin-left:20px;
+    }
     .profile-card {
         background: white;
         border-radius: 12px;
@@ -32,12 +38,16 @@
         margin-bottom: 20px;
     }
     
-    .company-logo {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 3px solid #f0f0f0;
+    .imagePlaceholder{
+        height: 180px;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        margin: 0 auto 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #fff;
     }
     
     .company-name {
@@ -61,7 +71,7 @@
         margin-bottom: 0;
     }
     
-    .icon {
+    .info-icon {
         font-size: 24px;
         color: #666;
         margin-right: 15px;
@@ -98,6 +108,8 @@
         align-items: center;
         gap: 8px;
         padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
     }
     
     
@@ -120,60 +132,76 @@
     }
 </style>
 
-<button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+<button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/clients'""> 
     <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
     Back
   </button>
 
 <div class="main-content">
+    <div class="tabs">
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addclients'">Pending Requests</button>
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/accepted'">Approved Requests</button>
+        <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/rejected'">Rejected Requests</button>
+    </div>
+    
     <div class="content-container">
-        
+        <?php if(empty($data['clients'])){
+            echo('No result found !');
+        }
+        ?>
+        <?php foreach($data['clients'] as $clients) : ?>
         <!-- Profile Card Container -->
         <div class="profile-card">
+            
             <div class="card-header">
                 <div class="logo-container">
-                    <img src="<?= URL_ROOT ?>/images/default-company-logo.png" alt="Company Logo" class="company-logo" id="companyLogo">
+                    <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $clients->logo_path; ?>" id="photoPreview" alt="Uploaded logo preview"  />
                 </div>
-                <h2 class="company-name" id="companyName">Tech Solutions Inc.</h2>
+                <h2 class="company-name" id="companyName"><?php echo $clients -> company_name?></h2>
             </div>
             
             <div class="card-body">
                 <div class="info-row">
-                    <span class="material-symbols-outlined icon">mail</span>
+                    <span class="material-symbols-outlined info-icon">mail</span>
                     <div class="info-content">
                         <span class="info-label">Email</span>
-                        <span class="info-value" id="companyEmail">contact@techsolutions.com</span>
+                        <span class="info-value" id="companyEmail"><?php echo $clients -> email?></span>
                     </div>
                 </div>
                 
                 <div class="info-row">
-                    <span class="material-symbols-outlined icon">call</span>
+                    <span class="material-symbols-outlined info-icon">call</span>
                     <div class="info-content">
                         <span class="info-label">Phone</span>
-                        <span class="info-value" id="companyPhone">+1 (555) 123-4567</span>
+                        <span class="info-value" id="companyPhone"><?php echo $clients -> phone_number?></span>
                     </div>
                 </div>
                 
                 <div class="info-row">
-                    <span class="material-symbols-outlined icon">person</span>
+                    <span class="material-symbols-outlined info-icon">person</span>
                     <div class="info-content">
                         <span class="info-label">Contact Person</span>
-                        <span class="info-value" id="contactPerson">John Smith</span>
+                        <span class="info-value" id="contactPerson"><?php echo $clients -> contact_person_name?></span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="material-symbols-outlined info-icon">event</span>
+                    <div class="info-content">
+                        <span class="info-label">Applied at</span>
+                        <span class="info-value" id="contactPerson"><?php echo time_convert($clients -> created_at)?></span>
                     </div>
                 </div>
             </div>
             
             <div class="card-footer">
-                <button class="btn-primary primary-btn" id="addClientBtn">
-                    <span class="material-symbols-outlined">person_add</span>
-                    Add Client
-                </button>
-                <button class="btn-secondary secondary-btn" id="rejectBtn">
-                    <span class="material-symbols-outlined">close</span>
-                    Reject
-                </button>
+                <a href="<?php echo URL_ROOT; ?>/admin/deleterequest/<?php echo $clients -> id?>" class="btn-primary primary-btn" id="editClientBtn">
+                    Delete
+                </a>
+                
             </div>
         </div>
+        <?php endforeach; ?>
     </div>
 </div>
 

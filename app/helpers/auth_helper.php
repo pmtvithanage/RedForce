@@ -124,7 +124,7 @@ function redirect($page) {
  * @param string $message
  * @param string $class
  */
-function flash($name = '', $message = '', $class = 'alert alert-success') {
+function flash($name = '', $message = '', $class = 'msg-flash') {
     if (!empty($name)) {
         if (!empty($message) && empty($_SESSION[$name])) {
             if (!empty($_SESSION[$name])) {

@@ -1,55 +1,70 @@
-// --- Photo preview logic ---
-(function () {
-  const photoInput = document.getElementById("photoInput");
-  const photoPreview = document.getElementById("photoPreview");
-  const form = document.getElementById("serviceForm");
+const addImageBtn = document.getElementById("addImageBtn");
+const removeImageBtn = document.getElementById("removeImageBtn");
+const imagePlaceholder = document.getElementById("imagePlaceholder");
 
-  if (photoInput) {
-    photoInput.addEventListener("change", () => {
-      const file = photoInput.files && photoInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        photoPreview.src = String(e.target?.result || "");
-        photoPreview.hidden = false;
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+let inputPath = document.querySelector("#image");
+let file;
 
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      submitForm();
-    });
-  }
-})();
+// Get the default image path from data attribute
+const defaultImagePath = imagePlaceholder.getAttribute('data-default-src');
 
-// --- Cancel and Submit ---
-function cancel() {
-  history.back();
+function toggleBrowse(){
+    inputPath.click();
 }
 
-function submitForm() {
-  const data = {
-    companyName: v("company-name"),
-    email: v("email"),
-    phone: v("phone"),
-    ownerName: v("owner-name"),
-    logoFile: document.getElementById("photoInput").files[0]?.name || null,
-    sites: [...document.querySelectorAll("#serviceTable tbody tr")].map(
-      (r) => ({
-        address: gv(r, ".site-address"),
-        securityOfficers: +gv(r, ".security-officers") || 0,
-        careTakers: +gv(r, ".care-takers") || 0,
-        shiftType: gv(r, ".shift-type"),
-      })
-    ),
-  };
+function removeImage(){
+    addImageBtn.style.display = "block";
+    removeImageBtn.style.display = "none";
+    imagePlaceholder.style.display = "block"; // Changed to "block" to show default image
 
-  console.log("Form Data:", data);
-  alert("Form submitted successfully! Check console for details.");
+    // Reset to default image
+    imagePlaceholder.setAttribute('src', defaultImagePath);
+
+    inputPath.value = null;
+    file = null;
 }
 
-const v = (id) => document.getElementById(id).value.trim();
-const gv = (row, sel) => row.querySelector(sel).value.trim();
+inputPath.addEventListener('change', function(){
+    file = this.files[0];
+
+    if (file) {
+        addImageBtn.style.display = "none";
+        removeImageBtn.style.display = "block";
+        imagePlaceholder.style.display = "block";
+        showImage();
+    } else {
+        // If user cancels file selection, reset to default
+        removeImage();
+    }
+});
+
+function showImage(){
+    let fileType = file.type;
+    let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+
+    if(validExtensions.includes(fileType)){
+        let fileReader = new FileReader();
+
+        fileReader.onload = () => {
+            let fileURL = fileReader.result;
+            imagePlaceholder.setAttribute('src', fileURL);
+        }
+
+        fileReader.onerror = () => {
+            alert('Error reading file');
+            removeImage();
+        }
+
+        fileReader.readAsDataURL(file);
+    }
+    else{
+        alert('This is not a valid image file'); // Fixed typo
+        removeImage();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize with default image visible
+    imagePlaceholder.style.display = "block";
+    imagePlaceholder.setAttribute('src', defaultImagePath);
+});

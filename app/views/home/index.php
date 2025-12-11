@@ -1,6 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/home/home_style.css">
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
 
 
 <!-- Navigation -->
@@ -257,5 +258,27 @@
 </footer>
 
 <script src="<?php echo URL_ROOT; ?>/js/home/main.js"></script>
+<?php flash('msg')?>
 
+<script>
+  // Wait for DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('msg-flash');
+    
+    if (flashMessage) {
+      // Auto-remove after 5 seconds (5000ms)
+      setTimeout(function() {
+        // Add fade-out animation
+        flashMessage.classList.add('fade-out');
+        
+        // Remove element after animation completes
+        setTimeout(function() {
+          if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+          }
+        }, 300); // Match animation duration (300ms from CSS)
+      }, 5000); // Display for 5 seconds
+    }
+  });
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

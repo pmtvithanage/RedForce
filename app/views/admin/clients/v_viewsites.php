@@ -325,13 +325,14 @@
 
     <!-- COVER -->
     <div class="cover" aria-hidden="true">
-      <button class="tertiary-btn" style="display:flex; width:100px; margin:20px;align-items:center;" onclick="history.back()"> 
+      <button class="tertiary-btn" style="display:flex; width:100px; margin:20px;align-items:center;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile/<?php echo $data['client']->id; ?>'"> 
             <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
             Back
         </button>
-      <img src="<?php echo URL_ROOT; ?>/img/hero.png" class="site-img" alt="Site Image">
+      <img class="site-img" src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $data['site']->image; ?>" alt="Cover Image"> 
       <div style="position:absolute;right:12px;bottom:12px">
-        <button class="tertiary-btn">Change Cover</button>
+        <button class="tertiary-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/editSite/<?php echo $data['site']->id; ?>'">Edit Site</button>
+        <button class="primary-btn" style="float: right; margin-left: 10px; padding: 12px 20px;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/deleteSite/<?php echo $data['site']->id; ?>'">Remove Site</button>
       </div>
     </div>
 
@@ -341,24 +342,18 @@
       <div class="left-column">
         <div class="profile-card" aria-label="Profile summary">
           <div class="avatar-wrap">
-            <img class="avatar-image" src="<?php echo URL_ROOT; ?>/img/peoples-bank.png" alt="People's Bank">
+            <img class="avatar-image" src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $data['client']->client_profile; ?>" alt="Client Logo">
           </div>
 
           <div style="height:86px"></div> <!-- spacer to accommodate absolute avatar -->
+          
 
-          <div class="mini-about"><strong>About</strong><div class="spacer"></div>
-            Loves coding, weightlifting, and open-source. Lives in Colombo. Speaks Sinhala & English.
-          </div>
 
-          <div style="height:12px"></div>
-
-          <div>
-            <div class="card-title">Details</div>
-            <div class="small muted">
-              <div>Joined: 2020</div>
-              <div>Works at: Example Co.</div>
-            </div>
-          </div>
+          <h1><?php echo $site->site_name?></h1>
+          <p><strong>Location:</strong> <?php echo $site->address?></p>
+          <p><strong>City:</strong> <?php echo $site->city?></p>
+          <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
+          <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
 
         </div>
       </div>

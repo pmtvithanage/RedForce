@@ -1,7 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/components/sidebar_topbar_style.css">
-
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
 <div class="app">
     <aside class="sidebar" aria-label="Primary">
         <div class="brand">
@@ -107,26 +107,49 @@
             </div>
         </header>
 
-        <!-- Change Password Modal -->
-        <div class="modal-overlay" id="passwordModal" hidden>
-            <div class="modal">
-                <h2>Change Password</h2>
-                <form id="changePasswordForm">
-                    <label for="currentPassword">Current Password</label>
-                    <input type="password" id="currentPassword" name="currentPassword" required>
 
-                    <label for="newPassword">New Password</label>
-                    <input type="password" id="newPassword" name="newPassword" required>
+      <!-- Change Password Modal -->
+<div class="modal-overlay" id="passwordModal" hidden>
+  <div class="modal">
+    <h2>Change Password</h2>
+    <form id="changePasswordForm">
+      <label for="currentPassword">Current Password</label>
+      <input type="password" id="currentPassword" name="currentPassword" required>
 
-                    <label for="confirmPassword">Confirm New Password</label>
-                    <input type="password" id="confirmPassword" name="confirmPassword" required>
+      <label for="newPassword">New Password</label>
+      <input type="password" id="newPassword" name="newPassword" required>
 
-                    <div class="modal-actions">
-                        <button type="button" id="cancelPasswordBtn" class="btn-cancel">Cancel</button>
-                        <button type="submit" class="btn-save">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+      <label for="confirmPassword">Confirm New Password</label>
+      <input type="password" id="confirmPassword" name="confirmPassword" required>
 
+      <div class="modal-actions">
+        <button type="button" id="cancelPasswordBtn" class="btn-cancel">Cancel</button>
+        <button type="submit" class="btn-save">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<?php flash('msg')?>
+
+<script>
+  // Wait for DOM to be fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    const flashMessage = document.getElementById('msg-flash');
+    
+    if (flashMessage) {
+      // Auto-remove after 5 seconds (5000ms)
+      setTimeout(function() {
+        // Add fade-out animation
+        flashMessage.classList.add('fade-out');
+        
+        // Remove element after animation completes
+        setTimeout(function() {
+          if (flashMessage.parentNode) {
+            flashMessage.parentNode.removeChild(flashMessage);
+          }
+        }, 300); // Match animation duration (300ms from CSS)
+      }, 5000); // Display for 5 seconds
+    }
+  });
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

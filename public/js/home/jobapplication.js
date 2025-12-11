@@ -1,41 +1,85 @@
-// Photo preview logic
-(function () {
-  const photoInput = document.getElementById("photoInput");
-  const photoPreview = document.getElementById("photoPreview");
-  const form = document.getElementById("applicationForm");
+const addImageBtn = document.getElementById("addImageBtn");
+const removeImageBtn = document.getElementById("removeImageBtn");
+const imagePlaceholder = document.getElementById("imagePlaceholder");
 
-  if (photoInput) {
-    photoInput.addEventListener("change", () => {
-      const file = photoInput.files && photoInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        photoPreview.src = String(e.target?.result || "");
-        photoPreview.hidden = false;
-      };
-      reader.readAsDataURL(file);
+let inputPath = document.querySelector("#image");
+let file;
+
+// Get the default image path from data attribute
+const defaultImagePath = imagePlaceholder.getAttribute("data-default-src");
+
+function toggleBrowse() {
+  inputPath.click();
+}
+
+function removeImage() {
+  addImageBtn.style.display = "block";
+  removeImageBtn.style.display = "none";
+  imagePlaceholder.style.display = "block"; // Changed to "block" to show default image
+
+  // Reset to default image
+  imagePlaceholder.setAttribute("src", defaultImagePath);
+
+  inputPath.value = null;
+  file = null;
+}
+
+inputPath.addEventListener("change", function () {
+  file = this.files[0];
+
+  if (file) {
+    addImageBtn.style.display = "none";
+    removeImageBtn.style.display = "block";
+    imagePlaceholder.style.display = "block";
+    showImage();
+  } else {
+    // If user cancels file selection, reset to default
+    removeImage();
+  }
+});
+
+function showImage() {
+  let fileType = file.type;
+  let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+
+  if (validExtensions.includes(fileType)) {
+    let fileReader = new FileReader();
+
+    fileReader.onload = () => {
+      let fileURL = fileReader.result;
+      imagePlaceholder.setAttribute("src", fileURL);
+    };
+
+    fileReader.onerror = () => {
+      alert("Error reading file");
+      removeImage();
+    };
+
+    fileReader.readAsDataURL(file);
+  } else {
+    alert("This is not a valid image file"); // Fixed typo
+    removeImage();
+  }
+}
+
+// CV File Upload - With PDF Icon
+document.addEventListener("DOMContentLoaded", function () {
+  const cvInput = document.getElementById("cv");
+  const cvUploadBtn = document.querySelector('label[for="cv"]');
+
+  if (cvInput && cvUploadBtn) {
+    cvInput.addEventListener("change", function () {
+      if (this.files && this.files.length > 0) {
+        const fileName = this.files[0].name;
+        cvUploadBtn.innerHTML = `
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px; font-size: 18px;">
+            picture_as_pdf
+          </span>
+          ${fileName}
+        `;
+      } else {
+        cvUploadBtn.textContent = "Choose File";
+      }
     });
   }
-
-  if (form) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      alert("Submitted!");
-    });
-  }
-})();
-
-const cvInput = document.getElementById("cv");
-const cvFileName = document.getElementById("cvFileName");
-
-if (cvInput) {
-  cvInput.addEventListener("change", () => {
-    cvFileName.textContent = cvInput.files.length
-      ? cvInput.files[0].name
-      : "No file chosen";
-  });
-}
-// Cancel button logic → Go back to previous page
-function cancel() {
-  window.history.back();
-}
+});
