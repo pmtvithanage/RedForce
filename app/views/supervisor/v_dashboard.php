@@ -7,46 +7,45 @@
 
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/dashboard.style.css">
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/qr_scanner.css">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/advertisement_view.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <!-- Statistics Cards -->
     <section class="stats-grid">
         <div class="stat-card purple">
             <div class="stat-icon">
-                <i class="fas fa-users"></i>
+                <span class="material-symbols-outlined">group</span>
             </div>
             <div class="stat-info">
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?php echo $data['attendanceStats']['total']; ?></div>
                 <div class="stat-label">Total Officers</div>
             </div>
         </div>
 
         <div class="stat-card green">
             <div class="stat-icon">
-                <i class="fas fa-shield-alt"></i>
+                <span class="material-symbols-outlined">shield</span>
             </div>
             <div class="stat-info">
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?php echo $data['attendanceStats']['present']; ?></div>
                 <div class="stat-label">On Duty</div>
             </div>
         </div>
 
         <div class="stat-card yellow">
             <div class="stat-icon">
-                <i class="fas fa-shield-check"></i>
+                <span class="material-symbols-outlined">verified</span>
             </div>
             <div class="stat-info">
-                <div class="stat-value">0</div>
+                <div class="stat-value"><?php echo $data['attendanceStats']['total'] - $data['attendanceStats']['absent']; ?></div>
                 <div class="stat-label">Active</div>
             </div>
         </div>
 
         <div class="stat-card red">
             <div class="stat-icon">
-                <i class="fas fa-exclamation-circle"></i>
+                <span class="material-symbols-outlined">error</span>
             </div>
             <div class="stat-info">
                 <div class="stat-value">0</div>
@@ -60,7 +59,7 @@
         <!-- Attendance Card -->
         <div class="attendance-card">
             <div class="search-bar">
-                <i class="fas fa-search"></i>
+                <span class="material-symbols-outlined">search</span>
                 <input id="searchInput" type="text" placeholder="Search">
             </div>
             <div class="table-wrapper">
@@ -72,30 +71,49 @@
                         </tr>
                     </thead>
                     <tbody id="attendanceBody">
-                        <tr>
-                            <td><a href="#" class="name-link">Athula Adikari</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="#" class="name-link">Saman kumara</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="#" class="name-link">Amara bandu</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="#" class="name-link">wanidu Hasaranga</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="#" class="name-link">Amantha Perera</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
-                        <tr>
-                            <td><a href="#" class="name-link">Samitha Vithana</a></td>
-                            <td><span class="status-badge present">Present</span></td>
-                        </tr>
+                        <?php if (!empty($data['todayAttendance'])): ?>
+                            <?php foreach ($data['todayAttendance'] as $attendance): ?>
+                                <tr>
+                                    <td>
+                                        <a href="#" class="name-link">
+                                            <?php echo htmlspecialchars($attendance->officer_name); ?>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                            $statusClass = '';
+                                            switch(strtolower($attendance->status)) {
+                                                case 'present':
+                                                    $statusClass = 'present';
+                                                    break;
+                                                case 'absent':
+                                                    $statusClass = 'absent';
+                                                    break;
+                                                case 'late':
+                                                    $statusClass = 'late';
+                                                    break;
+                                                case 'half day':
+                                                    $statusClass = 'half-day';
+                                                    break;
+                                                default:
+                                                    $statusClass = 'present';
+                                            }
+                                        ?>
+                                        <span class="status-badge <?php echo $statusClass; ?>">
+                                            <?php echo htmlspecialchars($attendance->status); ?>
+                                        </span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: #999; padding: 2rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5; display: block;">assignment</span>
+                                    <p style="margin: 0;">No attendance marked for today</p>
+                                    <small style="font-size: 0.85rem;">Go to Attendance page to mark attendance</small>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -277,48 +295,13 @@
         </div>
     </section>
 
-    <!-- Mark Attendance Button -->
-    <section class="scan-qr">
-        <button id="openQRScanner" class="scan-btn">
-            <i class="fas fa-qrcode"></i> Mark Attendance
-        </button>
-    </section>
-
-    <!-- QR Scanner Modal -->
-    <div id="qrScannerModal" class="qr-modal-overlay">
-        <div class="qr-modal-content">
-            <div class="qr-modal-header">
-                <h3><i class="fas fa-qrcode"></i> Scan QR Code</h3>
-                <button class="qr-close-btn" id="closeQRScanner">&times;</button>
-            </div>
-            <div class="qr-modal-body">
-                <div id="qr-reader" class="qr-reader-container"></div>
-                <div class="qr-scanner-frame">
-                    <div class="corner top-left"></div>
-                    <div class="corner top-right"></div>
-                    <div class="corner bottom-left"></div>
-                    <div class="corner bottom-right"></div>
-                    <div class="scan-line"></div>
-                </div>
-                <div id="qr-status" class="qr-status"></div>
-            </div>
-            <div class="qr-modal-footer">
-                <p class="qr-instruction">Position the QR code within the frame</p>
-            </div>
-        </div>
-    </div>
-
         </main>
     </div>
 
     
      
 
-    <!-- Include html5-qrcode library -->
-    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-    
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/components/advertisements_view.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/supervisor/dashboard.js"></script>
-    <script src="<?php echo URL_ROOT; ?>/js/supervisor/qr_scanner.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
