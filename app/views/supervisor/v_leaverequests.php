@@ -6,7 +6,7 @@
 
 
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/supervisor/leaverequest.style.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
     <!-- Content will be loaded here -->
      <main class="main-content">
@@ -37,53 +37,18 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="startDate">Starting Date</label>
-                            <div class="date-input-wrapper">
-                                <input type="text" id="startDate" name="start_date" placeholder="Select start date" class="date-picker" readonly>
-                                <div class="inline-calendar" id="startCalendar">
-                                    <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('startCalendar', -1)"><span>‹</span></button>
-                                        <span class="calendar-title" id="startCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('startCalendar', 1)"><span>›</span></button>
-                                    </div>
-                                    <div class="calendar-weekdays">
-                                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                                    </div>
-                                    <div class="calendar-days" id="startCalendarDays"></div>
-                                </div>
-                                <i class="calendar-icon fas fa-calendar-alt" onclick="toggleCalendar('startCalendar')"></i>
-                            </div>
+                            <input type="date" id="startDate" name="start_date" required min="<?php echo date('Y-m-d'); ?>">
                         </div>
                         
                         <div class="form-group">
                             <label for="endDate">End Date</label>
-                            <div class="date-input-wrapper">
-                                <input type="text" id="endDate" name="end_date" placeholder="Select end date" class="date-picker" readonly>
-                                <div class="inline-calendar" id="endCalendar">
-                                    <div class="calendar-header">
-                                        <button class="calendar-nav prev" onclick="changeMonth('endCalendar', -1)"><span>‹</span></button>
-                                        <span class="calendar-title" id="endCalendarTitle">December 2025</span>
-                                        <button class="calendar-nav next" onclick="changeMonth('endCalendar', 1)"><span>›</span></button>
-                                    </div>
-                                    <div class="calendar-weekdays">
-                                        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-                                    </div>
-                                    <div class="calendar-days" id="endCalendarDays"></div>
-                                </div>
-                                <i class="calendar-icon fas fa-calendar-alt" onclick="toggleCalendar('endCalendar')"></i>
-                            </div>
+                            <input type="date" id="endDate" name="end_date" required min="<?php echo date('Y-m-d'); ?>">
                         </div>
                     </div>
                     
                     <div class="form-group">
                         <label for="leaveProof">Leave Proof (Optional)</label>
-                        <div class="file-upload">
-                            <button type="button" id="attachFile" class="attach-btn">
-                                <span>📎</span>
-                                Attach File
-                            </button>
-                            <input type="file" id="fileInput" name="proof_file" accept=".pdf,.jpg,.jpeg,.png" hidden>
-                            <span id="fileName" class="file-name"></span>
-                        </div>
+                        <input type="file" id="fileInput" name="proof_file" accept=".pdf,.jpg,.jpeg,.png" style="width: 100%; padding: 0.75rem; border: 1px solid #e7c8ce; border-radius: 8px;">
                     </div>
                     
                     <button type="submit" class="submit-btn">Request Leave</button>
@@ -127,9 +92,11 @@
                                             <?php endif; ?>
                                         </td>
                                         <td>
-                                            <button onclick="deleteLeave(<?= $leave->id ?>)" class="delete-btn" title="Delete">
-                                                <span>🗑️</span>
-                                            </button>
+                                            <form method="POST" action="<?= URL_ROOT ?>/supervisor/deleteLeave/<?= $leave->id ?>" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this leave request?');">
+                                                <button type="submit" class="delete-btn" title="Delete">
+                                                    <span class="material-symbols-outlined">delete</span>
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -151,6 +118,5 @@
     <div class="backdrop" id="backdrop" hidden></div>
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+    
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
-
- <script src="<?= URL_ROOT ?>/js/supervisor/leaverequest.js"></script>

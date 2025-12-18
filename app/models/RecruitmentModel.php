@@ -12,7 +12,7 @@ class RecruitmentModel {
                          (job_title, job_description, qualifications, requirements, salary_range, location, due_date, status, officer_type, created_at) 
                          VALUES (:job_title, :job_description, :qualifications, :requirements, :salary_range, :location, :due_date, :status, :officer_type, NOW())');
 
-        // Bind values
+        // Bind valueswwffuagfudsgfsgfydsfywafywfuafuydsafyfsdfys
         $this->db->bind(':job_title', $data['job_title']);
         $this->db->bind(':job_description', $data['job_description']);
         $this->db->bind(':qualifications', $data['qualifications']);
@@ -106,6 +106,8 @@ class RecruitmentModel {
 
         return $results;
     }
+
+    //ascascasascsa
 
     // Check if job exists
     public function jobExists($id) {

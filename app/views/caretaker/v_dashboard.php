@@ -16,21 +16,9 @@
 
             <!-- Dashboard Content -->
             <div class="dashboard-content">
-                <!-- Top Section - User Profile and Instructions -->
-                <section class="top-section">
-                    <div class="instructions-section">
-                        <h2>Instructions from Admin</h2>
-                        <div class="instructions-content">
-                            <p>Good morning!</p>
-                            <p>Please ensure that all security officers at Site A have submitted their attendance by 9:00 AM.</p>
-                            <p>Also, don't forget to update the incident report if there were any issues during the night shift.</p>
-                            <p>Let me know once it's done.</p>
-                            <p>Thank you.</p>
-                        </div>
-                    </div>
-
-                    <!-- Right-side stat cards -->
-                    <div class="stats-column">
+                <!-- Stat Cards at Top -->
+                <section class="stats-section">
+                    <div class="stats-row">
                         <div class="stat-card purple">
                             <div class="stat-icon"><span class="material-icons">groups</span></div>
                             <div class="stat-text">
@@ -62,37 +50,108 @@
                     </div>
                 </section>
 
-                <!-- Bottom Section - Upload and Advertisements -->
+                <!-- Instructions Section -->
+                <section class="instructions-section-wrapper">
+                    <div class="instructions-section">
+                        <h2>Instructions from Admin</h2>
+                        <div class="instructions-content">
+                            <p>Good morning!</p>
+                            <p>Please ensure that all security officers at Site A have submitted their attendance by 9:00 AM.</p>
+                            <p>Also, don't forget to update the incident report if there were any issues during the night shift.</p>
+                            <p>Let me know once it's done.</p>
+                            <p>Thank you.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Bottom Section - Notifications and Advertisements -->
                 <section class="bottom-section">
-                    <div class="upload-section">
-                        <h2>Upoload Evidence/Photo</h2>
-                        <div class="upload-content">
-                            <textarea placeholder="Description" class="description-area"></textarea>
-                            <div class="file-previews">
-                                <div class="file-preview">
-                                    <span class="file-name">2023.8.2.1.jpg</span>
-                                    <button class="remove-file" onclick="removeFile(this)">×</button>
-                                </div>
-                                <div class="file-preview">
-                                    <span class="file-name">2023.8.2.2.jpg</span>
-                                    <button class="remove-file" onclick="removeFile(this)">×</button>
-                                </div>
-                                <div class="file-preview">
-                                    <span class="file-name">2023.8.2.3.jpg</span>
-                                    <button class="remove-file" onclick="removeFile(this)">×</button>
-                                </div>
-                                <div class="file-preview">
-                                    <span class="file-name">2023.8.2.4.jpg</span>
-                                    <button class="remove-file" onclick="removeFile(this)">×</button>
+                    <!-- Notifications/Alerts Panel -->
+                    <div class="notifications-section">
+                        <div class="section">
+                            <div class="section-header">
+                                <h3 class="section-title">
+                                    <span class="material-icons">notifications</span>
+                                    Notifications & Alerts
+                                </h3>
+                                <div class="section-actions">
+                                    <span class="notification-badge" id="notificationCount">3</span>
                                 </div>
                             </div>
-                            <div class="upload-actions">
-                                <button class="upload-btn">Upload Photos</button>
-                                <button class="submit-btn" style="display: none;">Submit Report</button>
+
+                            <div class="section-content">
+                                <div class="notifications-container">
+                                    <!-- Leave Request Notification -->
+                                    <div class="notification-item success">
+                                        <div class="notification-icon">
+                                            <span class="material-icons">check_circle</span>
+                                        </div>
+                                        <div class="notification-content">
+                                            <h4 class="notification-title">Leave Request Approved</h4>
+                                            <p class="notification-message">Your leave request for Dec 25-27 has been approved by Admin.</p>
+                                            <span class="notification-time">
+                                                <span class="material-icons">schedule</span>
+                                                2 hours ago
+                                            </span>
+                                        </div>
+                                        <button class="notification-dismiss" onclick="dismissNotification(this)" aria-label="Dismiss">
+                                            <span class="material-icons">close</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- System Alert -->
+                                    <div class="notification-item warning">
+                                        <div class="notification-icon">
+                                            <span class="material-icons">warning</span>
+                                        </div>
+                                        <div class="notification-content">
+                                            <h4 class="notification-title">Action Required</h4>
+                                            <p class="notification-message">Please update your attendance report for yesterday's shift.</p>
+                                            <span class="notification-time">
+                                                <span class="material-icons">schedule</span>
+                                                5 hours ago
+                                            </span>
+                                        </div>
+                                        <button class="notification-dismiss" onclick="dismissNotification(this)" aria-label="Dismiss">
+                                            <span class="material-icons">close</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- New Message Notification -->
+                                    <div class="notification-item info">
+                                        <div class="notification-icon">
+                                            <span class="material-icons">message</span>
+                                        </div>
+                                        <div class="notification-content">
+                                            <h4 class="notification-title">New Message</h4>
+                                            <p class="notification-message">You have a new message from Supervisor regarding shift changes.</p>
+                                            <span class="notification-time">
+                                                <span class="material-icons">schedule</span>
+                                                1 day ago
+                                            </span>
+                                        </div>
+                                        <button class="notification-dismiss" onclick="dismissNotification(this)" aria-label="Dismiss">
+                                            <span class="material-icons">close</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Empty State (hidden when notifications exist) -->
+                                    <div class="notifications-empty" style="display: none;">
+                                        <span class="material-icons">notifications_off</span>
+                                        <p>No new notifications</p>
+                                    </div>
+                                </div>
+
+                                <div class="notifications-footer">
+                                    <button class="mark-all-read-btn" onclick="markAllAsRead()">
+                                        <span class="material-icons">done_all</span>
+                                        Mark All as Read
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="advertisements-section">
                          <!-- ==========================
      Advertisements Section (RIGHT SIDE)

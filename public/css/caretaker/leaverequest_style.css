@@ -48,6 +48,18 @@
     font-size: 14px;
 }
 
+/* Date inputs specific styling */
+.form-group input[type="date"] {
+    cursor: pointer;
+    position: relative;
+}
+
+.form-group input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+}
+
 .form-group input:focus,
 .form-group textarea:focus,
 .form-group select:focus {
