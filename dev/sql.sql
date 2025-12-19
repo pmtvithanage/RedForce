@@ -1,7 +1,7 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS REDFORCE_db;
+CREATE DATABASE IF NOT EXISTS redforce_db;
 
-USE REDFORCE_db;
+USE redforce_db;
 
 -- Users table
 CREATE TABLE
@@ -278,6 +278,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 );
 
 
+
 --================================================2025-12-3 Start(Pasan)========================================
 -- Create database
 CREATE DATABASE IF NOT EXISTS REDFORCE_db;
@@ -395,3 +396,139 @@ ADD COLUMN IF NOT EXISTS approved_by INT NULL AFTER status;
 
   ALTER TABLE submittedApplications
 ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP NULL;
+
+-- ========================================
+-- LEAVE REQUEST TABLES
+-- ========================================
+
+-- Supervisor Leave Requests Table Schema
+-- This table stores leave requests submitted by supervisors
+CREATE TABLE IF NOT EXISTS supervisor_leave_requests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    supervisor_id INT NOT NULL,
+    leave_type VARCHAR(50) NOT NULL,
+    reason TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    proof_file VARCHAR(255) DEFAULT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    admin_response TEXT DEFAULT NULL,
+    reviewed_by INT DEFAULT NULL,
+    reviewed_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (supervisor_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (reviewed_by) REFERENCES Users(id) ON DELETE SET NULL
+);
+
+-- Add columns for admin approval functionality to leave_requests table
+ALTER TABLE leave_requests 
+ADD COLUMN IF NOT EXISTS admin_response TEXT NULL COMMENT 'Reason for rejection' AFTER status,
+ADD COLUMN IF NOT EXISTS reviewed_by INT(11) NULL COMMENT 'Admin user ID who reviewed' AFTER admin_response,
+ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMP NULL COMMENT 'When the request was reviewed' AFTER reviewed_by;
+
+-- Add foreign key constraint for reviewed_by
+ALTER TABLE leave_requests
+ADD CONSTRAINT fk_reviewed_by 
+FOREIGN KEY (reviewed_by) REFERENCES users(id) 
+ON DELETE SET NULL;
+
+-- Note: If using the existing leave_requests table, make sure it supports multiple user types
+-- Alternative: Modify existing leave_requests table to support multiple user types
+-- ALTER TABLE leave_requests ADD COLUMN user_type ENUM('caretaker', 'supervisor', 'mobile_rider', 'premise_officer') DEFAULT 'caretaker';
+-- ALTER TABLE leave_requests ADD COLUMN user_id INT NOT NULL;
+
+-- ========================================
+-- OFFICER ATTENDANCE TABLE
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS officer_attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    supervisor_id INT NOT NULL COMMENT 'References Users table',
+    officer_id VARCHAR(50) NOT NULL COMMENT 'Officer ID from Users table',
+    officer_name VARCHAR(255) NOT NULL,
+    attendance_date DATE NOT NULL,
+    check_in_time TIME DEFAULT NULL,
+    check_out_time TIME DEFAULT NULL,
+    status ENUM('Present', 'Absent', 'Late', 'Half Day') NOT NULL DEFAULT 'Present',
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (supervisor_id) REFERENCES Users(id) ON DELETE CASCADE,
+    INDEX idx_supervisor_date (supervisor_id, attendance_date),
+    INDEX idx_officer_id (officer_id),
+    INDEX idx_attendance_date (attendance_date),
+    INDEX idx_status (status),
+    UNIQUE KEY unique_officer_date (officer_id, attendance_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- ========================================
+-- CARETAKER NOTES TABLE
+-- Personal notes system for caretakers
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS `caretaker_notes` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `caretaker_id` INT NOT NULL COMMENT 'Foreign key to Users table',
+  `title` VARCHAR(255) NOT NULL,
+  `note_content` TEXT NOT NULL,
+  `category` ENUM('General', 'Important', 'Reminder', 'Observation') NOT NULL DEFAULT 'General',
+  `priority` ENUM('Low', 'Medium', 'High') NOT NULL DEFAULT 'Medium',
+  `reminder_date` DATE NULL COMMENT 'Optional reminder date',
+  `is_pinned` TINYINT(1) DEFAULT 0 COMMENT '1 = pinned to top',
+  `is_completed` TINYINT(1) DEFAULT 0 COMMENT '1 = completed reminder',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign Key
+  CONSTRAINT `fk_notes_caretaker` FOREIGN KEY (`caretaker_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE,
+  
+  -- Indexes
+  INDEX `idx_caretaker` (`caretaker_id`),
+  INDEX `idx_category` (`category`),
+  INDEX `idx_priority` (`priority`),
+  INDEX `idx_reminder_date` (`reminder_date`),
+  INDEX `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sample data for caretaker_notes (optional)
+INSERT INTO `caretaker_notes` (`caretaker_id`, `title`, `note_content`, `category`, `priority`, `reminder_date`) VALUES
+(9, 'Check main gate lock', 'Need to inspect the main gate lock mechanism as it was sticking yesterday. May need lubrication or replacement.', 'Observation', 'High', CURDATE()),
+(9, 'Submit monthly report', 'Monthly security report due by end of week. Include all incident logs and patrol summaries.', 'Reminder', 'Medium', DATE_ADD(CURDATE(), INTERVAL 3 DAY)),
+(9, 'Equipment inventory', 'Flashlight batteries running low. Radio channel 3 has static. Need to request new uniform.', 'General', 'Low', NULL);
+
+-- ========================================
+-- EQUIPMENT REQUESTS TABLE
+-- System for caretakers to request equipment
+-- ========================================
+
+CREATE TABLE IF NOT EXISTS `equipment_requests` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `caretaker_id` INT NOT NULL COMMENT 'Foreign key to Users table',
+  `item_name` VARCHAR(255) NOT NULL,
+  `quantity` INT NOT NULL,
+  `unit_price` DECIMAL(10,2) NOT NULL,
+  `total_cost` DECIMAL(10,2) GENERATED ALWAYS AS (`quantity` * `unit_price`) STORED,
+  `reason` TEXT NOT NULL,
+  `urgency` ENUM('Low', 'Medium', 'High') NOT NULL DEFAULT 'Medium',
+  `preferred_supplier` VARCHAR(255) DEFAULT NULL,
+  `additional_notes` TEXT DEFAULT NULL,
+  `status` ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+  `supervisor_response` TEXT DEFAULT NULL,
+  `reviewed_by` INT DEFAULT NULL COMMENT 'Supervisor who reviewed',
+  `reviewed_at` TIMESTAMP NULL DEFAULT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign Keys
+  CONSTRAINT `fk_equipment_caretaker` FOREIGN KEY (`caretaker_id`) REFERENCES `Users`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_equipment_reviewer` FOREIGN KEY (`reviewed_by`) REFERENCES `Users`(`id`) ON DELETE SET NULL,
+  
+  -- Indexes
+  INDEX `idx_equipment_caretaker` (`caretaker_id`),
+  INDEX `idx_equipment_status` (`status`),
+  INDEX `idx_equipment_urgency` (`urgency`),
+  INDEX `idx_equipment_created` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
