@@ -132,7 +132,7 @@ class Home extends Controller {
         }
     }
 
-    private function submit_application($role) {
+    public function submit_application($role) {
         try {
             $exist = $this->adminModel->getJobApplication($role);
             

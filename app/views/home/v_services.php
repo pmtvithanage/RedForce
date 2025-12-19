@@ -34,11 +34,11 @@
         <!-- Logo Upload Section -->
         <div class="photo-upload">
           
-        <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/public/img/photo.png" 
-         alt="Uploaded logo preview" 
-         id="imagePlaceholder"
-         data-default-src="<?php echo URL_ROOT; ?>/public/img/photo.png" />
-         <span class="form-input-error"><?php echo $data['image_err'];?></span>
+          <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/public/img/photo.png" 
+          alt="Uploaded logo preview" 
+          id="imagePlaceholder"
+          data-default-src="<?php echo URL_ROOT; ?>/public/img/photo.png" />
+          <span class="form-input-error"><?php echo $data['image_err'];?></span>
 
           
           <div class="btn-upload" id="addImageBtn" onClick="toggleBrowse()">Add Logo</div>
