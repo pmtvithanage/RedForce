@@ -107,9 +107,6 @@ class RecruitmentModel {
         return $results;
     }
 
-    //ascascasascsa
-    //acssacaaca
-
     // Check if job exists
     public function jobExists($id) {
         $this->db->query('SELECT id FROM recruitment_jobs WHERE id = :id');
