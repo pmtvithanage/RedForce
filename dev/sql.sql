@@ -1,7 +1,7 @@
 -- Create database
-CREATE DATABASE IF NOT EXISTS REDFORCE_db;
+CREATE DATABASE IF NOT EXISTS redforce_db;
 
-USE REDFORCE_db;
+USE redforce_db;
 
 -- Users table
 CREATE TABLE
