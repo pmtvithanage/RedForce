@@ -587,7 +587,7 @@ public function changeStatus($role, $status) {
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
-        return $this->db->resultSet();
+        //return $this->db->resultSet();
     }
 
     // Get leave request by ID (from all roles)

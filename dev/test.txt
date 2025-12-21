@@ -25,3 +25,14 @@ sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/publi
 sudo mkdir -p /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/applicantCVs 
 sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/applicantCVs 
 sudo chmod -R 755 /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/applicantCVs 
+
+
+
+
+
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/
+
+# If the clientLogos directory doesn't exist yet, create it with proper permissions
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
