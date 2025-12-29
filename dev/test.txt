@@ -36,3 +36,24 @@ sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/
 sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
 sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
 sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/applicantCVs 
+
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/clientLogos 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/clientLogos 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/clientLogos 
+
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/siteImages 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/siteImages 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/siteImages 
+
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/applicantPhotos 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/applicantPhotos 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/applicantPhotos 
+
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/evidence 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/evidence 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/evidence 
+
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest 
+

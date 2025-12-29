@@ -1,0 +1,443 @@
+<?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+
+<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+<!-- <span class="material-icons">face</span> -->
+
+
+    <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+        Back
+    </button>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #a40000;
+            --primary-dark: #7a0000;
+            --primary-light: #d84f4f;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #333;
+            --text-color: #444;
+            --white: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+        }
+
+
+        .container {
+            margin: 20px;   
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--dark-gray);
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .profile-card {
+            display: flex;
+            flex-direction: column;
+            background-color: var(--white);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        @media (min-width: 768px) {
+            .profile-card {
+                flex-direction: row;
+            }
+        }
+
+        .profile-header {
+            background: linear-gradient(to right, #a40000, #fe8e8eff);
+            color: var(--white);
+            padding: 30px;
+            text-align: center;
+            flex: 1;
+        }
+
+        @media (min-width: 768px) {
+            .profile-header {
+                flex: 0 0 300px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+        }
+
+        .profile-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .profile-name {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .profile-rank {
+            display: inline-block;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .profile-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #2e7d32;
+        }
+
+        .status-on-leave {
+            background-color: rgba(255, 152, 0, 0.2);
+            color: #ef6c00;
+        }
+
+        .profile-contact {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .contact-item i {
+            width: 20px;
+            color: var(--primary-light);
+        }
+
+        .profile-details {
+            flex: 2;
+            padding: 30px;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detail-group {
+            margin-bottom: 15px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-label i {
+            color: var(--primary-color);
+            width: 20px;
+        }
+
+        .detail-value {
+            padding: 10px 15px;
+            background-color: var(--light-gray);
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-junior {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .badge-senior {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .badge-supervisor {
+            background-color: #fff3e0;
+            color: #ef6c00;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--medium-gray);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--medium-gray);
+            margin-top: 30px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 767px) {
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <main class="profile-card">
+            <div class="profile-header">
+                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Officer Photo" class="profile-image">
+                <h2 class="profile-name">Alexandra Rodriguez</h2>
+                <div class="profile-rank">Senior Officer</div>
+                <div class="profile-status status-active">Active</div>
+                
+                <div class="profile-contact">
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+1 (555) 123-4567</span>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>arodriguez@police.gov</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-details">
+                <h3 class="section-title">Personal Information</h3>
+                <div class="details-grid">
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-id-card"></i>
+                            Officer ID
+                        </div>
+                        <div class="detail-value">PO-78342</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-birthday-cake"></i>
+                            Date of Birth
+                        </div>
+                        <div class="detail-value">June 15, 1985</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-address-card"></i>
+                            NIC Number
+                        </div>
+                        <div class="detail-value">851234567V</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-venus-mars"></i>
+                            Gender
+                        </div>
+                        <div class="detail-value">Female</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Address
+                        </div>
+                        <div class="detail-value">123 Main Street, Springfield</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-map"></i>
+                            District
+                        </div>
+                        <div class="detail-value">Springfield District</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-city"></i>
+                            City
+                        </div>
+                        <div class="detail-value">Springfield</div>
+                    </div>
+                </div>
+                
+                <h3 class="section-title">Employment Details</h3>
+                <div class="details-grid">
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Hire Date
+                        </div>
+                        <div class="detail-value">March 10, 2012</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-user-tie"></i>
+                            Rank
+                        </div>
+                        <div class="detail-value">
+                            <span class="badge badge-senior">Senior</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-clock"></i>
+                            Shift Pattern
+                        </div>
+                        <div class="detail-value">Day Shift (7 AM - 3 PM)</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-calendar-check"></i>
+                            Employment Status
+                        </div>
+                        <div class="detail-value">
+                            <span class="profile-status status-active">Active</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-file-alt"></i>
+                            Application ID
+                        </div>
+                        <div class="detail-value">APP-2023-0456</div>
+                    </div>
+                    
+                    <div class="detail-group">
+                        <div class="detail-label">
+                            <i class="fas fa-calendar-plus"></i>
+                            Last Updated
+                        </div>
+                        <div class="detail-value">June 5, 2023</div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-secondary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                    <button class="btn btn-primary">
+                        View Calander
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+           
+        </footer>
+    </div>
+
+    
+</body>
+</html>
+    </main>
+    </div>
+
+    <div class="backdrop" id="backdrop" hidden></div>
+
+    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

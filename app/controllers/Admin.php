@@ -71,10 +71,11 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function officers() {
-        
+        $officers = $this->adminModel->getAllPO();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_officers', $data);
     }
@@ -93,6 +94,15 @@ class Admin extends Controller {
             'pageTitle' => 'Manage Officers'
     ];
         $this->view('admin/officers/v_caretakers', $data);
+    }
+
+    public function officer_profile(){
+         
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Profile'
+    ];
+        $this->view('admin/officers/v_officer_profile', $data);
     }
 
     public function porecruitment() {

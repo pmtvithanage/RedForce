@@ -19,7 +19,8 @@ CREATE TABLE
             'client',
             'caretaker'
         ) NOT NULL,
-        image VARCHAR(255) DEFAULT NULL,
+        phone_number VARCHAR(50),
+        profile_image VARCHAR(255) DEFAULT NULL,
         status ENUM ('active', 'inactive', 'suspended') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -97,7 +98,7 @@ VALUES
 
 -- Advertisements table
 CREATE TABLE
-    Advertisements (
+    advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         image_path VARCHAR(500) NOT NULL,
@@ -333,22 +334,22 @@ CREATE TABLE
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20),
+    date_of_birth DATE,
+    NIC INT,
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
     cv VARCHAR(255),
     photo VARCHAR(255),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    role VARCHAR(100),
+    status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT NULL,
+    approved_at TIMESTAMP NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (approved_by) REFERENCES Users(userID) ON DELETE SET NULL -- newly added 
   );
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS role VARCHAR(100);
-
-ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending';
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS approved_by INT NULL AFTER status;
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP NULL;
 
 -- ========================================
 -- LEAVE REQUEST TABLES
@@ -483,3 +484,59 @@ CREATE TABLE IF NOT EXISTS `equipment_requests` (
   INDEX `idx_equipment_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS premise_officers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    officerID VARCHAR(50) UNIQUE NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior', 'Supervisor') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL,
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+CREATE OR REPLACE VIEW premise_officers_full_details AS
+SELECT 
+    po.id AS premise_officer_id,
+    po.officerID,
+    po.date_of_birth,
+    po.NIC,
+    po.gender,
+    po.address,
+    po.district,
+    po.city,
+    po.hire_date,
+    po.employment_status,
+    po.rank,
+    po.rating,
+    po.shift_pattern,
+    po.application_id,
+    po.created_at AS officer_record_created,
+    po.updated_at AS officer_record_updated,
+    
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM premise_officers po
+LEFT JOIN Users u ON po.userID = u.id
+WHERE u.role = 'premise officer' OR po.userID IS NOT NULL;

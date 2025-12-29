@@ -29,6 +29,8 @@
     border-radius:12px;
     box-shadow:0 0 10px rgba(0,0,0,0.08);
     margin-top:-5px;
+    max-height:550px;
+    overflow-y: auto;
 }
 
 /* Search Bar */
@@ -52,6 +54,15 @@
 /* Table */
 table{ width:100%; border-collapse:collapse;}
 th,td{ padding:12px; font-size:14px; text-align:left;}
+tr {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+tr:hover {
+    background-color: #efefefff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
 thead th{ background:#f9e9e9; }
 
 
@@ -115,52 +126,44 @@ thead th{ background:#f9e9e9; }
         <table>
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th> </th>
                     <th>Officer ID</th>
                     <th>Officer</th>
                     <th>Rank</th>
                     <th>Status</th>
-                    <th>Assignment</th>
+                    <th>Location</th>
                     <th>Rating</th>
                 </tr>
             </thead>
 
             <tbody>
-                <tr>
-                    <td>1</td><td>PF231</td><td>Nuwan Perera</td>
-                    <td>OIC</td><td><span class="badge green">On Duty</span></td>
-                    <td>People's Bank PLC</td><td>1403</td>
-                </tr>
+                <?php foreach($data['officer'] as $officer) : ?>
+                    <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officer_profile/<?php echo $officer->officerID; ?>'">
+                        <td style="padding: 8px; text-align: center;">
+                            <?php if(!empty($officer->profile_image)): ?>
+                                <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 
+                                    alt="<?php echo $officer->name; ?>" 
+                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e0e0e0;">
+                            <?php else: ?>
+                                <div style="width: 40px; height: 40px; border-radius: 50%; background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; margin: 0 auto; border: 2px solid #e0e0e0;">
+                                    <span style="font-weight: bold; color: #666;"><?php echo substr($officer->name, 0, 1); ?></span>
+                                </div>
+                            <?php endif; ?>
+                        </td>
+                        <td><?php echo $officer->officerID; ?></td>
+                        <td><?php echo $officer->name; ?></td>
+                        <td><?php echo $officer->rank; ?></td>
+                        <td>
+                            <span class="badge <?php echo ($officer->user_status == 'active') ? 'green' : 'red'; ?>">
+                                <?php echo $officer->user_status; ?>
+                            </span>
+                        </td>
+                        <td><?php echo "{$officer->city}, {$officer->district}"; ?></td>
+                        <td><?php echo ($officer->rating == NULL) ? '---' : $officer->rating; ?></td>
+                    </tr>
+                <?php endforeach; ?>
 
-                <tr>
-                    <td>2</td><td>PF416</td><td>Kasun Silva</td>
-                    <td>OIC</td><td><span class="badge red">On Leave</span></td>
-                    <td>Cargills PLC</td><td>1399</td>
-                </tr>
-
-                <tr>
-                    <td>3</td><td>PF664</td><td>Dilan Jayasuriya</td>
-                    <td>OIC</td><td><span class="badge green">On Duty</span></td>
-                    <td>Aitken Spence PLC</td><td>1382</td>
-                </tr>
-
-                <tr>
-                    <td>4</td><td>PF220</td><td>Chamika Bandara</td>
-                    <td>Level 4</td><td><span class="badge green">On Duty</span></td>
-                    <td>Sri Lanka Telecom</td><td>1380</td>
-                </tr>
-
-                <tr>
-                    <td>5</td><td>PF100</td><td>Suranga Kumara</td>
-                    <td>OIC</td><td><span class="badge green">On Duty</span></td>
-                    <td>Petroleum Corporation</td><td>1376</td>
-                </tr>
-
-                <tr>
-                    <td>6</td><td>PF230</td><td>Tharindu Wickramasinghe</td>
-                    <td>Level 3</td><td><span class="badge yellow">On Break</span></td>
-                    <td>People's Bank PLC</td><td>1373</td>
-                </tr>
+                
             </tbody>
         </table>
     </div>
