@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS redforce_db;
 USE redforce_db;
 
 -- Users table
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     Users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         userID VARCHAR(50) UNIQUE NOT NULL,
@@ -215,7 +215,7 @@ ALTER TABLE `incident_reports`
 -- Constraints for table `incident_reports`
 
 ALTER TABLE `incident_reports`
-  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`ser_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 
 
@@ -348,7 +348,7 @@ CREATE TABLE
     approved_at TIMESTAMP NULL,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    FOREIGN KEY (approved_by) REFERENCES Users(userID) ON DELETE SET NULL -- newly added 
+    FOREIGN KEY (approved_by) REFERENCES Users(id) ON DELETE SET NULL -- newly added 
   );
 
 -- ========================================
