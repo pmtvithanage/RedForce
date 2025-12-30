@@ -138,7 +138,7 @@ thead th{ background:#f9e9e9; }
 
             <tbody>
                 <?php foreach($data['officer'] as $officer) : ?>
-                    <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officer_profile/<?php echo $officer->officerID; ?>'">
+                    <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officer_profile/<?php echo $officer->premise_officer_id; ?>'">
                         <td style="padding: 8px; text-align: center;">
                             <?php if(!empty($officer->profile_image)): ?>
                                 <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 

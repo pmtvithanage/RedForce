@@ -80,27 +80,30 @@ class Admin extends Controller {
         $this->view('admin/officers/v_officers', $data);
     }
     public function mobileriders() {
-        
+        $officers = $this->adminModel->getAllMR();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_mobileriders', $data);
     }
     public function caretakers() {
-        
+        $officers = $this->adminModel->getAllCT();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_caretakers', $data);
     }
 
-    public function officer_profile(){
-         
+    public function officer_profile($id){
+        $officer = $this->adminModel->getPOById($id);
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Officer Profile'
+            'pageTitle' => 'Officer Profile',
+            'officer' => $officer
     ];
         $this->view('admin/officers/v_officer_profile', $data);
     }

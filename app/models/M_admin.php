@@ -15,6 +15,13 @@ public function getAllPO() {
     return $this->db->resultSet();
 }
 
+public function getPOById($premise_officer_id) {
+    $this->db->query("SELECT * FROM premise_officers_full_details WHERE premise_officer_id = :id");
+    $this->db->bind(':id', $premise_officer_id);
+    return $this->db->single();
+}
+
+
 //Insert Job Application
 public function insertJobApplication($data,$role) {
     $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null

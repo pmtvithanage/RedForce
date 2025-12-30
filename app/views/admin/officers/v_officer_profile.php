@@ -283,19 +283,19 @@
 
         <main class="profile-card">
             <div class="profile-header">
-                <img src="https://images.unsplash.com/photo-1582750433449-648ed127bb54?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" alt="Officer Photo" class="profile-image">
-                <h2 class="profile-name">Alexandra Rodriguez</h2>
-                <div class="profile-rank">Senior Officer</div>
-                <div class="profile-status status-active">Active</div>
+                <img class="profile-image" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" alt="<?php echo $officer->name; ?>" >
+                <h2 class="profile-name"><?php echo $officer->name; ?></h2>
+                <div class="profile-rank"><?php echo $officer->rank; ?></div>
+                <div class="profile-status status-active"><?php echo $officer->user_status; ?></div>
                 
                 <div class="profile-contact">
                     <div class="contact-item">
                         <i class="fas fa-phone"></i>
-                        <span>+1 (555) 123-4567</span>
+                        <span><?php echo $officer->phone_number; ?></span>
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
-                        <span>arodriguez@police.gov</span>
+                        <span><?php echo $officer->email; ?></span>
                     </div>
                 </div>
             </div>
@@ -308,7 +308,7 @@
                             <i class="fas fa-id-card"></i>
                             Officer ID
                         </div>
-                        <div class="detail-value">PO-78342</div>
+                        <div class="detail-value"><?php echo $officer->officerID; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -316,7 +316,7 @@
                             <i class="fas fa-birthday-cake"></i>
                             Date of Birth
                         </div>
-                        <div class="detail-value">June 15, 1985</div>
+                        <div class="detail-value"><?php echo $officer->date_of_birth; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -324,7 +324,7 @@
                             <i class="fas fa-address-card"></i>
                             NIC Number
                         </div>
-                        <div class="detail-value">851234567V</div>
+                        <div class="detail-value"><?php echo $officer->NIC; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -332,7 +332,7 @@
                             <i class="fas fa-venus-mars"></i>
                             Gender
                         </div>
-                        <div class="detail-value">Female</div>
+                        <div class="detail-value"><?php echo $officer->gender; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -340,7 +340,7 @@
                             <i class="fas fa-map-marker-alt"></i>
                             Address
                         </div>
-                        <div class="detail-value">123 Main Street, Springfield</div>
+                        <div class="detail-value"><?php echo $officer->address; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -348,7 +348,7 @@
                             <i class="fas fa-map"></i>
                             District
                         </div>
-                        <div class="detail-value">Springfield District</div>
+                        <div class="detail-value"><?php echo $officer->district; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -356,7 +356,7 @@
                             <i class="fas fa-city"></i>
                             City
                         </div>
-                        <div class="detail-value">Springfield</div>
+                        <div class="detail-value"><?php echo $officer->city; ?></div>
                     </div>
                 </div>
                 
@@ -367,7 +367,7 @@
                             <i class="fas fa-calendar-alt"></i>
                             Hire Date
                         </div>
-                        <div class="detail-value">March 10, 2012</div>
+                        <div class="detail-value"><?php echo $officer->hire_date; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -376,7 +376,7 @@
                             Rank
                         </div>
                         <div class="detail-value">
-                            <span class="badge badge-senior">Senior</span>
+                            <span class="badge badge-senior"><?php echo $officer->rank; ?></span>
                         </div>
                     </div>
                     
@@ -385,7 +385,7 @@
                             <i class="fas fa-clock"></i>
                             Shift Pattern
                         </div>
-                        <div class="detail-value">Day Shift (7 AM - 3 PM)</div>
+                        <div class="detail-value"><?php echo $officer->shift_pattern; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -394,7 +394,7 @@
                             Employment Status
                         </div>
                         <div class="detail-value">
-                            <span class="profile-status status-active">Active</span>
+                            <span class="profile-status status-active"><?php echo $officer->user_status; ?></span>
                         </div>
                     </div>
                     
@@ -403,7 +403,7 @@
                             <i class="fas fa-file-alt"></i>
                             Application ID
                         </div>
-                        <div class="detail-value">APP-2023-0456</div>
+                        <div class="detail-value"><?php echo $officer->application_id; ?></div>
                     </div>
                     
                     <div class="detail-group">
@@ -411,7 +411,7 @@
                             <i class="fas fa-calendar-plus"></i>
                             Last Updated
                         </div>
-                        <div class="detail-value">June 5, 2023</div>
+                        <div class="detail-value"><?php echo $officer->user_account_updated; ?></div>
                     </div>
                 </div>
                 
