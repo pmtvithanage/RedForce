@@ -71,28 +71,59 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function officers() {
-        
+        $officers = $this->adminModel->getAllPO();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_officers', $data);
     }
     public function mobileriders() {
-        
+        $officers = $this->adminModel->getAllMR();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_mobileriders', $data);
     }
     public function caretakers() {
-        
+        $officers = $this->adminModel->getAllCT();
         $data = [
             'title' => 'Officers',
-            'pageTitle' => 'Manage Officers'
+            'pageTitle' => 'Manage Officers',
+            'officer' => $officers
     ];
         $this->view('admin/officers/v_caretakers', $data);
+    }
+
+    public function officer_profile($id){
+        $officer = $this->adminModel->getPOById($id);
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Profile',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_officer_profile', $data);
+    }
+    public function mobile_rider_profile($id){
+        $officer = $this->adminModel->getMRById($id);
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Profile',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_mobilerider_profile', $data);
+    }
+    public function care_taker_profile($id){
+        $officer = $this->adminModel->getCTById($id);
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Profile',
+            'officer' => $officer
+    ];
+        $this->view('admin/officers/v_caretaker_profile', $data);
     }
 
     public function porecruitment() {
@@ -718,6 +749,17 @@ public function editSite($site_id){
         $this->view('admin/v_scheduling', $data);
     }
 
+// ======================================================================== //
+// =======================      Admin Routes       ====================== //
+// ======================================================================== //
+
+    public function routes() {
+        $data = [
+            'title' => 'Routes',
+            'pageTitle' => 'Manage Routings'
+        ];
+        $this->view('admin/routes/v_routes', $data);
+    }
 // ======================================================================== //
 // =======================      Admin Salary       ====================== //
 // ======================================================================== //

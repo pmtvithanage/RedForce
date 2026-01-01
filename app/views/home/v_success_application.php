@@ -63,7 +63,40 @@
         <div class="field">
           <div class="field-label"><strong>Phone Number: </strong><?php echo $data['phone']; ?></div>
           
-        </div>  
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Date Of Birth: </strong><?php echo $data['birthday']; ?></div>
+          
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>National Identity Number:: </strong><?php echo $data['national_id']; ?></div>
+          
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Gender: </strong><?php echo $data['gender']; ?></div>
+          
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Permanent Address: </strong><?php echo $data['address']; ?></div>
+          
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>District: </strong><?php echo $data['district']; ?></div>
+          
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>City: </strong><?php echo $data['city']; ?></div>
+          
+        </div>
+
+        
+
 
         <div class="field">
           <div class="field-label">

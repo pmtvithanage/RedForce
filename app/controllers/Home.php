@@ -159,15 +159,30 @@ class Home extends Controller {
                         'name' => $this->sanitizeInput($_POST['name'] ?? ''),
                         'email' => $this->sanitizeInput($_POST['email'] ?? ''),
                         'phone' => $this->sanitizeInput($_POST['phone'] ?? ''),
+                        'birthday' => $this->sanitizeInput($_POST['birthday'] ?? ''),
+                        'national_id' => $this->sanitizeInput($_POST['national_id'] ?? ''),
+                        'gender' => $this->sanitizeInput($_POST['gender'] ?? ''),
+                        'address' => $this->sanitizeInput($_POST['address'] ?? ''),
+                        'district' => $this->sanitizeInput($_POST['district'] ?? ''),
+                        'city' => $this->sanitizeInput($_POST['city'] ?? ''),
+                        
                         'image' => $_FILES['image'],
                         'image_name' => time(). '_' . $_FILES['image']['name'],
                         'cv' => $_FILES['cv'],
                         'cv_name' => time(). '_' . $_FILES['cv']['name'],
+
                         'image_err' => '',
                         'name_err' => '',
                         'email_err' => '',
                         'phone_err' => '',
                         'cv_err' => '',
+
+                        'birthday_err' => '',
+                        'national_id_err' => '',
+                        'gender_err' => '',
+                        'address_err' => '',
+                        'district_err' => '',
+                        'city_err' => '',
                     ];
 
                     // Validate inputs
@@ -190,10 +205,29 @@ class Home extends Controller {
                     if(empty($data['cv']['name'])){
                         $data['cv_err'] = 'Please attach your CV';
                     }
+                    if(empty($data['birthday'])){
+                        $data['birthday_err'] = 'Please enter your birthday';
+                    }
+                    if(empty($data['national_id'])){
+                        $data['national_id_err'] = 'Please enter your NIC number';
+                    }
+                    if(empty($data['gender'])){
+                        $data['gender_err'] = 'Please enter your gender';
+                    }
+                    if(empty($data['address'])){
+                        $data['address_err'] = 'Please enter your address';
+                    }
+                    if(empty($data['district'])){
+                        $data['district_err'] = 'Please enter your district';
+                    }
+                    if(empty($data['city'])){
+                        $data['city_err'] = 'Please enter your city';
+                    }
 
                     // Make sure no errors
-                    if(empty($data['name_err']) && empty($data['image_err']) && empty($data['cv_err']) && empty($data['email_err']) && empty($data['phone_err'])){
+                    if(empty($data['name_err']) && empty($data['image_err']) && empty($data['cv_err']) && empty($data['email_err']) && empty($data['phone_err']) && empty($data['birthday_err']) && empty($data['national_id_err']) && empty($data['gender_err']) && empty($data['address_err']) && empty($data['district_err']) && empty($data['city_err'])) {
                         // Upload files
+                        
                         $imageUploaded = uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/applicantPhotos/');
                         $cvUploaded = uploadImage($data['cv']['tmp_name'], $data['cv_name'], '/uploads/applicantCVs/');
                         
@@ -222,15 +256,29 @@ class Home extends Controller {
                         'name' => '',
                         'email' => '',
                         'phone' => '',
+                        'birthday' => '',
+                        'national_id' => '',
+                        'gender' => '',
+                        'address' => '',
+                        'district' => '',
+                        'city' => '',
+
                         'image' => '',
                         'image_name' => '',
                         'cv' => '',
                         'cv_name' => '',
+
                         'image_err' => '',
                         'name_err' => '',
                         'email_err' => '',
                         'phone_err' => '',
                         'cv_err' => '',
+                        'birthday_err' => '',
+                        'national_id_err' => '',
+                        'gender_err' => '',
+                        'address_err' => '',
+                        'district_err' => '',
+                        'city_err' => '',
                     ];
 
                     $this->view('home/v_job_application',$data);

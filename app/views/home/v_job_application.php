@@ -86,9 +86,51 @@
 
       <div class="field">
         <div class="field-label">Phone Number:</div>
-        <input class="field-input" type="text" id="phone" name="phone" value="<?php echo $data['phone']; ?>" placeholder="Enter your phone number"/>
+        <input class="field-input" type="text" id="phone" name="phone" value="<?php echo $data['phone']; ?>" placeholder="Enter your phone number" />
         <span class="form-input-error"><?php echo $data['phone_err'];?></span>
       </div>
+
+      <div class="field">
+        <div class="field-label">Date Of Birth:</div>
+        <input class="field-input" type="date" id="birthday" name="birthday" value="<?php echo $data['birthday']; ?>" />
+        <span class="form-input-error"><?php echo $data['birthday_err'];?></span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">National Identity Number:</div>
+        <input class="field-input" type="text" id="national_id" name="national_id" value="<?php echo $data['national_id']; ?>" placeholder="Enter your national ID number" />
+        <span class="form-input-error"><?php echo $data['national_id_err'];?></span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Gender:</div>
+        <select class="field-input" id="gender" name="gender">
+          <option value="">Select Gender</option>
+          <option value="male" <?php echo ($data['gender'] == 'male') ? 'selected' : ''; ?>>Male</option>
+          <option value="female" <?php echo ($data['gender'] == 'female') ? 'selected' : ''; ?>>Female</option>
+          <option value="other" <?php echo ($data['gender'] == 'other') ? 'selected' : ''; ?>>Other</option>
+        </select>
+        <span class="form-input-error"><?php echo $data['gender_err'];?></span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">Permanent Address:</div>
+        <input class="field-input" type="text" id="address" name="address" value="<?php echo $data['address']; ?>" placeholder="Enter your permanent address" />
+        <span class="form-input-error"><?php echo $data['address_err'];?></span>
+      </div>
+
+      <div class="field">
+        <div class="field-label">District:</div> 
+        <input class="field-input" type="text" id="district" name="district" value="<?php echo $data['district']; ?>" placeholder="Enter your district" />
+        <span class="form-input-error"><?php echo $data['district_err'];?></span>
+      </div>
+
+      <div class="field" id="city-field" name="city-filed" style="display: none;">
+        <div class="field-label">City:</div> 
+        <input class="field-input" type="text" id="city" name="city" value="<?php echo $data['city']; ?>" placeholder="Enter your city" />
+        <span class="form-input-error"><?php echo $data['city_err'];?></span>
+      </div>
+
 
       <div class="field file-field">
         <div class="field-label">Attach CV:</div>
@@ -132,4 +174,5 @@
     }
   });
 </script>
+<script src="<?php echo URL_ROOT; ?>/js/components/select_district_city.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

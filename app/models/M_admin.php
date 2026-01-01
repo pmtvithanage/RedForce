@@ -9,6 +9,43 @@ class M_admin {
 // =======================      Admin Officers       ====================== //
 // ======================================================================== //
 
+public function getAllPO() {
+        // Simple: Get all Users with role 'PO'
+    $this->db->query("SELECT * FROM premise_officers_full_details; ORDER BY user_account_created DESC");
+    return $this->db->resultSet();
+}
+
+public function getPOById($premise_officer_id) {
+    $this->db->query("SELECT * FROM premise_officers_full_details WHERE premise_officer_id = :id");
+    $this->db->bind(':id', $premise_officer_id);
+    return $this->db->single();
+}
+
+public function getAllMR() {
+        // Simple: Get all Users with role 'PO'
+    $this->db->query("SELECT * FROM mobile_rider_full_details; ORDER BY user_account_created DESC");
+    return $this->db->resultSet();
+}
+
+public function getMRById($mobile_rider_id) {
+    $this->db->query("SELECT * FROM mobile_rider_full_details WHERE mobile_rider_id = :id");
+    $this->db->bind(':id', $mobile_rider_id);
+    return $this->db->single();
+}
+
+public function getAllCT() {
+        // Simple: Get all Users with role 'PO'
+    $this->db->query("SELECT * FROM care_taker_full_details; ORDER BY user_account_created DESC");
+    return $this->db->resultSet();
+}
+
+public function getCTById($care_taker_id) {
+    $this->db->query("SELECT * FROM care_taker_full_details WHERE care_taker_id = :id");
+    $this->db->bind(':id', $care_taker_id);
+    return $this->db->single();
+}
+
+
 //Insert Job Application
 public function insertJobApplication($data,$role) {
     $due_date = !empty($data['due_date']) ? $data['due_date'] : null; // If due_date is empty, set it to null
@@ -61,86 +98,166 @@ public function changeStatus($role, $status) {
     return $this->db->execute();
 }
 
-// Accept officer application
-    public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
-        // 1. Get the client request
-        $this->db->query("SELECT * FROM submittedApplications WHERE id = :id");
-        $this->db->bind(':id', $id);
-        $request = $this->db->single();
-        
-        if (!$request) {
-            return false;
-        }
-        
-        // 2. Create user account
+public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
+    // 1. Get the client request
+    $this->db->query("SELECT * FROM submittedApplications WHERE id = :id");
+    $this->db->bind(':id', $id);
+    $request = $this->db->single();
+    
+    if (!$request) {
+        return ['success' => false, 'message' => 'Application not found'];
+    }
+    
+    // 2. Create user account
+    $this->db->query("SELECT userID FROM Users WHERE email = :email");
+    $this->db->bind(':email', $request->email);
+    $existingUser = $this->db->single();
 
-        $this->db->query("SELECT userID FROM Users WHERE email = :email");
-        $this->db->bind(':email', $request->email);
-        $existingUser = $this->db->single();
-
-        if ($existingUser) {
-            // Email already exists, return error or handle appropriately
-            return [
-                'success' => false,
-                'message' => 'Email already exists in the system'
-            ];
-        }
-        // Generate CLIENT001, CLIENT002, etc.
-        // Get last CLIENT number
-        if($request->role == 'po'){
+    if ($existingUser) {
+        return [
+            'success' => false,
+            'message' => 'Email already exists in the system'
+        ];
+    }
+    
+    // Determine role prefix and name - use $role parameter, not $request->role
+    $role_name = '';
+    switch($role) {
+        case 'po':
             $rolePrefix = 'PO';
             $role_name = 'Premise Officer';
-        } elseif($request->role == 'ct'){
+            break;
+        case 'ct':
             $rolePrefix = 'CT';
             $role_name = 'Care Taker';
-        } elseif($request->role == 'mr'){
+            $role_name_data = 'caretaker';
+            break;
+        case 'mr':
             $rolePrefix = 'MR';
             $role_name = 'Mobile Rider';
-        } else{
+            break;
+        default:
             $rolePrefix = 'OF';
-        }
-        $this->db->query("SELECT userID FROM Users WHERE userID LIKE :prefix ORDER BY userID DESC LIMIT 1");
-        $this->db->bind(':prefix', $rolePrefix . '%');
-        $last = $this->db->single();
-        
-        if ($last) {
-            // Extract number from CLIENT001
-            $number = (int) substr($last->userID, 2); // Remove "CLIENT" (6 characters)
-            $nextNumber = $number + 1;
-        } else {
-            $nextNumber = 1; // First client
-        }
-        
-        $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-        $tempPassword = '1234'; // Simple temp password
-        
-        // Insert into Users table
-        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
-                        VALUES (:userID, :name, :email, :phone, :profile_image,:password, :role)");
-        $this->db->bind(':userID', $userID);
-        $this->db->bind(':name', $request->name);
-        $this->db->bind(':email', $request->email);
-        $this->db->bind(':phone', $request->phone_number);
-        $this->db->bind(':profile_image', $request->photo);
-        $this->db->bind(':role', $role_name);
-        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
-        
-        if (!$this->db->execute()) {
-            return false;
-        }
-        
-        // 4. Update client_requests table
-        $this->db->query("UPDATE submittedApplications 
-                        SET status = 'approved', 
-                            approved_by = :approved_by, 
-                            approved_at = NOW()
-                        WHERE id = :id");
-        $this->db->bind(':approved_by', $approved_by_user_id);
-        $this->db->bind(':id', $id);
-        
-        return $this->db->execute();
+            $role_name = 'Officer';
     }
-
+    
+    // Get last userID for this role
+    $this->db->query("SELECT userID FROM Users WHERE userID LIKE :prefix ORDER BY userID DESC LIMIT 1");
+    $this->db->bind(':prefix', $rolePrefix . '%');
+    $last = $this->db->single();
+    
+    if ($last) {
+        // Extract number from PO001, CT001, etc.
+        $number = (int) substr($last->userID, 2); // Remove prefix (2 characters)
+        $nextNumber = $number + 1;
+    } else {
+        $nextNumber = 1; // First officer of this type
+    }
+    
+    $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    $tempPassword = '1234';
+    
+    // Insert into Users table
+    $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role)");
+    $this->db->bind(':userID', $userID);
+    $this->db->bind(':name', $request->name);
+    $this->db->bind(':email', $request->email);
+    $this->db->bind(':phone', $request->phone_number);
+    $this->db->bind(':profile_image', $request->photo);
+    $this->db->bind(':role', $role_name_data);
+    $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+    
+    if (!$this->db->execute()) {
+        return ['success' => false, 'message' => 'Failed to create user account'];
+    }
+    
+    // Get the newly inserted user's ID
+    $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+    $this->db->bind(':userID', $userID);
+    $userResult = $this->db->single();
+    
+    if (!$userResult) {
+        return ['success' => false, 'message' => 'Failed to retrieve created user'];
+    }
+    
+    $ID = $userResult->id;
+    
+    // 3. Add to appropriate officer table based on role
+    $success = false;
+    
+    switch($role) {
+        case 'po':
+            $this->db->query("INSERT INTO premise_officers (officerID, userID, date_of_birth, NIC, gender, address, district, city, hire_date) 
+                            VALUES (:officerID, :id, :date_of_birth, :NIC, :gender, :address, :district, :city, NOW())");
+            $this->db->bind(':officerID', $userID);
+            $this->db->bind(':id', $ID);
+            $this->db->bind(':date_of_birth', $request->date_of_birth);
+            $this->db->bind(':NIC', $request->NIC);
+            $this->db->bind(':gender', $request->gender);
+            $this->db->bind(':district', $request->district);
+            $this->db->bind(':city', $request->city);
+            $this->db->bind(':address', $request->address);
+            $success = $this->db->execute();
+            break;
+            
+        case 'ct':
+            $this->db->query("INSERT INTO care_taker (caretakerID, userID, date_of_birth, NIC, gender, address, district, city, hire_date) 
+                            VALUES (:officerID, :id, :date_of_birth, :NIC, :gender, :address, :district, :city, NOW())");
+            $this->db->bind(':officerID', $userID);
+            $this->db->bind(':id', $ID);
+            $this->db->bind(':date_of_birth', $request->date_of_birth);
+            $this->db->bind(':NIC', $request->NIC);
+            $this->db->bind(':gender', $request->gender);
+            $this->db->bind(':district', $request->district);
+            $this->db->bind(':city', $request->city);
+            $this->db->bind(':address', $request->address);
+            $success = $this->db->execute();
+            break;
+            
+        case 'mr':
+            $this->db->query("INSERT INTO mobile_rider (riderID, userID, date_of_birth, NIC, gender, address, district, city, hire_date) 
+                            VALUES (:officerID, :id, :date_of_birth, :NIC, :gender, :address, :district, :city, NOW())");
+            $this->db->bind(':officerID', $userID);
+            $this->db->bind(':id', $ID);
+            $this->db->bind(':date_of_birth', $request->date_of_birth);
+            $this->db->bind(':NIC', $request->NIC);
+            $this->db->bind(':gender', $request->gender);
+            $this->db->bind(':district', $request->district);
+            $this->db->bind(':city', $request->city);
+            $this->db->bind(':address', $request->address);
+            $success = $this->db->execute();
+            break;
+            
+        default:
+            // Handle other officer types if needed
+            $success = true;
+    }
+    
+    if (!$success) {
+        return [false];
+    }
+    
+    // 4. Update submittedApplications table
+    $this->db->query("UPDATE submittedApplications 
+                    SET status = 'approved', 
+                        approved_by = :approved_by, 
+                        approved_at = NOW()
+                    WHERE id = :id");
+    $this->db->bind(':approved_by', $approved_by_user_id);
+    $this->db->bind(':id', $id);
+    
+    if (!$this->db->execute()) {
+        return ['success' => false, 'message' => 'Failed to update application status'];
+    }
+    
+    return [
+        'success' => true,
+        'message' => 'Application approved successfully',
+        'userID' => $userID,
+        'tempPassword' => $tempPassword
+    ];
+}
     // Reject Client Request
     public function rejectOfficerApplication($id) {
         $this->db->query("UPDATE submittedApplications SET status = 'rejected' WHERE id = :id");
@@ -154,6 +271,7 @@ public function changeStatus($role, $status) {
         $this->db->bind(':id', $id);
         return $this->db->execute();
     }
+    
 // ======================================================================== //
 // =======================      Admin Clients       ====================== //
 // ======================================================================== //
@@ -174,7 +292,7 @@ public function changeStatus($role, $status) {
 
     // Get all Clients
     public function getAllClients() {
-        // Simple: Get all users with role 'client'
+        // Simple: Get all Users with role 'client'
         $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
         return $this->db->resultSet();
     }
@@ -264,7 +382,7 @@ public function changeStatus($role, $status) {
 
     // Add Site
     public function addSite($data){
-        $this->db->query("INSERT INTO Sites (client_id, site_name, address, city, phone_number, image) 
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image) 
                         VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name)");
         
         $this->db->bind(':client_id', $data['client_id']);
@@ -281,12 +399,12 @@ public function changeStatus($role, $status) {
 
     }
     public function deleteSite($siteId){
-        $this->db->query("DELETE FROM Sites WHERE id = :site_id");
+        $this->db->query("DELETE FROM sites WHERE id = :site_id");
         $this->db->bind(':site_id', $siteId);
         return $this->db->execute();
     }
     public function updateSite($data){
-        $this->db->query("UPDATE Sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
+        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
         $this->db->bind(':site_name', $data['site_name']);
         $this->db->bind(':site_address', $data['site_address']);
         $this->db->bind(':site_city', $data['site_city']);
@@ -299,15 +417,15 @@ public function changeStatus($role, $status) {
         }
         return false;
     }
-    // Get All Sites
+    // Get All sites
     public function getSiteByClientId($client_id) {
-        $this->db->query("SELECT * FROM Sites WHERE client_id = :client_id");
+        $this->db->query("SELECT * FROM sites WHERE client_id = :client_id");
         $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }
     // Get Site
     public function getSiteById($site_id) {
-        $this->db->query("SELECT * FROM Sites WHERE id = :site_id");
+        $this->db->query("SELECT * FROM sites WHERE id = :site_id");
         $this->db->bind(':site_id', $site_id);
         return $this->db->single();
     }
@@ -321,7 +439,7 @@ public function changeStatus($role, $status) {
         $this->db->query('
             SELECT a.*, u.name as creator_name 
             FROM advertisements a 
-            LEFT JOIN users u ON a.created_by = u.id 
+            LEFT JOIN Users u ON a.created_by = u.id 
             WHERE a.id = :id
         ');
         $this->db->bind(':id', $id);
@@ -333,7 +451,7 @@ public function changeStatus($role, $status) {
         $this->db->query('
             SELECT a.*, u.name as creator_name 
             FROM advertisements a 
-            LEFT JOIN users u ON a.created_by = u.id 
+            LEFT JOIN Users u ON a.created_by = u.id 
             ORDER BY a.created_at DESC
         ');
         return $this->db->resultSet();
@@ -410,8 +528,8 @@ public function changeStatus($role, $status) {
             
             $this->db->beginTransaction();
 
-            // Insert into users table
-            $query = "INSERT INTO users (userID, name, email, password, role, status, created_at) 
+            // Insert into Users table
+            $query = "INSERT INTO Users (userID, name, email, password, role, status, created_at) 
                      VALUES (:userID, :name, :email, :password, :role, 'active', NOW())";
             
             $this->db->query($query);
@@ -422,7 +540,7 @@ public function changeStatus($role, $status) {
             $this->db->bind(':role', $data['role']);
             
             if (!$this->db->execute()) {
-                throw new Exception('Failed to insert user into users table');
+                throw new Exception('Failed to insert user into Users table');
             }
 
             $userID = $this->db->lastInsertId();
@@ -465,7 +583,7 @@ public function changeStatus($role, $status) {
 
     // Check if email already exists
     public function findUserByEmail($email) {
-        $this->db->query("SELECT id FROM users WHERE email = :email");
+        $this->db->query("SELECT id FROM Users WHERE email = :email");
         $this->db->bind(':email', $email);
         $this->db->execute();
         return $this->db->rowCount() > 0;
@@ -475,7 +593,7 @@ public function changeStatus($role, $status) {
         $this->db->query("
             SELECT u.userID, u.name, u.email, u.role, u.status, u.created_at, 
                    ud.mobile, ud.nic, ud.address
-            FROM users u 
+            FROM Users u 
             LEFT JOIN user_details ud ON u.id = ud.user_id 
             WHERE u.role = 'admin' AND u.status = 'active'
             ORDER BY u.created_at DESC
@@ -487,7 +605,7 @@ public function changeStatus($role, $status) {
     public function getUserByID($userID) {
         $this->db->query("
             SELECT u.*, ud.nic, ud.mobile, ud.address, ud.additional_info 
-            FROM users u 
+            FROM Users u 
             LEFT JOIN user_details ud ON u.id = ud.user_id 
             WHERE u.userID = :userID
         ");
@@ -495,11 +613,11 @@ public function changeStatus($role, $status) {
         return $this->db->single();
     }
 
-    // Get all users by role
+    // Get all Users by role
     public function getUsersByRole($role) {
         $this->db->query("
             SELECT u.*, ud.nic, ud.mobile, ud.address 
-            FROM users u 
+            FROM Users u 
             LEFT JOIN user_details ud ON u.id = ud.user_id 
             WHERE u.role = :role AND u.status = 'active'
             ORDER BY u.name
@@ -510,7 +628,7 @@ public function changeStatus($role, $status) {
 
     // Update user status
     public function updateUserStatus($userID, $status) {
-        $this->db->query("UPDATE users SET status = :status, updated_at = NOW() WHERE userID = :userID");
+        $this->db->query("UPDATE Users SET status = :status, updated_at = NOW() WHERE userID = :userID");
         $this->db->bind(':userID', $userID);
         $this->db->bind(':status', $status);
         return $this->db->execute();
@@ -522,7 +640,7 @@ public function changeStatus($role, $status) {
             $this->db->beginTransaction();
 
             // Get user id first
-            $this->db->query("SELECT id FROM users WHERE userID = :userID");
+            $this->db->query("SELECT id FROM Users WHERE userID = :userID");
             $this->db->bind(':userID', $userID);
             $user = $this->db->single();
             
@@ -537,8 +655,8 @@ public function changeStatus($role, $status) {
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
 
-            // Delete from users
-            $this->db->query("DELETE FROM users WHERE id = :user_id");
+            // Delete from Users
+            $this->db->query("DELETE FROM Users WHERE id = :user_id");
             $this->db->bind(':user_id', $userId);
             $this->db->execute();
 
@@ -580,10 +698,10 @@ public function changeStatus($role, $status) {
                     WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
                 END as employee_role
             FROM leave_requests lr
-            LEFT JOIN users u1 ON lr.caretaker_id = u1.id
-            LEFT JOIN users u2 ON lr.supervisor_id = u2.id
-            LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
-            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
+            LEFT JOIN Users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN Users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN Users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN Users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
@@ -614,10 +732,10 @@ public function changeStatus($role, $status) {
                     WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
                 END as employee_role
             FROM leave_requests lr
-            LEFT JOIN users u1 ON lr.caretaker_id = u1.id
-            LEFT JOIN users u2 ON lr.supervisor_id = u2.id
-            LEFT JOIN users u3 ON lr.mobilerider_id = u3.id
-            LEFT JOIN users u4 ON lr.premiseofficer_id = u4.id
+            LEFT JOIN Users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN Users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN Users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN Users u4 ON lr.premiseofficer_id = u4.id
             WHERE lr.id = :id
         ");
         $this->db->bind(':id', $id);
@@ -678,7 +796,7 @@ public function changeStatus($role, $status) {
         $this->db->query("
             SELECT sr.*, u.name as client_name, u.email as client_email
             FROM service_requests sr
-            JOIN users u ON sr.client_id = u.id
+            JOIN Users u ON sr.client_id = u.id
             ORDER BY sr.submitted_date DESC
         ");
         return $this->db->resultSet();
@@ -689,7 +807,7 @@ public function changeStatus($role, $status) {
         $this->db->query("
             SELECT sr.*, u.name as client_name, u.email as client_email
             FROM service_requests sr
-            JOIN users u ON sr.client_id = u.id
+            JOIN Users u ON sr.client_id = u.id
             WHERE sr.id = :id
         ");
         $this->db->bind(':id', $id);

@@ -7,12 +7,20 @@ class M_home {
     }
 // Save job application
     public function saveJobApplication($data, $role) {
-        $this->db->query("INSERT INTO submittedApplications (role, name, email, phone_number, photo, cv, submitted_at) 
-                        VALUES (:role, :name, :email, :phone, :photo, :cv, NOW())");
+        $this->db->query("INSERT INTO submittedApplications (role, name, email, phone_number, date_of_birth, NIC, gender, address, district, city, photo, cv, submitted_at) 
+                        VALUES (:role, :name, :email, :phone, :birthday, :national_id, :gender, :address, :district, :city, :photo, :cv, NOW())");
         $this->db->bind(':role', $role);
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':email', $data['email']);
         $this->db->bind(':phone', $data['phone']);
+
+        $this->db->bind(':birthday', $data['birthday']);
+        $this->db->bind(':national_id', $data['national_id']);
+        $this->db->bind(':gender', $data['gender']);
+        $this->db->bind(':address', $data['address']);
+        $this->db->bind(':district', $data['district']);
+        $this->db->bind(':city', $data['city']);
+
         $this->db->bind(':photo', $data['image_name']);
         $this->db->bind(':cv', $data['cv_name']);
 

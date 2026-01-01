@@ -4,7 +4,7 @@ CREATE DATABASE IF NOT EXISTS redforce_db;
 USE redforce_db;
 
 -- Users table
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     Users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         userID VARCHAR(50) UNIQUE NOT NULL,
@@ -19,7 +19,8 @@ CREATE TABLE
             'client',
             'caretaker'
         ) NOT NULL,
-        image VARCHAR(255) DEFAULT NULL,
+        phone_number VARCHAR(50),
+        profile_image VARCHAR(255) DEFAULT NULL,
         status ENUM ('active', 'inactive', 'suspended') DEFAULT 'active',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -97,7 +98,7 @@ VALUES
 
 -- Advertisements table
 CREATE TABLE
-    Advertisements (
+    advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         image_path VARCHAR(500) NOT NULL,
@@ -214,7 +215,7 @@ ALTER TABLE `incident_reports`
 -- Constraints for table `incident_reports`
 
 ALTER TABLE `incident_reports`
-  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`ser_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 
 
@@ -333,22 +334,22 @@ CREATE TABLE
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     phone_number VARCHAR(20),
+    date_of_birth DATE,
+    NIC INT,
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
     cv VARCHAR(255),
     photo VARCHAR(255),
-    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    role VARCHAR(100),
+    status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending',
+    approved_by INT NULL,
+    approved_at TIMESTAMP NULL,
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (approved_by) REFERENCES Users(id) ON DELETE SET NULL -- newly added 
   );
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS role VARCHAR(100);
-
-ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS status ENUM ('pending', 'approved', 'rejected') DEFAULT 'pending';
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS approved_by INT NULL AFTER status;
-
-  ALTER TABLE submittedApplications
-ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP NULL;
 
 -- ========================================
 -- LEAVE REQUEST TABLES
@@ -483,3 +484,209 @@ CREATE TABLE IF NOT EXISTS `equipment_requests` (
   INDEX `idx_equipment_created` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS premise_officers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    officerID VARCHAR(50) UNIQUE NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior', 'Supervisor') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL,
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+CREATE OR REPLACE VIEW premise_officers_full_details AS
+SELECT 
+    po.id AS premise_officer_id,
+    po.officerID,
+    po.date_of_birth,
+    po.NIC,
+    po.gender,
+    po.address,
+    po.district,
+    po.city,
+    po.hire_date,
+    po.employment_status,
+    po.rank,
+    po.rating,
+    po.shift_pattern,
+    po.application_id,
+    po.created_at AS officer_record_created,
+    po.updated_at AS officer_record_updated,
+    
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM premise_officers po
+LEFT JOIN Users u ON po.userID = u.id
+WHERE u.role = 'premise officer' OR po.userID IS NOT NULL;
+
+
+CREATE TABLE IF NOT EXISTS routes (
+    id VARCHAR(50) PRIMARY KEY,
+    route_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_city VARCHAR(50) NOT NULL,
+    end_city VARCHAR(50) NOT NULL,
+    distance_km DECIMAL(6,2),
+    estimated_time_minutes INT,
+    difficulty_level ENUM('Easy', 'Medium', 'Hard', 'Expert'),
+    status ENUM('Active', 'Inactive', 'Under Maintenance') DEFAULT 'Active',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS mobile_rider (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    riderID VARCHAR(50) UNIQUE NOT NULL,
+    routeID VARCHAR(50) NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL,
+    FOREIGN KEY (routeID) REFERENCES routes(id) ON DELETE CASCADE,  
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS care_taker (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    caretakerID VARCHAR(50) UNIQUE NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL, 
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+-- Mobile Rider Full Details View
+CREATE OR REPLACE VIEW mobile_rider_full_details AS
+SELECT 
+    mr.id AS mobile_rider_id,
+    mr.riderID,
+    mr.date_of_birth,
+    mr.NIC,
+    mr.gender,
+    mr.address,
+    mr.district,
+    mr.city,
+    mr.hire_date,
+    mr.employment_status,
+    mr.rank,
+    mr.rating,
+    mr.shift_pattern,
+    mr.application_id,
+    mr.created_at AS rider_record_created,
+    mr.updated_at AS rider_record_updated,
+    
+    -- Route details
+    r.id AS route_id,
+    r.route_name,
+    r.description AS route_description,
+    r.start_city,
+    r.end_city,
+    r.distance_km,
+    r.estimated_time_minutes,
+    r.difficulty_level,
+    r.status AS route_status,
+    
+    -- User details
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM mobile_rider mr
+LEFT JOIN Users u ON mr.userID = u.id
+LEFT JOIN routes r ON mr.routeID = r.id
+WHERE u.role = 'mobile rider' OR mr.userID IS NOT NULL;
+
+-- Care Taker Full Details View
+CREATE OR REPLACE VIEW care_taker_full_details AS
+SELECT 
+    ct.id AS care_taker_id,
+    ct.caretakerID,
+    ct.date_of_birth,
+    ct.NIC,
+    ct.gender,
+    ct.address,
+    ct.district,
+    ct.city,
+    ct.hire_date,
+    ct.employment_status,
+    ct.rank,
+    ct.rating,
+    ct.shift_pattern,
+    ct.application_id,
+    ct.created_at AS caretaker_record_created,
+    ct.updated_at AS caretaker_record_updated,
+    
+    -- User details
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM care_taker ct
+LEFT JOIN Users u ON ct.userID = u.id
+WHERE u.role = 'care taker' OR ct.userID IS NOT NULL;

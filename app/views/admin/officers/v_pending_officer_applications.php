@@ -7,129 +7,289 @@
 
 
 <style>
-    
-    
     .content-container {
-        max-width: 60vw;
-        margin-left: 10vw;
+    max-width: 60vw;
+    margin-left: 10vw;
+}
+
+.tabs{
+    display:flex; 
+    gap:10px; 
+    margin-bottom:20px; 
+    margin-left:20px;
+}
+
+/* Profile Cards Container */
+.profile-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 25px;
+    padding: 20px;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e0e0e0;
+    margin: 20px;
+}
+
+.profile-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Role Label */
+.role-label {
+    padding: 10px 20px;
+    background: #f8f9fa;
+    margin: 0;
+    font-size: 14px;
+    color: #555;
+    font-weight: 600;
+    border-bottom: 1px solid #eee;
+}
+
+.card-header {
+    padding: 25px;
+    text-align: center;
+    border-bottom: 2px solid #c11e1eff;
+    color: white;
+}
+
+.logo-container {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid white;
+    background: white;
+}
+
+.imagePlaceholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.company-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: black;
+    margin: 0;
+}
+
+/* Card Body with Two Columns */
+.card-body {
+    padding: 25px;
+    max-height: 510px;
+    overflow-y: auto;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 30px;
+}
+
+.info-row {
+    display: flex;
+    align-items: flex-start;
+    min-height: 60px;
+}
+
+.info-icon {
+    margin-right: 12px;
+    color: #a40000;
+    font-size: 20px;
+    min-width: 24px;
+    margin-top: 2px;
+}
+
+.info-content {
+    flex: 1;
+}
+
+.info-label {
+    display: block;
+    font-size: 12px;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+.info-value {
+    display: block;
+    font-size: 15px;
+    color: #333;
+    font-weight: 400;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+/* Full width rows for certain items */
+.info-row.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Updated Card Footer */
+.card-footer {
+    padding: 15px 25px;
+    background-color: #f9f9f9;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.applied-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.applied-icon {
+    color: #a40000;
+    font-size: 20px;
+}
+
+.applied-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.applied-label {
+    font-size: 12px;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+.applied-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-primary, .btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+
+/* Scrollbar Styling */
+.card-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.card-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+.card-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+@media (max-width: 768px) {
+    .content-container {
+        max-width: 90vw;
+        margin-left: 5vw;
     }
     
-    .tabs{
-        display:flex; 
-        gap:10px; 
-        margin-bottom:20px; 
-        margin-left:20px;
-    }
-    .profile-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-        margin: 20px 0;
+    .profile-cards-container {
+        grid-template-columns: 1fr;
+        padding: 15px;
+        gap: 20px;
     }
     
-    .card-header {
-        padding: 30px;
-        text-align: center;
-        border-bottom: 1px solid #eee;
-    }
-    
-    .logo-container {
-        margin-bottom: 20px;
-    }
-    
-    .imagePlaceholder{
-        height: 180px;
-        border: 2px solid var(--border-color);
-        border-radius: 12px;
-        margin: 0 auto 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        background-color: #fff;
-    }
-    
-    .company-name {
-        font-size: 24px;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-    }
-    
-    .card-body {
-        padding: 30px;
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     
     .info-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: 25px;
+        min-height: auto;
+        margin-bottom: 15px;
     }
     
     .info-row:last-child {
         margin-bottom: 0;
     }
     
-    .info-icon {
-        font-size: 24px;
-        color: #666;
-        margin-right: 15px;
-        width: 30px;
-    }
-    
-    .info-content {
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .info-label {
-        font-size: 14px;
-        color: #888;
-        margin-bottom: 5px;
-    }
-    
-    .info-value {
-        font-size: 16px;
-        color: #333;
-        font-weight: 500;
-    }
-    
     .card-footer {
-        padding: 20px 30px;
-        background-color: #f9f9f9;
-        display: flex;
-        justify-content: flex-end;
+        flex-direction: column;
         gap: 15px;
     }
     
+    .applied-info {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+    
     .btn-primary, .btn-secondary {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 12px 24px;
-        border-radius: 8px;
-        text-decoration: none;
+        width: 100%;
+        justify-content: center;
     }
     
-    
-  
-    
-    
-    @media (max-width: 768px) {
-        .main-content {
-            margin-left: 0;
-        }
-        
-        .card-footer {
-            flex-direction: column;
-        }
-        
-        .btn-primary, .btn-secondary {
-            width: 100%;
-            justify-content: center;
-        }
+    .logo-container {
+        width: 80px;
+        height: 80px;
     }
+    
+    .company-name {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content-container {
+        max-width: 95vw;
+        margin-left: 2.5vw;
+    }
+    
+    .profile-card {
+        margin: 10px 0;
+    }
+    
+    .card-body, .card-header, .card-footer {
+        padding: 20px;
+    }
+    
+    .info-grid {
+        gap: 12px;
+    }
+}
 
 .filter-container {
     position: relative;
@@ -296,82 +456,179 @@
         <!-- Profile Card Container -->
         <div class="profile-card">
 
-            <p class="role-label" style="margin-left:20px; margin-top:10px; font-weight:bold; color:#555;">
-            <?php 
-            if($officer->role == 'po') {
-                echo 'Premise Officer';
-            } else if($officer->role == 'mr') {
-                echo 'Mobile Rider';
-            } else if($officer->role == 'ct') {
-                echo 'Care Taker';
-            }
-            ?>
-            </p>
+           
 
             <div class="card-header">
                 <div class="logo-container">
                     <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->photo; ?>" id="photoPreview" alt="Uploaded logo preview"  />
                 </div>
-                <h2 class="company-name" id="companyName"><?php echo $officer -> name?></h2>
+                <h2 class="company-name" id="companyName"><?php echo $officer->name; ?></h2>
             </div>
             
-            <div class="card-body">
-                <div class="info-row">
-                    <span class="material-symbols-outlined info-icon">mail</span>
-                    <div class="info-content">
-                        <span class="info-label">Email</span>
-                        <span class="info-value" id="companyEmail"><?php echo $officer -> email?></span>
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <span class="material-symbols-outlined info-icon">call</span>
-                    <div class="info-content">
-                        <span class="info-label">Phone</span>
-                        <span class="info-value" id="companyPhone"><?php echo $officer -> phone_number?></span>
-                    </div>
-                </div>
-                
-                <div class="info-row">
-                    <span class="material-symbols-outlined info-icon">person</span>
-                    <div class="info-content">
-                        <span class="info-label">CV File</span>
-                        <a href="<?php echo URL_ROOT; ?>/uploads/applicantCVs/<?php echo $officer -> cv ?>" 
-                            target="_blank" 
-                            style="color: #9a0000ff; text-decoration: none; margin-left: 5px; display: inline-flex; align-items: center;">
-                            <span class="material-symbols-outlined" style="margin-right: 5px; font-size: 18px;">
-                                picture_as_pdf
-                            </span>
-                            <?php
-                            // Extract just the original filename (remove timestamp prefix)
-                            $originalFileName = substr($officer -> cv, strpos($officer -> cv, '_') + 1);
-                            echo $originalFileName;
-                            ?>
-                        </a>
-                    </div>
-                </div>
+            
 
-                <div class="info-row">
-                    <span class="material-symbols-outlined info-icon">event</span>
-                    <div class="info-content">
-                        <span class="info-label">Applied at</span>
-                        <span class="info-value" id="contactPerson"><?php echo time_convert($officer -> submitted_at)?></span>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">badge</span>
+                        <div class="info-content">
+                            <span class="info-label">Role</span>
+                            <span class="info-value">
+                                <?php 
+                                if($officer->role == 'po') {
+                                    echo 'Premise Officer';
+                                } else if($officer->role == 'mr') {
+                                    echo 'Mobile Rider';
+                                } else if($officer->role == 'ct') {
+                                    echo 'Care Taker';
+                                }
+                                ?>
+                            </span>
+                        </div>
                     </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">person</span>
+                        <div class="info-content">
+                            <span class="info-label">Name</span>
+                            <span class="info-value"><?php echo $officer->name; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">mail</span>
+                        <div class="info-content">
+                            <span class="info-label">Email</span>
+                            <span class="info-value"><?php echo $officer->email; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">call</span>
+                        <div class="info-content">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value"><?php echo $officer->phone_number; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">cake</span>
+                        <div class="info-content">
+                            <span class="info-label">Date of Birth</span>
+                            <span class="info-value"><?php echo date('Y-m-d', strtotime($officer->date_of_birth)); ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">fingerprint</span>
+                        <div class="info-content">
+                            <span class="info-label">NIC</span>
+                            <span class="info-value"><?php echo $officer->NIC; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">person</span>
+                        <div class="info-content">
+                            <span class="info-label">Gender</span>
+                            <span class="info-value">
+                                <?php 
+                                if($officer->gender == 'm') {
+                                    echo 'Male';
+                                } else if($officer->gender == 'f') {
+                                    echo 'Female';
+                                } else {
+                                    echo ucfirst($officer->gender);
+                                }
+                                ?>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">home</span>
+                        <div class="info-content">
+                            <span class="info-label">Address</span>
+                            <span class="info-value"><?php echo $officer->address; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">location_city</span>
+                        <div class="info-content">
+                            <span class="info-label">District</span>
+                            <span class="info-value"><?php echo $officer->district; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">location_on</span>
+                        <div class="info-content">
+                            <span class="info-label">City</span>
+                            <span class="info-value"><?php echo $officer->city; ?></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <span class="material-symbols-outlined info-icon">photo_camera</span>
+                        <div class="info-content">
+                            <span class="info-label">Photo</span>
+                            <a href="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->photo; ?>" 
+                                target="_blank" 
+                                style="color: #a40000; text-decoration: none; display: inline-flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="margin-right: 5px; font-size: 18px;">
+                                    image
+                                </span>
+                                View Photo
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="info-row ">
+                        <span class="material-symbols-outlined info-icon">description</span>
+                        <div class="info-content">
+                            <span class="info-label">CV File</span>
+                            <a href="<?php echo URL_ROOT; ?>/uploads/applicantCVs/<?php echo $officer->cv; ?>" 
+                                target="_blank" 
+                                style="color: #a40000; text-decoration: none; display: inline-flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="margin-right: 5px; font-size: 18px;">
+                                    picture_as_pdf
+                                </span>
+                                <?php
+                                $originalFileName = substr($officer->cv, strpos($officer->cv, '_') + 1);
+                                echo $originalFileName;
+                                ?>
+                            </a>
+                        </div>
+                    </div>
+
+                    
                 </div>
             </div>
+
+           
             
             <div class="card-footer">
-                <a href="<?php echo URL_ROOT; ?>/admin/accept_officer_applications/<?php echo $officer -> id?>/<?php echo $officer -> role?>" class="btn-primary primary-btn" id="editClientBtn">
-                    <span class="material-symbols-outlined">person_add</span>
-                    Add Officer
-                </a>
-                <a href="<?php echo URL_ROOT; ?>/admin/reject_officer_applications/<?php echo $officer -> id?>/<?php echo $officer -> role?>" class="btn-secondary secondary-btn" id="rejectBtn">
-                    <span class="material-symbols-outlined">close</span>
-                    Reject
-                </a>
+                <div class="applied-info">
+                    <span class="material-symbols-outlined applied-icon">event</span>
+                    <div class="applied-text">
+                        <span class="applied-label">Applied at</span>
+                        <span class="applied-value"><?php echo time_convert($officer->submitted_at); ?></span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <a href="<?php echo URL_ROOT; ?>/admin/accept_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-primary primary-btn" id="editClientBtn">
+                        <span class="material-symbols-outlined">person_add</span>
+                        Add Officer
+                    </a>
+                    <a href="<?php echo URL_ROOT; ?>/admin/reject_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-secondary secondary-btn" id="rejectBtn">
+                        <span class="material-symbols-outlined">close</span>
+                        Reject
+                    </a>
+                </div>
             </div>
         </div>
-        <?php endforeach; ?>
+<?php endforeach; ?>
     </div>
 </div>
 
