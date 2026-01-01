@@ -540,3 +540,153 @@ SELECT
 FROM premise_officers po
 LEFT JOIN Users u ON po.userID = u.id
 WHERE u.role = 'premise officer' OR po.userID IS NOT NULL;
+
+
+CREATE TABLE IF NOT EXISTS routes (
+    id VARCHAR(50) PRIMARY KEY,
+    route_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    start_city VARCHAR(50) NOT NULL,
+    end_city VARCHAR(50) NOT NULL,
+    distance_km DECIMAL(6,2),
+    estimated_time_minutes INT,
+    difficulty_level ENUM('Easy', 'Medium', 'Hard', 'Expert'),
+    status ENUM('Active', 'Inactive', 'Under Maintenance') DEFAULT 'Active',
+    created_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS mobile_rider (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    riderID VARCHAR(50) UNIQUE NOT NULL,
+    routeID VARCHAR(50) NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL,
+    FOREIGN KEY (routeID) REFERENCES routes(id) ON DELETE CASCADE,  
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS care_taker (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    userID INT,
+    caretakerID VARCHAR(50) UNIQUE NOT NULL,
+    date_of_birth DATE,
+    NIC VARCHAR(20),
+    gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    address TEXT,
+    district VARCHAR(50),
+    city VARCHAR(50),
+    hire_date DATE NOT NULL,
+    employment_status ENUM('Active', 'On Leave', 'Terminated', 'Suspended') DEFAULT 'Active',
+    rank ENUM('Junior', 'Senior') DEFAULT 'Junior',
+    rating DECIMAL(3,2) CHECK (rating >= 0 AND rating <= 5),
+    shift_pattern VARCHAR(50),
+    application_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE SET NULL, 
+    FOREIGN KEY (application_id) REFERENCES submittedApplications(id) ON DELETE SET NULL
+);
+
+-- Mobile Rider Full Details View
+CREATE OR REPLACE VIEW mobile_rider_full_details AS
+SELECT 
+    mr.id AS mobile_rider_id,
+    mr.riderID,
+    mr.date_of_birth,
+    mr.NIC,
+    mr.gender,
+    mr.address,
+    mr.district,
+    mr.city,
+    mr.hire_date,
+    mr.employment_status,
+    mr.rank,
+    mr.rating,
+    mr.shift_pattern,
+    mr.application_id,
+    mr.created_at AS rider_record_created,
+    mr.updated_at AS rider_record_updated,
+    
+    -- Route details
+    r.id AS route_id,
+    r.route_name,
+    r.description AS route_description,
+    r.start_city,
+    r.end_city,
+    r.distance_km,
+    r.estimated_time_minutes,
+    r.difficulty_level,
+    r.status AS route_status,
+    
+    -- User details
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM mobile_rider mr
+LEFT JOIN Users u ON mr.userID = u.id
+LEFT JOIN routes r ON mr.routeID = r.id
+WHERE u.role = 'mobile rider' OR mr.userID IS NOT NULL;
+
+-- Care Taker Full Details View
+CREATE OR REPLACE VIEW care_taker_full_details AS
+SELECT 
+    ct.id AS care_taker_id,
+    ct.caretakerID,
+    ct.date_of_birth,
+    ct.NIC,
+    ct.gender,
+    ct.address,
+    ct.district,
+    ct.city,
+    ct.hire_date,
+    ct.employment_status,
+    ct.rank,
+    ct.rating,
+    ct.shift_pattern,
+    ct.application_id,
+    ct.created_at AS caretaker_record_created,
+    ct.updated_at AS caretaker_record_updated,
+    
+    -- User details
+    u.id AS user_id,
+    u.userID AS user_identifier,
+    u.name,
+    u.email,
+    u.role,
+    u.phone_number,
+    u.profile_image,
+    u.status AS user_status,
+    u.created_at AS user_account_created,
+    u.updated_at AS user_account_updated
+    
+FROM care_taker ct
+LEFT JOIN Users u ON ct.userID = u.id
+WHERE u.role = 'care taker' OR ct.userID IS NOT NULL;

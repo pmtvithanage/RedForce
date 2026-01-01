@@ -29,6 +29,8 @@
     border-radius:12px;
     box-shadow:0 0 10px rgba(0,0,0,0.08);
     margin-top:-5px;
+    max-height:550px;
+    overflow-y: auto;
 }
 
 /* Search Bar */
@@ -136,7 +138,7 @@ thead th{ background:#f9e9e9; }
 
             <tbody>
                 <?php foreach($data['officer'] as $officer) : ?>
-                    <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officer_profile/<?php echo $officer->premise_officer_id; ?>'">
+                    <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/mobile_rider_profile/<?php echo $officer->mobile_rider_id; ?>'">
                         <td style="padding: 8px; text-align: center;">
                             <?php if(!empty($officer->profile_image)): ?>
                                 <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 
@@ -148,7 +150,7 @@ thead th{ background:#f9e9e9; }
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td><?php echo $officer->officerID; ?></td>
+                        <td><?php echo $officer->riderID; ?></td>
                         <td><?php echo $officer->name; ?></td>
                         <td><?php echo $officer->rank; ?></td>
                         <td>

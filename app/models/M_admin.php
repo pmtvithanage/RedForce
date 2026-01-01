@@ -21,6 +21,30 @@ public function getPOById($premise_officer_id) {
     return $this->db->single();
 }
 
+public function getAllMR() {
+        // Simple: Get all Users with role 'PO'
+    $this->db->query("SELECT * FROM mobile_rider_full_details; ORDER BY user_account_created DESC");
+    return $this->db->resultSet();
+}
+
+public function getMRById($mobile_rider_id) {
+    $this->db->query("SELECT * FROM mobile_rider_full_details WHERE mobile_rider_id = :id");
+    $this->db->bind(':id', $mobile_rider_id);
+    return $this->db->single();
+}
+
+public function getAllCT() {
+        // Simple: Get all Users with role 'PO'
+    $this->db->query("SELECT * FROM care_taker_full_details; ORDER BY user_account_created DESC");
+    return $this->db->resultSet();
+}
+
+public function getCTById($care_taker_id) {
+    $this->db->query("SELECT * FROM care_taker_full_details WHERE care_taker_id = :id");
+    $this->db->bind(':id', $care_taker_id);
+    return $this->db->single();
+}
+
 
 //Insert Job Application
 public function insertJobApplication($data,$role) {
@@ -106,6 +130,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         case 'ct':
             $rolePrefix = 'CT';
             $role_name = 'Care Taker';
+            $role_name_data = 'caretaker';
             break;
         case 'mr':
             $rolePrefix = 'MR';
@@ -140,7 +165,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     $this->db->bind(':email', $request->email);
     $this->db->bind(':phone', $request->phone_number);
     $this->db->bind(':profile_image', $request->photo);
-    $this->db->bind(':role', $role_name);
+    $this->db->bind(':role', $role_name_data);
     $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
     
     if (!$this->db->execute()) {
@@ -177,17 +202,31 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             break;
             
         case 'ct':
-            // Add Care Taker specific insertion here
-            // $this->db->query("INSERT INTO care_takers ...");
-            // Implement similar to 'po' case
-            $success = true; // Change this when implemented
+            $this->db->query("INSERT INTO care_taker (caretakerID, userID, date_of_birth, NIC, gender, address, district, city, hire_date) 
+                            VALUES (:officerID, :id, :date_of_birth, :NIC, :gender, :address, :district, :city, NOW())");
+            $this->db->bind(':officerID', $userID);
+            $this->db->bind(':id', $ID);
+            $this->db->bind(':date_of_birth', $request->date_of_birth);
+            $this->db->bind(':NIC', $request->NIC);
+            $this->db->bind(':gender', $request->gender);
+            $this->db->bind(':district', $request->district);
+            $this->db->bind(':city', $request->city);
+            $this->db->bind(':address', $request->address);
+            $success = $this->db->execute();
             break;
             
         case 'mr':
-            // Add Mobile Rider specific insertion here
-            // $this->db->query("INSERT INTO mobile_riders ...");
-            // Implement similar to 'po' case
-            $success = true; // Change this when implemented
+            $this->db->query("INSERT INTO mobile_rider (riderID, userID, date_of_birth, NIC, gender, address, district, city, hire_date) 
+                            VALUES (:officerID, :id, :date_of_birth, :NIC, :gender, :address, :district, :city, NOW())");
+            $this->db->bind(':officerID', $userID);
+            $this->db->bind(':id', $ID);
+            $this->db->bind(':date_of_birth', $request->date_of_birth);
+            $this->db->bind(':NIC', $request->NIC);
+            $this->db->bind(':gender', $request->gender);
+            $this->db->bind(':district', $request->district);
+            $this->db->bind(':city', $request->city);
+            $this->db->bind(':address', $request->address);
+            $success = $this->db->execute();
             break;
             
         default:
