@@ -24,12 +24,14 @@ class Admin extends Controller {
     public function dashboard() {
         $pendingLeaves = $this->adminModel->getPendingLeaveRequests();
         $leaveStats = $this->adminModel->getLeaveRequestStats();
+        $recentActivities = $this->adminModel->getRecentActivities(100);
     
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Admin Dashboard',
             'pendingLeaves' => $pendingLeaves,
-            'leaveStats' => $leaveStats
+            'leaveStats' => $leaveStats,
+            'recent_activities' => $recentActivities
         ];
         $this->view('admin/dashboard/v_dashboard', $data);
     }
@@ -155,6 +157,11 @@ class Admin extends Controller {
     }
 
     public function add_job_application($role) {
+
+        if($role == 'po') $role_name = "Premise Officer";
+        elseif($role == 'mr') $role_name = "Mobile Rider";
+        elseif($role == 'ct') $role_name = "Care Taker";
+
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'title' => 'Officers',
@@ -168,14 +175,28 @@ class Admin extends Controller {
             ];
             $this->adminModel->insertJobApplication($data, $role);
             flash('msg', 'Job Application Added Successfully', 'alert-success');
+
+            
             // Validate form
             if(!empty($data['description']) && !empty($data['qualifications']) && !empty($data['due_date'])) {
                 $data['completed'] = 'true';
                 
+                $title = "Job Application Created";
+                $description = "New " . $role_name . " job application created with due date: " . $data['due_date'];
+                $type = "update";
+                $this->adminModel->insertRecentActivity($title, $description,$type);
+
+
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
             else{
                 $data['completed'] = 'false';
+
+                $title = "Job Application Created";
+                $description = "New " . $role_name . " job application created with due date: " . $data['due_date'] ."(Not Completed)";
+                $type = "alert";
+                $this->adminModel->insertRecentActivity($title, $description,$type);
+
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
 
             }
@@ -199,6 +220,10 @@ class Admin extends Controller {
         
     }
     public function edit_job_application($exists,$role) {
+        if($role == 'po') $role_name = "Premise Officer";
+        elseif($role == 'mr') $role_name = "Mobile Rider";
+        elseif($role == 'ct') $role_name = "Care Taker";
+
         if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'title' => 'Officers',
@@ -223,16 +248,30 @@ class Admin extends Controller {
                     // If due date has passed, close the status
                     $this->adminModel->changeStatus($role, 'closed');
                 }
+
+                $title = "Job Application Updated";
+                $description = "Updated " . $role_name . " job application created with due date: " . $data['due_date'];
+                $type = "update";
+                $this->adminModel->insertRecentActivity($title, $description,$type);
+
+                flash('msg', 'Job Application Updated Successfully', 'alert-success');
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
             else {
                 
                 $this->adminModel->changeStatus($role,'closed');
                 $data['completed'] = 'false';
+
+                $title = "Job Application Updated";
+                $description = "Updated " . $role_name . " job application created with due date: " . $data['due_date'] ." (Not Completed)";
+                $type = "alert";
+                $this->adminModel->insertRecentActivity($title, $description,$type);
+
+                flash('msg', 'Job Application Updated Successfully', 'alert-success');
                 $this->view('admin/officers/v_'.$role.'_recruitment', $data);
             }
             $this->adminModel->editJobApplication($data, $role);
-            flash('msg', 'Job Application Updated Successfully', 'alert-success');
+            
         }
         else {
             $data = [
@@ -254,11 +293,39 @@ class Admin extends Controller {
     public function changeStatus($role,$status) {
         $this->adminModel->changeStatus($role,$status);
         $data = $this->adminModel->getJobApplication($role);
+        
+        // Add activity log
+        $role_name = $this->getRoleName($role);
+        $title = "Job Application Status Changed";
+        $description = $role_name . " job application status changed to: " . $status;
+        $type = $status == 'open' ? "message" : "leave";
+        $this->adminModel->insertRecentActivity($title, $description, $type);
+        
         flash('msg', 'Job Application Status Updated Successfully', 'alert-success');
         $this->view('admin/officers/v_'.$role.'_recruitment', $data);
     }
+    
+    private function getRoleName($role) {
+        switch($role) {
+            case 'po': return "Premise Officer";
+            case 'mr': return "Mobile Rider";
+            case 'ct': return "Care Taker";
+            default: return "Officer";
+        }
+    }
+    
     public function delete_job_application($role) {
+        if($role == 'po') $role_name = "Premise Officer";
+        elseif($role == 'mr') $role_name = "Mobile Rider";
+        elseif($role == 'ct') $role_name = "Care Taker";
+
         $this->adminModel->deleteJobApplication($role);
+
+        $title = "Job Application Removed";
+        $description = "The " . $role_name . " job application was removed.";
+        $type = "alert";
+        $this->adminModel->insertRecentActivity($title, $description,$type);
+
         flash('msg', 'Job Application Deleted Successfully', 'alert-success');
         redirect('admin/'.$role.'recruitment');
     }
@@ -305,10 +372,20 @@ class Admin extends Controller {
         $this->view('admin/officers/v_rejected_officer_applications', $data);
     }
     public function accept_officer_applications($id,$role) {
+        if($role == 'po') $role_name = "Premise Officer";
+        elseif($role == 'mr') $role_name = "Mobile Rider";
+        elseif($role == 'ct') $role_name = "Care Taker";
+        
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
         if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+            // Add activity log
+            $title = "Officer Application Accepted";
+            $description = $role_name . " application #" . $id . " was approved";
+            $type = "registration";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
             flash('msg', 'Officer application accepted successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
@@ -318,6 +395,12 @@ class Admin extends Controller {
     }
     public function reject_officer_applications($id) {
         if ($this->adminModel->rejectOfficerApplication($id)) {
+            // Add activity log
+            $title = "Officer Application Rejected";
+            $description = "Officer application #" . $id . " was rejected";
+            $type = "incident";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
             flash('msg', 'Officer application rejected successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
@@ -327,6 +410,12 @@ class Admin extends Controller {
     }
     public function deleteOfficerApplication($id){
         if ($this->adminModel->deleteOfficerApplication($id)) {
+            // Add activity log
+            $title = "Officer Application Deleted";
+            $description = "Officer application #" . $id . " was permanently deleted";
+            $type = "alert";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
             flash('msg', 'Officer application deleted successfully', 'alert-success');
             redirect('admin/rejected_officer_applications/all');
         } else {
@@ -369,6 +458,12 @@ class Admin extends Controller {
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
     if ($this->adminModel->acceptClient($clientId, $adminId)) {
+        // Add activity log
+        $title = "Client Accepted";
+        $description = "Client #" . $clientId . " registration was approved";
+        $type = "updregistrationate";
+        $this->adminModel->insertRecentActivity($title, $description, $type);
+        
         flash('msg', 'Client accepted successfully', 'alert-success');
         redirect('admin/addclients');
     } else {
@@ -378,6 +473,12 @@ class Admin extends Controller {
 }
     public function rejectClient($clientId){
         if($this->adminModel->rejectClient($clientId)){
+            // Add activity log
+            $title = "Client Rejected";
+            $description = "Client #" . $clientId . " registration was rejected";
+            $type = "incident";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
             flash('msg', 'Client rejected successfully', 'alert-success');
             redirect('admin/addclients');
         } else {
@@ -391,6 +492,12 @@ class Admin extends Controller {
         $imagePath = PUB_ROOT . '/uploads/clientLogos/' . $client->client_profile;
         deleteImage($imagePath);
         if($this->adminModel->deleteRequest($clientId)){
+            // Add activity log
+            $title = "Client Request Deleted";
+            $description = "Client request #" . $clientId . " was permanently deleted";
+            $type = "alert";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
             flash('msg', 'Client request deleted successfully', 'alert-success');
             redirect('admin/rejected');
         } else {
@@ -497,6 +604,12 @@ class Admin extends Controller {
             $siteId = $this->adminModel->addSite($data);
                 
                 if($siteId){
+                    // Add activity log
+                    $title = "New Site Added";
+                    $description = "Site '" . $data['site_name'] . "' added for client ID: " . $Id;
+                    $type = "shift";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
                     flash('msg', 'Site added successfully', 'alert-success');
                     redirect('admin/viewsites/'.$siteId); // Redirect properly
                 } else {
@@ -624,6 +737,12 @@ public function editSite($site_id){
 
             // Update site - use editSite method in model
             if($this->adminModel->updateSite($data)){
+                // Add activity log
+                $title = "Site Updated";
+                $description = "Site '" . $data['site_name'] . "' (ID: " . $site_id . ") was updated";
+                $type = "update";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
                 flash('msg', 'Site updated successfully', 'alert-success');
                 redirect('admin/viewsites/'.$site_id);
             } else {
@@ -677,6 +796,12 @@ public function editSite($site_id){
     deleteImage($imagePath);
     
     if($this->adminModel->deleteSite($siteId)){
+        // Add activity log
+        $title = "Site Deleted";
+        $description = "Site '" . $site->site_name . "' (ID: " . $siteId . ") was deleted";
+        $type = "alert";
+        $this->adminModel->insertRecentActivity($title, $description, $type);
+        
         flash('msg', 'Site deleted successfully', 'alert-success');
         redirect('admin/clientprofile/' . $clientId);
     } else {
@@ -708,6 +833,12 @@ public function editSite($site_id){
             if (isset($_POST['approve_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
+                    // Add activity log
+                    $title = "Service Request Approved";
+                    $description = "Service request #" . $requestId . " was approved";
+                    $type = "update";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
                     flash('request_success', 'Service request approved successfully');
                 } else {
                     flash('request_error', 'Failed to approve service request');
@@ -715,6 +846,12 @@ public function editSite($site_id){
             } elseif (isset($_POST['reject_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
+                    // Add activity log
+                    $title = "Service Request Rejected";
+                    $description = "Service request #" . $requestId . " was rejected";
+                    $type = "alert";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
                     flash('request_success', 'Service request rejected');
                 } else {
                     flash('request_error', 'Failed to reject service request');
