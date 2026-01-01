@@ -4,6 +4,8 @@ class Admin extends Controller {
     private $userModel;
     private $homeModel;
     
+    private $messageModel;
+    private $mobileRiderModel;
 
     public function __construct() {
         requireAuth('admin');
@@ -11,6 +13,10 @@ class Admin extends Controller {
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
         // Removed: $this->settingsModel = $this->model('SettingsModel');
+        // Message model (reuse mobile rider messaging methods)
+        $this->messageModel = $this->model('M_mobilerider');
+        // Model for fetching incidents reported by mobile riders
+        $this->mobileRiderModel = $this->model('M_mobilerider');
     }
 
     public function index() {
@@ -34,13 +40,13 @@ class Admin extends Controller {
         $this->view('admin/dashboard/v_dashboard', $data);
     }
 
-    public function messages(){
-        $data = [
-            'title' => 'Dashboard',
-            'pageTitle' => 'Messages'
-        ];
-        $this->view('admin/dashboard/v_messages', $data);
-    }
+    // public function messages(){
+    //     $data = [
+    //         'title' => 'Dashboard',
+    //         'pageTitle' => 'Messages'
+    //     ];
+    //     $this->view('admin/dashboard/v_messages', $data);
+    // }
 
     public function pendings(){
         $data = [
@@ -771,6 +777,231 @@ public function editSite($site_id){
         $this->view('admin/v_salary', $data);
     }
 
+    // ==================== MESSAGES (Admin) ====================
+    public function messages()
+    {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$user_id) {
+            redirect('admin/dashboard');
+            return;
+        }
+        
+        $conversations = $this->messageModel->getConversations($user_id);
+        $all_users = $this->messageModel->getAllUsers($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
+        
+        $data = [
+            'title' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users,
+            'unread_count' => $unread_count,
+            'current_recipient_id' => isset($_GET['with']) ? $_GET['with'] : null
+        ];
+        
+        $this->view('admin/v_messages', $data);
+    }
+
+    // Load messages with a specific user (AJAX)
+    public function loadMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    // Send a message (AJAX)
+    public function sendMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            if ($this->messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    // Get all available users (AJAX)
+    public function getAllUsers()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $users = $this->messageModel->getAllUsers($user_id);
+            echo json_encode(['status' => 'success', 'users' => $users]);
+        }
+    }
+
+    // Get conversations (AJAX for updates)
+    public function getConversations()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    /**
+     * Return incidents as JSON for admin dashboard (AJAX)
+     */
+    public function getIncidents()
+    {
+        // Allow GET or POST
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+            return;
+        }
+
+        header('Content-Type: application/json');
+
+        $incidents = $this->mobileRiderModel->getAllIncidents();
+
+        $formatted = [];
+        foreach ($incidents as $inc) {
+            $formatted[] = [
+                'id' => '#IN' . ($inc->id ?? ''),
+                'site' => $inc->property_site ?? 'Unknown',
+                'location' => $inc->property_site ?? 'Unknown',
+                'officer' => $inc->officer_name ?? '',
+                'status' => $inc->status ?? 'Open',
+                'time' => date("m/d/Y h:i A", strtotime(($inc->incident_date ?? '') . ' ' . ($inc->incident_time ?? ''))),
+                'description' => $inc->incident_description ?? '',
+                'notes' => $inc->action_taken ?? ''
+            ];
+        }
+
+        echo json_encode(['status' => 'success', 'incidents' => $formatted]);
+    }
+
+    /**
+     * Update an incident (admin action) - supports updating status
+     */
+    public function updateIncident()
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            http_response_code(405);
+            echo json_encode(['status' => 'error', 'message' => 'Method not allowed']);
+            return;
+        }
+
+        header('Content-Type: application/json');
+
+        $incidentId = $_POST['incident_id'] ?? null;
+        $status = trim($_POST['status'] ?? '');
+
+        if (!$incidentId || $status === '') {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+            return;
+        }
+
+        // normalize id (accept '#IN123' or '123')
+        $id = preg_replace('/[^0-9]/', '', $incidentId);
+        if (empty($id)) {
+            echo json_encode(['status' => 'error', 'message' => 'Invalid incident id']);
+            return;
+        }
+
+        $updated = $this->mobileRiderModel->updateIncidentStatus($id, $status);
+        if ($updated) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error', 'message' => 'Failed to update incident']);
+        }
+    }
+
+    // Search conversations (AJAX)
+    public function searchMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $search_term = trim($_POST['search'] ?? '');
+            
+            if (!$user_id || empty($search_term)) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
+            echo json_encode(['status' => 'success', 'results' => $results]);
+        }
+    }
+
+    // Delete a message (AJAX)
+    public function deleteMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
     // View leave request details
     public function viewLeaveRequest($id) {
     $leaveRequest = $this->adminModel->getLeaveRequestById($id);
@@ -1086,9 +1317,14 @@ public function rejectLeave($id) {
     }
 
     public function incidents() {
+        // Fetch incident statistics from mobile rider model
+        $incident_stats = $this->mobileRiderModel->getAllIncidentStatistics();
+
         $data = [
+            
             'title' => 'Incidents',
-            'pageTitle' => 'Incidents Dashboard'
+            'pageTitle' => 'Incidents Dashboard',
+            'incident_stats' => $incident_stats
         ];
         $this->view('admin/v_incidents', $data);
     }

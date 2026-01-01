@@ -1,10 +1,5 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
-<?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
-
-
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
-
-
+<?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
 
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/mobilerider/messages.css">
@@ -175,7 +170,7 @@ function selectConversation(userId, event) {
 function loadMessages() {
   if (!currentRecipientId) return;
   
-  fetch(urlRoot + '/caretaker/loadMessages', {
+  fetch(urlRoot + '/premiseofficer/loadMessages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -226,7 +221,7 @@ function sendMessage() {
     return;
   }
   
-  fetch(urlRoot + '/caretaker/sendMessage', {
+  fetch(urlRoot + '/premiseofficer/sendMessage', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
