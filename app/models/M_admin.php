@@ -6,6 +6,40 @@ class M_admin {
         $this->db = new Database();
     }
 // ======================================================================== //
+// =======================      Admin Dashboard       ====================== //
+// ======================================================================== //
+    public function getRecentActivities($limit = 100) {
+    $this->db->query('
+        SELECT ra.*, u.name as user_name
+        FROM recent_activities ra 
+        LEFT JOIN Users u ON ra.user_id = u.id 
+        ORDER BY ra.created_at DESC 
+        LIMIT :limit
+    ');
+    $this->db->bind(':limit', $limit);
+    return $this->db->resultSet();
+}
+
+public function insertRecentActivity($title, $description, $type, $userId = null) {
+    // If userId is not provided, get it from session or set as null
+    if ($userId === null) {
+        // Get logged in user's ID from session
+        $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+    }
+    
+    $this->db->query('
+        INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+        VALUES (:user_id, :title, :description, :type)
+    ');
+    
+    $this->db->bind(':user_id', $userId);
+    $this->db->bind(':title', $title);
+    $this->db->bind(':description', $description);
+    $this->db->bind(':type', $type);
+    
+    return $this->db->execute();
+}
+// ======================================================================== //
 // =======================      Admin Officers       ====================== //
 // ======================================================================== //
 
@@ -126,6 +160,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         case 'po':
             $rolePrefix = 'PO';
             $role_name = 'Premise Officer';
+            $role_name_data = 'Premise Officer';
             break;
         case 'ct':
             $rolePrefix = 'CT';
@@ -135,10 +170,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         case 'mr':
             $rolePrefix = 'MR';
             $role_name = 'Mobile Rider';
+            $role_name_data = 'Mobile Rider';
             break;
         default:
             $rolePrefix = 'OF';
             $role_name = 'Officer';
+            $role_name_data = 'Officer';
     }
     
     // Get last userID for this role
