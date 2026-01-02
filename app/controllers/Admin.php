@@ -3,6 +3,7 @@ class Admin extends Controller {
     private $adminModel;
     private $userModel;
     private $homeModel;
+    private $chartModel;
     
 
     public function __construct() {
@@ -10,29 +11,44 @@ class Admin extends Controller {
         $this->adminModel = $this->model('M_admin');
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
-        // Removed: $this->settingsModel = $this->model('SettingsModel');
+        
+        // Try to load chart model
+        $chartModel = $this->model('ChartDataModel');
+        if ($chartModel) {
+            $this->chartModel = $chartModel;
+        }
     }
 
     public function index() {
         redirect('admin/dashboard');
     }
 
-// ======================================================================== //
-// =======================      Admin Dashboard       ====================== //
-// ======================================================================== //
-
     public function dashboard() {
         $pendingLeaves = $this->adminModel->getPendingLeaveRequests();
         $leaveStats = $this->adminModel->getLeaveRequestStats();
         $recentActivities = $this->adminModel->getRecentActivities(100);
+        
+        // Initialize chart data
+        $userRoleChart = [
+            'labels' => [],
+            'data' => [],
+            'colors' => []
+        ];
+        
+        // Only try to get chart data if model exists
+        if ($this->chartModel) {
+            $userRoleChart = $this->chartModel->getUserRolePieChart();
+        }
     
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Admin Dashboard',
             'pendingLeaves' => $pendingLeaves,
             'leaveStats' => $leaveStats,
-            'recent_activities' => $recentActivities
+            'recent_activities' => $recentActivities,
+            'userRoleChart' => $userRoleChart
         ];
+        
         $this->view('admin/dashboard/v_dashboard', $data);
     }
 
@@ -906,6 +922,17 @@ public function editSite($site_id){
             'title' => 'Salary',
             'pageTitle' => 'Manage Salary'];
         $this->view('admin/v_salary', $data);
+    }
+
+// ======================================================================== //
+// =======================      Admin client payments       ================ //
+// ======================================================================== //
+
+    public function clients_payments() {
+        $data = [
+            'title' => 'Salary',
+            'pageTitle' => 'Clients Payments'];
+        $this->view('admin/clients_payments/v_clients_payments', $data);
     }
 
     // View leave request details

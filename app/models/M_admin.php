@@ -160,6 +160,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         case 'po':
             $rolePrefix = 'PO';
             $role_name = 'Premise Officer';
+            $role_name_data = 'Premise Officer';
             break;
         case 'ct':
             $rolePrefix = 'CT';
@@ -169,10 +170,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         case 'mr':
             $rolePrefix = 'MR';
             $role_name = 'Mobile Rider';
+            $role_name_data = 'Mobile Rider';
             break;
         default:
             $rolePrefix = 'OF';
             $role_name = 'Officer';
+            $role_name_data = 'Officer';
     }
     
     // Get last userID for this role
