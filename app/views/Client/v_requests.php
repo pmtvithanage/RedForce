@@ -17,7 +17,6 @@ if (!isset($data['title'])) {
 
 <?php
 // Get data passed from controller
-$showSuccessMessage = $data['showSuccessMessage'] ?? false;
 $errorMessage = $data['errorMessage'] ?? '';
 $previousRequests = $data['previousRequests'] ?? [];
 $showHistory = $data['showHistory'] ?? false;
@@ -55,36 +54,6 @@ $previousRequests = $formattedRequests;
 ?>
 
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
-
-<!-- Success Message Popup -->
-<?php if ($showSuccessMessage): ?>
-<div class="popup-overlay">
-  <div class="popup-message">
-    <div class="popup-content">
-      <h3>✓ Submitted Successfully!</h3>
-      <p>Your service request has been submitted successfully. We will contact you soon.</p>
-      <form method="get">
-        <button type="submit" class="popup-btn">OK</button>
-      </form>
-    </div>
-  </div>
-</div>
-<?php endif; ?>
-
-<!-- Error Message Popup -->
-<?php if (!empty($errorMessage)): ?>
-<div class="popup-overlay">
-  <div class="popup-message">
-    <div class="popup-content">
-      <h3>❌ Error</h3>
-      <p><?php echo htmlspecialchars($errorMessage); ?></p>
-      <form method="get">
-        <button type="submit" class="popup-btn error-btn">OK</button>
-      </form>
-    </div>
-  </div>
-</div>
-<?php endif; ?>
 
 <!-- Request History Popup -->
 <?php if ($showHistory): ?>
@@ -162,10 +131,10 @@ $previousRequests = $formattedRequests;
   <div class="request-services-container">
     <div class="page-header">
       <h2 class="page-title">Request Services</h2>
-      <form method="get" style="display: inline;">
-        <input type="hidden" name="show_history" value="1">
-        <button type="submit" class="history-btn">View Request History</button>
-      </form>
+      <a href="<?php echo URL_ROOT; ?>/client/requestHistory" class="secondary-btn">
+        <span class="material-icons">history</span>
+        View Request History
+      </a>
     </div>
 
     <div class="request-card">
@@ -251,7 +220,10 @@ $previousRequests = $formattedRequests;
 
         <!-- Submit -->
         <div class="form-actions">
-          <button type="submit" name="submit_request" class="submit-btn">Submit</button>
+            <button type="submit" name="submit_request" class="primary-btn">
+                <span class="material-icons">send</span>
+                Submit
+            </button>
         </div>
       </form>
     </div>

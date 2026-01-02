@@ -85,14 +85,23 @@ class Client extends Controller {
 
                 // Save to database (removed guard type validation)
                 if ($this->clientModel->createServiceRequest($requestData)) {
-                    $data['showSuccessMessage'] = true;
-                    // Clear POST data to prevent resubmission
-                    $_POST = [];
+                    // Instead of popup, set flash message
+                    $_SESSION['success_message'] = 'Your service request has been submitted successfully!';
+                    header('Location: ' . URL_ROOT . '/client/requests');
+                    exit;
                 } else {
-                    $data['errorMessage'] = 'Failed to submit request. Please try again.';
+                    $_SESSION['error_message'] = 'Failed to submit request. Please try again.';
                 }
             }
         }
+        
+        // Get flash messages
+        $data['showSuccessMessage'] = isset($_SESSION['success_message']);
+        $data['errorMessage'] = $_SESSION['error_message'] ?? '';
+        
+        // Clear flash messages
+        unset($_SESSION['success_message']);
+        unset($_SESSION['error_message']);
 
         // Handle delete request
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_request'])) {
@@ -132,4 +141,65 @@ class Client extends Controller {
         $this->view('client/v_profile', $data); 
     }
 
+    public function requestHistory() {
+        $clientId = $_SESSION['user_id'];
+        $requests = $this->clientModel->getClientServiceRequests($clientId);
+        
+        $data = [
+            'title' => 'Request History',
+            'pageTitle' => 'Request History',
+            'requests' => $requests
+        ];
+        
+        $this->view('Client/requests/v_history', $data);
+    }
+
+    public function deleteRequest($requestId) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $clientId = $_SESSION['user_id'];
+            
+            if ($this->clientModel->deleteServiceRequest($requestId, $clientId)) {
+                $_SESSION['success_message'] = 'Request deleted successfully.';
+            } else {
+                $_SESSION['error_message'] = 'Failed to delete request.';
+            }
+        }
+        
+        header('Location: ' . URL_ROOT . '/client/requestHistory');
+        exit;
+    }
+
+    public function messages($conversationId = null) {
+        $data = [
+            'title' => 'Messages',
+            'pageTitle' => 'Messages',
+            'conversationId' => $conversationId
+        ];
+        
+        $this->view('Client/dashboard/v_messages', $data);
+    }
+
+    public function incidents() {
+        $data = [
+            'title' => 'Incident Reports',
+            'pageTitle' => 'Incident Reports'
+        ];
+        
+        $this->view('Client/dashboard/v_incidents', $data);
+    }
+
+    public function rateOfficer($officerId = null) {
+        // Redirect to officers page if no officer ID provided
+        if (!$officerId) {
+            redirect('client/officers');
+        }
+
+        $data = [
+            'title' => 'Rate Officer',
+            'pageTitle' => 'Rate Officer',
+            'officerId' => $officerId
+        ];
+        
+        $this->view('Client/officers/v_rate', $data);
+    }
 }

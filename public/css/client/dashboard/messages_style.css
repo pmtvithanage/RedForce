@@ -4,15 +4,9 @@
     background-color: #f3f3f3;
 }
 
+/* Back button spacing */
 .back-btn {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     margin-bottom: 20px;
-}
-
-.back-btn .material-icons {
-    font-size: 18px;
 }
 
 .messages-container {
