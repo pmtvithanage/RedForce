@@ -725,12 +725,6 @@ public function editSite($site_id){
             elseif (isset($_POST['approve_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
-                    // Add activity log
-                    $title = "Service Request Approved";
-                    $description = "Service request #" . $requestId . " was approved";
-                    $type = "update";
-                    $this->adminModel->insertRecentActivity($title, $description, $type);
-
                     flash('request_success', 'Service request approved successfully', 'alert-success');
                 } else {
                     flash('request_error', 'Failed to approve service request', 'alert-danger');
@@ -740,12 +734,6 @@ public function editSite($site_id){
             elseif (isset($_POST['reject_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
-                    // Add activity log
-                    $title = "Service Request Rejected";
-                    $description = "Service request #" . $requestId . " was rejected";
-                    $type = "alert";
-                    $this->adminModel->insertRecentActivity($title, $description, $type);
-
                     flash('request_success', 'Service request rejected', 'alert-success');
                 } else {
                     flash('request_error', 'Failed to reject service request', 'alert-danger');
@@ -1480,4 +1468,4 @@ public function rejectLeave($id) {
 //. # If the clientLogos directory doesn't exist yet, create it with proper permissions
 //. sudo mkdir -p /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
 //. sudo chown -R daemon:daemon /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
-//. sudo chmod -R 755 /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages
+//. sudo chmod -R 755 /Applications/XAMPP/xamppfiles/htdocs/RedForce/public/uploads/siteImages 
