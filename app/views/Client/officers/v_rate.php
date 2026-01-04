@@ -1,19 +1,10 @@
 <?php
 // Mock officer data - replace with actual database query
-$officerId = $_GET['id'] ?? 'RF001';
+$officerId = $data['officerId'] ?? 'RF001';
 $officers = [
     'RF001' => ['name' => 'John Silva', 'rank' => 'OIC', 'site' => 'Colombo Main Branch', 'rating' => 4.2],
     'RF002' => ['name' => 'Sarah Perera', 'rank' => 'SSO', 'site' => 'Kurunegala Branch', 'rating' => 4.8],
-    'RF003' => ['name' => 'Michael Fernando', 'rank' => 'JSO', 'site' => 'Nuwara Eliya Branch', 'rating' => 3.9],
-    'RF004' => ['name' => 'Lisa Jayawardene', 'rank' => 'LSO', 'site' => 'Galle Branch', 'rating' => 4.5],
-    'RF005' => ['name' => 'David Rathnayake', 'rank' => 'OIC', 'site' => 'Kandy Branch', 'rating' => 4.1],
-    'RF006' => ['name' => 'Amanda Wickramasinghe', 'rank' => 'SSO', 'site' => 'Colombo Main Branch', 'rating' => 4.7],
-    'RF007' => ['name' => 'Pradeep Kumara', 'rank' => 'JSO', 'site' => 'Kurunegala Branch', 'rating' => 4.3],
-    'RF008' => ['name' => 'Nisha Mendis', 'rank' => 'LSO', 'site' => 'Galle Branch', 'rating' => 4.0],
-    'RF009' => ['name' => 'Ruwan Dissanayake', 'rank' => 'JSO', 'site' => 'Nuwara Eliya Branch', 'rating' => 3.8],
-    'RF010' => ['name' => 'Chamila Rajapakse', 'rank' => 'SSO', 'site' => 'Kandy Branch', 'rating' => 4.6],
-    'RF011' => ['name' => 'Kasun Weerasinghe', 'rank' => 'LSO', 'site' => 'Colombo Main Branch', 'rating' => 4.4],
-    'RF012' => ['name' => 'Tharaka Gunasekera', 'rank' => 'JSO', 'site' => 'Kurunegala Branch', 'rating' => 4.2]
+    'RF003' => ['name' => 'Lisa Jayawardene', 'rank' => 'LSO', 'site' => 'Galle Branch', 'rating' => 4.5]
 ];
 
 $officer = isset($officers[$officerId]) ? $officers[$officerId] : null;

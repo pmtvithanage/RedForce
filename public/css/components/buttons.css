@@ -1,5 +1,8 @@
 /* General button reset */
-button {
+button,
+.primary-btn,
+.secondary-btn,
+.tertiary-btn {
   font-family: "Poppins", sans-serif;
   font-size: 16px;
   font-weight: 500;
@@ -8,6 +11,11 @@ button {
   padding: 10px 20px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  line-height: 1.5;
 }
 
 /* Primary Button */
@@ -53,4 +61,12 @@ button {
 .tertiary-btn:active {
   color: #800000;
   border-color: #800000;
+}
+
+/* Icon alignment within buttons */
+.primary-btn .material-icons,
+.secondary-btn .material-icons,
+.tertiary-btn .material-icons {
+  font-size: 20px;
+  line-height: 1;
 }
