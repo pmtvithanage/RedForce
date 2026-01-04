@@ -95,10 +95,19 @@ VALUES
         '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm',
         'caretaker'
     );
-
+    
+CREATE TABLE IF NOT EXISTS recent_activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  activity_type VARCHAR(500) NOT NULL,
+  activity_titel VARCHAR(500),
+  activity_details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+);
 -- Advertisements table
 CREATE TABLE
-    advertisements (
+    IF NOT EXISTS advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         image_path VARCHAR(500) NOT NULL,
