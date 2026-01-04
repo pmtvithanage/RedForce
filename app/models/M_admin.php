@@ -840,5 +840,33 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Package request methods
+    public function getAllPackageRequests() {
+        $this->db->query("SELECT pr.*, u.name as client_name FROM package_requests pr JOIN Users u ON pr.client_id = u.id ORDER BY pr.submitted_date DESC");
+        return $this->db->resultSet();
+    }
+
+    public function getPackageRequestStats() {
+        $this->db->query("SELECT COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending, COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved, COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected, COUNT(*) as total FROM package_requests");
+        return $this->db->single();
+    }
+
+    public function approvePackageRequest($id, $admin_id, $notes) {
+        $this->db->query("UPDATE package_requests SET status = 'Approved', admin_notes = :notes, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->bind(':notes', $notes);
+        return $this->db->execute();
+    }
+
+    public function rejectPackageRequest($id, $admin_id, $reason) {
+        $this->db->query("UPDATE package_requests SET status = 'Rejected', admin_notes = :reason, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
+        $this->db->bind(':id', $id);
+        $this->db->bind(':admin_id', $admin_id);
+        $this->db->bind(':reason', $reason);
+        return $this->db->execute();
+    }
+
     
 }
+

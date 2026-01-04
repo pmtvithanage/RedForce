@@ -1,6 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/flash_msg.css">
 
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
@@ -11,8 +12,11 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/requests_style.css">
 
 <div class="main-content">
+    <?php flash('package_success'); ?>
+    <?php flash('package_error'); ?>
+
     <div class="page-header">
-        <a href="<?php echo URL_ROOT; ?>/client/requestHistory" class="secondary-btn">
+        <a href="<?php echo URL_ROOT; ?>/client/packageHistory" class="secondary-btn">
             <span class="material-icons">history</span>
             View History
         </a>

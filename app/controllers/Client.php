@@ -262,16 +262,35 @@ class Client extends Controller {
                 'start_date' => $_POST['start_date'],
                 'end_date' => $_POST['end_date'],
                 'number_of_guards' => $_POST['number_of_guards'],
-                'package_price' => $_POST['package_price'] ?? null,
+                'day_guards' => $_POST['day_guards'] ?? null,
+                'night_guards' => $_POST['night_guards'] ?? null,
+                'package_price' => $_POST['package_price'],
                 'comments' => trim($_POST['comments'] ?? '')
             ];
 
             if ($this->clientModel->createPackageRequest($requestData)) {
-                $_SESSION['success_message'] = 'Package request submitted successfully!';
+                flash('package_success', 'Package request submitted successfully!', 'alert-success');
             } else {
-                $_SESSION['error_message'] = 'Failed to submit request. Please try again.';
+                flash('package_error', 'Failed to submit request. Please try again.', 'alert-danger');
             }
         }
         redirect('client/requests');
+    }
+
+    public function packageHistory() {
+        $requests = $this->clientModel->getClientPackageRequests($_SESSION['user_id']);
+        $data = ['title' => 'Request History', 'pageTitle' => 'Package Request History', 'requests' => $requests];
+        $this->view('Client/requests/v_package_history', $data);
+    }
+
+    public function deletePackageRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if ($this->clientModel->deletePackageRequest($id, $_SESSION['user_id'])) {
+                flash('package_success', 'Request deleted successfully', 'alert-success');
+            } else {
+                flash('package_error', 'Failed to delete request', 'alert-danger');
+            }
+        }
+        redirect('client/packageHistory');
     }
 }
