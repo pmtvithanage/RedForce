@@ -67,4 +67,34 @@ class M_client {
         
         return $this->db->execute();
     }
+
+    // Package request methods
+    public function createPackageRequest($data) {
+        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_address, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments) 
+            VALUES (:client_id, :package_name, :site_address, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments)');
+        $this->db->bind(':client_id', $data['client_id']);
+        $this->db->bind(':package_name', $data['package_name']);
+        $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':start_date', $data['start_date']);
+        $this->db->bind(':end_date', $data['end_date']);
+        $this->db->bind(':number_of_guards', $data['number_of_guards']);
+        $this->db->bind(':day_guards', $data['day_guards'] ?? null);
+        $this->db->bind(':night_guards', $data['night_guards'] ?? null);
+        $this->db->bind(':package_price', $data['package_price']);
+        $this->db->bind(':comments', $data['comments'] ?? null);
+        return $this->db->execute();
+    }
+
+    public function getClientPackageRequests($client_id) {
+        $this->db->query('SELECT * FROM package_requests WHERE client_id = :client_id ORDER BY submitted_date DESC');
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
+
+    public function deletePackageRequest($id, $client_id) {
+        $this->db->query('DELETE FROM package_requests WHERE id = :id AND client_id = :client_id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->execute();
+    }
 }

@@ -699,3 +699,30 @@ SELECT
 FROM care_taker ct
 LEFT JOIN Users u ON ct.userID = u.id
 WHERE u.role = 'care taker' OR ct.userID IS NOT NULL;
+
+-- ============================================
+-- Package Requests Table (for Client Package System)
+-- ============================================
+CREATE TABLE IF NOT EXISTS package_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL,
+    package_name VARCHAR(100) NOT NULL,
+    site_address TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    number_of_guards INT NOT NULL,
+    day_guards INT DEFAULT NULL,
+    night_guards INT DEFAULT NULL,
+    package_price DECIMAL(10,2) NOT NULL,
+    comments TEXT DEFAULT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    admin_notes TEXT DEFAULT NULL,
+    approved_by INT DEFAULT NULL,
+    approved_at DATETIME DEFAULT NULL,
+    submitted_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES Users(id) ON DELETE SET NULL,
+    INDEX idx_client (client_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

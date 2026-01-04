@@ -846,7 +846,24 @@ public function editSite($site_id){
     public function clientRequests() {
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (isset($_POST['approve_request'])) {
+            // Handle package request approval
+            if (isset($_POST['approve_package_request'])) {
+                if ($this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''))) {
+                    flash('request_success', 'Package request approved successfully', 'alert-success');
+                } else {
+                    flash('request_error', 'Failed to approve package request', 'alert-danger');
+                }
+            }
+            // Handle package request rejection
+            elseif (isset($_POST['reject_package_request'])) {
+                if ($this->adminModel->rejectPackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['rejection_reason']))) {
+                    flash('request_success', 'Package request rejected', 'alert-success');
+                } else {
+                    flash('request_error', 'Failed to reject package request', 'alert-danger');
+                }
+            }
+            // Handle old service request approval
+            elseif (isset($_POST['approve_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
                     // Add activity log
@@ -857,9 +874,11 @@ public function editSite($site_id){
                     
                     flash('request_success', 'Service request approved successfully');
                 } else {
-                    flash('request_error', 'Failed to approve service request');
+                    flash('request_error', 'Failed to approve service request', 'alert-danger');
                 }
-            } elseif (isset($_POST['reject_request'])) {
+            }
+            // Handle old service request rejection
+            elseif (isset($_POST['reject_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
                     // Add activity log
@@ -870,21 +889,34 @@ public function editSite($site_id){
                     
                     flash('request_success', 'Service request rejected');
                 } else {
-                    flash('request_error', 'Failed to reject service request');
+                    flash('request_error', 'Failed to reject service request', 'alert-danger');
                 }
             }
             redirect('admin/clientRequests');
         }
 
-        // Get all service requests
+        // Get all service requests (old system)
         $serviceRequests = $this->adminModel->getAllServiceRequests();
-        $requestStats = $this->adminModel->getServiceRequestStats();
+        $serviceRequestStats = $this->adminModel->getServiceRequestStats();
+        
+        // Get all package requests (new system)
+        $packageRequests = $this->adminModel->getAllPackageRequests();
+        $packageRequestStats = $this->adminModel->getPackageRequestStats();
+        
+        // Combine stats
+        $combinedStats = (object)[
+            'pending' => ($serviceRequestStats->pending ?? 0) + ($packageRequestStats->pending ?? 0),
+            'approved' => ($serviceRequestStats->approved ?? 0) + ($packageRequestStats->approved ?? 0),
+            'rejected' => ($serviceRequestStats->rejected ?? 0) + ($packageRequestStats->rejected ?? 0),
+            'total' => ($serviceRequestStats->total ?? 0) + ($packageRequestStats->total ?? 0)
+        ];
 
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Client Service Requests',
             'serviceRequests' => $serviceRequests,
-            'requestStats' => $requestStats
+            'packageRequests' => $packageRequests,
+            'requestStats' => $combinedStats
         ];
         
         $this->view('admin/v_client_requests', $data);
