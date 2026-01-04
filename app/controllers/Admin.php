@@ -967,6 +967,10 @@ public function editSite($site_id){
         $this->view('admin/clients_payments/v_clients_payments', $data);
     }
 
+
+// ======================================================================== //
+// =======================      Admin officer leave requests      ================ //
+// ======================================================================== //
     // View leave request details
     public function viewLeaveRequest($id) {
     $leaveRequest = $this->adminModel->getLeaveRequestById($id);
