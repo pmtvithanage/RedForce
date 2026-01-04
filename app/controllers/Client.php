@@ -202,4 +202,76 @@ class Client extends Controller {
         
         $this->view('Client/officers/v_rate', $data);
     }
+
+    // Package Pages
+    public function basicPackage() {
+        $data = [
+            'title' => 'Basic Package',
+            'pageTitle' => 'Basic Package'
+        ];
+        $this->view('Client/requests/v_basic', $data);
+    }
+
+    public function budgetPackage() {
+        $data = [
+            'title' => 'Budget Package',
+            'pageTitle' => 'Budget Package'
+        ];
+        $this->view('Client/requests/v_budget', $data);
+    }
+
+    public function vigilantPackage() {
+        $data = [
+            'title' => 'Vigilant Package',
+            'pageTitle' => 'Vigilant Package'
+        ];
+        $this->view('Client/requests/v_vigilant', $data);
+    }
+
+    public function proPackage() {
+        $data = [
+            'title' => 'Pro Package',
+            'pageTitle' => 'Pro Package'
+        ];
+        $this->view('Client/requests/v_pro', $data);
+    }
+
+    public function ultraPackage() {
+        $data = [
+            'title' => 'Ultra Package',
+            'pageTitle' => 'Ultra Package'
+        ];
+        $this->view('Client/requests/v_ultra', $data);
+    }
+
+    public function customPackage() {
+        $data = [
+            'title' => 'Custom Package',
+            'pageTitle' => 'Custom Package'
+        ];
+        $this->view('Client/requests/v_custom', $data);
+    }
+
+    // Handle package request submission
+    public function submitPackageRequest() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $requestData = [
+                'client_id' => $_SESSION['user_id'],
+                'package_name' => $_POST['package_name'],
+                'site_address' => trim($_POST['site_address']),
+                'start_date' => $_POST['start_date'],
+                'end_date' => $_POST['end_date'],
+                'number_of_guards' => $_POST['number_of_guards'],
+                'package_price' => $_POST['package_price'] ?? null,
+                'comments' => trim($_POST['comments'] ?? '')
+            ];
+
+            if ($this->clientModel->createPackageRequest($requestData)) {
+                $_SESSION['success_message'] = 'Package request submitted successfully!';
+            } else {
+                $_SESSION['error_message'] = 'Failed to submit request. Please try again.';
+            }
+        }
+        redirect('client/requests');
+    }
 }
