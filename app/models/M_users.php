@@ -1,9 +1,9 @@
 <?php
     class M_users {
         private $db;
-        public function __construct() {
-            // Initialize the database connection
-            $this->db = new Database();
+        public function __construct($db = null) {
+            // Allow dependency injection for testing; fall back to real Database otherwise
+            $this->db = $db ?: new Database();
         }
 
         public function getUsers() {
@@ -262,7 +262,7 @@
             } catch (Exception $e) {
                 // Rollback on error
                 $this->db->rollBack();
-                error_log("User registration error: " . $e->getMessage());
+               // error_log("User registration error: " . $e->getMessage());
                 return false;
             }
         }
