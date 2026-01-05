@@ -401,7 +401,25 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':client_id', $new_user_id);
         $this->db->bind(':id', $client_request_id);
         
-        return $this->db->execute();
+        // Execute the update first
+        $success = $this->db->execute();
+        if (!$success) {
+            return ['success' => false];
+        }
+
+        // Now fetch the numeric user id (primary key) for the created user
+        $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+        $this->db->bind(':userID', $userID);
+        $CL_row = $this->db->single();
+        $numericId = isset($CL_row->id) ? (int)$CL_row->id : null;
+
+        return [
+            'success' => true,
+            'new_user_id' => $userID,
+            'id' => $numericId,
+            'email' => $request->email,
+            'temp_password' => $tempPassword
+        ];
     }
 
     // Reject Client Request

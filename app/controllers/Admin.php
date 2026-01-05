@@ -473,14 +473,35 @@ class Admin extends Controller {
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
-    if ($this->adminModel->acceptClient($clientId, $adminId)) {
+    $result = $this->adminModel->acceptClient($clientId, $adminId);
+    if (!empty($result['success']) && $result['success']) {
         // Add activity log
         $title = "Client Accepted";
         $description = "Client #" . $clientId . " registration was approved";
         $type = "updregistrationate";
         $this->adminModel->insertRecentActivity($title, $description, $type);
-        
-        flash('msg', 'Client accepted successfully', 'alert-success');
+
+        // Send welcome email with account details using template
+        $client = $this->adminModel->getClientById($result['id']);
+        $clientName = $client->name ?? 'Client';
+        $subject = 'Welcome to ' . SITE_NAME . ' - Your account details';
+
+        $vars = [
+            'client_name' => $clientName,
+            'login_id' => $result['new_user_id'],
+            'temp_password' => $result['temp_password'],
+            'site_name' => SITE_NAME,
+            'login_url' => URL_ROOT . '/users/login'
+        ];
+
+        $emailResult = send_templated_email($result['email'], 'welcome_client', $vars, $subject);
+
+        // Log email (best-effort) with rendered body for easier debugging
+        $renderedBody = render_email_template('welcome_client', $vars);
+        $emailModel = $this->model('M_email');
+        $emailModel->log($result['email'], $subject, $renderedBody, $emailResult['success'] ? 'sent' : 'failed', $emailResult['message'] ?? null, ['template' => 'welcome_client']);
+
+        flash('msg', 'Client accepted successfully and notified by email', 'alert-success');
         redirect('admin/addclients');
     } else {
         flash('client_message', 'Failed to accept client', 'alert-danger');
