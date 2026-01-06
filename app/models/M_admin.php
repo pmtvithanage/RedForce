@@ -333,7 +333,27 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
         return $this->db->resultSet();
     }
+    
+    // Get detailed client statistics by status
+    public function getClientStatistics() {
+        $this->db->query("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_count,
+                SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive_count,
+                SUM(CASE WHEN status = 'suspended' THEN 1 ELSE 0 END) as suspended_count
+            FROM Users 
+            WHERE role = 'client'
+        ");
+        
+        return $this->db->single();
+    }
 
+    // Usage example:
+    // $stats = $userModel->getClientStatistics();
+    // echo "Total: " . $stats->total;
+    // echo "Active: " . $stats->active_count;
+    // echo "Inactive: " . $stats->inactive_count;
 
     // Accept Client Request
     public function acceptClient($client_request_id, $approved_by_user_id) {
