@@ -395,14 +395,36 @@ class Admin extends Controller {
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
-        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+        $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
+        if (!empty($result['success']) && $result['success']) {
             // Add activity log
             $title = "Officer Application Accepted";
             $description = $role_name . " application #" . $id . " was approved";
             $type = "registration";
             $this->adminModel->insertRecentActivity($title, $description, $type);
-            
-            flash('msg', 'Officer application accepted successfully', 'alert-success');
+
+            // Try to fetch the created user to get email and name
+            $user = $this->adminModel->getUserByID($result['userID']);
+            if ($user && !empty($user->email)) {
+                $subject = 'Welcome to ' . SITE_NAME . ' - Your officer account';
+                $vars = [
+                    'officer_name' => $user->name ?? 'Officer',
+                    'login_id' => $result['userID'],
+                    'temp_password' => $result['tempPassword'],
+                    'role_name' => $role_name,
+                    'site_name' => SITE_NAME,
+                    'login_url' => URL_ROOT . '/users/login'
+                ];
+
+                $emailResult = send_templated_email($user->email, 'welcome_officer', $vars, $subject);
+
+                // Log email (best-effort)
+                $renderedBody = render_email_template('welcome_officer', $vars);
+                $emailModel = $this->model('M_email');
+                $emailModel->log($user->email, $subject, $renderedBody, $emailResult['success'] ? 'sent' : 'failed', $emailResult['message'] ?? null, ['template' => 'welcome_officer']);
+            }
+
+            flash('msg', 'Officer application accepted successfully' . (isset($emailResult) && $emailResult['success'] ? ' and notified by email' : ''), 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
             flash('msg', 'Failed to accept officer application', 'alert-danger');

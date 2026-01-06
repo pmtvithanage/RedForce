@@ -101,6 +101,8 @@
 <?php flash('msg')?>
 
 <script>
+
+  //------------Flash Message ----------------//
   // Wait for DOM to be fully loaded
   document.addEventListener('DOMContentLoaded', function() {
     const flashMessage = document.getElementById('msg-flash');
@@ -120,5 +122,57 @@
       }, 5000); // Display for 5 seconds
     }
   });
+
+
+
+
+
+
+
+
+
+
+//------------------Loading Button Script------------------//
+  // Show loading state on anchor buttons until navigation
+(function() {
+  function makeLoading(el) {
+    if (el.classList.contains('btn-loading')) return;
+    // store original html
+    el.dataset.origHtml = el.innerHTML;
+    el.classList.add('btn-loading');
+    el.innerHTML = '<span class="spinner" aria-hidden="true"></span>' + ('Loading...');
+  }
+
+  function handleClick(e) {
+    var el = e.currentTarget;
+    var href = el.getAttribute('href');
+    if (!href || href === '#') return; // nothing to do
+
+    e.preventDefault();
+    makeLoading(el);
+
+    // small delay to show spinner before navigating
+    setTimeout(function(){
+      window.location.href = href;
+    }, 80);
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    // target buttons/links that perform navigation
+    var selectors = '.loading';
+    var els = document.querySelectorAll(selectors);
+    els.forEach(function(a){
+      // only for anchors
+      if (a.tagName.toLowerCase() === 'a') {
+        a.addEventListener('click', handleClick);
+      } else if (a.tagName.toLowerCase() === 'button') {
+        a.addEventListener('click', function(ev){
+          makeLoading(a);
+        });
+      }
+    });
+
+  });
+})();
 </script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
