@@ -127,9 +127,10 @@
         margin: 35px 0 30px;
       }
       
+
       .login-button {
         display: inline-block;
-        background: linear-gradient(135deg, #a40000 0%, #cc0000 100%);
+        background: linear-gradient(135deg, #b7b7b7 0%, #dbdbdb 100%);
         color: white;
         text-decoration: none;
         padding: 15px 35px;
@@ -137,13 +138,13 @@
         font-weight: 600;
         font-size: 16px;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(164, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(147, 147, 147, 0.3);
       }
-      
+
       .login-button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(164, 0, 0, 0.4);
-        background: linear-gradient(135deg, #cc0000 0%, #a40000 100%);
+        box-shadow: 0 6px 16px rgba(111, 111, 111, 0.4);
+        background: linear-gradient(135deg, #a1a1a1 0%, #959595 100%);
       }
       
       .login-url {
