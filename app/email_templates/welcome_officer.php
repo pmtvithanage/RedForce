@@ -127,6 +127,7 @@
         margin: 35px 0 30px;
       }
       
+
       .login-button {
         display: inline-block;
         background: linear-gradient(135deg, #b7b7b7 0%, #dbdbdb 100%);
@@ -187,77 +188,6 @@
       .instructions li {
         margin-bottom: 8px;
         line-height: 1.5;
-      }
-      
-      /* Steps */
-      .steps-container {
-        margin: 25px 0;
-      }
-      
-      .step {
-        display: flex;
-        margin-bottom: 25px;
-        align-items: flex-start;
-      }
-      
-      .step-number {
-        color: black;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        margin-right: 15px;
-        flex-shrink: 0;
-        font-size: 14px;
-      }
-      
-      .step-content {
-        flex-grow: 1;
-      }
-      
-      .step-title {
-        font-weight: 600;
-        margin: 0 0 5px;
-        color: #a40000;
-        font-size: 16px;
-      }
-      
-      .step-description {
-        color: #4a5568;
-        margin: 0;
-        font-size: 14.5px;
-      }
-      
-      /* Features section */
-      .features {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 20px;
-        margin: 25px 0;
-      }
-      
-      .feature {
-        text-align: center;
-        padding: 20px 15px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        border-top: 3px solid #a40000;
-      }
-      
-      .feature-title {
-        font-weight: 600;
-        margin: 0 0 8px;
-        color: #2d3748;
-        font-size: 15px;
-      }
-      
-      .feature-desc {
-        font-size: 13px;
-        color: #666;
-        margin: 0;
       }
       
       /* Additional Info */
@@ -331,19 +261,6 @@
         .header h1 {
           font-size: 24px;
         }
-        
-        .features {
-          grid-template-columns: 1fr;
-        }
-        
-        .step {
-          flex-direction: column;
-        }
-        
-        .step-number {
-          margin-right: 0;
-          margin-bottom: 10px;
-        }
       }
     </style>
   </head>
@@ -352,27 +269,34 @@
       <!-- Header -->
       <div class="header">
         <span class="logo"><?= htmlspecialchars($site_name ?? SITE_NAME) ?></span>
-        <h1>Welcome, <?= htmlspecialchars($client_name ?? 'Client') ?>!</h1>
-        <div class="badge">Account Created Successfully</div>
+        <h1>Officer Account Created</h1>
+        <div class="badge">Official Communication</div>
       </div>
       
       <!-- Greeting -->
-      <p class="greeting">Dear <?= htmlspecialchars($client_name ?? 'Client') ?>,</p>
+      <p class="greeting">Dear <?= htmlspecialchars($officer_name ?? 'Officer') ?>,</p>
       
-      <p class="greeting">Welcome to <strong style="color: #a40000;"><?= htmlspecialchars($site_name ?? SITE_NAME) ?></strong>. Your client account has been successfully created and is ready to use with the following credentials.</p>
+      <p class="greeting">Welcome to <strong style="color: #a40000;"><?= htmlspecialchars($site_name ?? SITE_NAME) ?></strong>. Your officer account has been successfully created and configured with the following credentials.</p>
       
       <!-- Account Details Card -->
       <div class="info-card">
-        <h3>Account Credentials</h3>
+        <h3>Officer Account Details</h3>
         
         <div class="detail-row">
-          <span class="detail-label">Login ID:</span>
+          <span class="detail-label">User ID:</span>
           <span class="detail-value"><?= htmlspecialchars($login_id) ?></span>
         </div>
         
         <div class="detail-row">
           <span class="detail-label">Temporary Password:</span>
           <span class="detail-value"><?= htmlspecialchars($temp_password) ?></span>
+        </div>
+        
+        <div class="detail-row">
+          <span class="detail-label">Assigned Role:</span>
+          <div class="detail-value">
+            <span class="role-badge"><?= htmlspecialchars($role_name ?? 'Officer') ?></span>
+          </div>
         </div>
       </div>
       
@@ -383,60 +307,8 @@
           <li>This is a temporary password - change it immediately after first login</li>
           <li>Keep your credentials confidential and do not share with anyone</li>
           <li>Log out after each session, especially on shared computers</li>
-          <li>Report any suspicious activity immediately to our support team</li>
+          <li>Report any suspicious activity immediately to your administrator</li>
         </ul>
-      </div>
-      
-      <!-- Steps to follow -->
-      <div class="steps-container">
-        <h3 style="color: #a40000; text-align: center; margin-bottom: 25px;">Getting Started</h3>
-        
-        <div class="step">
-          <div class="step-number">1. </div>
-          <div class="step-content">
-            <h4 class="step-title">Access Your Account</h4>
-            <p class="step-description">Use your credentials above to log into your dashboard</p>
-          </div>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">2. </div>
-          <div class="step-content">
-            <h4 class="step-title">Update Your Password</h4>
-            <p class="step-description">Navigate to Account Settings to create a secure password</p>
-          </div>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">3. </div>
-          <div class="step-content">
-            <h4 class="step-title">Complete Your Profile</h4>
-            <p class="step-description">Add your contact details and preferences for a personalized experience</p>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Features section -->
-      <div class="features">
-        <div class="feature">
-          <h4 class="feature-title">Fast Dashboard</h4>
-          <p class="feature-desc">Quick access to all your tools and data</p>
-        </div>
-        
-        <div class="feature">
-          <h4 class="feature-title">Secure Account</h4>
-          <p class="feature-desc">Enterprise-grade security for your data</p>
-        </div>
-        
-        <div class="feature">
-          <h4 class="feature-title">Mobile Ready</h4>
-          <p class="feature-desc">Access your account from any device</p>
-        </div>
-        
-        <div class="feature">
-          <h4 class="feature-title">24/7 Support</h4>
-          <p class="feature-desc">Our team is always here to help you</p>
-        </div>
       </div>
       
       <!-- Additional Information -->
@@ -444,26 +316,26 @@
         <h4>Next Steps</h4>
         <p>After logging in for the first time, please:</p>
         <p>1. Change your temporary password immediately</p>
-        <p>2. Complete your client profile in the dashboard</p>
-        <p>3. Review your account settings and preferences</p>
-        <p>4. Familiarize yourself with the platform features</p>
+        <p>2. Complete your officer profile in the dashboard</p>
+        <p>3. Review your assigned tasks and responsibilities</p>
+        <p>4. Familiarize yourself with the system guidelines</p>
       </div>
       
       <!-- Login Button -->
       <div class="button-container">
-        <a href="<?= htmlspecialchars($login_url) ?>" class="login-button">Access Your Account</a>
+        <a href="<?= htmlspecialchars($login_url) ?>" class="login-button">Access Officer Portal</a>
         <span class="login-url">Portal URL: <?= htmlspecialchars($login_url) ?></span>
       </div>
       
       <!-- Closing -->
-      <p class="greeting">Use your credentials to access your client dashboard where you can manage your account, view services, and utilize all available features effectively.</p>
+      <p class="greeting">Use your credentials to access the officer dashboard where you can view assigned tasks, submit reports, and manage your responsibilities effectively.</p>
       
       <!-- Footer -->
       <div class="footer">
-        <p class="signature">Best regards,<br>The <?= htmlspecialchars($site_name ?? SITE_NAME) ?> Team</p>
+        <p class="signature">Regards,<br><?= htmlspecialchars($site_name ?? SITE_NAME) ?></p>
         
         <div class="support-note">
-          <strong>Security Notice:</strong> If you did not expect this email or believe it was sent in error, please contact our support team immediately.
+          <strong>Security Notice:</strong> If you did not expect this email or believe it was sent in error, please contact your system administrator or support team immediately.
         </div>
         
         <p style="margin-top: 20px; font-size: 13px; color: #a0aec0;">
