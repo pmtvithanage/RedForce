@@ -133,20 +133,115 @@
 
 
 //------------------Loading Button Script------------------//
-  // Show loading state on anchor buttons until navigation
+  // Show loading state on anchor buttons until navigation and globally block other actions
 (function() {
+  // Create or return the global overlay that blocks clicks
+  function getGlobalOverlay() {
+    var id = 'global-loading-overlay';
+    var overlay = document.getElementById(id);
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = id;
+      overlay.style.position = 'fixed';
+      overlay.style.top = 0;
+      overlay.style.left = 0;
+      overlay.style.width = '100%';
+      overlay.style.height = '100%';
+      overlay.style.zIndex = 9999;
+      overlay.style.background = 'rgba(255,255,255,0.0001)';
+      overlay.style.cursor = 'wait';
+      overlay.style.pointerEvents = 'auto';
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.appendChild(overlay);
+    }
+    return overlay;
+  }
+
+  // keep a global counter to support nested loading calls
+  function incGlobalLoading() {
+    window.__globalLoadingCounter = (window.__globalLoadingCounter || 0) + 1;
+    if (window.__globalLoadingCounter === 1) {
+      var ov = getGlobalOverlay();
+      ov.style.display = 'block';
+    }
+  }
+  function decGlobalLoading() {
+    window.__globalLoadingCounter = Math.max((window.__globalLoadingCounter || 1) - 1, 0);
+    if (window.__globalLoadingCounter === 0) {
+      var ov = document.getElementById('global-loading-overlay');
+      if (ov) ov.style.display = 'none';
+    }
+  }
+
   function makeLoading(el) {
-    if (el.classList.contains('btn-loading')) return;
+    if (el.dataset.loading === '1') return;
+    el.dataset.loading = '1';
+
     // store original html
-    el.dataset.origHtml = el.innerHTML;
+    if (!el.dataset.origHtml) el.dataset.origHtml = el.innerHTML;
     el.classList.add('btn-loading');
-    el.innerHTML = '<span class="spinner" aria-hidden="true"></span>' + ('Loading...');
+    el.setAttribute('aria-busy', 'true');
+
+    // disable interaction on the element itself
+    try {
+      if (el.tagName.toLowerCase() === 'button' || el.tagName.toLowerCase() === 'input') {
+        el.disabled = true;
+      } else {
+        el.style.pointerEvents = 'none';
+        el.setAttribute('aria-disabled', 'true');
+        if (el.hasAttribute('tabindex')) {
+          el.dataset.origTabindex = el.getAttribute('tabindex');
+        }
+        el.setAttribute('tabindex', '-1');
+      }
+    } catch (e) { /* ignore */ }
+
+    var label ='Loading...';
+    el.innerHTML = '<span class="spinner" aria-hidden="true"></span>' + label;
+
+    // block all other actions globally
+    incGlobalLoading();
+  }
+
+  function restoreLoading(el) {
+    if (!el || el.dataset.loading !== '1') return;
+    delete el.dataset.loading;
+    el.classList.remove('btn-loading');
+    el.removeAttribute('aria-busy');
+
+    try {
+      if (el.tagName.toLowerCase() === 'button' || el.tagName.toLowerCase() === 'input') {
+        el.disabled = false;
+      } else {
+        el.style.pointerEvents = '';
+        el.removeAttribute('aria-disabled');
+        if (el.dataset.origTabindex !== undefined) {
+          el.setAttribute('tabindex', el.dataset.origTabindex);
+          delete el.dataset.origTabindex;
+        } else {
+          el.removeAttribute('tabindex');
+        }
+      }
+    } catch (e) { /* ignore */ }
+
+    if (el.dataset.origHtml) {
+      el.innerHTML = el.dataset.origHtml;
+      // keep origHtml for potential future restores
+    }
+
+    // un-block global actions
+    decGlobalLoading();
   }
 
   function handleClick(e) {
     var el = e.currentTarget;
     var href = el.getAttribute('href');
     if (!href || href === '#') return; // nothing to do
+
+    if (el.dataset.loading === '1') {
+      e.preventDefault();
+      return; // already loading
+    }
 
     e.preventDefault();
     makeLoading(el);
@@ -158,18 +253,36 @@
   }
 
   document.addEventListener('DOMContentLoaded', function(){
-    // target buttons/links that perform navigation
+    // target elements with class 'loading'
     var selectors = '.loading';
     var els = document.querySelectorAll(selectors);
     els.forEach(function(a){
-      // only for anchors
+      // anchors -> intercept navigation
       if (a.tagName.toLowerCase() === 'a') {
         a.addEventListener('click', handleClick);
-      } else if (a.tagName.toLowerCase() === 'button') {
+      }
+
+      // buttons -> show loading on click (may submit forms)
+      if (a.tagName.toLowerCase() === 'button') {
         a.addEventListener('click', function(ev){
+          if (a.dataset.loading === '1') { ev.preventDefault(); return; }
           makeLoading(a);
         });
       }
+    });
+
+    // For form submissions, show spinner on first enabled submit button
+    document.querySelectorAll('form').forEach(function(form){
+      form.addEventListener('submit', function(ev){
+        // If form already submitting, prevent duplicate
+        if (form.dataset.submitting === '1') { ev.preventDefault(); return; }
+        var submitters = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+        for (var i = 0; i < submitters.length; i++) {
+          var s = submitters[i];
+          if (!s.disabled) { try { makeLoading(s); } catch(e){}; break; }
+        }
+        form.dataset.submitting = '1';
+      });
     });
 
   });
