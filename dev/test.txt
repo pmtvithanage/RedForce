@@ -57,3 +57,7 @@ sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest
 sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest 
 sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/leaverequest 
 
+sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/image 
+sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/image 
+sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/image 
+

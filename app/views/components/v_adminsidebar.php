@@ -37,8 +37,13 @@
           <a class="menu-item <?php echo ($data['title'] === 'Reports') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/reports"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Reports</span></a>
 
           <div class="menu-section">SYSTEM</div>
-          <a class="menu-item <?php echo ($data['title'] === 'Settings') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/settings"><span class="icon"></span><span class="material-symbols-outlined">settings</span><span class="label">Settings</span></a>
-        </nav>
+        <?php if(isset($_SESSION['user_userID']) && $_SESSION['user_userID'] == 'ADMIN001'): ?>
+          <a class="menu-item <?php echo ($data['title'] === 'Admins') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/admins"><span class="icon"></span><span class="material-symbols-outlined">settings</span><span class="label">Admins</span></a>
+        <?php else: ?>
+            <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/Profile"><span class="icon"></span><span class="material-symbols-outlined">settings</span><span class="label">Profile</span></a>
+        <?php endif; ?>
+        
+          </nav>
       </aside>
 
       <div class="backdrop" id="backdrop" hidden></div>
