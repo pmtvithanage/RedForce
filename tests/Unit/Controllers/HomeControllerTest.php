@@ -11,6 +11,7 @@ if (!class_exists('\\Tests\\Unit\\Controllers\\AdminJobModelStub')) {
 
 use Tests\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class HomeControllerTest extends TestCase
 {
     protected function setUp(): void
@@ -46,7 +47,7 @@ class HomeControllerTest extends TestCase
                      ->onlyMethods(['view'])
                      ->getMock();
 
-        $home->expects($this->once())->method('view')->with('home/v_services', $this->isType('array'));
+        $home->expects($this->once())->method('view')->with('home/v_services', $this->isArray());
         // Ensure a GET request
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $home->service();

@@ -11,6 +11,7 @@ if (!class_exists('\\Database')) {
 
 use Tests\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class MAdminTest extends TestCase
 {
     private $dbMock;

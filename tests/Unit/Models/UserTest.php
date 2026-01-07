@@ -12,6 +12,7 @@ if (!class_exists('\\Database')) {
 
 use Tests\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class UserTest extends TestCase
 {
     private $dbMock;
