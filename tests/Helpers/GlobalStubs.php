@@ -39,3 +39,16 @@ if (!function_exists('deleteImage')) {
         $GLOBALS['test_deleted_images'][] = $path;
     }
 }
+
+// Stub for sending templated emails to avoid external network calls in tests
+if (!function_exists('send_templated_email')) {
+    function send_templated_email($to, $templateName, $vars = [], $subject = null, $attachments = []) {
+        return ['success' => true];
+    }
+}
+
+if (!function_exists('render_email_template')) {
+    function render_email_template($templateName, $vars = []) {
+        return '<html></html>';
+    }
+}

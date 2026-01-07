@@ -4,6 +4,7 @@ namespace Tests\Unit\Controllers;
 
 require_once __DIR__ . '/../../TestCase.php';
 
+
 // Small test doubles for admin/chart models so PHPUnit can mock methods
 if (!class_exists('AdminModelStub')) {
     class AdminModelStub {
@@ -24,7 +25,9 @@ if (!class_exists('AdminModelStub')) {
         public function acceptOfficerApplication($id, $adminId, $role) {}
         public function rejectOfficerApplication($id) {}
         public function deleteOfficerApplication($id) {}
+        public function getUserByID($id) {}
         public function getServiceRequestStats() {}
+        public function getClientStatistics() {}
         public function getAllClients() {}
         public function getClientById($id) {}
         public function deleteRequest($clientId) {}
@@ -60,6 +63,7 @@ if (!class_exists('HomeModelStub')) {
 
 use Tests\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class AdminControllerTest extends TestCase
 {
     protected function setUp(): void
@@ -128,7 +132,7 @@ class AdminControllerTest extends TestCase
         $adminModelMR = $this->createMock(OfficersModelStub::class);
         $adminModelMR->expects($this->once())->method('getAllMR')->willReturn(['m1']);
         $prop->setValue($adminMR, $adminModelMR);
-        $adminMR->expects($this->once())->method('view')->with('admin/officers/v_mobileriders', $this->isType('array'));
+        $adminMR->expects($this->once())->method('view')->with('admin/officers/v_mobileriders', $this->isArray());
         $adminMR->mobileriders();
 
         // CT list (separate instance)
@@ -139,7 +143,7 @@ class AdminControllerTest extends TestCase
         $adminModelCT = $this->createMock(OfficersModelStub::class);
         $adminModelCT->expects($this->once())->method('getAllCT')->willReturn(['c1']);
         $prop->setValue($adminCT, $adminModelCT);
-        $adminCT->expects($this->once())->method('view')->with('admin/officers/v_caretakers', $this->isType('array'));
+        $adminCT->expects($this->once())->method('view')->with('admin/officers/v_caretakers', $this->isArray());
         $adminCT->caretakers();
     }
 
@@ -260,28 +264,28 @@ class AdminControllerTest extends TestCase
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin1->expects($this->once())->method('view')->with('admin/dashboard/v_messages', $this->isType('array'));
+        $admin1->expects($this->once())->method('view')->with('admin/dashboard/v_messages', $this->isArray());
         $admin1->messages();
 
         $admin2 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin2->expects($this->once())->method('view')->with('admin/dashboard/v_pendings', $this->isType('array'));
+        $admin2->expects($this->once())->method('view')->with('admin/dashboard/v_pendings', $this->isArray());
         $admin2->pendings();
 
         $admin3 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin3->expects($this->once())->method('view')->with('admin/dashboard/v_assign', $this->isType('array'));
+        $admin3->expects($this->once())->method('view')->with('admin/dashboard/v_assign', $this->isArray());
         $admin3->assign();
 
         $admin4 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin4->expects($this->once())->method('view')->with('admin/dashboard/v_alerts', $this->isType('array'));
+        $admin4->expects($this->once())->method('view')->with('admin/dashboard/v_alerts', $this->isArray());
         $admin4->alerts();
 
         // Officer profile views on their own admin instance
@@ -396,7 +400,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isArray());
         $admin->pending_officer_applications('po');
     }
 
@@ -412,7 +416,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isArray());
         $admin->pending_officer_applications('all');
     }
 
@@ -428,7 +432,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_accepted_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_accepted_officer_applications', $this->isArray());
         $admin->accepted_officer_applications('po');
     }
 
@@ -444,7 +448,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_rejected_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_rejected_officer_applications', $this->isArray());
         $admin->rejected_officer_applications('all');
     }
 
@@ -457,7 +461,7 @@ class AdminControllerTest extends TestCase
                       ->getMock();
 
         $adminModel = $this->createMock(AdminModelStub::class);
-        $adminModel->expects($this->once())->method('acceptOfficerApplication')->with(10, 1, 'po')->willReturn(true);
+        $adminModel->expects($this->once())->method('acceptOfficerApplication')->with(10, 1, 'po')->willReturn(['success' => true, 'userID' => 100, 'tempPassword' => 'pw']);
         $adminModel->expects($this->once())->method('insertRecentActivity');
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('adminModel'); $prop->setAccessible(true); $prop->setValue($admin, $adminModel);
@@ -497,8 +501,11 @@ class AdminControllerTest extends TestCase
     {
         $admin = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
-                      ->onlyMethods(['view'])
+                      ->onlyMethods(['view','model'])
                       ->getMock();
+        // Provide a lightweight stub for email model to avoid file includes and DB access
+        $emailModelStub = new class { public function log(...$args) { return true; } };
+        $admin->method('model')->with('M_email')->willReturn($emailModelStub);
 
         // clients view
         $adminModel = $this->createMock(AdminModelStub::class);
@@ -521,14 +528,18 @@ class AdminControllerTest extends TestCase
         // We don't enforce strict call counts here to avoid test fragility
         $homeModelForAdd->method('getPendingRequest')->willReturn(['r']);
         $prop2 = $ref->getProperty('homeModel'); $prop2->setAccessible(true); $prop2->setValue($adminAdd, $homeModelForAdd);
-        $adminAdd->expects($this->once())->method('view')->with('admin/clients/v_requests-pending', $this->isType('array'));
+        $adminAdd->expects($this->once())->method('view')->with('admin/clients/v_requests-pending', $this->isArray());
         $adminAdd->addclients();
 
         // acceptClient
         $adminModel2 = $this->createMock(AdminModelStub::class);
-        $adminModel2->expects($this->once())->method('acceptClient')->with(5, 1)->willReturn(true);
+        $adminModel2->expects($this->once())->method('acceptClient')->with(5, 1)->willReturn(['success' => true, 'id' => 5, 'new_user_id' => 101, 'temp_password' => 'pw', 'email' => 'test@example.com']);
         $adminModel2->expects($this->once())->method('insertRecentActivity');
         $prop->setValue($admin, $adminModel2);
+        // Ensure constants expected by controller are available in test environment
+        if(!defined('SITE_NAME')) define('SITE_NAME', 'TestSite');
+        if(!defined('URL_ROOT')) define('URL_ROOT', 'http://localhost');
+
         $GLOBALS['test_redirects'] = [];
         $admin->acceptClient(5);
         $this->assertContains('admin/addclients', $GLOBALS['test_redirects']);

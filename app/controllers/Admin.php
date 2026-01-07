@@ -727,7 +727,7 @@ public function editSite($site_id){
         return;
     }
     
-    if($_SERVER['REQUEST_METHOD']=='POST'){
+    if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
         $data = [
             'site_id' => $site_id, // Important: include site_id for update
             'client_id' => $existingSite->client_id, // Use existing client_id
@@ -827,9 +827,9 @@ public function editSite($site_id){
             'current_image' => $existingSite->image,
 
             'site_name' => $existingSite->site_name,
-            'site_address' => $existingSite->address, // Changed from address
-            'site_city' => $existingSite->city,       // Changed from city
-            'phone_number' => $existingSite->phone_number,
+            'site_address' => $existingSite->address ?? '', // use safe property
+            'site_city' => $existingSite->city ?? '',       // use safe property
+            'phone_number' => $existingSite->phone_number ?? '',
 
             'image_err' => '',
             'site_name_err' => '',
