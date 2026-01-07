@@ -893,8 +893,11 @@ public function editSite($site_id){
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Handle package request approval
             if (isset($_POST['approve_package_request'])) {
-                if ($this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''))) {
-                    flash('request_success', 'Package request approved successfully', 'alert-success');
+                $siteId = $this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''));
+                if ($siteId) {
+                    flash('request_success', 'Package request approved successfully and site created', 'alert-success');
+                    // Redirect to the newly created site
+                    redirect('admin/viewsites/' . $siteId);
                 } else {
                     flash('request_error', 'Failed to approve package request', 'alert-danger');
                 }
