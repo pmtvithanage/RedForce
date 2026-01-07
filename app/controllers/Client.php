@@ -269,6 +269,8 @@ class Client extends Controller {
             $requestData = [
                 'client_id' => $_SESSION['user_id'],
                 'package_name' => $_POST['package_name'],
+                'site_name' => trim($_POST['site_name']),
+                'city' => trim($_POST['city']),
                 'site_address' => trim($_POST['site_address']),
                 'start_date' => $startDate,
                 'end_date' => $endDate,

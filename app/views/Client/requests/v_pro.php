@@ -57,6 +57,18 @@
                 <input type="hidden" name="number_of_guards" value="10">
                 <input type="hidden" name="monthly_price" value="138000">
                 
+                <!-- Site Name -->
+                <div class="form-group">
+                    <label for="siteName">Site name</label>
+                    <input type="text" id="siteName" name="site_name" required>
+                </div>
+
+                <!-- City -->
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+
                 <!-- Site Address -->
                 <div class="form-group">
                     <label for="siteAddress">Enter site address</label>

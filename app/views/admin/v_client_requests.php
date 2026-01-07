@@ -106,6 +106,16 @@ $errorMessage = flash('request_error');
 
             <div class="request-body">
               <div class="request-detail">
+                <span class="detail-label">Site Name:</span>
+                <span class="detail-value"><?php echo htmlspecialchars($request->site_name ?? 'N/A'); ?></span>
+              </div>
+
+              <div class="request-detail">
+                <span class="detail-label">City:</span>
+                <span class="detail-value"><?php echo htmlspecialchars($request->city ?? 'N/A'); ?></span>
+              </div>
+
+              <div class="request-detail">
                 <span class="detail-label">Site Address:</span>
                 <span class="detail-value"><?php echo htmlspecialchars($request->site_address); ?></span>
               </div>

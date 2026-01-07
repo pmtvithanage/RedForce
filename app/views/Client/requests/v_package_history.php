@@ -48,6 +48,14 @@
 </div>
 <div class="request-body">
 <div class="request-detail">
+<span class="detail-label">Site Name</span>
+<span class="detail-value"><?php echo htmlspecialchars($r->site_name ?? 'N/A'); ?></span>
+</div>
+<div class="request-detail">
+<span class="detail-label">City</span>
+<span class="detail-value"><?php echo htmlspecialchars($r->city ?? 'N/A'); ?></span>
+</div>
+<div class="request-detail">
 <span class="detail-label">Site Address</span>
 <span class="detail-value"><?php echo htmlspecialchars($r->site_address); ?></span>
 </div>
