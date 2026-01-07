@@ -293,4 +293,123 @@ class Client extends Controller {
         }
         redirect('client/packageHistory');
     }
+
+    // ==================== EQUIPMENT REQUESTS METHODS ====================
+
+    // View all equipment requests from caretakers
+    public function equipmentRequests() {
+        // Get filters
+        $filters = [];
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $filters['status'] = $_GET['status'];
+        }
+        if (isset($_GET['priority']) && !empty($_GET['priority'])) {
+            $filters['priority'] = $_GET['priority'];
+        }
+        if (isset($_GET['caretaker_id']) && !empty($_GET['caretaker_id'])) {
+            $filters['caretaker_id'] = $_GET['caretaker_id'];
+        }
+        if (isset($_GET['date_from']) && !empty($_GET['date_from'])) {
+            $filters['date_from'] = $_GET['date_from'];
+        }
+        if (isset($_GET['date_to']) && !empty($_GET['date_to'])) {
+            $filters['date_to'] = $_GET['date_to'];
+        }
+
+        // Get client ID
+        $client_id = $_SESSION['user_id'];
+
+        // Get data
+        $requests = $this->clientModel->getAllEquipmentRequests($client_id, $filters);
+        $stats = $this->clientModel->getEquipmentRequestStats($client_id);
+        $caretakers = $this->clientModel->getCaretakersForClient($client_id);
+
+        $data = [
+            'title' => 'Equipment Requests',
+            'pageTitle' => 'Equipment Requests Management',
+            'requests' => $requests,
+            'stats' => $stats,
+            'caretakers' => $caretakers,
+            'filters' => $filters
+        ];
+
+        $this->view('client/v_equipment_requests', $data);
+    }
+
+    // View single equipment request details for review
+    public function reviewEquipmentRequest($id) {
+        $client_id = $_SESSION['user_id'];
+        $request = $this->clientModel->getEquipmentRequestDetails($id, $client_id);
+
+        if (!$request) {
+            flash('equipment_error', 'Request not found', 'alert alert-danger');
+            redirect('client/equipmentRequests');
+            return;
+        }
+
+        $data = [
+            'title' => 'Review Equipment Request',
+            'pageTitle' => 'Review Equipment Request',
+            'request' => $request
+        ];
+
+        $this->view('client/v_review_equipment', $data);
+    }
+
+    // Approve equipment request
+    public function approveEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'client_notes' => trim($_POST['client_notes'] ?? ''),
+                'client_id' => $_SESSION['user_id']
+            ];
+
+            // Approve
+            if ($this->clientModel->approveEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request approved successfully', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to approve request', 'alert alert-danger');
+            }
+
+            redirect('client/equipmentRequests');
+        } else {
+            redirect('client/equipmentRequests');
+        }
+    }
+
+    // Reject equipment request
+    public function rejectEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Validate
+            if (empty($_POST['client_notes'])) {
+                flash('equipment_error', 'Please provide a reason for rejection', 'alert alert-danger');
+                redirect('client/reviewEquipmentRequest/' . $id);
+                return;
+            }
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'client_notes' => trim($_POST['client_notes']),
+                'client_id' => $_SESSION['user_id']
+            ];
+
+            // Reject
+            if ($this->clientModel->rejectEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request rejected', 'alert alert-info');
+            } else {
+                flash('equipment_error', 'Failed to reject request', 'alert alert-danger');
+            }
+
+            redirect('client/equipmentRequests');
+        } else {
+            redirect('client/equipmentRequests');
+        }
+    }
 }
