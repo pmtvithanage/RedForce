@@ -60,6 +60,7 @@ if (!class_exists('HomeModelStub')) {
 
 use Tests\TestCase;
 
+#[\PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations]
 class AdminControllerTest extends TestCase
 {
     protected function setUp(): void
@@ -128,7 +129,7 @@ class AdminControllerTest extends TestCase
         $adminModelMR = $this->createMock(OfficersModelStub::class);
         $adminModelMR->expects($this->once())->method('getAllMR')->willReturn(['m1']);
         $prop->setValue($adminMR, $adminModelMR);
-        $adminMR->expects($this->once())->method('view')->with('admin/officers/v_mobileriders', $this->isType('array'));
+        $adminMR->expects($this->once())->method('view')->with('admin/officers/v_mobileriders', $this->isArray());
         $adminMR->mobileriders();
 
         // CT list (separate instance)
@@ -139,7 +140,7 @@ class AdminControllerTest extends TestCase
         $adminModelCT = $this->createMock(OfficersModelStub::class);
         $adminModelCT->expects($this->once())->method('getAllCT')->willReturn(['c1']);
         $prop->setValue($adminCT, $adminModelCT);
-        $adminCT->expects($this->once())->method('view')->with('admin/officers/v_caretakers', $this->isType('array'));
+        $adminCT->expects($this->once())->method('view')->with('admin/officers/v_caretakers', $this->isArray());
         $adminCT->caretakers();
     }
 
@@ -260,28 +261,28 @@ class AdminControllerTest extends TestCase
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin1->expects($this->once())->method('view')->with('admin/dashboard/v_messages', $this->isType('array'));
+        $admin1->expects($this->once())->method('view')->with('admin/dashboard/v_messages', $this->isArray());
         $admin1->messages();
 
         $admin2 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin2->expects($this->once())->method('view')->with('admin/dashboard/v_pendings', $this->isType('array'));
+        $admin2->expects($this->once())->method('view')->with('admin/dashboard/v_pendings', $this->isArray());
         $admin2->pendings();
 
         $admin3 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin3->expects($this->once())->method('view')->with('admin/dashboard/v_assign', $this->isType('array'));
+        $admin3->expects($this->once())->method('view')->with('admin/dashboard/v_assign', $this->isArray());
         $admin3->assign();
 
         $admin4 = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
                       ->onlyMethods(['view'])
                       ->getMock();
-        $admin4->expects($this->once())->method('view')->with('admin/dashboard/v_alerts', $this->isType('array'));
+        $admin4->expects($this->once())->method('view')->with('admin/dashboard/v_alerts', $this->isArray());
         $admin4->alerts();
 
         // Officer profile views on their own admin instance
@@ -396,7 +397,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isArray());
         $admin->pending_officer_applications('po');
     }
 
@@ -412,7 +413,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_pending_officer_applications', $this->isArray());
         $admin->pending_officer_applications('all');
     }
 
@@ -428,7 +429,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_accepted_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_accepted_officer_applications', $this->isArray());
         $admin->accepted_officer_applications('po');
     }
 
@@ -444,7 +445,7 @@ class AdminControllerTest extends TestCase
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('homeModel'); $prop->setAccessible(true); $prop->setValue($admin, $homeModel);
 
-        $admin->expects($this->once())->method('view')->with('admin/officers/v_rejected_officer_applications', $this->isType('array'));
+        $admin->expects($this->once())->method('view')->with('admin/officers/v_rejected_officer_applications', $this->isArray());
         $admin->rejected_officer_applications('all');
     }
 
@@ -521,7 +522,7 @@ class AdminControllerTest extends TestCase
         // We don't enforce strict call counts here to avoid test fragility
         $homeModelForAdd->method('getPendingRequest')->willReturn(['r']);
         $prop2 = $ref->getProperty('homeModel'); $prop2->setAccessible(true); $prop2->setValue($adminAdd, $homeModelForAdd);
-        $adminAdd->expects($this->once())->method('view')->with('admin/clients/v_requests-pending', $this->isType('array'));
+        $adminAdd->expects($this->once())->method('view')->with('admin/clients/v_requests-pending', $this->isArray());
         $adminAdd->addclients();
 
         // acceptClient
