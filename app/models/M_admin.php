@@ -888,12 +888,45 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Get package request by ID
+    public function getPackageRequestById($id) {
+        $this->db->query("SELECT * FROM package_requests WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    // Create site from approved package request
+    public function createSiteFromPackageRequest($packageRequest) {
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, created_at, updated_at) 
+                          VALUES (:client_id, :site_name, :address, :city, NOW(), NOW())");
+        $this->db->bind(':client_id', $packageRequest->client_id);
+        $this->db->bind(':site_name', $packageRequest->site_name);
+        $this->db->bind(':address', $packageRequest->site_address);
+        $this->db->bind(':city', $packageRequest->city);
+        return $this->db->execute();
+    }
+
     public function approvePackageRequest($id, $admin_id, $notes) {
+        // First, get the package request details
+        $packageRequest = $this->getPackageRequestById($id);
+        
+        if (!$packageRequest) {
+            return false;
+        }
+
+        // Update the package request status
         $this->db->query("UPDATE package_requests SET status = 'Approved', admin_notes = :notes, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
         $this->db->bind(':id', $id);
         $this->db->bind(':admin_id', $admin_id);
         $this->db->bind(':notes', $notes);
-        return $this->db->execute();
+        
+        if ($this->db->execute()) {
+            // Automatically create a site for this client
+            $this->createSiteFromPackageRequest($packageRequest);
+            return true;
+        }
+        
+        return false;
     }
 
     public function rejectPackageRequest($id, $admin_id, $reason) {
