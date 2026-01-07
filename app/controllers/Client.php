@@ -255,16 +255,29 @@ class Client extends Controller {
     // Handle package request submission
     public function submitPackageRequest() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Calculate end date and total price based on number of months
+            $startDate = $_POST['start_date'];
+            $numMonths = isset($_POST['num_months']) ? (int)$_POST['num_months'] : 1;
+            $monthlyPrice = isset($_POST['monthly_price']) ? (int)$_POST['monthly_price'] : (int)$_POST['package_price'];
+            
+            // Calculate end date (start date + num_months)
+            $endDate = date('Y-m-d', strtotime($startDate . ' + ' . $numMonths . ' months'));
+            
+            // Calculate total price
+            $totalPrice = $monthlyPrice * $numMonths;
+            
             $requestData = [
                 'client_id' => $_SESSION['user_id'],
                 'package_name' => $_POST['package_name'],
+                'site_name' => trim($_POST['site_name']),
+                'city' => trim($_POST['city']),
                 'site_address' => trim($_POST['site_address']),
-                'start_date' => $_POST['start_date'],
-                'end_date' => $_POST['end_date'],
+                'start_date' => $startDate,
+                'end_date' => $endDate,
                 'number_of_guards' => $_POST['number_of_guards'],
                 'day_guards' => $_POST['day_guards'] ?? null,
                 'night_guards' => $_POST['night_guards'] ?? null,
-                'package_price' => $_POST['package_price'],
+                'package_price' => $totalPrice,
                 'comments' => trim($_POST['comments'] ?? '')
             ];
 

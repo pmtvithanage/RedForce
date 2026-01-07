@@ -707,6 +707,8 @@ CREATE TABLE IF NOT EXISTS package_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     client_id INT NOT NULL,
     package_name VARCHAR(100) NOT NULL,
+    site_name VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
     site_address TEXT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
