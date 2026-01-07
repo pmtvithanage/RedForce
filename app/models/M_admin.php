@@ -895,15 +895,36 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Get client's phone number
+    public function getClientPhoneNumber($client_id) {
+        $this->db->query("SELECT u.phone_number 
+                          FROM Clients c 
+                          JOIN Users u ON c.user_id = u.id 
+                          WHERE c.id = :client_id");
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->single();
+        return $result ? $result->phone_number : null;
+    }
+
     // Create site from approved package request
     public function createSiteFromPackageRequest($packageRequest) {
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, created_at, updated_at) 
-                          VALUES (:client_id, :site_name, :address, :city, NOW(), NOW())");
+        // Get client's phone number
+        $phoneNumber = $this->getClientPhoneNumber($packageRequest->client_id);
+        
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, created_at, updated_at) 
+                          VALUES (:client_id, :site_name, :address, :city, :phone_number, NOW(), NOW())");
         $this->db->bind(':client_id', $packageRequest->client_id);
         $this->db->bind(':site_name', $packageRequest->site_name);
         $this->db->bind(':address', $packageRequest->site_address);
         $this->db->bind(':city', $packageRequest->city);
-        return $this->db->execute();
+        $this->db->bind(':phone_number', $phoneNumber);
+        
+        if ($this->db->execute()) {
+            // Return the last inserted site ID
+            return $this->db->lastInsertId();
+        }
+        
+        return false;
     }
 
     public function approvePackageRequest($id, $admin_id, $notes) {
@@ -921,9 +942,9 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':notes', $notes);
         
         if ($this->db->execute()) {
-            // Automatically create a site for this client
-            $this->createSiteFromPackageRequest($packageRequest);
-            return true;
+            // Automatically create a site for this client and return the site ID
+            $siteId = $this->createSiteFromPackageRequest($packageRequest);
+            return $siteId; // Return site ID instead of true
         }
         
         return false;
