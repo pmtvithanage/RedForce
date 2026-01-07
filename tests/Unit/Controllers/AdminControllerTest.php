@@ -4,6 +4,7 @@ namespace Tests\Unit\Controllers;
 
 require_once __DIR__ . '/../../TestCase.php';
 
+
 // Small test doubles for admin/chart models so PHPUnit can mock methods
 if (!class_exists('AdminModelStub')) {
     class AdminModelStub {
@@ -24,7 +25,9 @@ if (!class_exists('AdminModelStub')) {
         public function acceptOfficerApplication($id, $adminId, $role) {}
         public function rejectOfficerApplication($id) {}
         public function deleteOfficerApplication($id) {}
+        public function getUserByID($id) {}
         public function getServiceRequestStats() {}
+        public function getClientStatistics() {}
         public function getAllClients() {}
         public function getClientById($id) {}
         public function deleteRequest($clientId) {}
@@ -458,7 +461,7 @@ class AdminControllerTest extends TestCase
                       ->getMock();
 
         $adminModel = $this->createMock(AdminModelStub::class);
-        $adminModel->expects($this->once())->method('acceptOfficerApplication')->with(10, 1, 'po')->willReturn(true);
+        $adminModel->expects($this->once())->method('acceptOfficerApplication')->with(10, 1, 'po')->willReturn(['success' => true, 'userID' => 100, 'tempPassword' => 'pw']);
         $adminModel->expects($this->once())->method('insertRecentActivity');
         $ref = new \ReflectionClass(\Admin::class);
         $prop = $ref->getProperty('adminModel'); $prop->setAccessible(true); $prop->setValue($admin, $adminModel);
@@ -498,8 +501,11 @@ class AdminControllerTest extends TestCase
     {
         $admin = $this->getMockBuilder(\Admin::class)
                       ->disableOriginalConstructor()
-                      ->onlyMethods(['view'])
+                      ->onlyMethods(['view','model'])
                       ->getMock();
+        // Provide a lightweight stub for email model to avoid file includes and DB access
+        $emailModelStub = new class { public function log(...$args) { return true; } };
+        $admin->method('model')->with('M_email')->willReturn($emailModelStub);
 
         // clients view
         $adminModel = $this->createMock(AdminModelStub::class);
@@ -527,9 +533,13 @@ class AdminControllerTest extends TestCase
 
         // acceptClient
         $adminModel2 = $this->createMock(AdminModelStub::class);
-        $adminModel2->expects($this->once())->method('acceptClient')->with(5, 1)->willReturn(true);
+        $adminModel2->expects($this->once())->method('acceptClient')->with(5, 1)->willReturn(['success' => true, 'id' => 5, 'new_user_id' => 101, 'temp_password' => 'pw', 'email' => 'test@example.com']);
         $adminModel2->expects($this->once())->method('insertRecentActivity');
         $prop->setValue($admin, $adminModel2);
+        // Ensure constants expected by controller are available in test environment
+        if(!defined('SITE_NAME')) define('SITE_NAME', 'TestSite');
+        if(!defined('URL_ROOT')) define('URL_ROOT', 'http://localhost');
+
         $GLOBALS['test_redirects'] = [];
         $admin->acceptClient(5);
         $this->assertContains('admin/addclients', $GLOBALS['test_redirects']);
