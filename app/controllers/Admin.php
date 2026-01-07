@@ -178,7 +178,7 @@ class Admin extends Controller {
         elseif($role == 'mr') $role_name = "Mobile Rider";
         elseif($role == 'ct') $role_name = "Care Taker";
 
-        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $data = [
                 'title' => 'Officers',
                 'pageTitle' => 'Add Job Application',
@@ -240,7 +240,7 @@ class Admin extends Controller {
         elseif($role == 'mr') $role_name = "Mobile Rider";
         elseif($role == 'ct') $role_name = "Care Taker";
 
-        if($_SERVER['REQUEST_METHOD'] == 'POST') {
+        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
             $data = [
                 'title' => 'Officers',
                 'pageTitle' => 'Add Job Application',
@@ -604,7 +604,7 @@ class Admin extends Controller {
     }
 
     public function addsite($Id){
-        if($_SERVER['REQUEST_METHOD']=='POST'){
+        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
             $data = [
                 'client_id' => $Id, // Use the parameter from URL
                 'title' => 'Clients',
@@ -827,8 +827,8 @@ public function editSite($site_id){
             'current_image' => $existingSite->image,
 
             'site_name' => $existingSite->site_name,
-            'site_address' => $existingSite->address ?? '', // use safe property
-            'site_city' => $existingSite->city ?? '',       // use safe property
+            'site_address' => $existingSite->address ?? '',
+            'site_city' => $existingSite->city ?? '',
             'phone_number' => $existingSite->phone_number ?? '',
 
             'image_err' => '',
