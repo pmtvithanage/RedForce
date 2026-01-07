@@ -192,7 +192,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
     
     $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-    $tempPassword = '1234';
+    $tempPassword = '0000';
     
     // Insert into Users table
     $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
@@ -381,7 +381,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         }
         
         $userID = 'CLIENT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-        $tempPassword = '1234'; // Simple temp password
+        $tempPassword = '0000'; // Simple temp password
         
         // Insert into Users table
         $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
@@ -997,5 +997,53 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     
+
+    // ==============================
+    // ===========Admins=============
+    // ==============================
+
+    public function getAllAdmins(){
+        $this->db->query("SELECT * FROM Users WHERE role = 'admin' ORDER BY created_at DESC");
+        return $this->db->resultSet();
+    }
+
+    public function addAdmin($data){
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE 'ADMIN%' ORDER BY userID DESC LIMIT 1");
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '0000'; // Simple temp password
+        $role_name = 'admin';
+
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role)");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':email', $data['email']);
+        $this->db->bind(':phone', $data['phone_number']);
+        $this->db->bind(':profile_image', $data['image_name']);
+        $this->db->bind(':role', $role_name);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+    
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId(); // Return the new user ID
+        }
+        return false;
+
+    }
+
+    public function getAdmin($userID) {
+        $this->db->query("SELECT * FROM Users WHERE userID = :userID");
+        $this->db->bind(':userID', $userID);
+        return $this->db->single();
+    }
 }
 

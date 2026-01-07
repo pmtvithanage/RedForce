@@ -178,7 +178,7 @@ class Admin extends Controller {
         elseif($role == 'mr') $role_name = "Mobile Rider";
         elseif($role == 'ct') $role_name = "Care Taker";
 
-        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'title' => 'Officers',
                 'pageTitle' => 'Add Job Application',
@@ -240,7 +240,7 @@ class Admin extends Controller {
         elseif($role == 'mr') $role_name = "Mobile Rider";
         elseif($role == 'ct') $role_name = "Care Taker";
 
-        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+        if($_SERVER['REQUEST_METHOD'] == 'POST') {
             $data = [
                 'title' => 'Officers',
                 'pageTitle' => 'Add Job Application',
@@ -395,36 +395,14 @@ class Admin extends Controller {
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
-        $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
-        if (!empty($result['success']) && $result['success']) {
+        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
             // Add activity log
             $title = "Officer Application Accepted";
             $description = $role_name . " application #" . $id . " was approved";
             $type = "registration";
             $this->adminModel->insertRecentActivity($title, $description, $type);
-
-            // Try to fetch the created user to get email and name
-            $user = $this->adminModel->getUserByID($result['userID']);
-            if ($user && !empty($user->email)) {
-                $subject = 'Welcome to ' . SITE_NAME . ' - Your officer account';
-                $vars = [
-                    'officer_name' => $user->name ?? 'Officer',
-                    'login_id' => $result['userID'],
-                    'temp_password' => $result['tempPassword'],
-                    'role_name' => $role_name,
-                    'site_name' => SITE_NAME,
-                    'login_url' => URL_ROOT . '/users/login'
-                ];
-
-                $emailResult = send_templated_email($user->email, 'welcome_officer', $vars, $subject);
-
-                // Log email (best-effort)
-                $renderedBody = render_email_template('welcome_officer', $vars);
-                $emailModel = $this->model('M_email');
-                $emailModel->log($user->email, $subject, $renderedBody, $emailResult['success'] ? 'sent' : 'failed', $emailResult['message'] ?? null, ['template' => 'welcome_officer']);
-            }
-
-            flash('msg', 'Officer application accepted successfully' . (isset($emailResult) && $emailResult['success'] ? ' and notified by email' : ''), 'alert-success');
+            
+            flash('msg', 'Officer application accepted successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
             flash('msg', 'Failed to accept officer application', 'alert-danger');
@@ -467,8 +445,9 @@ class Admin extends Controller {
 
     public function clients() {
         // Get pending service requests count for notification badge
-        $stats = $this->adminModel->getClientStatistics();
         $requestStats = $this->adminModel->getServiceRequestStats();
+
+        $stats = $this->adminModel->getClientStatistics();
         $pendingCount = $requestStats->pending ?? 0;
 
         $clients = $this->adminModel->getAllClients();
@@ -497,35 +476,14 @@ class Admin extends Controller {
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
-    $result = $this->adminModel->acceptClient($clientId, $adminId);
-    if (!empty($result['success']) && $result['success']) {
+    if ($this->adminModel->acceptClient($clientId, $adminId)) {
         // Add activity log
         $title = "Client Accepted";
         $description = "Client #" . $clientId . " registration was approved";
         $type = "updregistrationate";
         $this->adminModel->insertRecentActivity($title, $description, $type);
-
-        // Send welcome email with account details using template
-        $client = $this->adminModel->getClientById($result['id']);
-        $clientName = $client->name ?? 'Client';
-        $subject = 'Welcome to ' . SITE_NAME . ' - Your account details';
-
-        $vars = [
-            'client_name' => $clientName,
-            'login_id' => $result['new_user_id'],
-            'temp_password' => $result['temp_password'],
-            'site_name' => SITE_NAME,
-            'login_url' => URL_ROOT . '/users/login'
-        ];
-
-        $emailResult = send_templated_email($result['email'], 'welcome_client', $vars, $subject);
-
-        // Log email (best-effort) with rendered body for easier debugging
-        $renderedBody = render_email_template('welcome_client', $vars);
-        $emailModel = $this->model('M_email');
-        $emailModel->log($result['email'], $subject, $renderedBody, $emailResult['success'] ? 'sent' : 'failed', $emailResult['message'] ?? null, ['template' => 'welcome_client']);
-
-        flash('msg', 'Client accepted successfully and notified by email', 'alert-success');
+        
+        flash('msg', 'Client accepted successfully', 'alert-success');
         redirect('admin/addclients');
     } else {
         flash('client_message', 'Failed to accept client', 'alert-danger');
@@ -604,7 +562,7 @@ class Admin extends Controller {
     }
 
     public function addsite($Id){
-        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
+        if($_SERVER['REQUEST_METHOD']=='POST'){
             $data = [
                 'client_id' => $Id, // Use the parameter from URL
                 'title' => 'Clients',
@@ -727,7 +685,7 @@ public function editSite($site_id){
         return;
     }
     
-    if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
+    if($_SERVER['REQUEST_METHOD']=='POST'){
         $data = [
             'site_id' => $site_id, // Important: include site_id for update
             'client_id' => $existingSite->client_id, // Use existing client_id
@@ -827,9 +785,9 @@ public function editSite($site_id){
             'current_image' => $existingSite->image,
 
             'site_name' => $existingSite->site_name,
-            'site_address' => $existingSite->address ?? '',
-            'site_city' => $existingSite->city ?? '',
-            'phone_number' => $existingSite->phone_number ?? '',
+            'site_address' => $existingSite->address, // Changed from address
+            'site_city' => $existingSite->city,       // Changed from city
+            'phone_number' => $existingSite->phone_number,
 
             'image_err' => '',
             'site_name_err' => '',
@@ -891,6 +849,7 @@ public function editSite($site_id){
     public function clientRequests() {
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
             // Handle package request approval
             if (isset($_POST['approve_package_request'])) {
                 $siteId = $this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''));
@@ -912,6 +871,7 @@ public function editSite($site_id){
             }
             // Handle old service request approval
             elseif (isset($_POST['approve_request'])) {
+
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
                     // Add activity log
@@ -922,11 +882,9 @@ public function editSite($site_id){
                     
                     flash('request_success', 'Service request approved successfully');
                 } else {
-                    flash('request_error', 'Failed to approve service request', 'alert-danger');
+                    flash('request_error', 'Failed to approve service request');
                 }
-            }
-            // Handle old service request rejection
-            elseif (isset($_POST['reject_request'])) {
+            } elseif (isset($_POST['reject_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
                     // Add activity log
@@ -937,34 +895,21 @@ public function editSite($site_id){
                     
                     flash('request_success', 'Service request rejected');
                 } else {
-                    flash('request_error', 'Failed to reject service request', 'alert-danger');
+                    flash('request_error', 'Failed to reject service request');
                 }
             }
             redirect('admin/clientRequests');
         }
 
-        // Get all service requests (old system)
+        // Get all service requests
         $serviceRequests = $this->adminModel->getAllServiceRequests();
-        $serviceRequestStats = $this->adminModel->getServiceRequestStats();
-        
-        // Get all package requests (new system)
-        $packageRequests = $this->adminModel->getAllPackageRequests();
-        $packageRequestStats = $this->adminModel->getPackageRequestStats();
-        
-        // Combine stats
-        $combinedStats = (object)[
-            'pending' => ($serviceRequestStats->pending ?? 0) + ($packageRequestStats->pending ?? 0),
-            'approved' => ($serviceRequestStats->approved ?? 0) + ($packageRequestStats->approved ?? 0),
-            'rejected' => ($serviceRequestStats->rejected ?? 0) + ($packageRequestStats->rejected ?? 0),
-            'total' => ($serviceRequestStats->total ?? 0) + ($packageRequestStats->total ?? 0)
-        ];
+        $requestStats = $this->adminModel->getServiceRequestStats();
 
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Client Service Requests',
             'serviceRequests' => $serviceRequests,
-            'packageRequests' => $packageRequests,
-            'requestStats' => $combinedStats
+            'requestStats' => $requestStats
         ];
         
         $this->view('admin/v_client_requests', $data);
@@ -1412,254 +1357,125 @@ public function rejectLeave($id) {
         $this->view('admin/v_settings', $data);
     }
 
-    public function createUser() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Clean all output buffers
-            while (ob_get_level()) ob_end_clean();
-            
-            header('Content-Type: application/json; charset=utf-8');
-            
-            try {
-                // Get POST data
-                $name = trim($_POST['name'] ?? '');
-                $email = trim($_POST['email'] ?? '');
-                $password = trim($_POST['password'] ?? '');
-                $confirm_password = trim($_POST['confirm_password'] ?? '');
-                $role = trim($_POST['role'] ?? '');
-                $nic = trim($_POST['nic'] ?? '');
-                $mobile = trim($_POST['mobile'] ?? '');
-                $address = trim($_POST['address'] ?? '');
+// ======================================================================== //
+// =======================      Admin Panal       ====================== //
+// ======================================================================== //
+    public function admins() {
+        if(isset($_SESSION['user_userID']) && $_SESSION['user_userID'] == 'ADMIN001'){
+            $data = [
+                'title' => 'Admins',
+                'pageTitle' => 'Admin Panal',
+                'admins' => $this->adminModel->getAllAdmins()
+            ];
+            $this->view('admin/admins/v_admins', $data);
+        }
+    }
+
+    public function addadmin(){
+        if(isset($_SESSION['user_userID']) && $_SESSION['user_userID'] == 'ADMIN001'){
+        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
+            $data = [
                 
-                // Validation errors array
-                $errors = [];
-                
-                // Validate name
-                if (empty($name)) {
-                    $errors['name'] = 'Please enter name';
-                }
-                
-                // Validate NIC - must be exactly 12 digits
-                if (!empty($nic)) {
-                    if (!preg_match('/^\d{12}$/', $nic)) {
-                        $errors['nic'] = 'NIC must be exactly 12 digits with no letters';
-                    }
-                }
-                
-                // Validate mobile - must be exactly 10 digits
-                if (!empty($mobile)) {
-                    if (!preg_match('/^\d{10}$/', $mobile)) {
-                        $errors['mobile'] = 'Mobile number must be exactly 10 digits with no letters';
-                    }
-                }
-                
-                // Validate email
-                if (empty($email)) {
-                    $errors['email'] = 'Please enter email';
-                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    $errors['email'] = 'Please enter a valid email';
-                } elseif ($this->userModel->findUserByEmail($email)) {
-                    $errors['email'] = 'Email is already taken';
-                }
-                
-                // Validate password
-                if (empty($password)) {
-                    $errors['password'] = 'Please enter password';
-                } elseif (strlen($password) < 4) {
-                    $errors['password'] = 'Password must be at least 4 characters';
-                }
-                
-                // Validate confirm password
-                if (empty($confirm_password)) {
-                    $errors['confirm_password'] = 'Please confirm password';
-                } elseif ($password !== $confirm_password) {
-                    $errors['confirm_password'] = 'Passwords do not match';
-                }
-                
-                // Validate role
-                if (empty($role)) {
-                    $errors['role'] = 'Please select a role';
-                }
-                
-                // If there are validation errors, return them
-                if (!empty($errors)) {
-                    echo json_encode([
-                        'success' => false,
-                        'errors' => $errors
-                    ]);
-                    exit;
-                }
-                
-                // Generate userID based on role
-                $userID = $this->generateUserID($role);
-                
-                // Prepare user data
-                $userData = [
-                    'userID' => $userID,
-                    'name' => $name,
-                    'email' => $email,
-                    'password' => password_hash($password, PASSWORD_DEFAULT),
-                    'role' => $role,
-                    'nic' => $nic,
-                    'mobile' => $mobile,
-                    'address' => $address,
-                    'additional_info' => $this->getAdditionalInfo($_POST)
-                ];
-                
-                // Create user
-                if ($this->userModel->register($userData)) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => 'User created successfully'
-                    ]);
+                'title' => 'Admins',
+                'pageTitle' => 'Create Admin',
+
+                'image' => $_FILES['image'],
+                'image_name' => time(). '_' . $_FILES['image']['name'],
+
+                'name' => $this->sanitizeInput($_POST['name'] ?? ''),
+                'email' => $this->sanitizeInput($_POST['email'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+                'image_err' => '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+            ];
+
+            // Validate form
+            if(empty($data['image']['name'])){
+                $data['image_err'] = 'Please upload an image';
+            } elseif($data['image']['size'] > 0){
+                if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/image/')){
+                    // Image uploaded successfully
                 } else {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Failed to create user. Please try again.'
-                    ]);
+                    $data['image_err'] = 'Failed to upload image';
                 }
-                
-            } catch (Exception $e) {
-                echo json_encode([
-                    'success' => false,
-                    'message' => 'Server error: ' . $e->getMessage()
-                ]);
             }
-            exit;
-        }
-    }
 
-    private function generateUserID($role) {
-        // Define prefix based on role
-        $prefix = '';
-        switch($role) {
-            case 'admin': 
-                $prefix = 'ADMIN'; 
-                break;
-            case 'supervisor': 
-                $prefix = 'SUPERVISOR'; 
-                break;
-            case 'premise officer': 
-                $prefix = 'PREMISEOFFICER'; 
-                break;
-            case 'mobile rider': 
-                $prefix = 'MOBILERIDER'; 
-                break;
-            case 'client': 
-                $prefix = 'CLIENT'; 
-                break;
-            case 'caretaker': 
-                $prefix = 'CARETAKER'; 
-                break;
-            default: 
-                $prefix = 'USER';
-        }
-        
-        // Get the count of existing users with this role
-        $count = $this->userModel->getUserCountByRole($role);
-        
-        // Generate the next number (count + 1) with leading zeros
-        $number = str_pad($count + 1, 3, '0', STR_PAD_LEFT);
-        
-        return $prefix . $number;
-    }
+            if(empty($data['name'])){
+                $data['name_err'] = 'Please enter name';
+            }
 
-    private function getAdditionalInfo($postData) {
-        $additionalInfo = [];
-        
-        switch($postData['role']) {
-            case 'mobile rider':
-                $additionalInfo = [
-                    'vehicle_type' => $postData['vehicle_type'] ?? '',
-                    'license_number' => $postData['license_number'] ?? ''
-                ];
-                break;
-            case 'caretaker':
-                $additionalInfo = [
-                    'qualifications' => $postData['qualifications'] ?? '',
-                    'experience' => $postData['experience'] ?? ''
-                ];
-                break;
-            case 'premise officer':
-                $additionalInfo = [
-                    'premise_id' => $postData['premise_id'] ?? '',
-                    'shift' => $postData['shift'] ?? ''
-                ];
-                break;
-        }
-        
-        return json_encode($additionalInfo);
-    }
+            if(empty($data['email'])){
+                $data['email_err'] = 'Please enter email';
+            }
 
-    public function getUserDetails($userID) {
-        header('Content-Type: application/json');
-        $user = $this->adminModel->getUserByID($userID);
-        if ($user) {
-            echo json_encode(['success' => true, 'user' => $user]);
+            if(empty($data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter phone number';
+            } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Make sure there are no errors
+            if(empty($data['image_err']) && 
+            empty($data['name_err']) && 
+            empty($data['email_err']) && 
+            empty($data['phone_number_err'])){
+
+                // Insert admin and get the new admin ID
+                $adminId = $this->adminModel->addAdmin($data);
+                
+                if($adminId){
+                    // Add activity log
+                    $title = "New Admin Added";
+                    $description = "Admin '" . $data['name'] . "' added";
+                    $type = "shift";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
+                    flash('msg', 'Admin added successfully', 'alert-success');
+                    redirect('admin/admins/'.$adminId); // Redirect properly
+                } else {
+                    flash('msg', 'Failed to add admin', 'alert-danger');
+                    $this->view('admin/admins/v_create_admin',$data);
+                }
+            } else {
+                $this->view('admin/admins/v_create_admin',$data);
+            }
+
         } else {
-            echo json_encode(['success' => false, 'message' => 'User not found']);
+            $data = [
+                
+                'title' => 'Admins',
+                'pageTitle' => 'Add Admin',
+
+                'image' => '', 
+                'image_name' => '',
+
+                'name' => '',
+                'email' => '',
+                'phone_number' => '',
+
+                'image_err' => '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+            ];
+            
+            $this->view('admin/admins/v_create_admin', $data);
         }
-        exit;
+    }
     }
 
-    public function getAdmins() {
-        header('Content-Type: application/json');
-        $admins = $this->adminModel->getAdmins();
-        echo json_encode($admins);
-        exit;
-    }
 
-    public function debugAdvertisement() {
-    // Enable error reporting temporarily
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    
-    header('Content-Type: application/json');
-    
-    try {
-        // Test 1: Check if model methods exist
-        $methods = [
-            'createAdvertisement' => method_exists($this->adminModel, 'createAdvertisement'),
-            'getLastInsertId' => method_exists($this->adminModel, 'getLastInsertId'),
-            'getAdvertisementById' => method_exists($this->adminModel, 'getAdvertisementById')
+    public function profile() {
+        $data = [
+            'title' => 'Profile',
+            'pageTitle' => 'Admin Profile',
+            'admin' => $this->adminModel->getAdmin($_SESSION['user_userID'])
         ];
-        
-        // Test 2: Check database connection
-        $dbTest = $this->adminModel->getAdvertisements();
-        $dbStatus = is_array($dbTest) ? 'connected' : 'failed';
-        
-        // Test 3: Test a simple database insert
-        $testData = [
-            'title' => 'Test Ad',
-            'image_path' => 'uploads/advertisements/test.jpg',
-            'target_roles' => 'Test',
-            'created_by' => 1,
-            'status' => 'active'
-        ];
-        
-        $insertTest = $this->adminModel->createAdvertisement($testData);
-        
-        echo json_encode([
-            'status' => 'success',
-            'debug' => [
-                'model_methods' => $methods,
-                'database' => $dbStatus,
-                'insert_test' => $insertTest ? 'success' : 'failed',
-                'session_user_id' => $_SESSION['user_id'] ?? 'not_set'
-            ]
-        ]);
-        
-    } catch (Exception $e) {
-        echo json_encode([
-            'status' => 'error',
-            'message' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
+        $this->view('admin/admins/v_profile', $data);
     }
-    exit;
-}
-
-
-
 // ---------------------------------------For all--------------------------------------//
 
     /**
