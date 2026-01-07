@@ -849,7 +849,29 @@ public function editSite($site_id){
     public function clientRequests() {
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if (isset($_POST['approve_request'])) {
+
+            // Handle package request approval
+            if (isset($_POST['approve_package_request'])) {
+                $siteId = $this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''));
+                if ($siteId) {
+                    flash('request_success', 'Package request approved successfully and site created', 'alert-success');
+                    // Redirect to the newly created site
+                    redirect('admin/viewsites/' . $siteId);
+                } else {
+                    flash('request_error', 'Failed to approve package request', 'alert-danger');
+                }
+            }
+            // Handle package request rejection
+            elseif (isset($_POST['reject_package_request'])) {
+                if ($this->adminModel->rejectPackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['rejection_reason']))) {
+                    flash('request_success', 'Package request rejected', 'alert-success');
+                } else {
+                    flash('request_error', 'Failed to reject package request', 'alert-danger');
+                }
+            }
+            // Handle old service request approval
+            elseif (isset($_POST['approve_request'])) {
+
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
                     // Add activity log
