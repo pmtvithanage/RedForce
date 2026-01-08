@@ -963,6 +963,178 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return false;
     }
 
+    // Get available officers with filters
+    public function getAvailableOfficers($filters) {
+        $city = $filters['city'];
+        $location = $filters['location'];
+        $availability = $filters['availability'];
+        $status = $filters['status'];
+        $siteId = $filters['site_id'];
+
+        // Build base query
+        $query = "SELECT 
+                    u.id as user_id,
+                    u.name,
+                    u.email,
+                    u.phone_number,
+                    u.profile_image,
+                    po.officerID,
+                    po.city,
+                    po.district,
+                    po.employment_status,
+                    po.rank,
+                    po.rating,
+                    po.shift_pattern,
+                    osa.id as current_assignment
+                  FROM Users u
+                  INNER JOIN premise_officers po ON u.id = po.userID
+                  LEFT JOIN officer_site_assignments osa ON u.id = osa.officer_id AND osa.status = 'Active'
+                  WHERE u.role = 'premise officer'";
+
+        // Add location filter
+        if ($location === 'same-city') {
+            $query .= " AND LOWER(po.city) = LOWER(:city)";
+        } elseif ($location === 'same-district') {
+            // Get district from city using the mapping
+            $district = $this->getDistrictFromCity($city);
+            if ($district) {
+                $query .= " AND LOWER(po.district) = LOWER(:district)";
+            }
+        }
+
+        // Add availability filter
+        if ($availability === 'available') {
+            $query .= " AND osa.id IS NULL";
+        } elseif ($availability === 'assigned') {
+            $query .= " AND osa.id IS NOT NULL";
+        }
+
+        // Add employment status filter
+        if ($status !== 'all') {
+            $query .= " AND po.employment_status = :status";
+        }
+
+        $query .= " ORDER BY po.city = :city DESC, po.district, u.name";
+
+        $this->db->query($query);
+
+        // Bind parameters
+        if ($location === 'same-city' || $location === 'all') {
+            $this->db->bind(':city', $city);
+        }
+        if ($location === 'same-district') {
+            $district = $this->getDistrictFromCity($city);
+            if ($district) {
+                $this->db->bind(':district', $district);
+                $this->db->bind(':city', $city);
+            }
+        }
+        if ($status !== 'all') {
+            $this->db->bind(':status', $status);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    // Get district from city name
+    private function getDistrictFromCity($city) {
+        // City to district mapping based on the JavaScript file
+        $cityToDistrict = [
+            // Colombo district cities
+            'colombo 1' => 'colombo', 'colombo 2' => 'colombo', 'colombo 3' => 'colombo', 
+            'colombo 4' => 'colombo', 'colombo 5' => 'colombo', 'colombo 6' => 'colombo',
+            'colombo 7' => 'colombo', 'colombo 8' => 'colombo', 'colombo 9' => 'colombo',
+            'colombo 10' => 'colombo', 'dehiwala' => 'colombo', 'mount lavinia' => 'colombo',
+            'moratuwa' => 'colombo', 'nugegoda' => 'colombo', 'maharagama' => 'colombo',
+            'kotte' => 'colombo', 'battaramulla' => 'colombo', 'rajagiriya' => 'colombo',
+            
+            // Gampaha district cities
+            'gampaha' => 'gampaha', 'negombo' => 'gampaha', 'kelaniya' => 'gampaha',
+            'kadawatha' => 'gampaha', 'ragama' => 'gampaha', 'wattala' => 'gampaha',
+            'ja-ela' => 'gampaha', 'kandana' => 'gampaha', 'minuwangoda' => 'gampaha',
+            
+            // Kalutara district
+            'kalutara' => 'kalutara', 'panadura' => 'kalutara', 'horana' => 'kalutara',
+            'wadduwa' => 'kalutara', 'beruwala' => 'kalutara', 'aluthgama' => 'kalutara',
+            
+            // Kandy district
+            'kandy' => 'kandy', 'peradeniya' => 'kandy', 'katugastota' => 'kandy',
+            'gampola' => 'kandy', 'nawalapitiya' => 'kandy', 'akurana' => 'kandy',
+            
+            // Add more mappings as needed (keeping it concise for now)
+        ];
+
+        $cityLower = strtolower(trim($city));
+        return $cityToDistrict[$cityLower] ?? null;
+    }
+
+    // Assign officer to site
+    public function assignOfficerToSite($siteId, $officerId, $assignedBy) {
+        // Check if officer is already assigned to another site
+        $this->db->query("SELECT id FROM officer_site_assignments 
+                          WHERE officer_id = :officer_id AND status = 'Active'");
+        $this->db->bind(':officer_id', $officerId);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Officer is already assigned to another site'];
+        }
+
+        // Create new assignment
+        $this->db->query("INSERT INTO officer_site_assignments 
+                          (site_id, officer_id, assignment_start, assigned_by, status) 
+                          VALUES (:site_id, :officer_id, CURDATE(), :assigned_by, 'Active')");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_id', $officerId);
+        $this->db->bind(':assigned_by', $assignedBy);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Officer assigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to assign officer'];
+    }
+
+    // Unassign officer from site
+    public function unassignOfficerFromSite($assignmentId) {
+        $this->db->query("UPDATE officer_site_assignments 
+                          SET status = 'Completed', assignment_end = CURDATE() 
+                          WHERE id = :id");
+        $this->db->bind(':id', $assignmentId);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Officer unassigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to unassign officer'];
+    }
+
+    // Get assigned officers for a site
+    public function getAssignedOfficers($siteId) {
+        $this->db->query("SELECT 
+                            osa.id as assignment_id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.assignment_end,
+                            osa.status,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            po.officerID,
+                            po.city,
+                            po.district,
+                            po.rank
+                          FROM officer_site_assignments osa
+                          INNER JOIN Users u ON osa.officer_id = u.id
+                          INNER JOIN premise_officers po ON u.id = po.userID
+                          WHERE osa.site_id = :site_id AND osa.status = 'Active'
+                          ORDER BY osa.assignment_start DESC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
     public function rejectPackageRequest($id, $admin_id, $reason) {
         $this->db->query("UPDATE package_requests SET status = 'Rejected', admin_notes = :reason, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
         $this->db->bind(':id', $id);

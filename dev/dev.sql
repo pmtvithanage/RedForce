@@ -728,3 +728,28 @@ CREATE TABLE IF NOT EXISTS package_requests (
     INDEX idx_client (client_id),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create officer_site_assignments table
+
+DROP TABLE IF EXISTS officer_site_assignments;
+
+CREATE TABLE officer_site_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    site_id BIGINT UNSIGNED NOT NULL,
+    officer_id INT NOT NULL,
+    shift_type ENUM('Day', 'Night', 'Full Time', 'Flexible') DEFAULT 'Full Time',
+    assignment_start DATE NOT NULL,
+    assignment_end DATE DEFAULT NULL,
+    status ENUM('Active', 'Completed', 'Cancelled') DEFAULT 'Active',
+    assigned_by INT DEFAULT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_site (site_id),
+    KEY idx_officer (officer_id),
+    KEY idx_status (status),
+    CONSTRAINT fk_officer_assignment_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_officer FOREIGN KEY (officer_id) REFERENCES Users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_assigner FOREIGN KEY (assigned_by) REFERENCES Users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

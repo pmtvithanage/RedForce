@@ -664,11 +664,14 @@ class Admin extends Controller {
     public function viewsites($site_id){
         $site = $this->adminModel->getSiteById($site_id);
         $clients = $this->adminModel->getClientById($site->client_id);
+        $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);
+        
         $data = [
             'title' => 'Clients',
             'pageTitle' => $clients->name . ' - ' . $site->site_name,
             'site' => $site,
-            'client' => $clients
+            'client' => $clients,
+            'assigned_officers' => $assignedOfficers
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }
@@ -1623,6 +1626,76 @@ public function rejectLeave($id) {
         // Remove or encode potentially dangerous characters
         $input = strip_tags($input);
         return $input;
+    }
+
+    // AJAX endpoint to get available officers
+    public function getAvailableOfficers() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $filters = [
+            'site_id' => $input['site_id'] ?? null,
+            'city' => $input['city'] ?? '',
+            'location' => $input['location'] ?? 'same-city',
+            'availability' => $input['availability'] ?? 'available',
+            'status' => $input['status'] ?? 'Active'
+        ];
+
+        $officers = $this->adminModel->getAvailableOfficers($filters);
+        
+        echo json_encode(['officers' => $officers]);
+    }
+
+    // AJAX endpoint to assign officer to site
+    public function assignOfficerToSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $siteId = $input['site_id'] ?? null;
+        $officerId = $input['officer_id'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
+
+        if (!$siteId || !$officerId || !$assignedBy) {
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy);
+        echo json_encode($result);
+    }
+
+    // AJAX endpoint to unassign officer from site
+    public function unassignOfficerFromSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $assignmentId = $input['assignment_id'] ?? null;
+
+        if (!$assignmentId) {
+            echo json_encode(['success' => false, 'message' => 'Missing assignment ID']);
+            return;
+        }
+
+        $result = $this->adminModel->unassignOfficerFromSite($assignmentId);
+        echo json_encode($result);
     }
 }
 
