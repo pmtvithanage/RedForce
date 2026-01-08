@@ -896,24 +896,37 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     // Get client's phone number
-    public function getClientPhoneNumber($client_id) {
-        $this->db->query("SELECT u.phone_number 
-                          FROM Clients c 
-                          JOIN Users u ON c.user_id = u.id 
-                          WHERE c.id = :client_id");
-        $this->db->bind(':client_id', $client_id);
+    public function getClientPhoneNumber($user_id) {
+        // client_id in package_requests references Users.id directly
+        $this->db->query("SELECT phone_number FROM Users WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
         $result = $this->db->single();
         return $result ? $result->phone_number : null;
     }
 
+    // Get Clients table ID from Users ID
+    public function getClientsTableId($user_id) {
+        $this->db->query("SELECT id FROM Clients WHERE user_id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $result = $this->db->single();
+        return $result ? $result->id : null;
+    }
+
     // Create site from approved package request
     public function createSiteFromPackageRequest($packageRequest) {
-        // Get client's phone number
+        // Get the Clients table ID (sites table references Clients.id, not Users.id)
+        $clientsTableId = $this->getClientsTableId($packageRequest->client_id);
+        
+        if (!$clientsTableId) {
+            return false;
+        }
+        
+        // Get client's phone number from Users table
         $phoneNumber = $this->getClientPhoneNumber($packageRequest->client_id);
         
         $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, created_at, updated_at) 
                           VALUES (:client_id, :site_name, :address, :city, :phone_number, NOW(), NOW())");
-        $this->db->bind(':client_id', $packageRequest->client_id);
+        $this->db->bind(':client_id', $clientsTableId);
         $this->db->bind(':site_name', $packageRequest->site_name);
         $this->db->bind(':address', $packageRequest->site_address);
         $this->db->bind(':city', $packageRequest->city);
