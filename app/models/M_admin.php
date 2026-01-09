@@ -979,26 +979,33 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     public function approvePackageRequest($id, $admin_id, $notes) {
-        // First, get the package request details
-        $packageRequest = $this->getPackageRequestById($id);
-        
-        if (!$packageRequest) {
-            return false;
-        }
-
-        // Update the package request status
-        $this->db->query("UPDATE package_requests SET status = 'Approved', admin_notes = :notes, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
+        // Step 1: Update the package request status to Approved
+        $this->db->query("UPDATE package_requests 
+                          SET status = 'Approved', 
+                              admin_notes = :notes, 
+                              approved_by = :admin_id, 
+                              approved_at = NOW() 
+                          WHERE id = :id");
         $this->db->bind(':id', $id);
         $this->db->bind(':admin_id', $admin_id);
         $this->db->bind(':notes', $notes);
         
-        if ($this->db->execute()) {
-            // Automatically create a site for this client and return the site ID
-            $siteId = $this->createSiteFromPackageRequest($packageRequest);
-            return $siteId; // Return site ID instead of true
+        if (!$this->db->execute()) {
+            return false; // Failed to approve
         }
         
-        return false;
+        // Step 2: Get the package request details
+        $packageRequest = $this->getPackageRequestById($id);
+        
+        if (!$packageRequest) {
+            return true; // Approved but couldn't get details
+        }
+        
+        // Step 3: Create a site from the package request
+        $siteId = $this->createSiteFromPackageRequest($packageRequest);
+        
+        // Return the site ID (or true if site creation failed but approval succeeded)
+        return $siteId ? $siteId : true;
     }
 
     // Get available officers with filters

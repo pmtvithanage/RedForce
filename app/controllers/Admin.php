@@ -852,67 +852,97 @@ public function editSite($site_id){
     public function clientRequests() {
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+            
             // Handle package request approval
             if (isset($_POST['approve_package_request'])) {
-                $siteId = $this->adminModel->approvePackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['admin_notes'] ?? ''));
-                if ($siteId) {
-                    flash('request_success', 'Package request approved successfully and site created', 'alert-success');
-                    // Redirect to the newly created site
-                    redirect('admin/viewsites/' . $siteId);
+                $requestId = $_POST['request_id'];
+                $adminId = $_SESSION['user_id'];
+                $notes = trim($_POST['admin_notes'] ?? '');
+                
+                // Approve the package request and create site
+                $result = $this->adminModel->approvePackageRequest($requestId, $adminId, $notes);
+                
+                if ($result && is_numeric($result)) {
+                    // Site created successfully, redirect to it
+                    flash('request_success', 'Package request approved and site created successfully', 'alert-success');
+                    redirect('admin/viewsites/' . $result);
+                    exit();
+                } elseif ($result) {
+                    // Approved but site creation failed
+                    flash('request_success', 'Package request approved', 'alert-success');
+                    redirect('admin/clientRequests');
+                    exit();
                 } else {
+                    // Approval failed
                     flash('request_error', 'Failed to approve package request', 'alert-danger');
+                    redirect('admin/clientRequests');
+                    exit();
                 }
             }
+            
             // Handle package request rejection
-            elseif (isset($_POST['reject_package_request'])) {
-                if ($this->adminModel->rejectPackageRequest($_POST['request_id'], $_SESSION['user_id'], trim($_POST['rejection_reason']))) {
+            if (isset($_POST['reject_package_request'])) {
+                $requestId = $_POST['request_id'];
+                $adminId = $_SESSION['user_id'];
+                $reason = trim($_POST['rejection_reason'] ?? '');
+                
+                if ($this->adminModel->rejectPackageRequest($requestId, $adminId, $reason)) {
                     flash('request_success', 'Package request rejected', 'alert-success');
                 } else {
                     flash('request_error', 'Failed to reject package request', 'alert-danger');
                 }
+                redirect('admin/clientRequests');
+                exit();
             }
+            
             // Handle old service request approval
-            elseif (isset($_POST['approve_request'])) {
-
+            if (isset($_POST['approve_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Approved')) {
-                    // Add activity log
                     $title = "Service Request Approved";
                     $description = "Service request #" . $requestId . " was approved";
                     $type = "update";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
-                    
                     flash('request_success', 'Service request approved successfully');
                 } else {
                     flash('request_error', 'Failed to approve service request');
                 }
-            } elseif (isset($_POST['reject_request'])) {
+                redirect('admin/clientRequests');
+                exit();
+            }
+            
+            // Handle old service request rejection
+            if (isset($_POST['reject_request'])) {
                 $requestId = $_POST['request_id'];
                 if ($this->adminModel->updateServiceRequestStatus($requestId, 'Rejected')) {
-                    // Add activity log
                     $title = "Service Request Rejected";
                     $description = "Service request #" . $requestId . " was rejected";
                     $type = "alert";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
-                    
                     flash('request_success', 'Service request rejected');
                 } else {
                     flash('request_error', 'Failed to reject service request');
                 }
+                redirect('admin/clientRequests');
+                exit();
             }
-            redirect('admin/clientRequests');
         }
 
-        // Get all service requests
+        // Get all service requests (old system)
         $serviceRequests = $this->adminModel->getAllServiceRequests();
         $requestStats = $this->adminModel->getServiceRequestStats();
+        
+        // Get all package requests (new system)
+        $packageRequests = $this->adminModel->getAllPackageRequests();
+        $packageStats = $this->adminModel->getPackageRequestStats();
 
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Client Service Requests',
             'serviceRequests' => $serviceRequests,
-            'requestStats' => $requestStats
+            'requestStats' => $requestStats,
+            'packageRequests' => $packageRequests,
+            'packageStats' => $packageStats
         ];
         
         $this->view('admin/v_client_requests', $data);
