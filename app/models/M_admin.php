@@ -1107,7 +1107,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     // Assign officer to site
-    public function assignOfficerToSite($siteId, $officerId, $assignedBy) {
+    public function assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType = 'Full Time') {
         // Check if officer is already assigned to another site
         $this->db->query("SELECT id FROM officer_site_assignments 
                           WHERE officer_id = :officer_id AND status = 'Active'");
@@ -1120,10 +1120,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         // Create new assignment
         $this->db->query("INSERT INTO officer_site_assignments 
-                          (site_id, officer_id, assignment_start, assigned_by, status) 
-                          VALUES (:site_id, :officer_id, CURDATE(), :assigned_by, 'Active')");
+                          (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
+                          VALUES (:site_id, :officer_id, :shift_type, CURDATE(), :assigned_by, 'Active')");
         $this->db->bind(':site_id', $siteId);
         $this->db->bind(':officer_id', $officerId);
+        $this->db->bind(':shift_type', $shiftType);
         $this->db->bind(':assigned_by', $assignedBy);
 
         if ($this->db->execute()) {

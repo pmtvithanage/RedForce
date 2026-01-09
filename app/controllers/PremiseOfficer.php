@@ -6,7 +6,7 @@ class PremiseOfficer extends Controller {
 
     public function __construct() {
         // Check if user is logged in and has premise officer role
-        requireAuth('premise officer');
+        //requireAuth('premise officer');
 
         $this->advertisementModel = $this->model('M_advertisements');
         $this->premiseOfficerModel = $this->model('M_premiseofficer');

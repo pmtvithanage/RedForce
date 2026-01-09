@@ -440,7 +440,19 @@
                       <?php echo htmlspecialchars($officer->city); ?>
                     </p>
                   </div>
-                  <span class="duty-status status-active"><?php echo htmlspecialchars($officer->shift_type ?? 'Full Time'); ?></span>
+                  <?php 
+                    $shift = $officer->shift_type ?? 'Full Time';
+                    $badgeColor = match($shift) {
+                      'Day' => '#4caf50',
+                      'Night' => '#2196f3',
+                      'Full Time' => '#4caf50',
+                      'Flexible' => '#ff9800',
+                      default => '#4caf50'
+                    };
+                  ?>
+                  <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                    <?php echo htmlspecialchars($shift); ?>
+                  </span>
                 </div>
                 <div style="padding: 15px;">
                   <p><strong>Start Date:</strong> <?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
@@ -462,6 +474,34 @@
       </div>
     </div>
     
+</div>
+
+<!-- Shift Selection Modal -->
+<div id="shiftModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <h3 style="margin: 0 0 10px 0; color: #333;">Assign Officer to Site</h3>
+    <p id="officerNameDisplay" style="color: #666; margin-bottom: 20px; font-size: 14px;"></p>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Select Shift Type:</label>
+      <select id="shiftTypeSelect" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+        <option value="Day">Day Shift</option>
+        <option value="Night">Night Shift</option>
+        <option value="Full Time">Full Time</option>
+        <option value="Flexible">Flexible</option>
+      </select>
+    </div>
+    
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="closeShiftModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+        Cancel
+      </button>
+      <button onclick="confirmAssignment()" style="padding: 10px 20px; background: #a40000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">check</span>
+        Confirm Assignment
+      </button>
+    </div>
+  </div>
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
@@ -534,7 +574,7 @@ function displayOfficers(officers) {
                     ${officer.current_assignment ? '<p style="color: #ff9800;"><strong>Currently assigned to another site</strong></p>' : ''}
                 </div>
                 <div class="duty-card-footer">
-                    <button class="action-btn" onclick="assignOfficer(${officer.user_id})" ${officer.current_assignment ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                    <button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name}')" ${officer.current_assignment ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                         <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span>
                         Assign to Site
                     </button>
@@ -553,17 +593,35 @@ function resetFilters() {
     document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><span class="material-symbols-outlined" style="font-size: 48px;">person_search</span><p style="margin-top: 10px;">Click "Apply Filters" to load officers</p></div>';
 }
 
-function assignOfficer(officerId) {
-    if (!confirm('Are you sure you want to assign this officer to this site?')) {
-        return;
-    }
-    
+// Global variable to store officer ID for assignment
+let selectedOfficerId = null;
+
+function openShiftModal(officerId, officerName) {
+    selectedOfficerId = officerId;
+    document.getElementById('officerNameDisplay').textContent = `Officer: ${officerName}`;
+    document.getElementById('shiftModal').style.display = 'flex';
+}
+
+function closeShiftModal() {
+    selectedOfficerId = null;
+    document.getElementById('shiftModal').style.display = 'none';
+    document.getElementById('shiftTypeSelect').value = 'Day';
+}
+
+function confirmAssignment() {
+    const shiftType = document.getElementById('shiftTypeSelect').value;
+    assignOfficer(selectedOfficerId, shiftType);
+    closeShiftModal();
+}
+
+function assignOfficer(officerId, shiftType) {
     fetch(urlRoot + '/admin/assignOfficerToSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             site_id: siteId,
-            officer_id: officerId
+            officer_id: officerId,
+            shift_type: shiftType
         })
     })
     .then(response => response.json())
