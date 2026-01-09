@@ -35,6 +35,10 @@
     transform: scale(1.05);
     transition: transform 0.3s ease;
 }
+
+.btn-secondary{
+    margin-left:auto; 
+}
 </style>
 
 <div class="main-content">
@@ -67,6 +71,10 @@
                 <div class="card-header">
                     <span class="material-icons">contact_phone</span>
                     <h3>Contact Information</h3>
+
+                    <button class="btn btn-secondary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/edit_profile/<?php echo $data['admin']->userID; ?>'">
+                        <span class="material-icons">edit</span> Edit Profile
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="info-row">
@@ -77,9 +85,6 @@
                             <div class="info-label">Phone Number</div>
                             <div class="info-value"><?php echo $data['admin']->phone_number; ?></div>
                         </div>
-                        <a href="?change_contact=1" class="action-btn">
-                            <span class="material-icons">edit</span>
-                        </a>
                     </div>
 
                     <div class="info-row">
@@ -90,9 +95,6 @@
                             <div class="info-label">Email Address</div>
                             <div class="info-value"><?php echo $data['admin']->email; ?></div>
                         </div>
-                        <a href="?change_email=1" class="action-btn">
-                            <span class="material-icons">edit</span>
-                        </a>
                     </div>
                 </div>
             </div>
