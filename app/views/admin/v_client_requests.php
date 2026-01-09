@@ -42,7 +42,7 @@ $errorMessage = flash('request_error');
         <span class="material-symbols-outlined">schedule</span>
       </div>
       <div class="stat-info">
-        <div class="stat-value"><?php echo $data['requestStats']->pending ?? 0; ?></div>
+        <div class="stat-value"><?php echo ($data['packageStats']->pending ?? 0); ?></div>
         <div class="stat-label">Pending</div>
       </div>
     </div>
@@ -52,7 +52,7 @@ $errorMessage = flash('request_error');
         <span class="material-symbols-outlined">check_circle</span>
       </div>
       <div class="stat-info">
-        <div class="stat-value"><?php echo $data['requestStats']->approved ?? 0; ?></div>
+        <div class="stat-value"><?php echo ($data['packageStats']->approved ?? 0); ?></div>
         <div class="stat-label">Approved</div>
       </div>
     </div>
@@ -62,7 +62,7 @@ $errorMessage = flash('request_error');
         <span class="material-symbols-outlined">cancel</span>
       </div>
       <div class="stat-info">
-        <div class="stat-value"><?php echo $data['requestStats']->rejected ?? 0; ?></div>
+        <div class="stat-value"><?php echo ($data['packageStats']->rejected ?? 0); ?></div>
         <div class="stat-label">Rejected</div>
       </div>
     </div>
@@ -72,7 +72,7 @@ $errorMessage = flash('request_error');
         <span class="material-symbols-outlined">list_alt</span>
       </div>
       <div class="stat-info">
-        <div class="stat-value"><?php echo $data['requestStats']->total ?? 0; ?></div>
+        <div class="stat-value"><?php echo ($data['packageStats']->total ?? 0); ?></div>
         <div class="stat-label">Total Requests</div>
       </div>
     </div>
@@ -285,8 +285,9 @@ $errorMessage = flash('request_error');
       <h3 style="margin:0;font-size:20px;color:#333;">Approve Package Request</h3>
       <span style="font-size:28px;font-weight:bold;color:#aaa;cursor:pointer;" onclick="closeApproveModal()">&times;</span>
     </div>
-    <form method="POST" style="padding:25px;">
+    <form method="POST" action="<?php echo URL_ROOT; ?>/admin/clientRequests" style="padding:25px;">
       <input type="hidden" name="request_id" id="approve_request_id">
+      <input type="hidden" name="approve_package_request" value="1">
       <p style="margin:0 0 20px 0;font-size:15px;color:#555;">Approve <strong id="approve_package_name"></strong>?</p>
       <div style="margin-bottom:20px;">
         <label style="display:block;margin-bottom:8px;font-weight:600;color:#333;font-size:14px;">Admin Notes (Optional):</label>
@@ -294,7 +295,7 @@ $errorMessage = flash('request_error');
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:25px;">
         <button type="button" class="secondary-btn" onclick="closeApproveModal()">Cancel</button>
-        <button type="submit" name="approve_package_request" class="primary-btn">Approve</button>
+        <button type="submit" class="primary-btn">Approve</button>
       </div>
     </form>
   </div>
@@ -307,27 +308,66 @@ $errorMessage = flash('request_error');
       <h3 style="margin:0;font-size:20px;color:#333;">Reject Package Request</h3>
       <span style="font-size:28px;font-weight:bold;color:#aaa;cursor:pointer;" onclick="closeRejectModal()">&times;</span>
     </div>
-    <form method="POST" style="padding:25px;">
+    <form method="POST" action="<?php echo URL_ROOT; ?>/admin/clientRequests" style="padding:25px;">
       <input type="hidden" name="request_id" id="reject_request_id">
+      <input type="hidden" name="reject_package_request" value="1">
       <p style="margin:0 0 20px 0;font-size:15px;color:#555;">Reject <strong id="reject_package_name"></strong>?</p>
       <div style="margin-bottom:20px;">
-        <label style="display:block;margin-bottom:8px;font-weight:600;color:#333;font-size:14px;">Rejection Reason <span style="color:red;">*</span>:</label>
+        <label for="rejection_reason" style="display:block;margin-bottom:8px;font-weight:600;color:#333;font-size:14px;">Rejection Reason <span style="color:red;">*</span>:</label>
         <textarea name="rejection_reason" id="rejection_reason" rows="4" required style="width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:6px;font-family:inherit;font-size:14px;resize:vertical;"></textarea>
       </div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:25px;">
         <button type="button" class="secondary-btn" onclick="closeRejectModal()">Cancel</button>
-        <button type="submit" name="reject_package_request" class="primary-btn">Reject</button>
+        <button type="submit" class="primary-btn">Reject</button>
       </div>
+    </form>
     </form>
   </div>
 </div>
 
 <script>
-function showApproveModal(id,name){document.getElementById('approve_request_id').value=id;document.getElementById('approve_package_name').textContent=name;document.getElementById('approveModal').style.display='flex';}
-function closeApproveModal(){document.getElementById('approveModal').style.display='none';document.getElementById('admin_notes_approve').value='';}
-function showRejectModal(id,name){document.getElementById('reject_request_id').value=id;document.getElementById('reject_package_name').textContent=name;document.getElementById('rejectModal').style.display='flex';}
-function closeRejectModal(){document.getElementById('rejectModal').style.display='none';document.getElementById('rejection_reason').value='';}
-window.onclick=function(e){const am=document.getElementById('approveModal');const rm=document.getElementById('rejectModal');if(e.target===am)closeApproveModal();if(e.target===rm)closeRejectModal();}
+function showApproveModal(id, name) {
+    console.log("showApproveModal called with ID:", id, "Name:", name);
+    document.getElementById('approve_request_id').value = id;
+    document.getElementById('approve_package_name').textContent = name;
+    document.getElementById('approveModal').style.display = 'flex';
+}
+
+function closeApproveModal() {
+    document.getElementById('approveModal').style.display = 'none';
+    document.getElementById('admin_notes_approve').value = '';
+}
+
+function showRejectModal(id, name) {
+    console.log("showRejectModal called with ID:", id, "Name:", name);
+    document.getElementById('reject_request_id').value = id;
+    document.getElementById('reject_package_name').textContent = name;
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    document.getElementById('rejection_reason').value = '';
+}
+
+window.onclick = function(e) {
+    const am = document.getElementById('approveModal');
+    const rm = document.getElementById('rejectModal');
+    if (e.target === am) closeApproveModal();
+    if (e.target === rm) closeRejectModal();
+}
+
+// Add form submit handlers for debugging
+document.addEventListener('DOMContentLoaded', function() {
+    const approveForms = document.querySelectorAll('form[action*="clientRequests"]');
+    approveForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            console.log("Form submitting with data:", new FormData(form));
+            console.log("Form action:", form.action);
+            console.log("Form method:", form.method);
+        });
+    });
+});
 </script>
 
 </main>
