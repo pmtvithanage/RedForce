@@ -1280,6 +1280,132 @@ public function rejectLeave($id) {
         }
     }
 
+    public function createAdmin() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Check if current user is super admin
+            if (!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] !== 'ADMIN001') {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Unauthorized access'
+                ]);
+                exit;
+            }
+
+            // Clean all output buffers
+            while (ob_get_level()) ob_end_clean();
+            
+            header('Content-Type: application/json; charset=utf-8');
+            
+            try {
+                // Get POST data
+                $name = trim($_POST['name'] ?? '');
+                $email = trim($_POST['email'] ?? '');
+                $password = trim($_POST['password'] ?? '');
+                $confirm_password = trim($_POST['confirm_password'] ?? '');
+                $nic = trim($_POST['nic'] ?? '');
+                $mobile = trim($_POST['mobile'] ?? '');
+                $address = trim($_POST['address'] ?? '');
+                $permissions = $_POST['permissions'] ?? [];
+                
+                // Validation errors array
+                $errors = [];
+                
+                // Validate name
+                if (empty($name)) {
+                    $errors['name'] = 'Please enter name';
+                }
+                
+                // Validate NIC - must be exactly 12 digits
+                if (!empty($nic)) {
+                    if (!preg_match('/^\d{12}$/', $nic)) {
+                        $errors['nic'] = 'NIC must be exactly 12 digits with no letters';
+                    }
+                }
+                
+                // Validate mobile - must be exactly 10 digits
+                if (!empty($mobile)) {
+                    if (!preg_match('/^\d{10}$/', $mobile)) {
+                        $errors['mobile'] = 'Mobile number must be exactly 10 digits with no letters';
+                    }
+                }
+                
+                // Validate email
+                if (empty($email)) {
+                    $errors['email'] = 'Please enter email';
+                } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    $errors['email'] = 'Please enter a valid email';
+                } elseif ($this->userModel->findUserByEmail($email)) {
+                    $errors['email'] = 'Email is already taken';
+                }
+                
+                // Validate password
+                if (empty($password)) {
+                    $errors['password'] = 'Please enter password';
+                } elseif (strlen($password) < 4) {
+                    $errors['password'] = 'Password must be at least 4 characters';
+                }
+                
+                // Validate confirm password
+                if (empty($confirm_password)) {
+                    $errors['confirm_password'] = 'Please confirm password';
+                } elseif ($password !== $confirm_password) {
+                    $errors['confirm_password'] = 'Passwords do not match';
+                }
+                
+                // If there are validation errors, return them
+                if (!empty($errors)) {
+                    echo json_encode([
+                        'success' => false,
+                        'errors' => $errors
+                    ]);
+                    exit;
+                }
+                
+                // Generate userID for admin
+                $userID = $this->generateUserID('admin');
+                
+                // Prepare user data
+                $userData = [
+                    'userID' => $userID,
+                    'name' => $name,
+                    'email' => $email,
+                    'password' => password_hash($password, PASSWORD_DEFAULT),
+                    'role' => 'admin',
+                    'nic' => $nic,
+                    'mobile' => $mobile,
+                    'address' => $address,
+                    'additional_info' => null  // Not storing permissions here anymore
+                ];
+                
+                // Create admin user
+                if ($this->userModel->register($userData)) {
+                    // Get the created user ID
+                    $createdUserId = $this->adminModel->getLastInsertId();
+                    
+                    // Insert permissions into user_permissions table
+                    $this->adminModel->addUserPermissions($createdUserId, $permissions);
+                    
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Admin created successfully'
+                    ]);
+                } else {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Failed to create admin. Please try again.'
+                    ]);
+                }
+                
+            } catch (Exception $e) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Server error: ' . $e->getMessage()
+                ]);
+            }
+            exit;
+        }
+    }
+
     private function generateUserID($role) {
         // Define prefix based on role
         $prefix = '';
@@ -1351,6 +1477,30 @@ public function rejectLeave($id) {
             echo json_encode(['success' => false, 'message' => 'User not found']);
         }
         exit;
+    }
+
+    public function getPreviewUserID($role) {
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            // Clean all output buffers
+            while (ob_get_level()) ob_end_clean();
+            
+            header('Content-Type: application/json; charset=utf-8');
+            
+            try {
+                $userID = $this->generateUserID($role);
+                
+                echo json_encode([
+                    'success' => true,
+                    'userID' => $userID
+                ]);
+            } catch (Exception $e) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Error generating userID: ' . $e->getMessage()
+                ]);
+            }
+            exit;
+        }
     }
 
     public function getAdmins() {

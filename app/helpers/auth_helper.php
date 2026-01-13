@@ -78,11 +78,19 @@ function isCareTaker() {
 }
 
 /**
- * Get current user ID
+ * Get current user ID (primary key)
  * @return int|null
  */
 function getCurrentUserId() {
     return $_SESSION['user_id'] ?? null;
+}
+
+/**
+ * Get current user UserID (string like ADMIN001)
+ * @return string|null
+ */
+function getCurrentUserUserID() {
+    return $_SESSION['user_userID'] ?? null;
 }
 
 /**

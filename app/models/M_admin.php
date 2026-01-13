@@ -601,6 +601,20 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->resultSet();
     }
 
+    // Add permissions for a user
+    public function addUserPermissions($userId, $permissions) {
+        if (!empty($permissions) && is_array($permissions)) {
+            foreach ($permissions as $permission) {
+                $this->db->query("INSERT INTO user_permissions (user_id, permission) VALUES (:user_id, :permission)");
+                $this->db->bind(':user_id', $userId);
+                $this->db->bind(':permission', $permission);
+                $this->db->execute();
+            }
+            return true;
+        }
+        return false;
+    }
+
     // Get user by userID
     public function getUserByID($userID) {
         $this->db->query("

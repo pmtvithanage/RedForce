@@ -34,6 +34,124 @@
     </div>
   </div>
 
+  <?php if (isset($_SESSION['user_userID']) && $_SESSION['user_userID'] === 'ADMIN001'): ?>
+  <!-- Add Admin Section (Super Admin Only) -->
+  <div class="section add-admin">
+    <h2>Add New Admin</h2>
+
+    <!-- Success Message (hidden by default) -->
+    <div id="adminSuccessMessage" class="success-message" style="display: none;">
+      <span class="success-icon">✅</span>
+      <span class="success-text">Admin created successfully!</span>
+    </div>
+
+    <form id="addAdminForm" method="POST" action="<?php echo URL_ROOT; ?>/admin/createAdmin">
+      <div class="form-content">
+        <div class="photo-upload">
+          <div class="upload-area" id="adminUploadArea" tabindex="0" role="button" aria-label="Upload profile photo">
+            <span>Upload Profile Photo</span>
+            <input type="file" id="adminProfilePhoto" accept="image/*" hidden>
+          </div>
+          <div class="preview-image" id="adminPreviewImage" style="display: none;">
+            <img id="adminPreviewImg" src="" alt="Profile preview">
+            <button type="button" class="remove-photo" id="adminRemovePhoto" aria-label="Remove photo">×</button>
+          </div>
+        </div>
+
+        <div class="form-fields">
+          <div class="input-group">
+            <input type="text" id="adminName" name="name" placeholder="Full Name" required>
+            <span class="error-message" id="adminNameError"></span>
+          </div>
+          <div class="input-group">
+            <input type="text" id="adminUserID" name="userID" placeholder="User ID (Auto-generated)" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+          </div>
+          <div class="input-group">
+            <input type="text" id="adminNIC" name="nic" placeholder="NIC" required>
+          </div>
+          <div class="input-group">
+            <input type="email" id="adminEmail" name="email" placeholder="Email" required>
+            <span class="error-message" id="adminEmailError"></span>
+          </div>
+          <div class="input-group">
+            <input type="tel" id="adminMobile" name="mobile" placeholder="Mobile Number" required>
+          </div>
+          <div class="input-group">
+            <input type="text" id="adminAddress" name="address" placeholder="Address">
+          </div>
+          <div class="input-group">
+            <input type="password" id="adminPassword" name="password" placeholder="Password" required>
+            <span class="error-message" id="adminPasswordError"></span>
+          </div>
+          <div class="input-group">
+            <input type="password" id="adminConfirmPassword" name="confirm_password" placeholder="Confirm Password" required>
+            <span class="error-message" id="adminConfirmPasswordError"></span>
+          </div>
+
+          <!-- Admin Permissions -->
+          <div class="permissions-section">
+            <h4>Admin Permissions</h4>
+            <div class="permissions-grid">
+              <div class="permission-item">
+                <label for="perm_mobile_rider">Add Mobile Riders
+                  <input type="checkbox" name="permissions[]" value="add_mobile_rider" id="perm_mobile_rider" checked>
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_client">Add Clients
+                  <input type="checkbox" name="permissions[]" value="add_client" id="perm_client" checked>
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_caretaker">Add Caretakers
+                  <input type="checkbox" name="permissions[]" value="add_caretaker" id="perm_caretaker">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_supervisor">Add Supervisors
+                  <input type="checkbox" name="permissions[]" value="add_supervisor" id="perm_supervisor">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_premise_officer">Add Premise Officers
+                  <input type="checkbox" name="permissions[]" value="add_premise_officer" id="perm_premise_officer">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_advertisements">Manage Advertisements
+                  <input type="checkbox" name="permissions[]" value="manage_advertisements" id="perm_advertisements">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_reports">View Reports
+                  <input type="checkbox" name="permissions[]" value="view_reports" id="perm_reports">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+              <div class="permission-item">
+                <label for="perm_scheduling">Manage Scheduling
+                  <input type="checkbox" name="permissions[]" value="manage_scheduling" id="perm_scheduling">
+                  <div class="toggle-switch"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="create-btn">Create Admin</button>
+      </div>
+    </form>
+  </div>
+  <?php endif; ?>
+
   <!-- Create User Section -->
   <div class="section create-user">
     <h2>Create User</h2>
@@ -78,7 +196,9 @@
           <div class="input-group">
             <select id="userRole" name="role" required>
               <option value="">Select Role</option>
-              <option value="admin">Admin</option>
+              <?php if (isset($_SESSION['user_userID']) && $_SESSION['user_userID'] === 'ADMIN001'): ?>
+                <option value="admin">Admin</option>
+              <?php endif; ?>
               <option value="client">Client</option>
               <option value="mobile rider">Mobile Rider</option>
               <option value="caretaker">Caretaker</option>

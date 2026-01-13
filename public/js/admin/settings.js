@@ -11,6 +11,20 @@ document.addEventListener("DOMContentLoaded", function () {
   const roleSpecificFields = document.getElementById("roleSpecificFields");
   const additionalFields = document.getElementById("additionalFields");
 
+  // Admin Form Elements (only if they exist)
+  const adminUploadArea = document.getElementById("adminUploadArea");
+  const adminProfilePhotoInput = document.getElementById("adminProfilePhoto");
+  const adminPreviewImage = document.getElementById("adminPreviewImage");
+  const adminPreviewImg = document.getElementById("adminPreviewImg");
+  const adminRemovePhotoBtn = document.getElementById("adminRemovePhoto");
+  const addAdminForm = document.getElementById("addAdminForm");
+  const adminUserIDField = document.getElementById("adminUserID");
+
+  // Load preview userID for admin form
+  if (adminUserIDField) {
+    fetchPreviewUserID('admin');
+  }
+
   // Image Upload Functionality
   uploadArea.addEventListener("click", function () {
     profilePhotoInput.click();
@@ -65,6 +79,63 @@ document.addEventListener("DOMContentLoaded", function () {
     uploadArea.style.display = "flex";
     profilePhotoInput.value = "";
   });
+
+  // Admin Image Upload Functionality (only if elements exist)
+  if (adminUploadArea && adminProfilePhotoInput && adminPreviewImage && adminPreviewImg && adminRemovePhotoBtn) {
+    adminUploadArea.addEventListener("click", function () {
+      adminProfilePhotoInput.click();
+    });
+
+    adminUploadArea.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      adminUploadArea.style.borderColor = "#ff5252";
+      adminUploadArea.style.background = "#ffe6e6";
+    });
+
+    adminUploadArea.addEventListener("dragleave", function (e) {
+      e.preventDefault();
+      adminUploadArea.style.borderColor = "#ff6b6b";
+      adminUploadArea.style.background = "#fff5f5";
+    });
+
+    adminUploadArea.addEventListener("drop", function (e) {
+      e.preventDefault();
+      adminUploadArea.style.borderColor = "#ff6b6b";
+      adminUploadArea.style.background = "#fff5f5";
+
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleAdminImageUpload(files[0]);
+      }
+    });
+
+    adminProfilePhotoInput.addEventListener("change", function (e) {
+      if (e.target.files.length > 0) {
+        handleAdminImageUpload(e.target.files[0]);
+      }
+    });
+
+    function handleAdminImageUpload(file) {
+      if (!file.type.startsWith("image/")) {
+        showNotification("Please select an image file", "error");
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        adminPreviewImg.src = e.target.result;
+        adminUploadArea.style.display = "none";
+        adminPreviewImage.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    adminRemovePhotoBtn.addEventListener("click", function () {
+      adminPreviewImage.style.display = "none";
+      adminUploadArea.style.display = "flex";
+      adminProfilePhotoInput.value = "";
+    });
+  }
 
   // Role-specific fields
   userRoleSelect.addEventListener("change", function () {
@@ -561,8 +632,86 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 
+  // Admin Form Submission (only if form exists)
+  if (addAdminForm) {
+    addAdminForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Clear previous errors
+      clearAdminErrors();
+
+      // Get form data
+      const formData = new FormData(this);
+
+      // Show loading state
+      const submitBtn = addAdminForm.querySelector(".create-btn");
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Creating...";
+      submitBtn.disabled = true;
+
+      // Submit via AJAX
+      fetch(this.action, {
+        method: "POST",
+        body: formData,
+      })
+        .then((response) => {
+          console.log("Admin Response status:", response.status);
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text();
+        })
+        .then((text) => {
+          console.log("Raw admin response:", text);
+          try {
+            return JSON.parse(text);
+          } catch (e) {
+            console.error("Failed to parse JSON:", e);
+            console.error("Response text:", text);
+            throw new Error("Invalid JSON response from server");
+          }
+        })
+        .then((data) => {
+          console.log("Parsed admin data:", data);
+          if (data.success) {
+            showAdminSuccessMessage();
+            addAdminForm.reset();
+            if (adminPreviewImage) adminPreviewImage.style.display = "none";
+            if (adminUploadArea) adminUploadArea.style.display = "flex";
+
+            // Refresh page to show new admin
+            setTimeout(() => {
+              location.reload();
+            }, 2000);
+          } else {
+            if (data.errors) {
+              displayAdminErrors(data.errors);
+            } else if (data.message) {
+              showNotification(data.message, "error");
+            } else {
+              showNotification("Error creating admin", "error");
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+          showNotification("Error creating admin: " + error.message, "error");
+        })
+        .finally(() => {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        });
+    });
+  }
+
   function clearErrors() {
     document.querySelectorAll(".error-message").forEach((el) => {
+      el.textContent = "";
+    });
+  }
+
+  function clearAdminErrors() {
+    document.querySelectorAll("#addAdminForm .error-message").forEach((el) => {
       el.textContent = "";
     });
   }
@@ -576,6 +725,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  function displayAdminErrors(errors) {
+    for (const [field, message] of Object.entries(errors)) {
+      const errorElement = document.getElementById("admin" + field.charAt(0).toUpperCase() + field.slice(1) + "Error");
+      if (errorElement && message) {
+        errorElement.textContent = message;
+      }
+    }
+  }
+
   function showSuccessMessage() {
     const successMessage = document.getElementById("successMessage");
     successMessage.style.display = "block";
@@ -583,6 +741,17 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => {
       successMessage.style.display = "none";
     }, 5000);
+  }
+
+  function showAdminSuccessMessage() {
+    const successMessage = document.getElementById("adminSuccessMessage");
+    if (successMessage) {
+      successMessage.style.display = "block";
+
+      setTimeout(() => {
+        successMessage.style.display = "none";
+      }, 5000);
+    }
   }
 
   function isValidEmail(email) {
@@ -1056,5 +1225,19 @@ document.addEventListener("DOMContentLoaded", function () {
       styleElement.textContent = modalStyles;
       document.head.appendChild(styleElement);
     }
+  }
+
+  // Function to fetch and display preview userID
+  function fetchPreviewUserID(role) {
+    fetch(`${window.location.origin}/RedForce/admin/getPreviewUserID/${role}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.success && adminUserIDField) {
+          adminUserIDField.value = data.userID;
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching preview userID:', error);
+      });
   }
 });
