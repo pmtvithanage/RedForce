@@ -237,5 +237,27 @@ class M_supervisor {
         ');
         return $this->db->resultSet();
     }
+
+    // Get total unique officers in the system
+    public function getTotalOfficersCount($supervisor_id = null) {
+        if ($supervisor_id) {
+            // Get unique officers who have attendance records under this supervisor
+            $this->db->query('
+                SELECT COUNT(DISTINCT officer_id) as total
+                FROM officer_attendance
+                WHERE supervisor_id = :supervisor_id
+            ');
+            $this->db->bind(':supervisor_id', $supervisor_id);
+        } else {
+            // Get all unique officers
+            $this->db->query('
+                SELECT COUNT(DISTINCT officer_id) as total
+                FROM officer_attendance
+            ');
+        }
+        
+        $result = $this->db->single();
+        return $result->total ?? 0;
+    }
 }
 ?>

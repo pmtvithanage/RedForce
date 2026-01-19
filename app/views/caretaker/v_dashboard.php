@@ -22,28 +22,28 @@
                         <div class="stat-card purple">
                             <div class="stat-icon"><span class="material-icons">groups</span></div>
                             <div class="stat-text">
-                                <div class="stat-value">0</div>
+                                <div class="stat-value"><?php echo $data['stats']['total_officers'] ?? 0; ?></div>
                                 <div class="stat-label">Total Officers</div>
                             </div>
                         </div>
                         <div class="stat-card green">
                             <div class="stat-icon"><span class="material-icons">person</span></div>
                             <div class="stat-text">
-                                <div class="stat-value">0</div>
+                                <div class="stat-value"><?php echo $data['stats']['on_duty'] ?? 0; ?></div>
                                 <div class="stat-label">On Duty</div>
                             </div>
                         </div>
                         <div class="stat-card yellow">
                             <div class="stat-icon"><span class="material-icons">verified_user</span></div>
                             <div class="stat-text">
-                                <div class="stat-value">0</div>
+                                <div class="stat-value"><?php echo $data['stats']['active'] ?? 0; ?></div>
                                 <div class="stat-label">Active</div>
                             </div>
                         </div>
                         <div class="stat-card red">
                             <div class="stat-icon"><span class="material-icons">report_problem</span></div>
                             <div class="stat-text">
-                                <div class="stat-value">0</div>
+                                <div class="stat-value"><?php echo $data['stats']['incidents'] ?? 0; ?></div>
                                 <div class="stat-label">Incidents</div>
                             </div>
                         </div>
