@@ -34,6 +34,9 @@ class Supervisor extends Controller {
             'late' => 0
         ];
         
+        // Get total unique officers count
+        $totalOfficers = 0;
+        
         if ($supervisor_id) {
             // Get today's date
             $today = date('Y-m-d');
@@ -41,15 +44,20 @@ class Supervisor extends Controller {
             // Fetch attendance records for today
             $todayAttendance = $this->supervisorModel->getAttendanceRecords($supervisor_id, ['date' => $today]);
             
+            // Get total unique officers count
+            $totalOfficers = $this->supervisorModel->getTotalOfficersCount($supervisor_id);
+            
             // Get attendance statistics
             $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
             if ($stats) {
                 $attendanceStats = [
-                    'total' => $stats->total ?? 0,
+                    'total' => $totalOfficers, // Use total unique officers instead of today's count
                     'present' => $stats->present ?? 0,
                     'absent' => $stats->absent ?? 0,
                     'late' => $stats->late ?? 0
                 ];
+            } else {
+                $attendanceStats['total'] = $totalOfficers;
             }
         }
 
@@ -62,13 +70,6 @@ class Supervisor extends Controller {
         $this->view('supervisor/v_dashboard', $data);
     }
 
-    // officers
-    public function officers() {
-        $data = [
-            'title' => 'Officers',
-        ];
-        $this->view('supervisor/v_officers', $data);
-    }
     // Messages
     public function messages() {
         $data = [

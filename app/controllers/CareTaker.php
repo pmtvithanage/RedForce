@@ -17,12 +17,16 @@ class Caretaker extends Controller {
 
     public function dashboard() {
         $role = 'Care-Taker';
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+        $stats = $this->caretakerModel->getDashboardStats($caretaker_id);
 
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Dashboard',
-            'advertisements' => $advertisements
+            'advertisements' => $advertisements,
+            'stats' => $stats
         ];
         $this->view('caretaker/v_dashboard', $data);
     }
