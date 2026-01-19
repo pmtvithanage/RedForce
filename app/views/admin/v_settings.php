@@ -238,6 +238,9 @@
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
+<script>
+  const URL_ROOT = '<?php echo URL_ROOT; ?>';
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/admin/settings.js"></script>
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>

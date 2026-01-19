@@ -1379,11 +1379,14 @@ public function rejectLeave($id) {
                 
                 // Create admin user
                 if ($this->userModel->register($userData)) {
-                    // Get the created user ID
-                    $createdUserId = $this->adminModel->getLastInsertId();
+                    // Get the created user from database using the generated userID
+                    $user = $this->adminModel->getUserByID($userID);
+                    $createdUserId = $user->id ?? null;
                     
                     // Insert permissions into user_permissions table
-                    $this->adminModel->addUserPermissions($createdUserId, $permissions);
+                    if ($createdUserId) {
+                        $this->adminModel->addUserPermissions($createdUserId, $permissions);
+                    }
                     
                     echo json_encode([
                         'success' => true,
@@ -1501,6 +1504,183 @@ public function rejectLeave($id) {
             }
             exit;
         }
+    }
+
+    public function updateAdminProfile($userID) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('admin/settings');
+            return;
+        }
+        
+        try {
+            // Get POST data
+            $name = $this->sanitizeInput($_POST['name'] ?? '');
+            $email = $this->sanitizeInput($_POST['email'] ?? '');
+            $nic = $this->sanitizeInput($_POST['nic'] ?? '');
+            $mobile = $this->sanitizeInput($_POST['mobile'] ?? '');
+            $address = $this->sanitizeInput($_POST['address'] ?? '');
+            $status = $this->sanitizeInput($_POST['status'] ?? 'active');
+            
+            // Validate required fields
+            if (empty($name) || empty($email)) {
+                flash('msg', 'Name and Email are required', 'alert-danger');
+                redirect('admin/settings');
+                return;
+            }
+            
+            // Get user by userID to get the database ID
+            $user = $this->adminModel->getUserByID($userID);
+            
+            if (!$user) {
+                flash('msg', 'Admin not found', 'alert-danger');
+                redirect('admin/settings');
+                return;
+            }
+            
+            // Validate email is not already taken by another user
+            if ($user->email !== $email && $this->userModel->findUserByEmail($email)) {
+                flash('msg', 'Email is already taken', 'alert-danger');
+                redirect('admin/settings');
+                return;
+            }
+            
+            // Update user table
+            $this->db = new Database();
+            $this->db->query("UPDATE Users SET name = :name, email = :email, status = :status WHERE userID = :userID");
+            $this->db->bind(':name', $name);
+            $this->db->bind(':email', $email);
+            $this->db->bind(':status', $status);
+            $this->db->bind(':userID', $userID);
+            
+            if (!$this->db->execute()) {
+                flash('msg', 'Failed to update user information', 'alert-danger');
+                redirect('admin/settings');
+                return;
+            }
+            
+            // Update user_details table
+            $this->db->query("UPDATE user_details SET nic = :nic, mobile = :mobile, address = :address WHERE user_id = :user_id");
+            $this->db->bind(':nic', $nic);
+            $this->db->bind(':mobile', $mobile);
+            $this->db->bind(':address', $address);
+            $this->db->bind(':user_id', $user->id);
+            
+            if (!$this->db->execute()) {
+                flash('msg', 'Failed to update user details', 'alert-danger');
+                redirect('admin/settings');
+                return;
+            }
+            
+            flash('msg', 'Admin profile updated successfully', 'alert-success');
+            redirect('admin/settings');
+            
+        } catch (Exception $e) {
+            flash('msg', 'Error: ' . $e->getMessage(), 'alert-danger');
+            redirect('admin/settings');
+        }
+    }
+
+    public function getAdminPermissions($userID) {
+        header('Content-Type: application/json');
+        
+        try {
+            // Get user details by userID
+            $user = $this->adminModel->getUserByID($userID);
+            
+            if (!$user) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Admin not found'
+                ]);
+                exit;
+            }
+            
+            // Get permissions for this user using the model method
+            $permissions = $this->adminModel->getAdminPermissionsByUserId($user->id);
+            
+            echo json_encode([
+                'success' => true,
+                'permissions' => $permissions
+            ]);
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+        exit;
+    }
+
+    /**
+     * Delete a user (admin or regular user)
+     * Only ADMIN001 can delete admins
+     */
+    public function deleteUser($userID) {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Invalid request method'
+            ]);
+            exit;
+        }
+        
+        try {
+            // Get the user to check their role
+            $user = $this->adminModel->getUserByID($userID);
+            
+            if (!$user) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'User not found'
+                ]);
+                exit;
+            }
+            
+            // If deleting an admin, check if current user is ADMIN001
+            if ($user->role === 'admin') {
+                $currentUserID = $_SESSION['user_userID'] ?? null;
+                
+                if ($currentUserID !== 'ADMIN001') {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Unauthorized: Only Super Admin can delete admins'
+                    ]);
+                    exit;
+                }
+                
+                // Prevent deletion of ADMIN001 itself
+                if ($userID === 'ADMIN001') {
+                    echo json_encode([
+                        'success' => false,
+                        'message' => 'Cannot delete Super Admin account'
+                    ]);
+                    exit;
+                }
+            }
+            
+            // Delete the user
+            if ($this->adminModel->deleteUser($userID)) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'User deleted successfully'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'message' => 'Failed to delete user'
+                ]);
+            }
+            
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
+            ]);
+        }
+        exit;
     }
 
     public function getAdmins() {

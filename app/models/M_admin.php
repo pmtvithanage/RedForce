@@ -601,6 +601,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->resultSet();
     }
 
+    public function getAdminPermissionsByUserId($userId) {
+        $this->db->query("SELECT permission FROM user_permissions WHERE user_id = :user_id ORDER BY permission");
+        $this->db->bind(':user_id', $userId);
+        return $this->db->resultSet();
+    }
+
     // Add permissions for a user
     public function addUserPermissions($userId, $permissions) {
         if (!empty($permissions) && is_array($permissions)) {
