@@ -575,6 +575,8 @@ class Admin extends Controller {
                 'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
                 'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
                 'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+                'latitude' => $this->sanitizeInput($_POST['latitude'] ?? ''),
+                'longitude' => $this->sanitizeInput($_POST['longitude'] ?? ''),
 
                 'image_err' => '',
                 'site_name_err' => '',
@@ -652,6 +654,8 @@ class Admin extends Controller {
                 'site_address' => '',
                 'site_city' => '',
                 'phone_number' => '',
+                'latitude' => '',
+                'longitude' => '',
 
                 'image_err' => '',
                 'site_name_err' => '',
@@ -703,6 +707,8 @@ public function editSite($site_id){
             'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
             'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
             'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+            'latitude' => $this->sanitizeInput($_POST['latitude'] ?? ''),
+            'longitude' => $this->sanitizeInput($_POST['longitude'] ?? ''),
 
             'image_err' => '',
             'site_name_err' => '',
@@ -791,6 +797,8 @@ public function editSite($site_id){
             'site_address' => $existingSite->address, // Changed from address
             'site_city' => $existingSite->city,       // Changed from city
             'phone_number' => $existingSite->phone_number,
+            'latitude' => $existingSite->latitude ?? '',
+            'longitude' => $existingSite->longitude ?? '',
 
             'image_err' => '',
             'site_name_err' => '',
