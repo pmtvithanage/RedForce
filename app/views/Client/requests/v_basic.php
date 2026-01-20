@@ -37,6 +37,10 @@
                     <li><span class="material-icons">check_circle</span> Cost-effective security solution providing reliability and peace of mind</li>
                 </ul>
                 
+                <div class="package-note">
+                    <strong>Note:</strong> Officers are given only on a monthly basis.
+                </div>
+                
                 <div class="pricing-info">
                     <h3>LKR 30,000/=</h3>
                     <p class="pricing-note">/monthly (Night shift included)</p>
@@ -51,8 +55,20 @@
             <form method="POST" action="<?php echo URL_ROOT; ?>/client/submitPackageRequest">
                 <input type="hidden" name="package_name" value="Basic Package">
                 <input type="hidden" name="number_of_guards" value="2">
-                <input type="hidden" name="package_price" value="30000">
+                <input type="hidden" name="monthly_price" value="30000">
                 
+                <!-- Site Name -->
+                <div class="form-group">
+                    <label for="siteName">Site name</label>
+                    <input type="text" id="siteName" name="site_name" required>
+                </div>
+
+                <!-- City -->
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" required>
+                </div>
+
                 <!-- Site Address -->
                 <div class="form-group">
                     <label for="siteAddress">Enter site address</label>
@@ -65,10 +81,19 @@
                     <input type="date" id="startDate" name="start_date" min="<?php echo date('Y-m-d'); ?>" required>
                 </div>
 
-                <!-- End Date -->
+                <!-- Number of Months -->
                 <div class="form-group">
-                    <label for="endDate">End date</label>
-                    <input type="date" id="endDate" name="end_date" min="<?php echo date('Y-m-d'); ?>" required>
+                    <label for="numMonths">How many months of service is needed?</label>
+                    <input type="number" id="numMonths" name="num_months" min="1" max="60" value="1" required>
+                </div>
+
+                <!-- Total Price Display -->
+                <div class="form-group">
+                    <label>Total Price</label>
+                    <div class="price-display">
+                        <span class="total-price">LKR <span id="totalPrice">30,000</span>/=</span>
+                        <small class="price-breakdown">LKR 30,000 × <span id="monthsDisplay">1</span> month(s)</small>
+                    </div>
                 </div>
 
                 <!-- Additional Comments -->
@@ -91,6 +116,23 @@
         </div>
     </div>
 </div>
+
+<script>
+// Price calculation for Basic Package
+const monthlyPrice = 30000;
+const numMonthsInput = document.getElementById('numMonths');
+const totalPriceDisplay = document.getElementById('totalPrice');
+const monthsDisplay = document.getElementById('monthsDisplay');
+
+function updatePrice() {
+    const numMonths = parseInt(numMonthsInput.value) || 1;
+    const totalPrice = monthlyPrice * numMonths;
+    totalPriceDisplay.textContent = totalPrice.toLocaleString();
+    monthsDisplay.textContent = numMonths;
+}
+
+numMonthsInput.addEventListener('input', updatePrice);
+</script>
 
 </main>
 </div>

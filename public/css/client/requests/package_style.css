@@ -81,6 +81,23 @@
     flex-shrink: 0;
 }
 
+/* Package Note */
+.package-note {
+    background: #fff8e1;
+    border-left: 4px solid #ffa726;
+    padding: 15px 20px;
+    margin: 25px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.package-note strong {
+    color: #f57c00;
+    font-weight: 600;
+}
+
 /* Pricing Info */
 .pricing-info {
     background: linear-gradient(135deg, #f8f9fa, #e9ecef);
@@ -155,6 +172,29 @@
 .form-group textarea {
     resize: vertical;
     min-height: 80px;
+}
+
+/* Price Display */
+.price-display {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.total-price {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #a40000;
+    margin-bottom: 8px;
+}
+
+.price-breakdown {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
 }
 
 /* Form Actions */
