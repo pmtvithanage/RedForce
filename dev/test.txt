@@ -61,3 +61,13 @@ sudo mkdir -p  /opt/lampp/htdocs/RedForce/public/uploads/image
 sudo chown -R daemon:daemon  /opt/lampp/htdocs/RedForce/public/uploads/image 
 sudo chmod -R 755  /opt/lampp/htdocs/RedForce/public/uploads/image 
 
+
+
+
+
+
+
+
+
+
+google map api = AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog

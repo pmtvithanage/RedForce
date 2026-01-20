@@ -316,6 +316,11 @@ CREATE TABLE
 ALTER TABLE sites
 ADD COLUMN IF NOT EXISTS image VARCHAR(255);
 
+ALTER TABLE sites 
+ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8) NULL AFTER image,
+ADD COLUMN IF NOT EXISTS longitude DECIMAL(11, 8) NULL AFTER latitude;
+
+
 --================================================2025-12-3 End(Pasan)========================================
 
 CREATE TABLE
@@ -753,3 +758,4 @@ CREATE TABLE officer_site_assignments (
     CONSTRAINT fk_officer_assignment_officer FOREIGN KEY (officer_id) REFERENCES Users(id) ON DELETE CASCADE,
     CONSTRAINT fk_officer_assignment_assigner FOREIGN KEY (assigned_by) REFERENCES Users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

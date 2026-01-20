@@ -457,8 +457,8 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Add Site
     public function addSite($data){
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image) 
-                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name)");
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image, latitude, longitude) 
+                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name, :latitude, :longitude)");
         
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':site_name', $data['site_name']);
@@ -466,6 +466,8 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':latitude', !empty($data['latitude']) ? $data['latitude'] : null);
+        $this->db->bind(':longitude', !empty($data['longitude']) ? $data['longitude'] : null);
         
         if ($this->db->execute()) {
             return $this->db->lastInsertId(); // Return the new site ID
@@ -479,12 +481,14 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->execute();
     }
     public function updateSite($data){
-        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
+        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name, latitude = :latitude, longitude = :longitude WHERE id = :site_id");
         $this->db->bind(':site_name', $data['site_name']);
         $this->db->bind(':site_address', $data['site_address']);
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':latitude', !empty($data['latitude']) ? $data['latitude'] : null);
+        $this->db->bind(':longitude', !empty($data['longitude']) ? $data['longitude'] : null);
         $this->db->bind(':site_id', $data['site_id']);
 
         if ($this->db->execute()) {
