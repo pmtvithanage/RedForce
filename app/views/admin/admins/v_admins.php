@@ -256,7 +256,7 @@
                         <div class="detail-row">
                             <span class="detail-label">Status</span>
                             <span class="detail-value">
-                                <span class="admin-status status-active">Active</span>
+                                <span class="admin-status status-active"><?php echo htmlspecialchars($admin->status); ?></span>
                             </span>
                         </div>
                     </div>

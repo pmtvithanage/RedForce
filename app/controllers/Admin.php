@@ -1517,6 +1517,110 @@ public function rejectLeave($id) {
         ];
         $this->view('admin/admins/v_profile', $data);
     }
+
+    public function edit_profile($adminID) {
+        $existingAdmin = $this->adminModel->getAdmin($adminID);
+        if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
+            $data = [
+                
+                'title' => 'Admins',
+                'pageTitle' => 'Create Admin',
+
+                'image' => $_FILES['image'],
+                'image_name' => time(). '_' . $_FILES['image']['name'],
+
+                'name' => $this->sanitizeInput($_POST['name'] ?? ''),
+                'email' => $this->sanitizeInput($_POST['email'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+
+                'image_err' => '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+            ];
+
+            // Validate form
+            if(empty($data['image']['name'])){
+                $data['image_err'] = 'Please upload an image';
+            } elseif($data['image']['size'] > 0){
+                if(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/image/')){
+                    // Image uploaded successfully
+                     if(!empty($existingAdmin->profile_image)) {
+                        $oldImagePath = PUB_ROOT . '/uploads/image/' . $existingAdmin->profile_image;
+                        if(file_exists($oldImagePath)) {
+                            @unlink($oldImagePath);
+                    }
+                }
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                }
+            } else {
+            // Keep the current image
+            $data['image_name'] = $existingAdmin->profile_image;
+        }
+
+            if(empty($data['name'])){
+                $data['name_err'] = 'Please enter name';
+            }
+
+            if(empty($data['email'])){
+                $data['email_err'] = 'Please enter email';
+            }
+
+            if(empty($data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter phone number';
+            } elseif(!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])){
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Make sure there are no errors
+            if(empty($data['image_err']) && 
+            empty($data['name_err']) && 
+            empty($data['email_err']) && 
+            empty($data['phone_number_err'])){
+
+                // Insert admin and get the new admin ID
+                
+                
+                if($this->adminModel->editAdmin($data)){
+                    // Add activity log
+                    $title = " Admin Updated";
+                    $description = "Admin '" . $data['name'] . "' Updated";
+                    $type = "shift";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
+                    flash('msg', 'Admin Updated successfully', 'alert-success');
+                    redirect('admin/profile'); // Redirect properly
+                } else {
+                    flash('msg', 'Failed to update admin', 'alert-danger');
+                    $this->view('admin/admins/v_edit_profile',$data);
+                }
+            } else {
+                $this->view('admin/admins/v_edit_profile',$data);
+            }
+
+        } else {
+            $data = [
+                
+                'title' => 'Admins',
+                'pageTitle' => 'Add Admin',
+
+                'image' => '', 
+                'image_name' => $existingAdmin->profile_image,
+
+                'name' => $existingAdmin->name,
+                'email' => $existingAdmin->email,
+                'phone_number' => $existingAdmin->phone_number,
+
+                'image_err' => '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+            ];
+            
+            $this->view('admin/admins/v_create_admin', $data);
+        }
+    }
 // ---------------------------------------For all--------------------------------------//
 
     /**

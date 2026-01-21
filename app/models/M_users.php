@@ -24,6 +24,17 @@
             }
         }
 
+        public function isActive($userID){
+            $this->db->query("SELECT status FROM Users WHERE userID = :userID");
+            $this->db->bind(":userID", $userID);
+            $row = $this->db->single();
+
+            if ($this->db->rowCount() > 0) {
+                return $row->status === 'active'; // Return true if status is active
+            } else {
+                return false; // User not found
+            }
+        }
         //login user
         public function login($userID, $password) {
             $this->db->query("SELECT * FROM Users WHERE userID = :userID");
