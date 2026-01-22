@@ -111,6 +111,11 @@ $errorMessage = flash('request_error');
               </div>
 
               <div class="request-detail">
+                <span class="detail-label">District:</span>
+                <span class="detail-value"><?php echo htmlspecialchars($request->district ?? 'N/A'); ?></span>
+              </div>
+
+              <div class="request-detail">
                 <span class="detail-label">City:</span>
                 <span class="detail-value"><?php echo htmlspecialchars($request->city ?? 'N/A'); ?></span>
               </div>

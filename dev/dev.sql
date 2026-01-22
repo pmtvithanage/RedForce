@@ -827,6 +827,7 @@ CREATE TABLE IF NOT EXISTS package_requests (
     client_id INT NOT NULL,
     package_name VARCHAR(100) NOT NULL,
     site_name VARCHAR(255) NOT NULL,
+    district VARCHAR(100) NOT NULL,
     city VARCHAR(100) NOT NULL,
     site_address TEXT NOT NULL,
     start_date DATE NOT NULL,
