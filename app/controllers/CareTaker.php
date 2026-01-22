@@ -20,12 +20,16 @@ class Caretaker extends Controller {
 
     public function dashboard() {
         $role = 'Care-Taker';
+        $caretaker_id = $_SESSION['user_id'] ?? null;
+        
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
+        $stats = $this->caretakerModel->getDashboardStats($caretaker_id);
 
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Dashboard',
-            'advertisements' => $advertisements
+            'advertisements' => $advertisements,
+            'stats' => $stats
         ];
         $this->view('caretaker/v_dashboard', $data);
     }
@@ -43,6 +47,16 @@ class Caretaker extends Controller {
         $conversations = $this->messageModel->getConversations($user_id);
         $all_users = $this->messageModel->getAllUsers($user_id);
         $unread_count = $this->messageModel->getUnreadCount($user_id);
+
+        $data = [
+            'title' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users,
+            'unread_count' => $unread_count,
+            'current_recipient_id' => isset($_GET['with']) ? $_GET['with'] : null
+        ];
+        
+        $this->view('caretaker/v_messages', $data);
     }
         
     // public function messages() {

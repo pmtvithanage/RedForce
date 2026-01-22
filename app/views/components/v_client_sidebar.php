@@ -28,6 +28,7 @@
           <a class="menu-item <?php echo ($data['title'] === 'View Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">View Officers</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/requests"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Requests</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
+          <a class="menu-item <?php echo ($data['title'] === 'Equipment Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/equipmentRequests"><span class="icon"></span><span class="material-symbols-outlined">inventory</span><span class="label">Equipment Requests</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'View History') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/history"><span class="icon"></span><span class="material-symbols-outlined">history</span><span class="label">View History</span>
           <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
           
@@ -39,7 +40,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
+          <h1 class="page-title"><?php echo isset($data['pageTitle']) ? $data['pageTitle'] : (isset($data['title']) ? $data['title'] : 'Dashboard'); ?></h1>
 
           <div class="topbar-right">
 

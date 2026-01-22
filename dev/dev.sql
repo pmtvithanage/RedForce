@@ -31,6 +31,79 @@ CREATE TABLE IF NOT EXISTS
 
 INSERT INTO Users (userID, name, email, password, role)
 VALUES
+    (
+        'ADMIN001',
+        'System Administrator',
+        'admin@redforce.com',
+        '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm',
+        'admin'
+    ),
+    (
+        'SUP001',
+        'John Supervisor',
+        'supervisor@redforce.com',
+        '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m',
+        'supervisor'
+    ),
+    (
+        'PO001',
+        'Nuwan Perera',
+        'nuwan.perera@redforce.com',
+        '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC',
+        'premise officer'
+    ),
+    (
+        'PO002',
+        'Kasun Silva',
+        'kasun.silva@redforce.com',
+        '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W',
+        'premise officer'
+    ),
+    (
+        'MR001',
+        'Sanjaya Peris',
+        'sanjaya.peris@redforce.com',
+        '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm',
+        'mobile rider'
+    ),
+    (
+        'MR002',
+        'Ramesh Nuwan',
+        'ramesh.nuwan@redforce.com',
+        '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m',
+        'mobile rider'
+    ),
+    (
+        'CLIENT001',
+        'Peoples Bank',
+        'contact@peoplesbank.com',
+        '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC',
+        'client'
+    ),
+    (
+        'CLIENT002',
+        'Cargills PLC',
+        'security@cargills.com',
+        '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W',
+        'client'
+    ),
+    (
+        'CARETAKER001',
+        'Michael Johnson',
+        'johnson.michael@redforce.com',
+        '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm',
+        'caretaker'
+    );
+    
+CREATE TABLE IF NOT EXISTS recent_activities (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  activity_type VARCHAR(500) NOT NULL,
+  activity_titel VARCHAR(500),
+  activity_details TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+);
     ('ADMIN001', 'System Administrator', 'admin@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'admin'),
     ('SUP001', 'John Supervisor', 'supervisor@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 'supervisor'),
     ('PO001', 'Nuwan Perera', 'nuwan.perera@redforce.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 'premise officer'),
@@ -49,7 +122,7 @@ ON DUPLICATE KEY UPDATE
 
 -- Advertisements table
 CREATE TABLE
-    advertisements (
+    IF NOT EXISTS advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
         image_path VARCHAR(500) NOT NULL,
@@ -257,6 +330,11 @@ CREATE TABLE
 
 ALTER TABLE sites
 ADD COLUMN IF NOT EXISTS image VARCHAR(255);
+
+ALTER TABLE sites 
+ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8) NULL AFTER image,
+ADD COLUMN IF NOT EXISTS longitude DECIMAL(11, 8) NULL AFTER latitude;
+
 
 -- ================================================2025-12-3 End(Pasan)========================================
 
@@ -739,3 +817,59 @@ CREATE TABLE IF NOT EXISTS mobile_rider_leave_requests (
 );
 
 COMMIT;
+
+
+-- ============================================
+-- Package Requests Table (for Client Package System)
+-- ============================================
+CREATE TABLE IF NOT EXISTS package_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_id INT NOT NULL,
+    package_name VARCHAR(100) NOT NULL,
+    site_name VARCHAR(255) NOT NULL,
+    city VARCHAR(100) NOT NULL,
+    site_address TEXT NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    number_of_guards INT NOT NULL,
+    day_guards INT DEFAULT NULL,
+    night_guards INT DEFAULT NULL,
+    package_price DECIMAL(10,2) NOT NULL,
+    comments TEXT DEFAULT NULL,
+    status ENUM('Pending', 'Approved', 'Rejected') DEFAULT 'Pending',
+    admin_notes TEXT DEFAULT NULL,
+    approved_by INT DEFAULT NULL,
+    approved_at DATETIME DEFAULT NULL,
+    submitted_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (client_id) REFERENCES Users(id) ON DELETE CASCADE,
+    FOREIGN KEY (approved_by) REFERENCES Users(id) ON DELETE SET NULL,
+    INDEX idx_client (client_id),
+    INDEX idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create officer_site_assignments table
+
+DROP TABLE IF EXISTS officer_site_assignments;
+
+CREATE TABLE officer_site_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    site_id BIGINT UNSIGNED NOT NULL,
+    officer_id INT NOT NULL,
+    shift_type ENUM('Day', 'Night', 'Full Time', 'Flexible') DEFAULT 'Full Time',
+    assignment_start DATE NOT NULL,
+    assignment_end DATE DEFAULT NULL,
+    status ENUM('Active', 'Completed', 'Cancelled') DEFAULT 'Active',
+    assigned_by INT DEFAULT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_site (site_id),
+    KEY idx_officer (officer_id),
+    KEY idx_status (status),
+    CONSTRAINT fk_officer_assignment_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_officer FOREIGN KEY (officer_id) REFERENCES Users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_assigner FOREIGN KEY (assigned_by) REFERENCES Users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
