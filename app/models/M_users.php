@@ -1,9 +1,9 @@
 <?php
     class M_users {
         private $db;
-        public function __construct() {
-            // Initialize the database connection
-            $this->db = new Database();
+        public function __construct($db = null) {
+            // Allow dependency injection for testing; fall back to real Database otherwise
+            $this->db = $db ?: new Database();
         }
 
         public function getUsers() {
@@ -24,6 +24,17 @@
             }
         }
 
+        public function isActive($userID){
+            $this->db->query("SELECT status FROM Users WHERE userID = :userID");
+            $this->db->bind(":userID", $userID);
+            $row = $this->db->single();
+
+            if ($this->db->rowCount() > 0) {
+                return $row->status === 'active'; // Return true if status is active
+            } else {
+                return false; // User not found
+            }
+        }
         //login user
         public function login($userID, $password) {
             $this->db->query("SELECT * FROM Users WHERE userID = :userID");
@@ -262,7 +273,7 @@
             } catch (Exception $e) {
                 // Rollback on error
                 $this->db->rollBack();
-                error_log("User registration error: " . $e->getMessage());
+               // error_log("User registration error: " . $e->getMessage());
                 return false;
             }
         }

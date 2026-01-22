@@ -8,7 +8,6 @@
     <div class="equipment-container">
         <!-- Page Header -->
         <div class="page-header">
-            <h1><span class="material-symbols-outlined">rate_review</span> <?php echo $data['pageTitle']; ?></h1>
             <a href="<?php echo URL_ROOT; ?>/supervisor/equipmentRequests" class="btn-secondary">
                 <span class="material-symbols-outlined">arrow_back</span> Back to List
             </a>
