@@ -359,226 +359,312 @@
       </div>
     </div>
 
-    <!-- DUTY POINTS SECTION -->
+    <!-- ASSIGN OFFICERS SECTION -->
     <div class="duty-points-section">
       <div class="section-header">
-        <h2 class="section-title" >Duty Points</h2>
-        <button class="secondary-btn add-duty-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/adddutypoint'">
-          <span class="material-symbols-outlined" style="font-size:18px;" >add</span>
-          Add Duty Point
+        <h2 class="section-title">Assign Officers</h2>
+        <button class="secondary-btn add-duty-btn" id="assignOfficerBtn">
+          <span class="material-symbols-outlined" style="font-size:18px;">add</span>
+          Assign Officer
         </button>
       </div>
 
-      <div class="duty-cards-container">
-        <!-- Duty Card 1 -->
-        <div class="duty-card">
-          <div class="duty-card-header">
-            <h3 class="duty-location">Main Entrance</h3>
-            <span class="duty-status status-active">Active</span>
+      <!-- Filter Section -->
+      <div class="filter-section" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom: 15px; color: #333;">Filter Officers</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Location</label>
+            <select id="locationFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option value="same-city">Same City (<?php echo htmlspecialchars($data['site']->city); ?>)</option>
+              <option value="same-district">Same District</option>
+              <option value="all">All Locations</option>
+            </select>
           </div>
-          
-          <div class="duty-shifts">
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #f59e0b;">wb_sunny</span>
-                <span class="shift-title">Day Shift (08:00 - 20:00)</span>
-              </div>
-              
-              <!-- Day Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar1.jpg" alt="Day Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">John Smith</div>
-                  <div class="supervisor-role">Day Shift Supervisor</div>
-                </div>
-              </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar2.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Michael Brown</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar3.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Sarah Johnson</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar4.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Robert Davis</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #1e40af;">dark_mode</span>
-                <span class="shift-title">Night Shift (20:00 - 08:00)</span>
-              </div>
-              
-              <!-- Night Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar5.jpg" alt="Night Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">Jennifer Wilson</div>
-                  <div class="supervisor-role">Night Shift Supervisor</div>
-                </div>
-              </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar6.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">David Miller</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar7.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Emma Thompson</span>
-                </div>
-              </div>
-            </div>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Availability</label>
+            <select id="availabilityFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option value="available">Available Only</option>
+              <option value="assigned">Currently Assigned</option>
+              <option value="all">All Officers</option>
+            </select>
           </div>
-          
-          <div class="duty-card-footer">
-            <button class="action-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/editassignment'">Edit Assignment</button>
+          <div>
+            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Employment Status</label>
+            <select id="statusFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+              <option value="Active">Active</option>
+              <option value="On Leave">On Leave</option>
+              <option value="all">All Status</option>
+            </select>
           </div>
         </div>
-        
-        <!-- Duty Card 2 -->
-        <div class="duty-card">
-          <div class="duty-card-header">
-            <h3 class="duty-location">Parking Area</h3>
-            <span class="duty-status status-active">Active</span>
-          </div>
-          
-          <div class="duty-shifts">
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #f59e0b;">wb_sunny</span>
-                <span class="shift-title">Day Shift (08:00 - 20:00)</span>
-              </div>
-              
-              <!-- Day Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar8.jpg" alt="Day Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">James Anderson</div>
-                  <div class="supervisor-role">Day Shift Supervisor</div>
-                </div>
-              </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar9.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Lisa Garcia</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar10.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Thomas White</span>
-                </div>
-              </div>
-            </div>
-            
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #1e40af;">dark_mode</span>
-                <span class="shift-title">Night Shift (20:00 - 08:00)</span>
-              </div>
-              
-              <!-- Night Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar11.jpg" alt="Night Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">Olivia Martinez</div>
-                  <div class="supervisor-role">Night Shift Supervisor</div>
-                </div>
-              </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar12.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Daniel Clark</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar13.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Sophia Rodriguez</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="duty-card-footer">
-            <button class="action-btn">Edit Assignment</button>
-          </div>
+        <div style="margin-top: 15px;">
+          <button id="applyFilters" class="secondary-btn" style="padding: 8px 20px;">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">filter_alt</span>
+            Apply Filters
+          </button>
+          <button id="resetFilters" class="secondary-btn" style="padding: 8px 20px; margin-left: 10px; background: #6c757d;">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">refresh</span>
+            Reset
+          </button>
         </div>
-        
-        <!-- Duty Card 3 -->
-        <div class="duty-card">
-          <div class="duty-card-header">
-            <h3 class="duty-location">West Wing</h3>
-            <span class="duty-status status-inactive">Inactive</span>
-          </div>
-          
-          <div class="duty-shifts">
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #f59e0b;">wb_sunny</span>
-                <span class="shift-title">Day Shift (08:00 - 20:00)</span>
-              </div>
-              
-              <!-- Day Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar14.jpg" alt="Day Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">William Lee</div>
-                  <div class="supervisor-role">Day Shift Supervisor</div>
-                </div>
-              </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar15.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Emily Taylor</span>
-                </div>
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar16.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Christopher Harris</span>
-                </div>
-              </div>
+      </div>
+
+      <!-- Officers List -->
+      <div id="officersList" class="duty-cards-container">
+        <!-- Officers will be loaded here via AJAX -->
+        <div style="text-align: center; padding: 40px; color: #666;">
+          <span class="material-symbols-outlined" style="font-size: 48px;">person_search</span>
+          <p style="margin-top: 10px;">Click "Apply Filters" to load officers</p>
+        </div>
+      </div>
+
+      <!-- Currently Assigned Officers -->
+      <div style="margin-top: 40px;">
+        <h3 style="margin-bottom: 20px; color: #333;">Currently Assigned Officers</h3>
+        <div id="assignedOfficersList" class="duty-cards-container">
+          <!-- Assigned officers will be loaded here -->
+          <?php if(empty($data['assigned_officers'])): ?>
+            <div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 8px;">
+              <span class="material-symbols-outlined" style="font-size: 48px;">badge</span>
+              <p style="margin-top: 10px;">No officers assigned to this site yet</p>
             </div>
-            
-            <div class="shift">
-              <div class="shift-header">
-                <span class="material-symbols-outlined shift-icon" style="color: #1e40af;">dark_mode</span>
-                <span class="shift-title">Night Shift (20:00 - 08:00)</span>
-              </div>
-              
-              <!-- Night Shift Supervisor -->
-              <div class="supervisor-info">
-                <img src="<?php echo URL_ROOT; ?>/img/avatar17.jpg" alt="Night Shift Supervisor" class="supervisor-avatar">
-                <div class="supervisor-details">
-                  <div class="supervisor-name">Matthew Walker</div>
-                  <div class="supervisor-role">Night Shift Supervisor</div>
+          <?php else: ?>
+            <?php foreach($data['assigned_officers'] as $officer): ?>
+              <div class="duty-card" style="border-left: 4px solid #4caf50;">
+                <div class="duty-card-header">
+                  <div>
+                    <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
+                    <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                      <?php echo htmlspecialchars($officer->officerID); ?> • 
+                      <?php echo htmlspecialchars($officer->city); ?>
+                    </p>
+                  </div>
+                  <?php 
+                    $shift = $officer->shift_type ?? 'Full Time';
+                    $badgeColor = match($shift) {
+                      'Day' => '#4caf50',
+                      'Night' => '#2196f3',
+                      'Full Time' => '#4caf50',
+                      'Flexible' => '#ff9800',
+                      default => '#4caf50'
+                    };
+                  ?>
+                  <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                    <?php echo htmlspecialchars($shift); ?>
+                  </span>
+                </div>
+                <div style="padding: 15px;">
+                  <p><strong>Start Date:</strong> <?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
+                  <?php if($officer->assignment_end): ?>
+                    <p><strong>End Date:</strong> <?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
+                  <?php endif; ?>
+                  <p><strong>Phone:</strong> <?php echo htmlspecialchars($officer->phone_number); ?></p>
+                </div>
+                <div class="duty-card-footer">
+                  <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>)">
+                    <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
+                    Unassign
+                  </button>
                 </div>
               </div>
-              
-              <div class="officer-list">
-                <div class="officer-item">
-                  <img src="<?php echo URL_ROOT; ?>/img/avatar18.jpg" alt="Officer" class="officer-avatar">
-                  <span class="officer-name">Amanda King</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="duty-card-footer">
-            <button class="action-btn">Edit Assignment</button>
-          </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
       </div>
     </div>
     
 </div>
 
+<!-- Shift Selection Modal -->
+<div id="shiftModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <h3 style="margin: 0 0 10px 0; color: #333;">Assign Officer to Site</h3>
+    <p id="officerNameDisplay" style="color: #666; margin-bottom: 20px; font-size: 14px;"></p>
+    
+    <div style="margin-bottom: 20px;">
+      <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333;">Select Shift Type:</label>
+      <select id="shiftTypeSelect" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+        <option value="Day">Day Shift</option>
+        <option value="Night">Night Shift</option>
+        <option value="Full Time">Full Time</option>
+        <option value="Flexible">Flexible</option>
+      </select>
+    </div>
+    
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="closeShiftModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+        Cancel
+      </button>
+      <button onclick="confirmAssignment()" style="padding: 10px 20px; background: #a40000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">check</span>
+        Confirm Assignment
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<script>
+// Filter and assign officer functionality
+const siteId = <?php echo $data['site']->id; ?>;
+const siteCity = '<?php echo addslashes($data['site']->city); ?>';
+const urlRoot = '<?php echo URL_ROOT; ?>';
+
+document.getElementById('applyFilters').addEventListener('click', loadOfficers);
+document.getElementById('resetFilters').addEventListener('click', resetFilters);
+
+function loadOfficers() {
+    const location = document.getElementById('locationFilter').value;
+    const availability = document.getElementById('availabilityFilter').value;
+    const status = document.getElementById('statusFilter').value;
+    
+    // Show loading
+    document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px;"><p>Loading officers...</p></div>';
+    
+    // Make AJAX call to fetch officers
+    fetch(urlRoot + '/admin/getAvailableOfficers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            location: location,
+            availability: availability,
+            status: status,
+            city: siteCity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayOfficers(data.officers);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px; color: red;">Error loading officers</div>';
+    });
+}
+
+function displayOfficers(officers) {
+    const container = document.getElementById('officersList');
+    
+    if (officers.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><span class="material-symbols-outlined" style="font-size: 48px;">person_off</span><p style="margin-top: 10px;">No officers found matching the filters</p></div>';
+        return;
+    }
+    
+    let html = '';
+    officers.forEach(officer => {
+        html += `
+            <div class="duty-card" style="border-left: 4px solid #2196F3;">
+                <div class="duty-card-header">
+                    <div>
+                        <h3 class="duty-location">${officer.name}</h3>
+                        <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                            ${officer.officerID} • ${officer.city}, ${officer.district}
+                        </p>
+                    </div>
+                    <span class="duty-status ${officer.employment_status === 'Active' ? 'status-active' : 'status-inactive'}">${officer.employment_status}</span>
+                </div>
+                <div style="padding: 15px;">
+                    <p><strong>Rank:</strong> ${officer.rank}</p>
+                    <p><strong>Phone:</strong> ${officer.phone_number}</p>
+                    <p><strong>Shift Pattern:</strong> ${officer.shift_pattern || 'Flexible'}</p>
+                    ${officer.current_assignment ? '<p style="color: #ff9800;"><strong>Currently assigned to another site</strong></p>' : ''}
+                </div>
+                <div class="duty-card-footer">
+                    <button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name}')" ${officer.current_assignment ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span>
+                        Assign to Site
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function resetFilters() {
+    document.getElementById('locationFilter').value = 'same-city';
+    document.getElementById('availabilityFilter').value = 'available';
+    document.getElementById('statusFilter').value = 'Active';
+    document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><span class="material-symbols-outlined" style="font-size: 48px;">person_search</span><p style="margin-top: 10px;">Click "Apply Filters" to load officers</p></div>';
+}
+
+// Global variable to store officer ID for assignment
+let selectedOfficerId = null;
+
+function openShiftModal(officerId, officerName) {
+    selectedOfficerId = officerId;
+    document.getElementById('officerNameDisplay').textContent = `Officer: ${officerName}`;
+    document.getElementById('shiftModal').style.display = 'flex';
+}
+
+function closeShiftModal() {
+    selectedOfficerId = null;
+    document.getElementById('shiftModal').style.display = 'none';
+    document.getElementById('shiftTypeSelect').value = 'Day';
+}
+
+function confirmAssignment() {
+    const shiftType = document.getElementById('shiftTypeSelect').value;
+    assignOfficer(selectedOfficerId, shiftType);
+    closeShiftModal();
+}
+
+function assignOfficer(officerId, shiftType) {
+    fetch(urlRoot + '/admin/assignOfficerToSite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            officer_id: officerId,
+            shift_type: shiftType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Officer assigned successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error assigning officer');
+    });
+}
+
+function unassignOfficer(assignmentId) {
+    if (!confirm('Are you sure you want to unassign this officer from this site?')) {
+        return;
+    }
+    
+    fetch(urlRoot + '/admin/unassignOfficerFromSite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            assignment_id: assignmentId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Officer unassigned successfully!');
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error unassigning officer');
+    });
+}
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+```

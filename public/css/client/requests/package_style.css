@@ -1,0 +1,238 @@
+/* Package Detail Page Styles */
+
+.main-content {
+    background-color: #f3f3f3;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.back-btn {
+    margin-bottom: 20px;
+}
+
+.package-detail-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Package Info Card */
+.package-info-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.package-header-detail {
+    padding: 30px;
+    color: white;
+    text-align: center;
+}
+
+.package-header-detail h2 {
+    font-size: 32px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.package-details-section {
+    padding: 10px 30px 30px 30px;
+}
+
+.package-details-section h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 15px 0;
+}
+
+/* Features List */
+.features-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+}
+
+.features-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.features-list li:first-child {
+    padding-top: 0;
+}
+
+.features-list li:last-child {
+    border-bottom: none;
+}
+
+.features-list .material-icons {
+    color: #4caf50;
+    font-size: 22px;
+    flex-shrink: 0;
+}
+
+/* Package Note */
+.package-note {
+    background: #fff8e1;
+    border-left: 4px solid #ffa726;
+    padding: 15px 20px;
+    margin: 25px 0;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.package-note strong {
+    color: #f57c00;
+    font-weight: 600;
+}
+
+/* Pricing Info */
+.pricing-info {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 25px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.pricing-info h3 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #a40000;
+    margin: 0 0 8px 0;
+}
+
+.pricing-note {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+/* Booking Form Card */
+.booking-form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.booking-form-card h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 25px 0;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Form Styles */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #a40000;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Price Display */
+.price-display {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.total-price {
+    display: block;
+    font-size: 28px;
+    font-weight: 700;
+    color: #a40000;
+    margin-bottom: 8px;
+}
+
+.price-breakdown {
+    display: block;
+    font-size: 13px;
+    color: #666;
+    font-weight: 400;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.form-actions button {
+    flex: 1;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .package-detail-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .booking-form-card {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .package-header-detail h2 {
+        font-size: 24px;
+    }
+    
+    .package-details-section {
+        padding: 20px;
+    }
+    
+    .booking-form-card {
+        padding: 20px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
