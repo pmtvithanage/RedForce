@@ -617,11 +617,11 @@
                     </div>
                 </div>
                 <div class="action-buttons">
-                    <a href="<?php echo URL_ROOT; ?>/admin/accept_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-primary primary-btn loading" id="editClientBtn">
+                    <a href="<?php echo URL_ROOT; ?>/admin/accept_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-primary primary-btn" id="editClientBtn">
                         <span class="material-symbols-outlined">person_add</span>
                         Add Officer
                     </a>
-                    <a href="<?php echo URL_ROOT; ?>/admin/reject_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-secondary secondary-btn loading" id="rejectBtn">
+                    <a href="<?php echo URL_ROOT; ?>/admin/reject_officer_applications/<?php echo $officer->id; ?>/<?php echo $officer->role; ?>" class="btn-secondary secondary-btn" id="rejectBtn">
                         <span class="material-symbols-outlined">close</span>
                         Reject
                     </a>

@@ -244,7 +244,7 @@
       <div class="stat-pill"></div>
       <div class="stat-body">
         <div class="stat-label"><span class="material-icons">group</span>Clients</div>
-        <div class="stat-value" id="clientsCount"><?php echo $stats->total; ?></div>
+        <div class="stat-value" id="clientsCount">0</div>
       </div>
     </div>
 

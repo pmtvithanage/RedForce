@@ -1,34 +1,23 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<!-- Content will be loaded here -->
 <div class="dashboard">
 <!-- Stats -->
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">group</span>
   <div>
-    <div class="stat-value"><?php echo array_sum($data['userRoleChart']['data']); ?></div>
-    <div>Total Users</div>
+    <div class="stat-value">0</div>
+    <div>Total Officers</div>
   </div>
 </div>
 
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">shield_person</span>
   <div>
-    <div class="stat-value">
-        <?php 
-        // Count officers
-        $officerCount = 0;
-        foreach($data['userRoleChart']['labels'] as $index => $label) {
-            if(in_array(strtolower($label), ['premise officer', 'mobile rider', 'caretaker'])) {
-                $officerCount += $data['userRoleChart']['data'][$index];
-            }
-        }
-        echo $officerCount;
-        ?>
-    </div>
-    <div>Officers</div>
+    <div class="stat-value">0</div>
+    <div>On Duty</div>
   </div>
 </div>
 
@@ -48,74 +37,22 @@
   </div>
 </div>
 
-
-
 <!-- Recent Activity -->
-<div class="card section recent">
+<div class="card section">
   <h3>Recent Activity</h3>
-  
-  <?php if (!empty($data['recent_activities'])): ?>
-    <div class="activity-list">
-      <?php foreach ($data['recent_activities'] as $activity): ?>
-        <div class="activity-item <?php echo $activity->activity_type; ?>">
-          <div class="activity-header">
-            <span class="material-symbols-outlined activity-icon">
-              <?php 
-              $icon_map = [
-                'shift' => 'schedule',
-                'leave' => 'event_busy',
-                'alert' => 'notification_important',
-                'assignment' => 'assignment',
-                'registration' => 'person_add',
-                'update' => 'edit',
-                'incident' => 'report',
-                'message' => 'mail'
-              ];
-              echo $icon_map[$activity->activity_type] ?? 'notifications';
-              ?>
-            </span>
-            <div class="activity-title">
-              <strong><?php echo htmlspecialchars($activity->activity_titel); ?></strong>
-            </div>
-          </div>
-          <div class="activity-details">
-            <p><?php echo htmlspecialchars($activity->activity_details); ?></p>
-          </div>
-          <?php if (!empty($activity->user_name)): ?>
-            <div class="activity-user">
-              <small><?php echo date('M d, Y   |   h:i A', strtotime($activity->created_at)); ?></small>
-            </div>
-          <?php endif; ?>
-        </div>
-      <?php endforeach; ?>
-    </div>
-  <?php else: ?>
-    <div class="empty-activity">
-      <span class="material-symbols-outlined">inbox</span>
-      <p>No recent activity to display.</p>
-      <small>Once there are updates, they will appear here.</small>
-    </div>
-  <?php endif; ?>
-</div>
-
-<!-- User Role Chart -->
-<div class="card section chart-section">
-    <h3>User Role Distribution</h3>
-    <div>
-        <canvas id="userRoleChart"></canvas>
-    </div>
+  <div class="empty-activity">
+    <span class="material-symbols-outlined">inbox</span>
+    <p>No recent activity to display.</p>
+    <small>Once there are updates, they will appear here.</small>
+  </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="card section" hidden>
+<div class="card section">
   <h3>Quick Actions</h3>
   <div class="quick-actions">
-    <button id="assignBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/assign'">
-        <span class="material-symbols-outlined">add</span>Assign
-    </button>
-    <button id="alertBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/alerts'">
-        <span class="material-symbols-outlined">notifications</span>Send Alert
-    </button>
+    <button id="assignBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/assign'"><span class="material-symbols-outlined">add</span>Assign</button>
+    <button id="alertBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/alerts'"><span class="material-symbols-outlined">notifications</span>Send Alert</button>
     <button onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/scheduling'">
       <span class="material-symbols-outlined">event</span>Create Shift
     </button>
@@ -125,61 +62,32 @@
   </div>
 </div>
 
-<!-- Messages & Pending Activities -->
-<div class="card messages section">
-    <h3>Messages</h3>
-    <div class="view-button-container">
-        <button class="view-button" id="viewMessagesBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/messages'">View</button>
-    </div>
-</div>
 
-<div class="card pending section">
-    <h3>Pending Leave Requests</h3>
+    <!-- Messages -->
+    <div class="card messages section">
+        <h3>Messages</h3>
+        <div class="view-button-container">
+            <button class="view-button" id="viewMessagesBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/messages'">View</button>
+
+        </div>
+    </div>
+
+
+
+    <!-- Pending Activities -->
+    <div class="card pending section">
+        <h3>Pending Leave Requests</h3>
     <div class="view-button-container">
         <button class="view-button" id="viewPendingBtn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/pendings'">View</button>
     </div>
+    </div>
+
+
+</main>
 </div>
 
-</div>
+<div class="backdrop" id="backdrop" hidden></div>
 
-<script>
-// Initialize User Role Chart
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('userRoleChart').getContext('2d');
-    
-    const chartData = {
-        labels: <?php echo json_encode($data['userRoleChart']['labels']); ?>,
-        datasets: [{
-            data: <?php echo json_encode($data['userRoleChart']['data']); ?>,
-            backgroundColor: <?php echo json_encode($data['userRoleChart']['colors']); ?>,
-            borderWidth: 1
-        }]
-    };
-    
-    new Chart(ctx, {
-        type: 'doughnut',
-        data: chartData,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right'
-                }
-            }
-        }
-    });
-});
-</script>
 
-<style>
-.chart-section {
-    margin: 20px 0;
-}
-.chart-section canvas {
-    width: 100% !important;
-    height: 300px !important;
-}
-</style>
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

@@ -211,6 +211,17 @@ tbody tr:hover {
     color: #0c5460;
 }
 
+/* New status classes to match Mobile Rider statuses */
+.status-open {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.status-in-progress {
+    background-color: #fff7ed;
+    color: #b45309;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .summary-section {

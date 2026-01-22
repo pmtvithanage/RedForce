@@ -25,16 +25,17 @@
 
         <nav class="menu">
           <div class="menu-section">MAIN</div>
-          <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
 
           <div class="menu-section">MANAGEMENT</div>
-          <a class="menu-item <?php echo ($data['title'] === 'Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">Officers</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Clients') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/clients"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Clients</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Routes') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/routes"><span class="icon"></span><span class="material-symbols-outlined">route</span><span class="label">Routes</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Salary') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/clients_payments"><span class="icon"></span><span class="material-symbols-outlined">payments</span><span class="label">Client Payments</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Advertisements') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/advertisements"><span class="icon"></span><span class="material-symbols-outlined">campaign</span><span class="label">Advertisements</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Incidents') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/incidents"><span class="icon"></span><span class="material-symbols-outlined">report</span><span class="label">Incidents</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'Reports') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/reports"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Reports</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Officers') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/officers"><span class="icon"></span><span class="material-symbols-outlined">group</span><span class="label">Officers</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Clients') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/clients"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Clients</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Routes') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/routes"><span class="icon"></span><span class="material-symbols-outlined">route</span><span class="label">Routes</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Salary') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/clients_payments"><span class="icon"></span><span class="material-symbols-outlined">payments</span><span class="label">Client Payments</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Advertisements') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/advertisements"><span class="icon"></span><span class="material-symbols-outlined">campaign</span><span class="label">Advertisements</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Incidents') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/incidents"><span class="icon"></span><span class="material-symbols-outlined">report</span><span class="label">Incidents</span></a>
+          <a class="menu-item <?php echo (isset($data['title']) && $data['title'] === 'Reports') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/admin/reports"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Reports</span></a>
 
           <div class="menu-section">SYSTEM</div>
         <?php if(isset($_SESSION['user_userID']) && $_SESSION['user_userID'] == 'ADMIN001'): ?>
@@ -51,7 +52,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
+          <h1 class="page-title"><?php echo htmlspecialchars(isset($data['pageTitle']) ? $data['pageTitle'] : '', ENT_QUOTES, 'UTF-8'); ?></h1>
 
           <div class="topbar-right">
   <!-- Profile Toggle -->

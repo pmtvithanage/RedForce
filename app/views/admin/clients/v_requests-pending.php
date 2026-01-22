@@ -111,8 +111,6 @@
         border-radius: 8px;
         text-decoration: none;
     }
-
-
     
     
   
@@ -141,10 +139,10 @@
 
 <div class="main-content">
     <div class="tabs">
-    <a href="<?php echo URL_ROOT; ?>/admin/addclients" class="tab primary-btn">Pending Requests</a>
-    <a href="<?php echo URL_ROOT; ?>/admin/accepted" class="tab secondary-btn">Approved Requests</a>
-    <a href="<?php echo URL_ROOT; ?>/admin/rejected" class="tab secondary-btn">Rejected Requests</a>
-</div>
+        <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addclients'">Pending Requests</button>
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/accepted'">Approved Requests</button>
+        <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/rejected'">Rejected Requests</button>
+    </div>
     
     <div class="content-container">
         <?php if(empty($data['clients'])){
@@ -197,11 +195,11 @@
             </div>
             
             <div class="card-footer">
-                <a href="<?php echo URL_ROOT; ?>/admin/acceptClient/<?php echo $clients -> id?>" class="btn-primary primary-btn loading" id="editClientBtn">
+                <a href="<?php echo URL_ROOT; ?>/admin/acceptClient/<?php echo $clients -> id?>" class="btn-primary primary-btn" id="editClientBtn">
                     <span class="material-symbols-outlined">person_add</span>
                     Add Client
                 </a>
-                <a href="<?php echo URL_ROOT; ?>/admin/rejectClient/<?php echo $clients -> id?>" class="btn-secondary secondary-btn loading" id="rejectBtn">
+                <a href="<?php echo URL_ROOT; ?>/admin/rejectClient/<?php echo $clients -> id?>" class="btn-secondary secondary-btn" id="rejectBtn">
                     <span class="material-symbols-outlined">close</span>
                     Reject
                 </a>

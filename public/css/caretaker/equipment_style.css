@@ -362,12 +362,12 @@
 }
 
 .btn-view {
-    background-color: #c41212;
+    background-color: #2196f3;
     color: white;
 }
 
 .btn-view:hover {
-    background-color: #a80f0f;
+    background-color: #1976d2;
 }
 
 .btn-edit .material-symbols-outlined,

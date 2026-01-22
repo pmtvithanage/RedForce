@@ -208,61 +208,6 @@
   font-size: 13px;
 }
 
-/* ---------- Map Section ---------- */
-#map {
-  width: 100%;
-  height: 400px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 20px;
-}
-
-.map-section {
-  margin-top: 20px;
-}
-
-.map-instructions {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 10px;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-}
-
-.location-search-box {
-  margin-bottom: 15px;
-}
-
-#location-search {
-  width: 100%;
-  padding: 12px 45px 12px 15px;
-  border: 2px solid var(--border-color);
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.3s ease;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>');
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-}
-
-#location-search:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(164, 0, 0, 0.1);
-}
-
-#location-search::placeholder {
-  color: #999;
-}
-
-.pac-container {
-  border-radius: 8px;
-  margin-top: 5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  font-family: inherit;
-}
-
 </style>
     <!-- Content will be loaded here -->
     <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
@@ -318,25 +263,7 @@
           <span class="form-input-error"><?php echo $data['phone_number_err'];?></span>
         </div>
 
-        <!-- Map Section -->
-        <div class="map-section">
-          <div class="field-label">Select Location on Map:</div>
-          <div class="map-instructions">
-            📍 Search for a location below, click on the map, or type the address above to update the site location.
-          </div>
-          
-          <!-- Location Search Box -->
-          <div class="location-search-box">
-            <input type="text" 
-                   id="location-search" 
-                   placeholder="🔍 Search for places, addresses, or landmarks..." 
-                   autocomplete="off">
-          </div>
-          
-          <div id="map"></div>
-          <input type="hidden" id="latitude" name="latitude" value="<?php echo $data['latitude'] ?? ''; ?>">
-          <input type="hidden" id="longitude" name="longitude" value="<?php echo $data['longitude'] ?? ''; ?>">
-        </div>
+        
         
         <input type="hidden" id="logo_path" name="logo_path">
 
@@ -431,12 +358,5 @@
       imagePlaceholder.setAttribute('src', defaultImagePath);
   });
 </script>
-
-<!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog&libraries=places&callback=initSiteMap" async defer></script>
-
-<!-- Site Location Map JavaScript -->
-<script src="<?php echo URL_ROOT; ?>/js/map.js"></script>
-
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

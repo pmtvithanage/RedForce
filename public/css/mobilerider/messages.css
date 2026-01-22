@@ -234,17 +234,20 @@ body {
   line-height: 1.4;
 }
 
-.sent .msg {
+/* Support when JS attaches the role class to the same element (.msg.sent) */
+.msg.sent {
   background: #e50914;
   color: #fff;
   border-bottom-right-radius: 6px;
+  margin-left: auto; /* push sent messages to the right */
 }
 
-.received .msg {
+.msg.received {
   background: #fff;
   color: #333;
   border: 1px solid #e5e5e5;
   border-bottom-left-radius: 6px;
+  margin-right: auto; /* keep received messages on the left */
 }
 
 .msg-time {
@@ -254,11 +257,11 @@ body {
   text-align: right;
 }
 
-.sent .msg-time {
+.msg.sent .msg-time {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.received .msg-time {
+.msg.received .msg-time {
   text-align: left;
 }
 

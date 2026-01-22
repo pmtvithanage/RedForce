@@ -7,6 +7,13 @@
 
   <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/incidents_style.css">
 
+<?php
+$incident_stats = $data['incident_stats'] ?? [];
+$resolved_count = $incident_stats['resolved'] ?? 0;
+$open_count = $incident_stats['open'] ?? 0;
+$pending_count = $incident_stats['progress'] ?? 0;
+?>
+
 
     <!-- Content will be loaded here -->
      <div class="container">
@@ -19,23 +26,33 @@
                 <!-- Check circle icon -->
                 <span class="material-symbols-outlined check-icon">check_circle</span>
               </div>
-              <div class="card-content">
-                <h3>Resolved Incidents</h3>
-                <p class="count">122</p>
-              </div>
+                            <div class="card-content">
+                                <h3>Resolved Incidents</h3>
+                                <p class="count"><?php echo $resolved_count; ?></p>
+                            </div>
             </div>
             
-            <div class="summary-card pending">
+                        <div class="summary-card open">
+                            <div class="card-icon">
+                                <span class="material-symbols-outlined">report</span>
+                            </div>
+                            <div class="card-content">
+                                <h3>Open Incidents</h3>
+                                <p class="count"><?php echo $open_count; ?></p>
+                            </div>
+                        </div>
+            
+                        <div class="summary-card pending">
               <div class="card-icon">
                 <!-- Computer icon -->
                 <span class="material-symbols-outlined">desktop_windows</span>
                 <!-- Warning icon -->
                 <span class="material-symbols-outlined warning-icon">warning</span>
               </div>
-              <div class="card-content">
-                <h3>Pending Incidents</h3>
-                <p class="count">3</p>
-              </div>
+                            <div class="card-content">
+                                <h3>Pending Incidents</h3>
+                                <p class="count"><?php echo $pending_count; ?></p>
+                            </div>
             </div>
         </div>
 
@@ -101,10 +118,9 @@
                     <div class="form-group">
                         <label for="modalStatus">Status:</label>
                         <select id="modalStatus" name="status" required>
+                            <option value="Open">Open</option>
+                            <option value="In Progress">In Progress</option>
                             <option value="Resolved">Resolved</option>
-                            <option value="In View">In View</option>
-                            <option value="Escalated">Escalated</option>
-                            <option value="Pending Report">Pending Report</option>
                         </select>
                     </div>
                     
@@ -136,6 +152,11 @@
 
     <div class="backdrop" id="backdrop" hidden></div>
 
-      <script src="<?php echo URL_ROOT; ?>/js/admin/incidents.js"></script>
+                    <script>
+                        // API endpoints for fetching and updating incidents (used by admin/incidents.js)
+                        window.API_GET_INCIDENTS = '<?php echo URL_ROOT; ?>/Admin/getIncidents';
+                        window.API_UPDATE_INCIDENT = '<?php echo URL_ROOT; ?>/Admin/updateIncident';
+                    </script>
+                    <script src="<?php echo URL_ROOT; ?>/js/admin/incidents.js"></script>
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

@@ -47,15 +47,8 @@
                 
                 //Check if no errors log in the user
                 if(empty($data['userID_err']) && empty($data['password_err'])) {
-                    $isActive = ($this->userModel->isActive($data['userID']));
                     $loggedInUser = $this->userModel->login($data['userID'], $data['password']);
 
-                    if($isActive === false){
-                        $data['password_err'] = 'Account is inactive. Contact administrator.';
-                        // Load the login view with errors
-                        $this->view('users/v_login', $data);
-                        return;
-                    }
                     if($loggedInUser){
                         // Prevent session fixation
                         if (session_status() !== PHP_SESSION_ACTIVE) {
