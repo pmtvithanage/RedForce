@@ -63,10 +63,16 @@
                     <input type="text" id="siteName" name="site_name" required>
                 </div>
 
-                <!-- City -->
+                <!-- District -->
                 <div class="form-group">
+                    <label for="district">District</label>
+                    <input type="text" id="district" name="district" placeholder="Enter your district" required>
+                </div>
+
+                <!-- City -->
+                <div class="form-group" id="city-field" style="display: none;">
                     <label for="city">City</label>
-                    <input type="text" id="city" name="city" required>
+                    <input type="text" id="city" name="city" placeholder="Enter your city" required>
                 </div>
 
                 <!-- Site Address -->
@@ -133,6 +139,8 @@ function updatePrice() {
 
 numMonthsInput.addEventListener('input', updatePrice);
 </script>
+
+<script src="<?php echo URL_ROOT; ?>/js/components/select_district_city.js"></script>
 
 </main>
 </div>

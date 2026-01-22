@@ -270,6 +270,7 @@ class Client extends Controller {
                 'client_id' => $_SESSION['user_id'],
                 'package_name' => $_POST['package_name'],
                 'site_name' => trim($_POST['site_name']),
+                'district' => trim($_POST['district']),
                 'city' => trim($_POST['city']),
                 'site_address' => trim($_POST['site_address']),
                 'start_date' => $startDate,
