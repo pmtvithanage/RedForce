@@ -10,7 +10,7 @@ class M_mobilerider
 
     public function addNote($data)
     {
-        $this->db->query("INSERT INTO notes ( userID, title, content, created_at) VALUES (:userID, :title, :content, NOW())");
+        $this->db->query("INSERT INTO Notes ( userID, title, content, created_at) VALUES (:userID, :title, :content, NOW())");
 
         // Bind values
         $this->db->bind(":userID", $data['userID']);
@@ -27,20 +27,20 @@ class M_mobilerider
 
     public function getAllNotes()
     {
-        $this->db->query("SELECT * FROM notes");
+        $this->db->query("SELECT * FROM Notes");
         return $this->db->resultSet();
     }
 
     public function deleteNoteById($id)
     {
-        $this->db->query("DELETE FROM notes WHERE id = :id");
+        $this->db->query("DELETE FROM Notes WHERE id = :id");
         $this->db->bind(':id', $id);
         return $this->db->execute();
     }
 
     public function updateNoteById($id, $title, $content)
     {
-        $this->db->query("UPDATE notes SET title = :title, content = :content WHERE id = :id");
+        $this->db->query("UPDATE Notes SET title = :title, content = :content WHERE id = :id");
         $this->db->bind(":id", $id);
         $this->db->bind(":title", $title);
         $this->db->bind(":content", $content);

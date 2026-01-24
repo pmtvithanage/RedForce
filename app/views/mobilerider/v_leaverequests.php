@@ -20,7 +20,7 @@
             <!-- Request Leave Form -->
             <section class="request-leave-section">
                 <h2>Request Leave</h2>
-                <form id="leaveForm" action="<?= URL_ROOT ?>/mobilerider/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
+                <form id="leaveForm" action="<?= URL_ROOT ?>/MobileRider/addLeave" method="POST" enctype="multipart/form-data" class="leave-form">
                     <div class="form-group">
                         <label for="leaveType">Leave Type</label>
                         <select id="leaveType" name="leave_type" required>

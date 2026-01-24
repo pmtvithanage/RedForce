@@ -10,14 +10,14 @@ class MobileRider extends Controller
         // Check if user is logged in and has mobile rider role
         requireAuth('mobile rider');
         $this->advertisementModel = $this->model('M_advertisements');
-        $this->mobileRiderModel = $this->model('M_mobileRider');
+        $this->mobileRiderModel = $this->model('M_mobilerider');
         $this->userModel = $this->model('M_users');
     }
 
     // Default action - redirect to dashboard
     public function index()
     {
-        redirect('mobilerider/dashboard');
+        redirect('MobileRider/dashboard');
     }
 
     // Dashboard action
@@ -149,7 +149,7 @@ class MobileRider extends Controller
             
             if (empty($data['leave_type']) || empty($data['reason']) || empty($data['start_date']) || empty($data['end_date'])) {
                 flash('leave_error', 'Please fill all required fields');
-                redirect('mobilerider/leaverequests');
+                redirect('MobileRider/leaverequests');
                 return;
             }
             
@@ -159,9 +159,9 @@ class MobileRider extends Controller
                 flash('leave_error', 'Something went wrong. Please try again');
             }
             
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         } else {
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         }
     }
 
@@ -174,7 +174,7 @@ class MobileRider extends Controller
             
             if (!$mobilerider_id) {
                 flash('leave_error', 'User not authenticated');
-                redirect('mobilerider/leaverequests');
+                redirect('MobileRider/leaverequests');
                 return;
             }
             
@@ -182,7 +182,7 @@ class MobileRider extends Controller
             
             if (!$existingLeave || $existingLeave->mobilerider_id != $mobilerider_id) {
                 flash('leave_error', 'Unauthorized access');
-                redirect('mobilerider/leaverequests');
+                redirect('MobileRider/leaverequests');
                 return;
             }
             
@@ -240,9 +240,9 @@ class MobileRider extends Controller
                 flash('leave_error', 'Failed to update leave request');
             }
             
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         } else {
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         }
     }
 
@@ -253,7 +253,7 @@ class MobileRider extends Controller
             
             if (!$mobilerider_id) {
                 flash('leave_error', 'User not authenticated');
-                redirect('mobilerider/leaverequests');
+                redirect('MobileRider/leaverequests');
                 return;
             }
             
@@ -261,7 +261,7 @@ class MobileRider extends Controller
             
             if (!$leave || $leave->mobilerider_id != $mobilerider_id) {
                 flash('leave_error', 'Unauthorized access');
-                redirect('mobilerider/leaverequests');
+                redirect('MobileRider/leaverequests');
                 return;
             }
             
@@ -276,9 +276,9 @@ class MobileRider extends Controller
                 flash('leave_error', 'Failed to delete leave request');
             }
             
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         } else {
-            redirect('mobilerider/leaverequests');
+            redirect('MobileRider/leaverequests');
         }
     }
     
@@ -303,7 +303,7 @@ class MobileRider extends Controller
             if ($noteId) {
                 // Edit existing note
                 if ($this->mobileRiderModel->updateNoteById($noteId, $title, $content)) {
-                    header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+                    header("Location: " . URL_ROOT . "/MobileRider/dashboard?notes=open");
                     exit;
                 } else {
                     echo 'Update failed';
@@ -317,7 +317,7 @@ class MobileRider extends Controller
                 ];
 
                 if ($this->mobileRiderModel->addNote($data)) {
-                    header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+                    header("Location: " . URL_ROOT . "/MobileRider/dashboard?notes=open");
                     exit;
                 } else {
                     echo 'Add failed';
@@ -336,7 +336,7 @@ class MobileRider extends Controller
     {
         $id = $_GET['id'];
         $this->mobileRiderModel->deleteNoteById($id);
-        header("Location:" . URL_ROOT . "/mobilerider/dashboard?notes=open");
+        header("Location:" . URL_ROOT . "/MobileRider/dashboard?notes=open");
     }
 
     public function editNote()
@@ -347,7 +347,7 @@ class MobileRider extends Controller
             $content = trim($_POST['content']);
 
             if ($this->mobileRiderModel->updateNoteById($noteId, $title, $content)) {
-                header("Location: " . URL_ROOT . "/mobilerider/dashboard?notes=open");
+                header("Location: " . URL_ROOT . "/MobileRider/dashboard?notes=open");
                 exit;
             } else {
                 echo 'Update failed';
@@ -422,7 +422,7 @@ class MobileRider extends Controller
         // Validate ID
         if (!isset($_GET['id']) || empty($_GET['id'])) {
             flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
-            redirect('mobilerider/incidents');
+            redirect('MobileRider/incidents');
             return;
         }
 
@@ -433,7 +433,7 @@ class MobileRider extends Controller
 
         if (!$incident) {
             flash('incident_message', 'Incident not found.', 'alert alert-danger');
-            redirect('mobilerider/incidents');
+            redirect('MobileRider/incidents');
             return;
         }
 
@@ -457,7 +457,7 @@ class MobileRider extends Controller
             flash('incident_message', 'Error deleting incident.', 'alert alert-danger');
         }
 
-        redirect('mobilerider/incidents');
+        redirect('MobileRider/incidents');
     }
 
     public function updateIncident()
@@ -469,7 +469,7 @@ class MobileRider extends Controller
             $incidentId = $_POST['incident_id'] ?? null;
             if (!$incidentId) {
                 flash('incident_message', 'Invalid Incident ID.', 'alert alert-danger');
-                redirect('mobilerider/incidents');
+                redirect('MobileRider/incidents');
                 return;
             }
 
@@ -519,10 +519,10 @@ class MobileRider extends Controller
                 flash('incident_message', 'Error updating incident.', 'alert alert-danger');
             }
 
-            redirect('mobilerider/incidents');
+            redirect('MobileRider/incidents');
         } else {
             flash('incident_message', 'Invalid request method.', 'alert alert-danger');
-            redirect('mobilerider/incidents');
+            redirect('MobileRider/incidents');
         }
     }
 }

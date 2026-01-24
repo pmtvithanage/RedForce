@@ -143,11 +143,11 @@
                 case 'supervisor':
                     redirect('supervisor/dashboard');
                     break;
-                case 'premiseofficer':
-                    redirect('premiseofficer/dashboard');
+                case 'premise officer':
+                    redirect('PremiseOfficer/dashboard');
                     break;
-                case 'mobilerider':
-                    redirect('mobilerider/dashboard');
+                case 'mobile rider':
+                    redirect('MobileRider/dashboard');
                     break;
                 case 'client':
                     redirect('client/dashboard');

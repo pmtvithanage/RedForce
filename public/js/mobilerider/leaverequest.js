@@ -454,7 +454,7 @@ function deleteLeave(id) {
         
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = `/${path}/mobilerider/deleteLeave/${id}`;
+        form.action = `/${path}/MobileRider/deleteLeave/${id}`;
         document.body.appendChild(form);
         form.submit();
     }

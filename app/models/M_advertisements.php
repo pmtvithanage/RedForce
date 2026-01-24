@@ -16,7 +16,7 @@ class M_advertisements {
         $this->db->query('
             SELECT a.*, u.name AS creator_name
             FROM advertisements a
-            LEFT JOIN users u ON a.created_by = u.id
+            LEFT JOIN Users u ON a.created_by = u.id
             WHERE a.status = "active"
               AND (a.target_roles LIKE :role OR a.target_roles = "all")
             ORDER BY a.created_at DESC
