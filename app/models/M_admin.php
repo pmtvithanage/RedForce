@@ -61,6 +61,28 @@ public function getAllMR() {
     return $this->db->resultSet();
 }
 
+public function getAvailableMR($excludeRouteId = null) {
+    // Get mobile riders who are not assigned to any route (or exclude current route)
+    $query = "SELECT * FROM mobile_rider_full_details 
+              WHERE user_id NOT IN (
+                  SELECT assigned_rider_id FROM routes 
+                  WHERE assigned_rider_id IS NOT NULL";
+    
+    if ($excludeRouteId !== null) {
+        $query .= " AND id != :route_id";
+    }
+    
+    $query .= ") ORDER BY user_account_created DESC";
+    
+    $this->db->query($query);
+    
+    if ($excludeRouteId !== null) {
+        $this->db->bind(':route_id', $excludeRouteId);
+    }
+    
+    return $this->db->resultSet();
+}
+
 public function getMRById($mobile_rider_id) {
     $this->db->query("SELECT * FROM mobile_rider_full_details WHERE mobile_rider_id = :id");
     $this->db->bind(':id', $mobile_rider_id);
@@ -686,7 +708,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             SELECT u.*, ud.nic, ud.mobile, ud.address, ud.additional_info 
             FROM Users u 
             LEFT JOIN user_details ud ON u.id = ud.user_id 
-            WHERE u.userID = :userID
+            WHERE u.id = :userID
         ");
         $this->db->bind(':userID', $userID);
         return $this->db->single();
@@ -1242,5 +1264,165 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':userID', $userID);
         return $this->db->single();
     }
-}
 
+    // ==============================
+    // Route Management
+    // ==============================
+
+    public function generateRouteId() {
+        $this->db->query("SELECT id FROM routes ORDER BY id DESC LIMIT 1");
+        $last = $this->db->single();
+        
+        if ($last) {
+            $number = (int)substr($last->id, 1);
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        return 'R' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
+
+    public function insertRoute($data) {
+        $this->db->query("INSERT INTO routes (id, route_name, description, location, status, created_by) VALUES (:id, :route_name, :description, :location, :status, :created_by)");
+        
+        $this->db->bind(':id', $data['id']);
+        $this->db->bind(':route_name', $data['route_name']);
+        $this->db->bind(':description', $data['description']);
+        $this->db->bind(':location', $data['location'] ?? '');
+        $this->db->bind(':status', $data['status'] ?? 'Active');
+        $this->db->bind(':created_by', $data['created_by']);
+        
+        return $this->db->execute();
+    }
+
+    public function getAllSites() {
+        $this->db->query("
+            SELECT s.*, c.contact_person_name as client_name, u.name as client_user_name
+            FROM sites s
+            LEFT JOIN Clients c ON s.client_id = c.id
+            LEFT JOIN Users u ON c.user_id = u.id
+            ORDER BY s.site_name
+        ");
+        return $this->db->resultSet();
+    }
+
+    public function getAllRoutes() {
+        $this->db->query("
+            SELECT r.*, COUNT(rs.site_id) as site_count, u.name as rider_name
+            FROM routes r
+            LEFT JOIN route_sites rs ON r.id = rs.route_id
+            LEFT JOIN Users u ON r.assigned_rider_id = u.id
+            GROUP BY r.id
+            ORDER BY r.created_at DESC
+        ");
+        $routes = $this->db->resultSet();
+        
+        // Add sites with coordinates for each route
+        foreach ($routes as $route) {
+            $route->sites = $this->getRouteSitesWithCoords($route->id);
+            
+            // Calculate route center from sites
+            if (!empty($route->sites)) {
+                $latSum = 0;
+                $lngSum = 0;
+                $count = 0;
+                
+                foreach ($route->sites as $site) {
+                    if ($site->latitude && $site->longitude) {
+                        $latSum += floatval($site->latitude);
+                        $lngSum += floatval($site->longitude);
+                        $count++;
+                    }
+                }
+                
+                if ($count > 0) {
+                    $route->center_lat = $latSum / $count;
+                    $route->center_lng = $lngSum / $count;
+                }
+            }
+        }
+        
+        return $routes;
+    }
+    
+    public function getRouteSitesWithCoords($routeId) {
+        $this->db->query("
+            SELECT s.id, s.site_name, s.address, s.latitude, s.longitude
+            FROM route_sites rs
+            JOIN sites s ON rs.site_id = s.id
+            WHERE rs.route_id = :route_id
+            ORDER BY s.site_name
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->resultSet();
+    }
+
+    public function getRouteById($id) {
+        $this->db->query("SELECT * FROM routes WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    public function getRouteSites($routeId) {
+        $this->db->query("
+            SELECT s.*, c.contact_person_name as client_name, u.name as client_user_name
+            FROM route_sites rs
+            JOIN sites s ON rs.site_id = s.id
+            LEFT JOIN Clients c ON s.client_id = c.id
+            LEFT JOIN Users u ON c.user_id = u.id
+            WHERE rs.route_id = :route_id
+            ORDER BY s.site_name
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->resultSet();
+    }
+
+    public function updateRouteLocation($routeId, $location) {
+        $this->db->query("UPDATE routes SET location = :location WHERE id = :id");
+        $this->db->bind(':location', $location);
+        $this->db->bind(':id', $routeId);
+        return $this->db->execute();
+    }
+
+    public function deleteRoute($routeId) {
+        $this->db->query("DELETE FROM routes WHERE id = :id");
+        $this->db->bind(':id', $routeId);
+        return $this->db->execute();
+    }
+    
+    public function isSiteAssignedToRoute($siteId) {
+        $this->db->query("SELECT COUNT(*) as count FROM route_sites WHERE site_id = :site_id");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result->count > 0;
+    }
+    
+    public function assignSiteToRoute($siteId, $routeId) {
+        // First check if already assigned
+        if ($this->isSiteAssignedToRoute($siteId)) {
+            return false;
+        }
+        
+        $this->db->query("INSERT INTO route_sites (route_id, site_id) VALUES (:route_id, :site_id)");
+        $this->db->bind(':route_id', $routeId);
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->execute();
+    }
+    
+    public function getRouteRider($routeId) {
+        $this->db->query("SELECT u.id as user_id, u.name, u.email, u.profile_image 
+                         FROM routes r 
+                         LEFT JOIN Users u ON r.assigned_rider_id = u.id 
+                         WHERE r.id = :route_id AND r.assigned_rider_id IS NOT NULL");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->single();
+    }
+    
+    public function assignRiderToRoute($riderId, $routeId) {
+        $this->db->query("UPDATE routes SET assigned_rider_id = :rider_id WHERE id = :route_id");
+        $this->db->bind(':rider_id', $riderId);
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->execute();
+    }
+}

@@ -560,17 +560,33 @@ CREATE TABLE IF NOT EXISTS routes (
     id VARCHAR(50) PRIMARY KEY,
     route_name VARCHAR(100) NOT NULL,
     description TEXT,
-    start_city VARCHAR(50) NOT NULL,
-    end_city VARCHAR(50) NOT NULL,
+    cities_covered TEXT,
+    location VARCHAR(100),
     distance_km DECIMAL(6,2),
-    estimated_time_minutes INT,
-    difficulty_level ENUM('Easy', 'Medium', 'Hard', 'Expert'),
-    status ENUM('Active', 'Inactive', 'Under Maintenance') DEFAULT 'Active',
-    created_by INT,
+    difficulty_level ENUM('Easy', 'Medium', 'Hard'),
+    status ENUM('Active', 'Inactive') DEFAULT 'Active',
+    created_by VARCHAR(50), -- ADDED: Required for FOREIGN KEY
+    assigned_rider_id INT DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
-    FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE SET NULL
+    FOREIGN KEY (created_by) REFERENCES Users(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_rider_id) REFERENCES Users(id) ON DELETE SET NULL
+);
+
+-- Alter table to remove old columns and add new location column if they exist
+ALTER TABLE routes DROP COLUMN IF EXISTS start_city;
+ALTER TABLE routes DROP COLUMN IF EXISTS end_city;
+ALTER TABLE routes ADD COLUMN IF NOT EXISTS location TEXT;
+ALTER TABLE routes ADD COLUMN IF NOT EXISTS assigned_rider_id INT DEFAULT NULL;
+ALTER TABLE routes ADD CONSTRAINT fk_routes_assigned_rider FOREIGN KEY (assigned_rider_id) REFERENCES Users(id) ON DELETE SET NULL;
+
+CREATE TABLE IF NOT EXISTS route_sites (
+    route_id VARCHAR(50),
+    site_id BIGINT UNSIGNED, 
+    PRIMARY KEY (route_id, site_id),
+    FOREIGN KEY (route_id) REFERENCES routes(id) ON DELETE CASCADE,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS mobile_rider (
@@ -645,10 +661,8 @@ SELECT
     r.id AS route_id,
     r.route_name,
     r.description AS route_description,
-    r.start_city,
-    r.end_city,
+    r.location,
     r.distance_km,
-    r.estimated_time_minutes,
     r.difficulty_level,
     r.status AS route_status,
     

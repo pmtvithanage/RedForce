@@ -276,20 +276,6 @@
       }
     });
 
-    // For form submissions, show spinner on first enabled submit button
-    document.querySelectorAll('form').forEach(function(form){
-      form.addEventListener('submit', function(ev){
-        // If form already submitting, prevent duplicate
-        if (form.dataset.submitting === '1') { ev.preventDefault(); return; }
-        var submitters = form.querySelectorAll('button[type="submit"], input[type="submit"]');
-        for (var i = 0; i < submitters.length; i++) {
-          var s = submitters[i];
-          if (!s.disabled) { try { makeLoading(s); } catch(e){}; break; }
-        }
-        form.dataset.submitting = '1';
-      });
-    });
-
   });
 })();
 </script>

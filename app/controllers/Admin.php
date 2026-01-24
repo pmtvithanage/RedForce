@@ -12,6 +12,9 @@ class Admin extends Controller {
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
         
+        // Load route helper
+        require_once APP_ROOT . '/helpers/route_helper.php';
+        
         // Try to load chart model
         $chartModel = $this->model('ChartDataModel');
         if ($chartModel) {
@@ -973,12 +976,292 @@ public function editSite($site_id){
 // ======================================================================== //
 
     public function routes() {
+        $routes = $this->adminModel->getAllRoutes();
+        $allSites = $this->adminModel->getAllSites();
+        $allMobileRiders = $this->adminModel->getAllMR();
+        
+        // Filter unassigned sites
+        $unassignedSites = [];
+        foreach ($allSites as $site) {
+            // Check if site is not assigned to any route
+            $isAssigned = $this->adminModel->isSiteAssignedToRoute($site->id);
+            if (!$isAssigned) {
+                $unassignedSites[] = $site;
+            }
+        }
+        
+        // Add matching routes to each unassigned site
+        $sitesWithMatches = getSitesWithMatchingRoutes($unassignedSites, $routes);
+        
+        // Calculate stats
+        $totalRiders = count($allMobileRiders);
+        $totalRoutes = count($routes);
+        $totalSites = count($allSites);
+        $unassignedSitesCount = count($unassignedSites);
+        
         $data = [
             'title' => 'Routes',
-            'pageTitle' => 'Manage Routings'
+            'pageTitle' => 'Manage Routings',
+            'routes' => $routes,
+            'sites' => $sitesWithMatches,
+            'totalRiders' => $totalRiders,
+            'totalRoutes' => $totalRoutes,
+            'totalSites' => $totalSites,
+            'unassignedSitesCount' => $unassignedSitesCount
         ];
         $this->view('admin/routes/v_routes', $data);
     }
+
+    public function addroute() {
+        if($_SERVER['REQUEST_METHOD']=='POST'){
+            $data = [
+                'route_name' => trim($_POST['route_name']),
+                'description' => trim($_POST['description']),
+                'location' => trim($_POST['location']),
+            ];
+
+            // Validation
+            if(empty($data['route_name'])){
+                $data['route_name_err'] = 'Please enter route name';
+            }
+
+            if(empty($data['route_name_err'])){
+                $route_id = $this->adminModel->generateRouteId();
+                $created_by = $_SESSION['user_id'];
+
+                $routeData = [
+                    'id' => $route_id,
+                    'route_name' => $data['route_name'],
+                    'description' => $data['description'],
+                    'location' => $data['location'],
+                    'status' => 'Active',
+                    'created_by' => $created_by
+                ];
+
+                if($this->adminModel->insertRoute($routeData)){
+                    // Add activity log
+                    $title = "Route Created";
+                    $description = "New route '" . $data['route_name'] . "' (ID: " . $route_id . ") was created";
+                    $type = "success";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
+                    flash('msg', 'Route added successfully', 'alert-success');
+                    redirect('admin/routes');
+                } else {
+                    flash('msg', 'Failed to add route', 'alert-danger');
+                }
+            } else {
+                // Get sites for the form - but now no sites
+                $this->view('admin/routes/v_addRoute', $data);
+            }
+        } else {
+            $data = [
+                'title' => 'Routes',
+                'pageTitle' => 'Add Route',
+                'route_name' => '',
+                'description' => '',
+                'location' => '',
+                'route_name_err' => ''
+            ];
+
+            $this->view('admin/routes/v_addRoute', $data);
+        }
+    }
+
+    public function viewroute($id) {
+        $route = $this->adminModel->getRouteById($id);
+        $routeSites = $this->adminModel->getRouteSites($id);
+        
+        if (!$route) {
+            flash('msg', 'Route not found', 'alert-danger');
+            redirect('admin/routes');
+            return;
+        }
+        
+        // Get creator information
+        $creator = $this->adminModel->getUserByID($route->created_by);
+        
+        // Get available mobile riders (excluding already assigned ones)
+        $availableMobileRiders = $this->adminModel->getAvailableMR($id);
+        $assignedRider = $this->adminModel->getRouteRider($id);
+        
+        $data = [
+            'title' => 'Routes',
+            'pageTitle' => 'View Route: ' . htmlspecialchars($route->route_name),
+            'route' => $route,
+            'routeSites' => $routeSites,
+            'creator' => $creator,
+            'mobileRiders' => $availableMobileRiders,
+            'assignedRider' => $assignedRider
+        ];
+        $this->view('admin/routes/v_viewRoute', $data);
+    }
+
+    public function updateRouteLocation() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $routeId = trim($_POST['route_id']);
+            $location = trim($_POST['location']);
+
+            // Validate input
+            if (empty($routeId) || empty($location)) {
+                echo json_encode(['success' => false, 'message' => 'Route ID and location are required']);
+                return;
+            }
+
+            // Validate JSON format
+            $coordinates = json_decode($location, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                echo json_encode(['success' => false, 'message' => 'Invalid location data format']);
+                return;
+            }
+
+            // Validate coordinates array
+            if (!is_array($coordinates) || count($coordinates) < 3) {
+                echo json_encode(['success' => false, 'message' => 'Location must contain at least 3 coordinate points']);
+                return;
+            }
+
+            // Update route location in database
+            $result = $this->adminModel->updateRouteLocation($routeId, $location);
+
+            if ($result) {
+                // Get route name for activity log
+                $route = $this->adminModel->getRouteById($routeId);
+                $routeName = $route ? $route->route_name : 'Route #' . $routeId;
+                
+                // Add activity log
+                $title = "Route Location Updated";
+                $description = "Location area for route '" . $routeName . "' was updated";
+                $type = "info";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                echo json_encode(['success' => true, 'message' => 'Route location updated successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to update route location']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        }
+    }
+
+    public function deleteRoute() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $routeId = trim($_POST['route_id']);
+
+            // Validate input
+            if (empty($routeId)) {
+                echo json_encode(['success' => false, 'message' => 'Route ID is required']);
+                return;
+            }
+
+            // Get route name before deletion for activity log
+            $route = $this->adminModel->getRouteById($routeId);
+            $routeName = $route ? $route->route_name : 'Route #' . $routeId;
+            
+            // Delete route
+            $result = $this->adminModel->deleteRoute($routeId);
+
+            if ($result) {
+                // Add activity log
+                $title = "Route Deleted";
+                $description = "Route '" . $routeName . "' (ID: " . $routeId . ") was permanently deleted";
+                $type = "alert";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                echo json_encode(['success' => true, 'message' => 'Route deleted successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to delete route']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        }
+    }
+    
+    public function assignSiteToRoute() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $siteId = isset($input['site_id']) ? trim($input['site_id']) : '';
+            $routeId = isset($input['route_id']) ? trim($input['route_id']) : '';
+
+            // Validate input
+            if (empty($siteId) || empty($routeId)) {
+                echo json_encode(['success' => false, 'message' => 'Site ID and Route ID are required']);
+                return;
+            }
+
+            // Assign site to route
+            $result = $this->adminModel->assignSiteToRoute($siteId, $routeId);
+
+            if ($result) {
+                // Get route and site names for activity log
+                $route = $this->adminModel->getRouteById($routeId);
+                $site = $this->adminModel->getSiteById($siteId);
+                $routeName = $route ? $route->route_name : 'Route #' . $routeId;
+                $siteName = $site ? $site->site_name : 'Site #' . $siteId;
+                
+                // Add activity log
+                $title = "Site Assigned to Route";
+                $description = "Site '" . $siteName . "' was assigned to route '" . $routeName . "'";
+                $type = "success";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                echo json_encode(['success' => true, 'message' => 'Site assigned to route successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Site is already assigned to a route or assignment failed']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        }
+    }
+    
+    public function assignRiderToRoute() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $input = json_decode(file_get_contents('php://input'), true);
+            $riderId = isset($input['rider_id']) ? trim($input['rider_id']) : '';
+            $routeId = isset($input['route_id']) ? trim($input['route_id']) : '';
+
+            // Validate input
+            if (empty($riderId) || empty($routeId)) {
+                echo json_encode(['success' => false, 'message' => 'Rider ID and Route ID are required', 'debug' => ['rider_id' => $riderId, 'route_id' => $routeId]]);
+                return;
+            }
+
+            // Get route and rider names for activity log
+            $route = $this->adminModel->getRouteById($routeId);
+            $rider = $this->adminModel->getUserByID($riderId);
+            
+            if (!$route) {
+                echo json_encode(['success' => false, 'message' => 'Route not found', 'debug' => ['route_id' => $routeId]]);
+                return;
+            }
+            
+            if (!$rider) {
+                echo json_encode(['success' => false, 'message' => 'Rider not found', 'debug' => ['rider_id' => $riderId]]);
+                return;
+            }
+            
+            $routeName = $route->route_name;
+            $riderName = $rider->name;
+
+            // Assign rider to route
+            $result = $this->adminModel->assignRiderToRoute($riderId, $routeId);
+
+            if ($result) {
+                // Add activity log
+                $title = "Mobile Rider Assigned to Route";
+                $description = "Mobile rider '" . $riderName . "' was assigned to route '" . $routeName . "'";
+                $type = "success";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                echo json_encode(['success' => true, 'message' => 'Mobile rider assigned to route successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Database update failed', 'debug' => ['rider_id' => $riderId, 'route_id' => $routeId]]);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        }
+    }
+
 // ======================================================================== //
 // =======================      Admin Salary       ====================== //
 // ======================================================================== //
