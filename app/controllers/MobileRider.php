@@ -23,28 +23,162 @@ class MobileRider extends Controller
     // Dashboard action
     public function dashboard()
     {
+        $userId = $_SESSION['user_id'] ?? null;
         $role = 'mobile rider';
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
 
         $notes = $this->getNotes();
+        
+        // Get recent activities for current user
+        $recentActivities = [];
+        if ($userId) {
+            $recentActivities = $this->mobileRiderModel->getRecentActivities($userId, 50);
+        }
 
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Dashboard',
             'advertisements' => $advertisements,
             'notes' => $notes,
+            'recent_activities' => $recentActivities,
         ];
-        $this->view('mobilerider/v_dashboard', $data);
+        $this->view('mobilerider/dashboard/v_dashboard', $data);
     }
 
     // Schedule action
     public function sites()
     {
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+
+        // Get mobile rider record using the view
+        $mobileRider = $this->mobileRiderModel->getMobileRiderByUserId($userId);
+        
+        if (!$mobileRider) {
+            // Mobile rider record doesn't exist yet - show message
+            $data = [
+                'title' => 'Sites',
+                'pageTitle' => 'Assigned Sites',
+                'route' => null,
+                'routeSites' => [],
+                'total_sites' => 0,
+                'sites_visited' => 0,
+                'error_message' => 'Your mobile rider profile has not been set up yet. Please contact the administrator.'
+            ];
+            $this->view('mobilerider/sites/v_sites', $data);
+            return;
+        }
+
+        // Get route assigned to this user (routes.assigned_rider_id = user_id)
+        $route = $this->mobileRiderModel->getRouteByUserId($userId);
+        
+        // Get sites assigned to the route
+        $routeSites = [];
+        $siteStats = ['total_sites' => 0, 'sites_visited' => 0];
+        
+        if ($route) {
+            $routeSites = $this->mobileRiderModel->getRouteSites($route->id);
+            
+            // Check which sites have been visited today
+            foreach ($routeSites as $site) {
+                $site->visited_today = $this->mobileRiderModel->isSiteVisitedToday($site->id, $userId);
+            }
+            
+            $siteStats = $this->mobileRiderModel->getSiteVisitStats($route->id);
+        }
+
         $data = [
             'title' => 'Sites',
-            'pageTitle' => 'Assigned Sites'
+            'pageTitle' => 'Assigned Sites',
+            'route' => $route,
+            'routeSites' => $routeSites,
+            'total_sites' => $siteStats->total_sites ?? 0,
+            'sites_visited' => $siteStats->sites_visited ?? 0
         ];
-        $this->view('mobilerider/v_sites', $data);
+        $this->view('mobilerider/sites/v_sites', $data);
+    }
+
+    // Mark site as visited (AJAX endpoint)
+    public function markSiteVisited()
+    {
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'User not authenticated']);
+            return;
+        }
+
+        // Get data from POST request
+        $input = json_decode(file_get_contents('php://input'), true);
+        $siteId = $input['site_id'] ?? null;
+        $officerAttendanceSatisfactory = $input['officer_attendance_satisfactory'] ?? 0;
+        $officerActivities = $input['officer_activities'] ?? null;
+        $siteCondition = $input['site_condition'] ?? 'Good';
+        $issuesFound = $input['issues_found'] ?? null;
+        $notes = $input['notes'] ?? null;
+
+        // Validate required fields
+        if (!$siteId) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Site ID is required']);
+            return;
+        }
+
+        if (empty($officerActivities)) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'Officer activities description is required']);
+            return;
+        }
+
+        // Prepare visit data
+        $visitData = [
+            'site_id' => $siteId,
+            'user_id' => $userId,
+            'officer_attendance_satisfactory' => $officerAttendanceSatisfactory,
+            'officer_activities' => $officerActivities,
+            'site_condition' => $siteCondition,
+            'issues_found' => $issuesFound,
+            'notes' => $notes
+        ];
+
+        // Mark site as visited
+        $result = $this->mobileRiderModel->markSiteAsVisited($visitData);
+        
+        // If successful, log the activity
+        if ($result['success']) {
+            // Get site details for activity log
+            $routeSites = $this->mobileRiderModel->getRouteSites($this->mobileRiderModel->getRouteByUserId($userId)->id ?? 0);
+            $siteName = 'Site';
+            foreach ($routeSites as $site) {
+                if ($site->id == $siteId) {
+                    $siteName = $site->site_name;
+                    break;
+                }
+            }
+            
+            // Log activity
+            $title = "Site Visit Completed";
+            $description = "Marked " . $siteName . " as visited - Condition: " . $siteCondition;
+            $type = "visit";
+            $this->mobileRiderModel->insertRecentActivity($title, $description, $type, $userId);
+        }
+        
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        exit;
     }
 
     // Messages
@@ -69,7 +203,7 @@ class MobileRider extends Controller
             'incident_reports' => $incident_reports,
             'incident_stats' => $incident_stats,
         ];
-        $this->view('mobilerider/v_incidents', $data);
+        $this->view('mobilerider/incidents/v_incidents', $data);
     }
     
     // Leave Requests

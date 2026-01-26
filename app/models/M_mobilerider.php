@@ -261,4 +261,236 @@ class M_mobilerider
         $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
         return $this->db->resultSet();
     }
+
+    // ========================================
+    // ROUTE AND SITE MANAGEMENT
+    // ========================================
+
+    /**
+     * Get mobile rider record by user ID
+     * Using mobile_rider_full_details view for complete information
+     */
+    public function getMobileRiderByUserId($userId)
+    {
+        $this->db->query("SELECT * FROM mobile_rider_full_details WHERE user_id = :user_id");
+        $this->db->bind(':user_id', $userId);
+        return $this->db->single();
+    }
+
+    /**
+     * Get route information for a mobile rider by their user ID
+     * Routes are assigned via routes.assigned_rider_id = Users.id
+     */
+    public function getRouteByUserId($userId)
+    {
+        if (empty($userId)) {
+            return null;
+        }
+        
+        $this->db->query("
+            SELECT r.*, 
+                   COUNT(rs.site_id) as site_count
+            FROM routes r
+            LEFT JOIN route_sites rs ON r.id = rs.route_id
+            WHERE r.assigned_rider_id = :user_id
+            GROUP BY r.id
+            LIMIT 1
+        ");
+        $this->db->bind(':user_id', $userId);
+        return $this->db->single();
+    }
+
+    /**
+     * Get route information by route ID
+     */
+    public function getRouteByRiderId($routeId)
+    {
+        if (empty($routeId)) {
+            return null;
+        }
+        
+        $this->db->query("
+            SELECT r.*, 
+                   COUNT(rs.site_id) as site_count
+            FROM routes r
+            LEFT JOIN route_sites rs ON r.id = rs.route_id
+            WHERE r.id = :route_id
+            GROUP BY r.id
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->single();
+    }
+
+    /**
+     * Get all sites assigned to a route with client information
+     */
+    public function getRouteSites($routeId)
+    {
+        $this->db->query("
+            SELECT s.*, 
+                   c.contact_person_name as client_name, 
+                   u.name as client_user_name
+            FROM route_sites rs
+            JOIN sites s ON rs.site_id = s.id
+            LEFT JOIN Clients c ON s.client_id = c.id
+            LEFT JOIN Users u ON c.user_id = u.id
+            WHERE rs.route_id = :route_id
+            ORDER BY s.site_name
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get route sites with coordinates for map display
+     */
+    public function getRouteSitesWithCoords($routeId)
+    {
+        $this->db->query("
+            SELECT s.id, s.site_name, s.address, s.latitude, s.longitude
+            FROM route_sites rs
+            JOIN sites s ON rs.site_id = s.id
+            WHERE rs.route_id = :route_id
+            ORDER BY s.site_name
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get site visit statistics for mobile rider
+     * NOTE: Only counts visits from TODAY (resets daily at midnight)
+     */
+    public function getSiteVisitStats($routeId)
+    {
+        $this->db->query("
+            SELECT 
+                COUNT(rs.site_id) as total_sites,
+                COUNT(sv.id) as sites_visited
+            FROM route_sites rs
+            LEFT JOIN site_visits sv ON rs.site_id = sv.site_id AND DATE(sv.visit_time) = CURDATE()
+            WHERE rs.route_id = :route_id
+        ");
+        $this->db->bind(':route_id', $routeId);
+        return $this->db->single();
+    }
+
+    /**
+     * Mark a site as visited (with visit details)
+     * Now accepts an array of visit data including form fields
+     */
+    public function markSiteAsVisited($visitData)
+    {
+        $siteId = $visitData['site_id'];
+        $userId = $visitData['user_id'];
+        
+        // Check if already visited today
+        $this->db->query("
+            SELECT id FROM site_visits 
+            WHERE site_id = :site_id 
+            AND user_id = :user_id 
+            AND DATE(visit_time) = CURDATE()
+        ");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':user_id', $userId);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Site already marked as visited today'];
+        }
+
+        // Insert new visit record with all form data
+        $this->db->query("
+            INSERT INTO site_visits (
+                site_id, 
+                user_id, 
+                visit_time, 
+                officer_attendance_satisfactory,
+                officer_activities,
+                site_condition,
+                issues_found,
+                notes
+            ) 
+            VALUES (
+                :site_id, 
+                :user_id, 
+                NOW(),
+                :officer_attendance_satisfactory,
+                :officer_activities,
+                :site_condition,
+                :issues_found,
+                :notes
+            )
+        ");
+        
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':officer_attendance_satisfactory', $visitData['officer_attendance_satisfactory'] ?? 0);
+        $this->db->bind(':officer_activities', $visitData['officer_activities'] ?? null);
+        $this->db->bind(':site_condition', $visitData['site_condition'] ?? 'Good');
+        $this->db->bind(':issues_found', $visitData['issues_found'] ?? null);
+        $this->db->bind(':notes', $visitData['notes'] ?? null);
+        
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Site visit report submitted successfully'];
+        } else {
+            return ['success' => false, 'message' => 'Failed to submit site visit report'];
+        }
+    }
+
+    /**
+     * Check if a site has been visited today
+     * NOTE: Returns false for visits from previous days (resets daily)
+     */
+    public function isSiteVisitedToday($siteId, $userId)
+    {
+        $this->db->query("
+            SELECT id FROM site_visits 
+            WHERE site_id = :site_id 
+            AND user_id = :user_id 
+            AND DATE(visit_time) = CURDATE()
+        ");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':user_id', $userId);
+        return $this->db->single() !== false;
+    }
+
+    /**
+     * Insert recent activity for mobile rider
+     */
+    public function insertRecentActivity($title, $description, $type, $userId = null) {
+        // If userId is not provided, get it from session
+        if ($userId === null) {
+            $userId = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+        }
+        
+        $this->db->query('
+            INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+            VALUES (:user_id, :title, :description, :type)
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':title', $title);
+        $this->db->bind(':description', $description);
+        $this->db->bind(':type', $type);
+        
+        return $this->db->execute();
+    }
+
+    /**
+     * Get recent activities for current mobile rider
+     */
+    public function getRecentActivities($userId, $limit = 50) {
+        $this->db->query('
+            SELECT * FROM recent_activities 
+            WHERE user_id = :user_id 
+            ORDER BY created_at DESC 
+            LIMIT :limit
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':limit', $limit);
+        
+        return $this->db->resultSet();
+    }
 }

@@ -589,6 +589,25 @@ CREATE TABLE IF NOT EXISTS route_sites (
     FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
 );
 
+-- Site visits table to track mobile rider site visits
+CREATE TABLE IF NOT EXISTS site_visits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    site_id BIGINT UNSIGNED NOT NULL,
+    user_id INT NOT NULL,
+    visit_time DATETIME NOT NULL,
+    officer_attendance_satisfactory TINYINT(1) DEFAULT 0 COMMENT '1 = satisfactory, 0 = not satisfactory',
+    officer_activities TEXT DEFAULT NULL COMMENT 'Description of officer activities observed',
+    site_condition ENUM('Excellent', 'Good', 'Fair', 'Poor') DEFAULT 'Good',
+    issues_found TEXT DEFAULT NULL COMMENT 'Any issues or concerns identified',
+    notes TEXT DEFAULT NULL COMMENT 'Additional notes about the visit',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
+    INDEX idx_site_user (site_id, user_id),
+    INDEX idx_visit_date (visit_time),
+    INDEX idx_user_id (user_id)
+);
+
 CREATE TABLE IF NOT EXISTS mobile_rider (
     id INT PRIMARY KEY AUTO_INCREMENT,
     userID INT,
