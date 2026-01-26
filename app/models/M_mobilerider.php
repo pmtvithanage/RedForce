@@ -49,30 +49,38 @@ class M_mobilerider
 
     public function addIncident($data)
     {
-        // Prepare the SQL query
+        // Prepare the SQL query - Updated to include new fields
         $this->db->query("
         INSERT INTO incident_reports 
-        (user_id, officer_name, officer_role, property_site, incident_type, 
+        (user_id, officer_name, officer_role, site_id, property_site, incident_type, 
          incident_date, incident_time, incident_description, action_taken, 
-         severity, additional_details, media_files, created_at) 
+         severity, priority, people_involved, additional_details, media_files, 
+         latitude, longitude, status, created_at) 
         VALUES 
-        (:user_id, :officer_name, :officer_role, :property_site, :incident_type, 
+        (:user_id, :officer_name, :officer_role, :site_id, :property_site, :incident_type, 
          :incident_date, :incident_time, :incident_description, :action_taken, 
-         :severity, :additional_details, :media_files, NOW())");
+         :severity, :priority, :people_involved, :additional_details, :media_files, 
+         :latitude, :longitude, :status, NOW())");
 
         // Bind parameters
         $this->db->bind(':user_id', $data['user_id']);
-        $this->db->bind(':officer_name', $data['officer_name']);
-        $this->db->bind(':officer_role', $data['officer_role']);
-        $this->db->bind(':property_site', $data['property_site']);
+        $this->db->bind(':officer_name', $data['officer_name'] ?? '');
+        $this->db->bind(':officer_role', $data['officer_role'] ?? 'mobile rider');
+        $this->db->bind(':site_id', $data['site_id'] ?? null);
+        $this->db->bind(':property_site', $data['property_site'] ?? $data['site_id'] ?? null);
         $this->db->bind(':incident_type', $data['incident_type']);
         $this->db->bind(':incident_date', $data['incident_date']);
         $this->db->bind(':incident_time', $data['incident_time']);
         $this->db->bind(':incident_description', $data['incident_description']);
-        $this->db->bind(':action_taken', $data['action_taken']);
-        $this->db->bind(':severity', $data['severity']);
-        $this->db->bind(':additional_details', $data['follow_up_id']);
-        $this->db->bind(':media_files', $data['media_files']);
+        $this->db->bind(':action_taken', $data['action_taken'] ?? '');
+        $this->db->bind(':severity', $data['severity'] ?? null);
+        $this->db->bind(':priority', $data['priority'] ?? 'Medium');
+        $this->db->bind(':people_involved', $data['people_involved'] ?? null);
+        $this->db->bind(':additional_details', $data['additional_details'] ?? null);
+        $this->db->bind(':media_files', $data['media_files'] ?? null);
+        $this->db->bind(':latitude', $data['latitude'] ?? null);
+        $this->db->bind(':longitude', $data['longitude'] ?? null);
+        $this->db->bind(':status', $data['status'] ?? 'Pending');
 
         // Execute
         return $this->db->execute();
@@ -83,10 +91,66 @@ class M_mobilerider
         $this->db->query("SELECT * FROM incident_reports");
         return $this->db->resultSet();
     }
+    
+    // Get incidents for a specific user (mobile rider)
+    public function getIncidentsByUserId($userId)
+    {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            WHERE ir.user_id = :user_id
+            ORDER BY ir.created_at DESC
+        ");
+        $this->db->bind(':user_id', $userId);
+        return $this->db->resultSet();
+    }
+    
+    // Create new incident report with new schema
+    public function createIncidentReport($data)
+    {
+        $this->db->query("
+            INSERT INTO incident_reports 
+            (user_id, property_site, incident_type, incident_date, incident_time, 
+             incident_description, action_taken, severity, additional_details, 
+             media_files, created_at) 
+            VALUES 
+            (:user_id, :site_id, :incident_type, :incident_date, :incident_time, 
+             :description, :actions_taken, :priority, :people_involved, 
+             :evidence_files, NOW())
+        ");
+        
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':site_id', $data['site_id']);
+        $this->db->bind(':incident_type', $data['incident_type']);
+        $this->db->bind(':incident_date', $data['incident_date']);
+        $this->db->bind(':incident_time', $data['incident_time']);
+        $this->db->bind(':description', $data['description']);
+        $this->db->bind(':actions_taken', $data['actions_taken']);
+        $this->db->bind(':priority', $data['priority']);
+        $this->db->bind(':people_involved', $data['people_involved']);
+        $this->db->bind(':evidence_files', $data['evidence_files']);
+        
+        return $this->db->execute();
+    }
 
     public function getIncidentById($id)
     {
-        $this->db->query('SELECT * FROM incident_reports WHERE id = :id LIMIT 1');
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            WHERE ir.id = :id 
+            LIMIT 1
+        ");
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
@@ -491,6 +555,66 @@ class M_mobilerider
         $this->db->bind(':user_id', $userId);
         $this->db->bind(':limit', $limit);
         
+        return $this->db->resultSet();
+    }
+    
+    /**
+     * Log activity for mobile rider
+     */
+    public function logActivity($data) {
+        $this->db->query('
+            INSERT INTO recent_activities 
+            (user_id, activity_type, activity_titel, activity_details, created_at) 
+            VALUES 
+            (:user_id, :activity_type, :activity_titel, :activity_details, NOW())
+        ');
+        
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':activity_type', $data['activity_type']);
+        $this->db->bind(':activity_titel', $data['activity_titel']);
+        $this->db->bind(':activity_details', $data['activity_details']);
+        
+        return $this->db->execute();
+    }
+    
+    /**
+     * Add review to incident
+     */
+    public function addIncidentReview($data) {
+        $this->db->query('
+            INSERT INTO incident_reviews 
+            (incident_id, user_id, reviewer_name, review_type, review_title, review_details, created_at) 
+            VALUES 
+            (:incident_id, :user_id, :reviewer_name, :review_type, :review_title, :review_details, NOW())
+        ');
+        
+        $this->db->bind(':incident_id', $data['incident_id']);
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':reviewer_name', $data['reviewer_name']);
+        $this->db->bind(':review_type', $data['review_type']);
+        $this->db->bind(':review_title', $data['review_title']);
+        $this->db->bind(':review_details', $data['review_details']);
+        
+        return $this->db->execute();
+    }
+    
+    /**
+     * Get all reviews for an incident
+     */
+    public function getIncidentReviews($incidentId) {
+        $this->db->query('
+            SELECT 
+                ir.*,
+                u.profile_image,
+                u.name as user_name,
+                u.role
+            FROM incident_reviews ir
+            LEFT JOIN Users u ON ir.user_id = u.id
+            WHERE ir.incident_id = :incident_id
+            ORDER BY ir.created_at DESC
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
         return $this->db->resultSet();
     }
 }

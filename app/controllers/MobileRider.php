@@ -194,16 +194,261 @@ class MobileRider extends Controller
     // Incidents
     public function incidents()
     {
-        $incident_reports = $this->mobileRiderModel->getAllIncidents();
-        $incident_stats = $this->mobileRiderModel->getAllIncidentStatistics();
-
-        $data = [
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+        
+        // Get incidents for this rider
+        $incidents = $this->mobileRiderModel->getIncidentsByUserId($userId);
+        
+        // Calculate statistics
+        $stats = [
+            'total_incidents' => count($incidents),
+            'pending_incidents' => 0,
+            'inprogress_incidents' => 0,
+            'resolved_incidents' => 0
+        ];
+        
+        foreach ($incidents as $incident) {
+            $status = strtolower($incident->status ?? 'pending');
+            if ($status === 'pending') {
+                $stats['pending_incidents']++;
+            } elseif ($status === 'in progress') {
+                $stats['inprogress_incidents']++;
+            } elseif ($status === 'resolved' || $status === 'closed') {
+                $stats['resolved_incidents']++;
+            }
+        }
+        
+        $data = array_merge([
             'title' => 'Incidents',
             'pageTitle' => 'Incident Reports',
-            'incident_reports' => $incident_reports,
-            'incident_stats' => $incident_stats,
-        ];
+            'incidents' => $incidents
+        ], $stats);
+        
         $this->view('mobilerider/incidents/v_incidents', $data);
+    }
+
+    public function createIncident()
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+        
+        // Get route and sites for this rider
+        $route = $this->mobileRiderModel->getRouteByUserId($userId);
+        $sites = [];
+        
+        if ($route) {
+            $sites = $this->mobileRiderModel->getRouteSites($route->id);
+        }
+        
+        // Handle POST request
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize input
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            // Initialize data array
+            $data = [
+                'title' => 'Incidents',
+                'pageTitle' => 'Report New Incident',
+                'sites' => $sites,
+                // Form values
+                'incident_type' => trim($_POST['incident_type'] ?? ''),
+                'site_id' => trim($_POST['site_id'] ?? ''),
+                'incident_date' => trim($_POST['incident_date'] ?? ''),
+                'incident_time' => trim($_POST['incident_time'] ?? ''),
+                'priority' => trim($_POST['priority'] ?? 'Medium'),
+                'description' => trim($_POST['description'] ?? ''),
+                'actions_taken' => trim($_POST['actions_taken'] ?? ''),
+                'people_involved' => trim($_POST['people_involved'] ?? ''),
+                'latitude' => trim($_POST['latitude'] ?? ''),
+                'longitude' => trim($_POST['longitude'] ?? ''),
+                // Form errors
+                'incident_type_err' => '',
+                'site_id_err' => '',
+                'incident_date_err' => '',
+                'incident_time_err' => '',
+                'priority_err' => '',
+                'description_err' => '',
+            ];
+            
+            // Validation
+            if (empty($data['incident_type'])) {
+                $data['incident_type_err'] = 'Please select an incident type';
+            }
+            
+            if (empty($data['site_id'])) {
+                $data['site_id_err'] = 'Please select a site';
+            }
+            
+            if (empty($data['incident_date'])) {
+                $data['incident_date_err'] = 'Please select incident date';
+            }
+            
+            if (empty($data['incident_time'])) {
+                $data['incident_time_err'] = 'Please select incident time';
+            }
+            
+            if (empty($data['description'])) {
+                $data['description_err'] = 'Please provide a description';
+            }
+            
+            // Handle file uploads
+            $uploadedFiles = [];
+            if (!empty($_FILES['evidence_files']['name'][0])) {
+                $uploadDir = 'uploads/evidence/';
+                
+                // Create directory if it doesn't exist
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                
+                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                $maxFileSize = 5 * 1024 * 1024; // 5MB
+                
+                foreach ($_FILES['evidence_files']['tmp_name'] as $key => $tmp_name) {
+                    if ($_FILES['evidence_files']['error'][$key] == 0) {
+                        $fileType = $_FILES['evidence_files']['type'][$key];
+                        $fileSize = $_FILES['evidence_files']['size'][$key];
+                        
+                        // Validate file type and size
+                        if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
+                            $fileName = uniqid() . '_' . basename($_FILES['evidence_files']['name'][$key]);
+                            $targetFile = $uploadDir . $fileName;
+                            
+                            if (move_uploaded_file($tmp_name, $targetFile)) {
+                                $uploadedFiles[] = $fileName;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check if there are no validation errors
+            if (empty($data['incident_type_err']) && empty($data['site_id_err']) && 
+                empty($data['incident_date_err']) && empty($data['incident_time_err']) && 
+                empty($data['description_err'])) {
+                
+                // Get user details
+                $user = $this->userModel->getUserById($userId);
+                
+                // Prepare incident data
+                $incidentData = [
+                    'user_id' => $userId,
+                    'officer_name' => $user->name ?? 'Unknown',
+                    'officer_role' => 'mobile rider',
+                    'site_id' => $data['site_id'],
+                    'property_site' => $data['site_id'], // For backward compatibility
+                    'incident_type' => $data['incident_type'],
+                    'incident_date' => $data['incident_date'],
+                    'incident_time' => $data['incident_time'],
+                    'incident_description' => $data['description'],
+                    'action_taken' => $data['actions_taken'],
+                    'severity' => $data['priority'], // Map priority to severity for backward compatibility
+                    'priority' => $data['priority'],
+                    'people_involved' => $data['people_involved'],
+                    'additional_details' => null,
+                    'media_files' => !empty($uploadedFiles) ? implode(',', $uploadedFiles) : null,
+                    'latitude' => !empty($data['latitude']) ? $data['latitude'] : null,
+                    'longitude' => !empty($data['longitude']) ? $data['longitude'] : null,
+                    'status' => 'Pending'
+                ];
+                
+                // Add incident to database
+                if ($this->mobileRiderModel->addIncident($incidentData)) {
+                    // Log activity
+                    $this->mobileRiderModel->logActivity([
+                        'user_id' => $userId,
+                        'activity_type' => 'incident_report',
+                        'activity_titel' => 'New Incident Reported',
+                        'activity_details' => "Reported incident: {$data['incident_type']} at site ID {$data['site_id']}"
+                    ]);
+                    
+                    flash('incident_message', 'Incident reported successfully!', 'alert alert-success');
+                    redirect('MobileRider/incidents');
+                } else {
+                    flash('incident_message', 'Error submitting incident report. Please try again.', 'alert alert-danger');
+                }
+            }
+            
+            // Load view with errors
+            $this->view('mobilerider/incidents/v_create_Incident', $data);
+        } else {
+            // GET request - show form
+            $data = [
+                'title' => 'Incidents',
+                'pageTitle' => 'Report New Incident',
+                'sites' => $sites,
+                // Form error fields
+                'incident_type_err' => '',
+                'site_id_err' => '',
+                'incident_date_err' => '',
+                'incident_time_err' => '',
+                'priority_err' => '',
+                'description_err' => '',
+                // Form values
+                'incident_type' => '',
+                'site_id' => '',
+                'incident_date' => date('Y-m-d'),
+                'incident_time' => date('H:i'),
+                'priority' => 'Medium',
+                'description' => '',
+                'actions_taken' => '',
+                'people_involved' => '',
+                'latitude' => '',
+                'longitude' => ''
+            ];
+            $this->view('mobilerider/incidents/v_create_Incident', $data);
+        }
+    }
+
+    public function viewIncident($id = null)
+    {
+        // Get incident ID from parameter or query string
+        $incidentId = $id ?? $_GET['id'] ?? null;
+        
+        if (!$incidentId) {
+            flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
+            redirect('MobileRider/incidents');
+            return;
+        }
+        
+        // Get incident details
+        $incident = $this->mobileRiderModel->getIncidentById($incidentId);
+        
+        if (!$incident) {
+            flash('incident_message', 'Incident not found.', 'alert alert-danger');
+            redirect('MobileRider/incidents');
+            return;
+        }
+        
+        // Verify this incident belongs to the current user
+        $userId = $_SESSION['user_id'] ?? null;
+        if ($incident->user_id != $userId) {
+            flash('incident_message', 'Unauthorized access.', 'alert alert-danger');
+            redirect('MobileRider/incidents');
+            return;
+        }
+        
+        // Get reviews for this incident
+        $reviews = $this->mobileRiderModel->getIncidentReviews($incidentId);
+        
+        $data = [
+            'title' => 'Incidents',
+            'pageTitle' => 'Incident Details',
+            'incident' => $incident,
+            'reviews' => $reviews
+        ];
+        $this->view('mobilerider/incidents/v_view_incident', $data);
     }
     
     // Leave Requests
@@ -492,62 +737,134 @@ class MobileRider extends Controller
     public function addIncident()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-
             // Clean incoming data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
-
-            // Handle multiple severity checkboxes (convert to string)
-            $severity = isset($_POST['severity']) ? implode(',', $_POST['severity']) : null;
-
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $userId = $_SESSION['user_id'] ?? null;
+            
+            if (!$userId) {
+                flash('msg', 'Session expired. Please login again.', 'alert-danger');
+                redirect('users/login');
+                return;
+            }
+            
+            // Initialize data array with form values
+            $data = [
+                'title' => 'Report Incident',
+                'pageTitle' => 'Report New Incident',
+                'incident_type' => trim($_POST['incident_type'] ?? ''),
+                'site_id' => trim($_POST['site_id'] ?? ''),
+                'incident_date' => trim($_POST['incident_date'] ?? ''),
+                'incident_time' => trim($_POST['incident_time'] ?? ''),
+                'priority' => trim($_POST['priority'] ?? 'Medium'),
+                'description' => trim($_POST['description'] ?? ''),
+                'actions_taken' => trim($_POST['actions_taken'] ?? ''),
+                'people_involved' => trim($_POST['people_involved'] ?? ''),
+                'latitude' => trim($_POST['latitude'] ?? ''),
+                'longitude' => trim($_POST['longitude'] ?? ''),
+                // Error fields
+                'incident_type_err' => '',
+                'site_id_err' => '',
+                'incident_date_err' => '',
+                'incident_time_err' => '',
+                'description_err' => '',
+            ];
+            
+            // Validate inputs
+            if (empty($data['incident_type'])) {
+                $data['incident_type_err'] = 'Please select an incident type';
+            }
+            
+            if (empty($data['site_id'])) {
+                $data['site_id_err'] = 'Please select a site';
+            }
+            
+            if (empty($data['incident_date'])) {
+                $data['incident_date_err'] = 'Please select incident date';
+            }
+            
+            if (empty($data['incident_time'])) {
+                $data['incident_time_err'] = 'Please select incident time';
+            }
+            
+            if (empty($data['description'])) {
+                $data['description_err'] = 'Please provide incident description';
+            }
+            
             // Handle file uploads (optional)
             $uploadedFiles = [];
-            if (!empty($_FILES['media_files']['name'][0])) {
-                $uploadDir = APP_ROOT . '/public/uploads/incidents/';
-
+            if (!empty($_FILES['evidence_files']['name'][0])) {
+                $uploadDir = APP_ROOT . '/../public/uploads/incidents/';
+                
                 // Create directory if not exists
                 if (!file_exists($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-
-                foreach ($_FILES['media_files']['tmp_name'] as $key => $tmp_name) {
-                    $fileName = basename($_FILES['media_files']['name'][$key]);
-                    $targetFile = $uploadDir . $fileName;
-
-                    if (move_uploaded_file($tmp_name, $targetFile)) {
-                        $uploadedFiles[] = $fileName;
+                
+                foreach ($_FILES['evidence_files']['tmp_name'] as $key => $tmp_name) {
+                    if (!empty($tmp_name)) {
+                        $fileName = time() . '_' . basename($_FILES['evidence_files']['name'][$key]);
+                        $targetFile = $uploadDir . $fileName;
+                        
+                        if (move_uploaded_file($tmp_name, $targetFile)) {
+                            $uploadedFiles[] = $fileName;
+                        }
                     }
                 }
             }
-
-            // Prepare data for model
-            $data = [
-                'user_id' => $_SESSION['user_id'],
-                'officer_name' => $_POST['officer_name'],
-                'officer_role' => $_POST['officer_role'],
-                'property_site' => $_POST['property_site'],
-                'incident_type' => $_POST['incident_type'],
-                'incident_date' => $_POST['incident_date'],
-                'incident_time' => $_POST['incident_time'],
-                'incident_description' => $_POST['incident_description'],
-                'action_taken' => $_POST['action_taken'],
-                'severity' => $severity,
-                'follow_up_id' => $_POST['follow_up_id'] ?? null,
-                'media_files' => !empty($uploadedFiles) ? implode(',', $uploadedFiles) : null
-            ];
-
-            // Insert record
-            if ($this->mobileRiderModel->addIncident($data)) {
-                flash('incident_message', 'Incident Report submitted successfully!');
-                redirect('MobileRider/incidents');
+            
+            // Check for errors
+            if (empty($data['incident_type_err']) && empty($data['site_id_err']) && 
+                empty($data['incident_date_err']) && empty($data['incident_time_err']) && 
+                empty($data['description_err'])) {
+                
+                // No errors - prepare data for insertion
+                $incidentData = [
+                    'user_id' => $userId,
+                    'site_id' => $data['site_id'],
+                    'incident_type' => $data['incident_type'],
+                    'incident_date' => $data['incident_date'],
+                    'incident_time' => $data['incident_time'],
+                    'priority' => $data['priority'],
+                    'description' => $data['description'],
+                    'actions_taken' => $data['actions_taken'],
+                    'people_involved' => $data['people_involved'],
+                    'latitude' => $data['latitude'],
+                    'longitude' => $data['longitude'],
+                    'evidence_files' => !empty($uploadedFiles) ? implode(',', $uploadedFiles) : null
+                ];
+                
+                // Insert into database
+                if ($this->mobileRiderModel->createIncidentReport($incidentData)) {
+                    flash('incident_message', 'Incident report submitted successfully!', 'alert-success');
+                    redirect('MobileRider/incidents');
+                } else {
+                    flash('incident_message', 'Error submitting report. Please try again.', 'alert-danger');
+                    
+                    // Get sites for form reload
+                    $route = $this->mobileRiderModel->getRouteByUserId($userId);
+                    $data['sites'] = [];
+                    if ($route) {
+                        $data['sites'] = $this->mobileRiderModel->getRouteSites($route->id);
+                    }
+                    
+                    $this->view('mobilerider/incidents/v_create_Incident', $data);
+                }
             } else {
-                flash('incident_message', 'Error submitting report. Please try again.', 'alert alert-danger');
-                $this->view('mobilerider/v_incidents', $data);
+                // Validation errors - reload form with data
+                
+                // Get sites for form
+                $route = $this->mobileRiderModel->getRouteByUserId($userId);
+                $data['sites'] = [];
+                if ($route) {
+                    $data['sites'] = $this->mobileRiderModel->getRouteSites($route->id);
+                }
+                
+                $this->view('mobilerider/incidents/v_create_Incident', $data);
             }
         } else {
-            $data = [
-                'title' => 'Incidents',
-            ];
-            $this->view('mobilerider/v_incidents', $data);
+            // GET request - redirect to create form
+            redirect('MobileRider/createIncident');
         }
     }
 
@@ -656,6 +973,68 @@ class MobileRider extends Controller
             redirect('MobileRider/incidents');
         } else {
             flash('incident_message', 'Invalid request method.', 'alert alert-danger');
+            redirect('MobileRider/incidents');
+        }
+    }
+    
+    public function addIncidentReview()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize input
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $userId = $_SESSION['user_id'] ?? null;
+            $incidentId = $_POST['incident_id'] ?? null;
+            
+            if (!$userId) {
+                flash('incident_message', 'Session expired. Please login again.', 'alert alert-danger');
+                redirect('users/login');
+                return;
+            }
+            
+            if (!$incidentId) {
+                flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
+                redirect('MobileRider/incidents');
+                return;
+            }
+            
+            // Validate input
+            if (empty($_POST['review_title']) || empty($_POST['review_details'])) {
+                flash('incident_message', 'Review title and details are required.', 'alert alert-danger');
+                redirect('MobileRider/viewIncident/' . $incidentId);
+                return;
+            }
+            
+            // Get user details
+            $user = $this->userModel->getUserById($userId);
+            
+            // Prepare review data
+            $reviewData = [
+                'incident_id' => $incidentId,
+                'user_id' => $userId,
+                'reviewer_name' => $user->name ?? 'Unknown',
+                'review_type' => $_POST['review_type'] ?? 'Comment',
+                'review_title' => trim($_POST['review_title']),
+                'review_details' => trim($_POST['review_details'])
+            ];
+            
+            // Add review to database
+            if ($this->mobileRiderModel->addIncidentReview($reviewData)) {
+                // Log activity
+                $this->mobileRiderModel->logActivity([
+                    'user_id' => $userId,
+                    'activity_type' => 'incident_review',
+                    'activity_titel' => 'Added Review to Incident',
+                    'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
+                ]);
+                
+                flash('incident_message', 'Review added successfully!', 'alert alert-success');
+            } else {
+                flash('incident_message', 'Error adding review. Please try again.', 'alert alert-danger');
+            }
+            
+            redirect('MobileRider/viewIncident/' . $incidentId);
+        } else {
             redirect('MobileRider/incidents');
         }
     }
