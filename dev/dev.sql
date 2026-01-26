@@ -188,44 +188,66 @@ CREATE TABLE Notes (
   );
    
 -- Table structure for table `incident_reports`
-CREATE TABLE `incident_reports` (
-  `id` int(11) NOT NULL,
+CREATE TABLE IF NOT EXISTS `incident_reports` (
+  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
   `user_id` int(11) NOT NULL,
   `officer_name` varchar(100) NOT NULL,
   `officer_role` varchar(100) NOT NULL,
-  `property_site` varchar(50) DEFAULT NULL,
+  `property_site` varchar(50) DEFAULT NULL COMMENT 'Legacy field - use site_id instead',
+  `site_id` BIGINT UNSIGNED NULL COMMENT 'Foreign key to sites table',
   `incident_type` varchar(50) NOT NULL,
   `incident_date` date NOT NULL,
   `incident_time` time NOT NULL,
   `incident_description` text NOT NULL,
   `action_taken` text DEFAULT NULL,
-  `severity` varchar(50) DEFAULT NULL,
+  `severity` varchar(50) DEFAULT NULL COMMENT 'Legacy field - use priority instead',
+  `priority` ENUM('Low', 'Medium', 'High', 'Critical') DEFAULT 'Medium' COMMENT 'Incident priority level',
+  `people_involved` TEXT NULL COMMENT 'Names of people involved',
   `additional_details` varchar(255) DEFAULT NULL,
   `media_files` text DEFAULT NULL,
+  `latitude` DECIMAL(10, 8) NULL COMMENT 'Incident location latitude',
+  `longitude` DECIMAL(11, 8) NULL COMMENT 'Incident location longitude',
+  `status` ENUM('Pending', 'In Progress', 'Resolved', 'Closed') DEFAULT 'Pending' COMMENT 'Incident status',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-);
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  
+  -- Foreign Keys
+  CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_incident_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL,
+  
+  -- Indexes
+  INDEX `idx_site_id` (`site_id`),
+  INDEX `idx_priority` (`priority`),
+  INDEX `idx_status` (`status`),
+  INDEX `idx_incident_date` (`incident_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 
-
--- Indexes for table `incident_reports`
-
-ALTER TABLE `incident_reports`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_incident_user` (`user_id`);
-
-
--- AUTO_INCREMENT for table `incident_reports`
-
-ALTER TABLE `incident_reports`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
-
-
--- Constraints for table `incident_reports`
-
-ALTER TABLE `incident_reports`
-  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
+-- ============================================
+-- INCIDENT REVIEWS TABLE
+-- Stores reviews and comments added by mobile riders to incidents
+-- ============================================
+CREATE TABLE IF NOT EXISTS `incident_reviews` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `incident_id` INT NOT NULL COMMENT 'Foreign key to incident_reports table',
+  `user_id` INT NOT NULL COMMENT 'User who added the review',
+  `reviewer_name` VARCHAR(255) NOT NULL COMMENT 'Name of the reviewer',
+  `review_type` ENUM('Update', 'Action', 'Comment', 'Follow-up') DEFAULT 'Comment' COMMENT 'Type of review',
+  `review_title` VARCHAR(255) NOT NULL COMMENT 'Brief title for the review',
+  `review_details` TEXT NOT NULL COMMENT 'Detailed review content',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  
+  -- Foreign Keys
+  CONSTRAINT `fk_review_incident` FOREIGN KEY (`incident_id`) REFERENCES `incident_reports` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
+  
+  -- Indexes
+  INDEX `idx_incident_id` (`incident_id`),
+  INDEX `idx_user_id` (`user_id`),
+  INDEX `idx_created_at` (`created_at`),
+  INDEX `idx_review_type` (`review_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Incident reviews and updates by mobile riders';
 
 
 -- Attendance table for QR scanner
