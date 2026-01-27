@@ -218,6 +218,14 @@
             return $result->count ?? 0;
         }
 
+        // Get officer rank from premise_officers table
+        public function getOfficerRank($userId) {
+            $this->db->query("SELECT rank FROM premise_officers WHERE userID = :userID");
+            $this->db->bind(":userID", $userId);
+            $result = $this->db->single();
+            return $result->rank ?? null;
+        }
+
         // Register new user with details
         public function register($data) {
             try {

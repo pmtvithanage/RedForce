@@ -376,7 +376,10 @@
                             Rank
                         </div>
                         <div class="detail-value">
-                            <span class="badge badge-senior"><?php echo $officer->rank; ?></span>
+                            <select id="rank" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="rank" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; font-weight: 600;">
+                                <option value="Junior" <?php echo ($officer->rank == 'Junior') ? 'selected' : ''; ?>>Junior</option>
+                                <option value="Senior" <?php echo ($officer->rank == 'Senior') ? 'selected' : ''; ?>>Senior</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -394,7 +397,12 @@
                             Employment Status
                         </div>
                         <div class="detail-value">
-                            <span class="profile-status status-active"><?php echo $officer->user_status; ?></span>
+                            <select id="employment_status" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="employment_status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; font-weight: 600;">
+                                <option value="Active" <?php echo ($officer->user_status == 'Active') ? 'selected' : ''; ?>>Active</option>
+                                <option value="On Leave" <?php echo ($officer->user_status == 'On Leave') ? 'selected' : ''; ?>>On Leave</option>
+                                <option value="Suspended" <?php echo ($officer->user_status == 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
+                                <option value="Inactive" <?php echo ($officer->user_status == 'Inactive') ? 'selected' : ''; ?>>Inactive</option>
+                            </select>
                         </div>
                     </div>
                     
@@ -440,4 +448,60 @@
     <div class="backdrop" id="backdrop" hidden></div>
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+    <script>
+        // Auto-save functionality for editable selects
+        document.querySelectorAll('.editable-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const officerId = this.dataset.officerId;
+                const field = this.dataset.field;
+                const value = this.value;
+                const originalBg = this.style.backgroundColor;
+                
+                // Show loading state
+                this.style.backgroundColor = '#fff3cd';
+                this.disabled = true;
+                
+                // Send update to server
+                fetch('<?php echo URL_ROOT; ?>/admin/updateOfficerField', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        officer_id: officerId,
+                        field: field,
+                        value: value,
+                        role: 'mobile rider'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Show success state
+                        this.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            this.style.backgroundColor = originalBg;
+                        }, 1500);
+                    } else {
+                        alert('Error updating field: ' + (data.message || 'Unknown error'));
+                        this.style.backgroundColor = '#f8d7da';
+                        setTimeout(() => {
+                            this.style.backgroundColor = originalBg;
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating field');
+                    this.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => {
+                        this.style.backgroundColor = originalBg;
+                    }, 1500);
+                })
+                .finally(() => {
+                    this.disabled = false;
+                });
+            });
+        });
+    </script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

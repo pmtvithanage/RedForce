@@ -1578,4 +1578,41 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         
         return $this->db->execute();
     }
+
+    /**
+     * Update officer field (rank or employment_status)
+     */
+    public function updateOfficerField($officerId, $field, $value, $role) {
+        // Determine the table based on role
+        $table = '';
+        $statusField = 'employment_status';
+        
+        switch(strtolower($role)) {
+            case 'premise officer':
+                $table = 'premise_officers';
+                break;
+            case 'caretaker':
+                $table = 'caretakers';
+                break;
+            case 'mobile rider':
+                $table = 'mobile_riders';
+                break;
+            default:
+                return false;
+        }
+        
+        // Build query based on field
+        if ($field === 'rank') {
+            $this->db->query("UPDATE $table SET rank = :value WHERE userID = :user_id");
+        } elseif ($field === 'employment_status') {
+            $this->db->query("UPDATE $table SET $statusField = :value WHERE userID = :user_id");
+        } else {
+            return false;
+        }
+        
+        $this->db->bind(':value', $value);
+        $this->db->bind(':user_id', $officerId);
+        
+        return $this->db->execute();
+    }
 }

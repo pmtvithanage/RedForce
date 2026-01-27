@@ -2037,6 +2037,68 @@ public function rejectLeave($id) {
         $result = $this->adminModel->unassignOfficerFromSite($assignmentId);
         echo json_encode($result);
     }
+
+    // AJAX endpoint to update officer field (rank or employment status)
+    public function updateOfficerField() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $officerId = $input['officer_id'] ?? null;
+        $field = $input['field'] ?? null;
+        $value = $input['value'] ?? null;
+        $role = $input['role'] ?? null;
+
+        // Debug logging
+        error_log("Update Officer Field - Officer ID: $officerId, Field: $field, Value: $value, Role: $role");
+
+        if (!$officerId || !$field || !$value || !$role) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Missing required parameters',
+                'debug' => [
+                    'officer_id' => $officerId,
+                    'field' => $field,
+                    'value' => $value,
+                    'role' => $role
+                ]
+            ]);
+            return;
+        }
+
+        // Validate field name
+        $allowedFields = ['rank', 'employment_status'];
+        if (!in_array($field, $allowedFields)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid field: ' . $field]);
+            return;
+        }
+
+        try {
+            $result = $this->adminModel->updateOfficerField($officerId, $field, $value, $role);
+            
+            if ($result) {
+                // Log the activity
+                $title = ucfirst(str_replace('_', ' ', $field)) . ' Updated';
+                $description = "Officer ID: $officerId - $field changed to: $value";
+                $this->adminModel->insertRecentActivity($title, $description, 'officer');
+                
+                echo json_encode(['success' => true, 'message' => 'Updated successfully']);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Database update failed - no rows affected']);
+            }
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false, 
+                'message' => 'Exception: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
+    }
 }
 
 

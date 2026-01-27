@@ -55,6 +55,15 @@
                             session_start();
                         }
                         session_regenerate_id(true);
+                        
+                        // Check if premise officer has Supervisor rank
+                        if(strtolower($loggedInUser->role) === 'premise officer') {
+                            $officerRank = $this->userModel->getOfficerRank($loggedInUser->id);
+                            if($officerRank === 'Supervisor') {
+                                $loggedInUser->role = 'supervisor';
+                            }
+                        }
+                        
                         //Create session and redirect to appropriate dashboard
                         $this->createUserSession($loggedInUser);
                         $this->redirectToDashboard();
