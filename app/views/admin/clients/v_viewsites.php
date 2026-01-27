@@ -2,6 +2,20 @@
 
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/flash_msg.css">
+
+<?php
+// Get flash messages
+$successMessage = $_SESSION['success_msg'] ?? '';
+$errorMessage = $_SESSION['error_msg'] ?? '';
+if (!empty($successMessage)) {
+    unset($_SESSION['success_msg']);
+}
+if (!empty($errorMessage)) {
+    unset($_SESSION['error_msg']);
+}
+?>
+
 <style>
     :root{
       --bg: #f0f2f5;
@@ -323,6 +337,21 @@
 
 <div class="shell" role="main">
 
+    <!-- Flash Messages -->
+    <?php if (!empty($successMessage)): ?>
+    <div class="alert-success">
+        <span class="material-symbols-outlined">check_circle</span>
+        <?php echo $successMessage; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if (!empty($errorMessage)): ?>
+    <div class="alert-danger">
+        <span class="material-symbols-outlined">error</span>
+        <?php echo $errorMessage; ?>
+    </div>
+    <?php endif; ?>
+
     <!-- COVER -->
     <div class="cover" aria-hidden="true">
       <button class="tertiary-btn" style="display:flex; width:100px; margin:20px;align-items:center;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile/<?php echo $data['client']->id; ?>'"> 
@@ -627,15 +656,28 @@ function assignOfficer(officerId, shiftType) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Officer assigned successfully!');
-            location.reload();
+            // Set success message in session and reload
+            fetch(urlRoot + '/admin/setFlashMessage', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'success', message: 'Officer assigned successfully!'})
+            }).then(() => location.reload());
         } else {
-            alert('Error: ' + data.message);
+            // Set error message in session and reload
+            fetch(urlRoot + '/admin/setFlashMessage', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'error', message: data.message})
+            }).then(() => location.reload());
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error assigning officer');
+        fetch(urlRoot + '/admin/setFlashMessage', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({type: 'error', message: 'Error assigning officer'})
+        }).then(() => location.reload());
     });
 }
 
@@ -654,15 +696,28 @@ function unassignOfficer(assignmentId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Officer unassigned successfully!');
-            location.reload();
+            // Set success message in session and reload
+            fetch(urlRoot + '/admin/setFlashMessage', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'success', message: 'Officer unassigned successfully!'})
+            }).then(() => location.reload());
         } else {
-            alert('Error: ' + data.message);
+            // Set error message in session and reload
+            fetch(urlRoot + '/admin/setFlashMessage', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({type: 'error', message: data.message})
+            }).then(() => location.reload());
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error unassigning officer');
+        fetch(urlRoot + '/admin/setFlashMessage', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({type: 'error', message: 'Error unassigning officer'})
+        }).then(() => location.reload());
     });
 }
 </script>

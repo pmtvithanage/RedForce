@@ -2007,6 +2007,31 @@ class Admin extends Controller
         $result = $this->adminModel->unassignOfficerFromSite($assignmentId);
         echo json_encode($result);
     }
+
+    // AJAX endpoint to set flash messages
+    public function setFlashMessage() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $type = $input['type'] ?? 'success';
+        $message = $input['message'] ?? '';
+
+        if (!empty($message)) {
+            if ($type === 'success') {
+                $_SESSION['success_msg'] = $message;
+            } else {
+                $_SESSION['error_msg'] = $message;
+            }
+        }
+
+        echo json_encode(['success' => true]);
+    }
 }
 
 
