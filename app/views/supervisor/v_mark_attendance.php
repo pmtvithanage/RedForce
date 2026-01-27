@@ -64,27 +64,9 @@
                             <select name="status" required>
                                 <option value="Present">Present</option>
                                 <option value="Absent">Absent</option>
-                                <option value="Late">Late</option>
-                                <option value="Half Day">Half Day</option>
                             </select>
                         </div>
-
-                        <div class="form-group">
-                            <label>Check In Time</label>
-                            <input 
-                                type="time" 
-                                name="check_in_time"
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label>Check Out Time</label>
-                            <input 
-                                type="time" 
-                                name="check_out_time"
-                            >
-                        </div>
-
+                        
                         <div class="form-group full-width">
                             <label>Notes</label>
                             <textarea 

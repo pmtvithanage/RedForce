@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/dashboard_style.css">
 
 
 <?php
@@ -52,8 +52,8 @@ if (isset($_GET['change_email'])) {
 
 <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
 
-<!-- Material Icons -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- Material Symbols -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
 <!-- QR Code Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -146,7 +146,7 @@ if (isset($_GET['change_email'])) {
 
         <?php if ($message): ?>
         <div class="success-message">
-            <span class="material-icons">check_circle</span>
+            <span class="material-symbols-outlined">check_circle</span>
             <?php echo htmlspecialchars($message); ?>
         </div>
         <?php endif; ?>
@@ -155,13 +155,13 @@ if (isset($_GET['change_email'])) {
             <!-- Profile Card -->
             <div class="profile-card">
                 <div class="card-header">
-                    <span class="material-icons">account_circle</span>
+                    <span class="material-symbols-outlined">account_circle</span>
                     <h3>Profile Information</h3>
                 </div>
                 <div class="card-body">
                     <div class="profile-avatar-large">
                         <div class="avatar-circle-large">
-                            <span class="material-icons">person</span>
+                            <span class="material-symbols-outlined">person</span>
                         </div>
                     </div>
                     <div class="profile-name">
@@ -175,7 +175,7 @@ if (isset($_GET['change_email'])) {
                         <div class="qr-code-info">Valid for: <span id="qrDate"></span></div>
                         <div id="qrcode"></div>
                         <button type="button" class="generate-qr-btn" onclick="generateQRCode()">
-                            <span class="material-icons">refresh</span>
+                            <span class="material-symbols-outlined">refresh</span>
                             Generate New QR Code
                         </button>
                     </div>
@@ -185,33 +185,33 @@ if (isset($_GET['change_email'])) {
             <!-- Contact Information Card -->
             <div class="info-card">
                 <div class="card-header">
-                    <span class="material-icons">contact_phone</span>
+                    <span class="material-symbols-outlined">contact_phone</span>
                     <h3>Contact Information</h3>
                 </div>
                 <div class="card-body">
                     <div class="info-row">
                         <div class="info-icon">
-                            <span class="material-icons">phone</span>
+                            <span class="material-symbols-outlined">phone</span>
                         </div>
                         <div class="info-details">
                             <div class="info-label">Phone Number</div>
                             <div class="info-value"><?php echo htmlspecialchars($clientData['contact']); ?></div>
                         </div>
                         <a href="?change_contact=1" class="action-btn">
-                            <span class="material-icons">edit</span>
+                            <span class="material-symbols-outlined">edit</span>
                         </a>
                     </div>
 
                     <div class="info-row">
                         <div class="info-icon">
-                            <span class="material-icons">email</span>
+                            <span class="material-symbols-outlined">email</span>
                         </div>
                         <div class="info-details">
                             <div class="info-label">Email Address</div>
                             <div class="info-value"><?php echo htmlspecialchars($clientData['email']); ?></div>
                         </div>
                         <a href="?change_email=1" class="action-btn">
-                            <span class="material-icons">edit</span>
+                            <span class="material-symbols-outlined">edit</span>
                         </a>
                     </div>
                 </div>
@@ -220,13 +220,13 @@ if (isset($_GET['change_email'])) {
             <!-- Security Card -->
             <div class="security-card">
                 <div class="card-header">
-                    <span class="material-icons">security</span>
+                    <span class="material-symbols-outlined">security</span>
                     <h3>Security Settings</h3>
                 </div>
                 <div class="card-body">
                     <div class="security-item">
                         <div class="security-icon">
-                            <span class="material-icons">lock</span>
+                            <span class="material-symbols-outlined">lock</span>
                         </div>
                         <div class="security-details">
                             <div class="security-title">Password</div>
@@ -299,7 +299,7 @@ function showQRMessage(message) {
     // Create temporary message element
     const msgDiv = document.createElement('div');
     msgDiv.className = 'qr-success-message';
-    msgDiv.innerHTML = '<span class="material-icons">check_circle</span>' + message;
+    msgDiv.innerHTML = '<span class="material-symbols-outlined">check_circle</span>' + message;
     
     const qrSection = document.querySelector('.qr-code-section');
     qrSection.insertBefore(msgDiv, qrSection.firstChild);

@@ -3,6 +3,7 @@ class Supervisor extends Controller {
     private $supervisorModel;
     private $userModel;
     private $advertisementModel;
+    private $messageModel;
 
     public function __construct() {
         // Check if user is logged in and has supervisor role
@@ -10,6 +11,8 @@ class Supervisor extends Controller {
         $this->advertisementModel = $this->model('M_advertisements');
         $this->supervisorModel = $this->model('M_supervisor');
         $this->userModel = $this->model('M_users');
+        // reuse messaging methods from M_mobilerider
+        $this->messageModel = $this->model('M_mobilerider');
     }
 
     // Default action - redirect to dashboard
@@ -34,6 +37,9 @@ class Supervisor extends Controller {
             'late' => 0
         ];
         
+        // Get total unique officers count
+        $totalOfficers = 0;
+        
         if ($supervisor_id) {
             // Get today's date
             $today = date('Y-m-d');
@@ -41,15 +47,20 @@ class Supervisor extends Controller {
             // Fetch attendance records for today
             $todayAttendance = $this->supervisorModel->getAttendanceRecords($supervisor_id, ['date' => $today]);
             
+            // Get total unique officers count
+            $totalOfficers = $this->supervisorModel->getTotalOfficersCount($supervisor_id);
+            
             // Get attendance statistics
             $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
             if ($stats) {
                 $attendanceStats = [
-                    'total' => $stats->total ?? 0,
+                    'total' => $totalOfficers, // Use total unique officers instead of today's count
                     'present' => $stats->present ?? 0,
                     'absent' => $stats->absent ?? 0,
                     'late' => $stats->late ?? 0
                 ];
+            } else {
+                $attendanceStats['total'] = $totalOfficers;
             }
         }
 
@@ -69,12 +80,160 @@ class Supervisor extends Controller {
         ];
         $this->view('supervisor/v_officers', $data);
     }
-    // Messages
-    public function messages() {
+    // ==================== MESSAGES (Supervisor) ====================
+    public function messages()
+    {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$user_id) {
+            redirect('supervisor/dashboard');
+            return;
+        }
+
+        $conversations = $this->messageModel->getConversations($user_id);
+        $all_users = $this->messageModel->getAllUsers($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
+
         $data = [
             'title' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users,
+            'unread_count' => $unread_count,
+            'current_recipient_id' => isset($_GET['with']) ? $_GET['with'] : null
         ];
+
         $this->view('supervisor/v_messages', $data);
+    }
+
+    // Load messages with a specific user (AJAX)
+    public function loadMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    // Send a message (AJAX)
+    public function sendMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+
+            if ($this->messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    // Get all available users (AJAX)
+    public function getAllUsers()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $user_id = $_SESSION['user_id'] ?? null;
+
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+
+            $users = $this->messageModel->getAllUsers($user_id);
+            echo json_encode(['status' => 'success', 'users' => $users]);
+        }
+    }
+
+    // Get conversations (AJAX for updates)
+    public function getConversations()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $user_id = $_SESSION['user_id'] ?? null;
+
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    // Search conversations (AJAX)
+    public function searchMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $user_id = $_SESSION['user_id'] ?? null;
+            $search_term = trim($_POST['search'] ?? '');
+
+            if (!$user_id || empty($search_term)) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
+            echo json_encode(['status' => 'success', 'results' => $results]);
+        }
+    }
+
+    // Delete a message (AJAX)
+    public function deleteMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
     }
 
     //Leave Requests - Display page with all leave requests
@@ -577,129 +736,5 @@ class Supervisor extends Controller {
             redirect('supervisor/attendance');
         }
     }
-
-    // ==================== EQUIPMENT REQUESTS METHODS ====================
-
-    // View all equipment requests
-    public function equipmentRequests() {
-        // Get filters
-        $filters = [];
-        if (isset($_GET['status']) && !empty($_GET['status'])) {
-            $filters['status'] = $_GET['status'];
-        }
-        if (isset($_GET['priority']) && !empty($_GET['priority'])) {
-            $filters['priority'] = $_GET['priority'];
-        }
-        if (isset($_GET['caretaker_id']) && !empty($_GET['caretaker_id'])) {
-            $filters['caretaker_id'] = $_GET['caretaker_id'];
-        }
-        if (isset($_GET['date_from']) && !empty($_GET['date_from'])) {
-            $filters['date_from'] = $_GET['date_from'];
-        }
-        if (isset($_GET['date_to']) && !empty($_GET['date_to'])) {
-            $filters['date_to'] = $_GET['date_to'];
-        }
-
-        // Get data
-        $requests = $this->supervisorModel->getAllEquipmentRequests($filters);
-        $stats = $this->supervisorModel->getEquipmentRequestStats();
-        $caretakers = $this->supervisorModel->getAllCaretakers();
-
-        $data = [
-            'title' => 'Equipment Requests',
-            'pageTitle' => 'Equipment Requests Management',
-            'requests' => $requests,
-            'stats' => $stats,
-            'caretakers' => $caretakers,
-            'filters' => $filters
-        ];
-
-        $this->view('supervisor/v_equipment_requests', $data);
-    }
-
-    // View single equipment request details for review
-    public function reviewEquipmentRequest($id) {
-        $request = $this->supervisorModel->getEquipmentRequestDetails($id);
-
-        if (!$request) {
-            flash('equipment_error', 'Request not found', 'alert alert-danger');
-            redirect('supervisor/equipmentRequests');
-            return;
-        }
-
-        $data = [
-            'title' => 'Review Equipment Request',
-            'pageTitle' => 'Review Equipment Request',
-            'request' => $request
-        ];
-
-        $this->view('supervisor/v_review_equipment', $data);
-    }
-
-    // Approve equipment request
-    public function approveEquipmentRequest($id) {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-            // Validate
-            if (empty($_POST['actual_cost']) || !is_numeric($_POST['actual_cost']) || $_POST['actual_cost'] < 0) {
-                flash('equipment_error', 'Please enter a valid actual cost', 'alert alert-danger');
-                redirect('supervisor/reviewEquipmentRequest/' . $id);
-                return;
-            }
-
-            // Prepare data
-            $data = [
-                'id' => $id,
-                'actual_cost' => floatval($_POST['actual_cost']),
-                'supervisor_notes' => trim($_POST['supervisor_notes'] ?? ''),
-                'supervisor_id' => $_SESSION['user_id']
-            ];
-
-            // Approve
-            if ($this->supervisorModel->approveEquipmentRequest($data)) {
-                flash('equipment_message', 'Equipment request approved successfully', 'alert alert-success');
-            } else {
-                flash('equipment_error', 'Failed to approve request', 'alert alert-danger');
-            }
-
-            redirect('supervisor/equipmentRequests');
-        } else {
-            redirect('supervisor/equipmentRequests');
-        }
-    }
-
-    // Reject equipment request
-    public function rejectEquipmentRequest($id) {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
-            // Validate
-            if (empty($_POST['supervisor_notes'])) {
-                flash('equipment_error', 'Please provide a reason for rejection', 'alert alert-danger');
-                redirect('supervisor/reviewEquipmentRequest/' . $id);
-                return;
-            }
-
-            // Prepare data
-            $data = [
-                'id' => $id,
-                'supervisor_notes' => trim($_POST['supervisor_notes']),
-                'supervisor_id' => $_SESSION['user_id']
-            ];
-
-            // Reject
-            if ($this->supervisorModel->rejectEquipmentRequest($data)) {
-                flash('equipment_message', 'Equipment request rejected', 'alert alert-info');
-            } else {
-                flash('equipment_error', 'Failed to reject request', 'alert alert-danger');
-            }
-
-            redirect('supervisor/equipmentRequests');
-        } else {
-            redirect('supervisor/equipmentRequests');
-        }
-    }
-
 
 }

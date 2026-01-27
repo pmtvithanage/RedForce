@@ -115,7 +115,13 @@ $low_count = $incident_stats['low'] ?? 0;
                                 <span class="material-symbols-outlined">location_on</span>
                                 <span><?= htmlspecialchars($incident->property_site ?: 'Unknown Location') ?></span>
                             </div>
-                            <span class="status-badge status-open">Open</span>
+                            <?php
+                                $status = $incident->status ?? 'Open';
+                                $statusClass = 'status-open';
+                                if (stripos($status, 'in progress') !== false) $statusClass = 'status-in-progress';
+                                elseif (stripos($status, 'resolved') !== false) $statusClass = 'status-resolved';
+                            ?>
+                            <span class="status-badge <?= $statusClass ?>"><?= htmlspecialchars(ucfirst($status)) ?></span>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -137,7 +143,9 @@ $low_count = $incident_stats['low'] ?? 0;
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Critical</div>
-                        <div class="severity-bar critical" style="width: <?php echo $total_incidents > 0 ? ($critical_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        <div class="severity-bar">
+                            <div class="severity-bar-fill critical" style="width: <?php echo $total_incidents > 0 ? ($critical_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        </div>
                     </div>
                     <div class="severity-count"><?php echo $critical_count; ?></div>
                 </div>
@@ -145,7 +153,9 @@ $low_count = $incident_stats['low'] ?? 0;
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">High</div>
-                        <div class="severity-bar high" style="width: <?php echo $total_incidents > 0 ? ($high_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        <div class="severity-bar">
+                            <div class="severity-bar-fill high" style="width: <?php echo $total_incidents > 0 ? ($high_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        </div>
                     </div>
                     <div class="severity-count"><?php echo $high_count; ?></div>
                 </div>
@@ -153,7 +163,9 @@ $low_count = $incident_stats['low'] ?? 0;
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Medium</div>
-                        <div class="severity-bar medium" style="width: <?php echo $total_incidents > 0 ? ($medium_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        <div class="severity-bar">
+                            <div class="severity-bar-fill medium" style="width: <?php echo $total_incidents > 0 ? ($medium_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        </div>
                     </div>
                     <div class="severity-count"><?php echo $medium_count; ?></div>
                 </div>
@@ -161,7 +173,9 @@ $low_count = $incident_stats['low'] ?? 0;
                 <div class="severity-item">
                     <div class="severity-info">
                         <div class="severity-label">Low</div>
-                        <div class="severity-bar low" style="width: <?php echo $total_incidents > 0 ? ($low_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        <div class="severity-bar">
+                            <div class="severity-bar-fill low" style="width: <?php echo $total_incidents > 0 ? ($low_count / $total_incidents * 100) : 0; ?>%;"></div>
+                        </div>
                     </div>
                     <div class="severity-count"><?php echo $low_count; ?></div>
                 </div>

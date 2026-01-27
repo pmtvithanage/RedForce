@@ -192,7 +192,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
     
     $userID = $rolePrefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-    $tempPassword = '1234';
+    $tempPassword = '0000';
     
     // Insert into Users table
     $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
@@ -381,7 +381,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         }
         
         $userID = 'CLIENT' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-        $tempPassword = '1234'; // Simple temp password
+        $tempPassword = '0000'; // Simple temp password
         
         // Insert into Users table
         $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
@@ -457,8 +457,8 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Add Site
     public function addSite($data){
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image) 
-                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name)");
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image, latitude, longitude) 
+                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name, :latitude, :longitude)");
         
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':site_name', $data['site_name']);
@@ -466,6 +466,8 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':latitude', !empty($data['latitude']) ? $data['latitude'] : null);
+        $this->db->bind(':longitude', !empty($data['longitude']) ? $data['longitude'] : null);
         
         if ($this->db->execute()) {
             return $this->db->lastInsertId(); // Return the new site ID
@@ -479,12 +481,14 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->execute();
     }
     public function updateSite($data){
-        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name WHERE id = :site_id");
+        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name, latitude = :latitude, longitude = :longitude WHERE id = :site_id");
         $this->db->bind(':site_name', $data['site_name']);
         $this->db->bind(':site_address', $data['site_address']);
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
+        $this->db->bind(':latitude', !empty($data['latitude']) ? $data['latitude'] : null);
+        $this->db->bind(':longitude', !empty($data['longitude']) ? $data['longitude'] : null);
         $this->db->bind(':site_id', $data['site_id']);
 
         if ($this->db->execute()) {
@@ -926,12 +930,259 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Get package request by ID
+    public function getPackageRequestById($id) {
+        $this->db->query("SELECT * FROM package_requests WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    // Get client's phone number
+    public function getClientPhoneNumber($user_id) {
+        // client_id in package_requests references Users.id directly
+        $this->db->query("SELECT phone_number FROM Users WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $result = $this->db->single();
+        return $result ? $result->phone_number : null;
+    }
+
+    // Get Clients table ID from Users ID
+    public function getClientsTableId($user_id) {
+        $this->db->query("SELECT id FROM Clients WHERE user_id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $result = $this->db->single();
+        return $result ? $result->id : null;
+    }
+
+    // Create site from approved package request
+    public function createSiteFromPackageRequest($packageRequest) {
+        // Get the Clients table ID (sites table references Clients.id, not Users.id)
+        $clientsTableId = $this->getClientsTableId($packageRequest->client_id);
+        
+        if (!$clientsTableId) {
+            return false;
+        }
+        
+        // Get client's phone number from Users table
+        $phoneNumber = $this->getClientPhoneNumber($packageRequest->client_id);
+        
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, created_at, updated_at) 
+                          VALUES (:client_id, :site_name, :address, :city, :phone_number, NOW(), NOW())");
+        $this->db->bind(':client_id', $clientsTableId);
+        $this->db->bind(':site_name', $packageRequest->site_name);
+        $this->db->bind(':address', $packageRequest->site_address);
+        $this->db->bind(':city', $packageRequest->city);
+        $this->db->bind(':phone_number', $phoneNumber);
+        
+        if ($this->db->execute()) {
+            // Return the last inserted site ID
+            return $this->db->lastInsertId();
+        }
+        
+        return false;
+    }
+
     public function approvePackageRequest($id, $admin_id, $notes) {
-        $this->db->query("UPDATE package_requests SET status = 'Approved', admin_notes = :notes, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
+        // Step 1: Update the package request status to Approved
+        $this->db->query("UPDATE package_requests 
+                          SET status = 'Approved', 
+                              admin_notes = :notes, 
+                              approved_by = :admin_id, 
+                              approved_at = NOW() 
+                          WHERE id = :id");
         $this->db->bind(':id', $id);
         $this->db->bind(':admin_id', $admin_id);
         $this->db->bind(':notes', $notes);
-        return $this->db->execute();
+        
+        if (!$this->db->execute()) {
+            return false; // Failed to approve
+        }
+        
+        // Step 2: Get the package request details
+        $packageRequest = $this->getPackageRequestById($id);
+        
+        if (!$packageRequest) {
+            return true; // Approved but couldn't get details
+        }
+        
+        // Step 3: Create a site from the package request
+        $siteId = $this->createSiteFromPackageRequest($packageRequest);
+        
+        // Return the site ID (or true if site creation failed but approval succeeded)
+        return $siteId ? $siteId : true;
+    }
+
+    // Get available officers with filters
+    public function getAvailableOfficers($filters) {
+        $city = $filters['city'];
+        $location = $filters['location'];
+        $availability = $filters['availability'];
+        $status = $filters['status'];
+        $siteId = $filters['site_id'];
+
+        // Build base query
+        $query = "SELECT 
+                    u.id as user_id,
+                    u.name,
+                    u.email,
+                    u.phone_number,
+                    u.profile_image,
+                    po.officerID,
+                    po.city,
+                    po.district,
+                    po.employment_status,
+                    po.rank,
+                    po.rating,
+                    po.shift_pattern,
+                    osa.id as current_assignment
+                  FROM Users u
+                  INNER JOIN premise_officers po ON u.id = po.userID
+                  LEFT JOIN officer_site_assignments osa ON u.id = osa.officer_id AND osa.status = 'Active'
+                  WHERE u.role = 'premise officer'";
+
+        // Add location filter
+        if ($location === 'same-city') {
+            $query .= " AND LOWER(po.city) = LOWER(:city)";
+        } elseif ($location === 'same-district') {
+            // Get district from city using the mapping
+            $district = $this->getDistrictFromCity($city);
+            if ($district) {
+                $query .= " AND LOWER(po.district) = LOWER(:district)";
+            }
+        }
+
+        // Add availability filter
+        if ($availability === 'available') {
+            $query .= " AND osa.id IS NULL";
+        } elseif ($availability === 'assigned') {
+            $query .= " AND osa.id IS NOT NULL";
+        }
+
+        // Add employment status filter
+        if ($status !== 'all') {
+            $query .= " AND po.employment_status = :status";
+        }
+
+        $query .= " ORDER BY po.city = :city DESC, po.district, u.name";
+
+        $this->db->query($query);
+
+        // Bind parameters
+        if ($location === 'same-city' || $location === 'all') {
+            $this->db->bind(':city', $city);
+        }
+        if ($location === 'same-district') {
+            $district = $this->getDistrictFromCity($city);
+            if ($district) {
+                $this->db->bind(':district', $district);
+                $this->db->bind(':city', $city);
+            }
+        }
+        if ($status !== 'all') {
+            $this->db->bind(':status', $status);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    // Get district from city name
+    private function getDistrictFromCity($city) {
+        // City to district mapping based on the JavaScript file
+        $cityToDistrict = [
+            // Colombo district cities
+            'colombo 1' => 'colombo', 'colombo 2' => 'colombo', 'colombo 3' => 'colombo', 
+            'colombo 4' => 'colombo', 'colombo 5' => 'colombo', 'colombo 6' => 'colombo',
+            'colombo 7' => 'colombo', 'colombo 8' => 'colombo', 'colombo 9' => 'colombo',
+            'colombo 10' => 'colombo', 'dehiwala' => 'colombo', 'mount lavinia' => 'colombo',
+            'moratuwa' => 'colombo', 'nugegoda' => 'colombo', 'maharagama' => 'colombo',
+            'kotte' => 'colombo', 'battaramulla' => 'colombo', 'rajagiriya' => 'colombo',
+            
+            // Gampaha district cities
+            'gampaha' => 'gampaha', 'negombo' => 'gampaha', 'kelaniya' => 'gampaha',
+            'kadawatha' => 'gampaha', 'ragama' => 'gampaha', 'wattala' => 'gampaha',
+            'ja-ela' => 'gampaha', 'kandana' => 'gampaha', 'minuwangoda' => 'gampaha',
+            
+            // Kalutara district
+            'kalutara' => 'kalutara', 'panadura' => 'kalutara', 'horana' => 'kalutara',
+            'wadduwa' => 'kalutara', 'beruwala' => 'kalutara', 'aluthgama' => 'kalutara',
+            
+            // Kandy district
+            'kandy' => 'kandy', 'peradeniya' => 'kandy', 'katugastota' => 'kandy',
+            'gampola' => 'kandy', 'nawalapitiya' => 'kandy', 'akurana' => 'kandy',
+            
+            // Add more mappings as needed (keeping it concise for now)
+        ];
+
+        $cityLower = strtolower(trim($city));
+        return $cityToDistrict[$cityLower] ?? null;
+    }
+
+    // Assign officer to site
+    public function assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType = 'Full Time') {
+        // Check if officer is already assigned to another site
+        $this->db->query("SELECT id FROM officer_site_assignments 
+                          WHERE officer_id = :officer_id AND status = 'Active'");
+        $this->db->bind(':officer_id', $officerId);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Officer is already assigned to another site'];
+        }
+
+        // Create new assignment
+        $this->db->query("INSERT INTO officer_site_assignments 
+                          (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
+                          VALUES (:site_id, :officer_id, :shift_type, CURDATE(), :assigned_by, 'Active')");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_id', $officerId);
+        $this->db->bind(':shift_type', $shiftType);
+        $this->db->bind(':assigned_by', $assignedBy);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Officer assigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to assign officer'];
+    }
+
+    // Unassign officer from site
+    public function unassignOfficerFromSite($assignmentId) {
+        $this->db->query("UPDATE officer_site_assignments 
+                          SET status = 'Completed', assignment_end = CURDATE() 
+                          WHERE id = :id");
+        $this->db->bind(':id', $assignmentId);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Officer unassigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to unassign officer'];
+    }
+
+    // Get assigned officers for a site
+    public function getAssignedOfficers($siteId) {
+        $this->db->query("SELECT 
+                            osa.id as assignment_id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.assignment_end,
+                            osa.status,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            po.officerID,
+                            po.city,
+                            po.district,
+                            po.rank
+                          FROM officer_site_assignments osa
+                          INNER JOIN Users u ON osa.officer_id = u.id
+                          INNER JOIN premise_officers po ON u.id = po.userID
+                          WHERE osa.site_id = :site_id AND osa.status = 'Active'
+                          ORDER BY osa.assignment_start DESC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
     }
 
     public function rejectPackageRequest($id, $admin_id, $reason) {
@@ -943,5 +1194,53 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     
+
+    // ==============================
+    // ===========Admins=============
+    // ==============================
+
+    public function getAllAdmins(){
+        $this->db->query("SELECT * FROM Users WHERE role = 'admin' ORDER BY created_at DESC");
+        return $this->db->resultSet();
+    }
+
+    public function addAdmin($data){
+        $this->db->query("SELECT userID FROM Users WHERE userID LIKE 'ADMIN%' ORDER BY userID DESC LIMIT 1");
+        $last = $this->db->single();
+        
+        if ($last) {
+            // Extract number from CLIENT001
+            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            $nextNumber = $number + 1;
+        } else {
+            $nextNumber = 1; // First client
+        }
+        
+        $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $tempPassword = '0000'; // Simple temp password
+        $role_name = 'admin';
+
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
+                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role)");
+        $this->db->bind(':userID', $userID);
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':email', $data['email']);
+        $this->db->bind(':phone', $data['phone_number']);
+        $this->db->bind(':profile_image', $data['image_name']);
+        $this->db->bind(':role', $role_name);
+        $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+    
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId(); // Return the new user ID
+        }
+        return false;
+
+    }
+
+    public function getAdmin($userID) {
+        $this->db->query("SELECT * FROM Users WHERE userID = :userID");
+        $this->db->bind(':userID', $userID);
+        return $this->db->single();
+    }
 }
 

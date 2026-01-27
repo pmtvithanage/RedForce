@@ -133,17 +133,25 @@ class M_mobilerider
         return $result->count ?? 0;
     }
 
+    // Get count by specific status (Open, In Progress, Resolved)
+    public function getIncidentCountByStatus($status)
+    {
+        $this->db->query("SELECT COUNT(*) as count FROM incident_reports WHERE status = :status");
+        $this->db->bind(':status', $status);
+        $result = $this->db->single();
+        return $result->count ?? 0;
+    }
+
     // Get all incident statistics in one call
     public function getAllIncidentStatistics()
     {
         $total = $this->getTotalIncidents();
-        
-        // Since status column doesn't exist, we'll assume all incidents are 'open'
-        // Modify this logic based on your actual business requirements
-        $open = $total;
-        $progress = 0;
-        $resolved = 0;
-        
+
+        // Count by status if the column exists in the DB. Defaults to 0 when not found.
+        $open = $this->getIncidentCountByStatus('Open');
+        $progress = $this->getIncidentCountByStatus('In Progress');
+        $resolved = $this->getIncidentCountByStatus('Resolved');
+
         $critical = $this->getIncidentCountBySeverity('critical');
         $high = $this->getIncidentCountBySeverity('high');
         $medium = $this->getIncidentCountBySeverity('medium');
@@ -164,6 +172,17 @@ class M_mobilerider
     public function deleteIncidentById($id)
     {
         $this->db->query('DELETE FROM incident_reports WHERE id = :id');
+        $this->db->bind(':id', $id);
+        return $this->db->execute();
+    }
+
+    /**
+     * Update only the status of an incident
+     */
+    public function updateIncidentStatus($id, $status)
+    {
+        $this->db->query('UPDATE incident_reports SET status = :status, updated_at = NOW() WHERE id = :id');
+        $this->db->bind(':status', $status);
         $this->db->bind(':id', $id);
         return $this->db->execute();
     }
@@ -260,5 +279,167 @@ class M_mobilerider
         $this->db->bind(':mobile_rider_id', $mobile_rider_id);
         $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
         return $this->db->resultSet();
+    }
+
+    // ==================== MESSAGING METHODS ====================
+
+    // Get all conversations for a user
+    public function getConversations($user_id, $limit = 50, $offset = 0)
+    {
+        $this->db->query("
+            SELECT DISTINCT
+                CASE 
+                    WHEN sender_id = :user_id THEN recipient_id 
+                    ELSE sender_id 
+                END as other_user_id,
+                u.id,
+                u.name,
+                u.role,
+                (SELECT message FROM messages 
+                 WHERE (sender_id = :user_id AND recipient_id = u.id) 
+                    OR (sender_id = u.id AND recipient_id = :user_id)
+                 ORDER BY created_at DESC LIMIT 1) as last_message,
+                (SELECT created_at FROM messages 
+                 WHERE (sender_id = :user_id AND recipient_id = u.id) 
+                    OR (sender_id = u.id AND recipient_id = :user_id)
+                 ORDER BY created_at DESC LIMIT 1) as last_message_time,
+                (SELECT COUNT(*) FROM messages 
+                 WHERE sender_id = u.id AND recipient_id = :user_id AND is_read = 0) as unread_count
+            FROM messages m
+            JOIN users u ON (
+                (m.sender_id = :user_id AND m.recipient_id = u.id) 
+                OR (m.sender_id = u.id AND m.recipient_id = :user_id)
+            )
+            WHERE m.sender_id = :user_id OR m.recipient_id = :user_id
+            GROUP BY other_user_id
+            ORDER BY last_message_time DESC
+            LIMIT :limit OFFSET :offset
+        ");
+        
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
+        $this->db->bind(':offset', (int)$offset, PDO::PARAM_INT);
+        
+        return $this->db->resultSet();
+    }
+
+    // Get all users except current user (NEW - for starting conversations)
+    public function getAllUsers($user_id)
+    {
+        $this->db->query("
+            SELECT id, name, role 
+            FROM users 
+            WHERE id != :user_id 
+            ORDER BY name ASC
+        ");
+        
+        $this->db->bind(':user_id', $user_id);
+        return $this->db->resultSet();
+    }
+
+    // Get messages between two users
+    public function getMessages($sender_id, $recipient_id, $limit = 50, $offset = 0)
+    {
+        $this->db->query("
+            SELECT * FROM messages
+            WHERE (sender_id = :sender_id AND recipient_id = :recipient_id)
+                OR (sender_id = :recipient_id AND recipient_id = :sender_id)
+            ORDER BY created_at DESC
+            LIMIT :limit OFFSET :offset
+        ");
+        
+        $this->db->bind(':sender_id', $sender_id);
+        $this->db->bind(':recipient_id', $recipient_id);
+        $this->db->bind(':limit', (int)$limit, PDO::PARAM_INT);
+        $this->db->bind(':offset', (int)$offset, PDO::PARAM_INT);
+        
+        $results = $this->db->resultSet();
+        return array_reverse($results); // Reverse to show oldest first
+    }
+
+    // Send a message
+    public function sendMessage($sender_id, $recipient_id, $message)
+    {
+        $this->db->query("
+            INSERT INTO messages (sender_id, recipient_id, message, is_read, created_at)
+            VALUES (:sender_id, :recipient_id, :message, 0, NOW())
+        ");
+        
+        $this->db->bind(':sender_id', $sender_id);
+        $this->db->bind(':recipient_id', $recipient_id);
+        $this->db->bind(':message', $message);
+        
+        return $this->db->execute();
+    }
+
+    // Mark messages as read
+    public function markAsRead($sender_id, $recipient_id)
+    {
+        $this->db->query("
+            UPDATE messages SET is_read = 1 
+            WHERE sender_id = :sender_id AND recipient_id = :recipient_id AND is_read = 0
+        ");
+        
+        $this->db->bind(':sender_id', $sender_id);
+        $this->db->bind(':recipient_id', $recipient_id);
+        
+        return $this->db->execute();
+    }
+
+    // Get unread message count for a user
+    public function getUnreadCount($user_id)
+    {
+        $this->db->query("
+            SELECT COUNT(*) as count FROM messages 
+            WHERE recipient_id = :user_id AND is_read = 0
+        ");
+        
+        $this->db->bind(':user_id', $user_id);
+        $result = $this->db->single();
+        
+        return $result->count ?? 0;
+    }
+
+    // Search conversations
+    public function searchConversations($user_id, $search_term)
+    {
+        $this->db->query("
+            SELECT DISTINCT
+                CASE 
+                    WHEN sender_id = :user_id THEN recipient_id 
+                    ELSE sender_id 
+                END as other_user_id,
+                u.id,
+                u.name,
+                u.role
+            FROM messages m
+            JOIN users u ON (
+                (m.sender_id = :user_id AND m.recipient_id = u.id) 
+                OR (m.sender_id = u.id AND m.recipient_id = :user_id)
+            )
+            WHERE (m.sender_id = :user_id OR m.recipient_id = :user_id)
+                AND u.name LIKE :search_term
+            GROUP BY other_user_id
+            ORDER BY u.name ASC
+        ");
+        
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':search_term', '%' . $search_term . '%');
+        
+        return $this->db->resultSet();
+    }
+
+    // Delete a message
+    public function deleteMessage($message_id, $user_id)
+    {
+        $this->db->query("
+            DELETE FROM messages 
+            WHERE id = :message_id AND sender_id = :user_id
+        ");
+        
+        $this->db->bind(':message_id', $message_id);
+        $this->db->bind(':user_id', $user_id);
+        
+        return $this->db->execute();
     }
 }

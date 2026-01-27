@@ -29,8 +29,7 @@ CREATE TABLE IF NOT EXISTS
 -- Insert sample users with hashed passwords
 -- Password for all users is '1234' (hashed)
 
-INSERT INTO
-    Users (userID, name, email, password, role)
+INSERT INTO Users (userID, name, email, password, role)
 VALUES
     (
         'ADMIN001',
@@ -105,6 +104,22 @@ CREATE TABLE IF NOT EXISTS recent_activities (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
 );
+    ('ADMIN001', 'System Administrator', 'admin@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'admin'),
+    ('SUP001', 'John Supervisor', 'supervisor@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 'supervisor'),
+    ('PO001', 'Nuwan Perera', 'nuwan.perera@redforce.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 'premise officer'),
+    ('PO002', 'Kasun Silva', 'kasun.silva@redforce.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 'premise officer'),
+    ('MR001', 'Sanjaya Peris', 'sanjaya.peris@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'mobile rider'),
+    ('MR002', 'Ramesh Nuwan', 'ramesh.nuwan@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 'mobile rider'),
+    ('CLIENT001', 'Peoples Bank', 'contact@peoplesbank.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 'client'),
+    ('CLIENT002', 'Cargills PLC', 'security@cargills.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 'client'),
+    ('CARETAKER001', 'Michael Johnson', 'johnson.michael@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 'caretaker')
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    email = VALUES(email),
+    password = VALUES(password),
+    role = VALUES(role);
+
+
 -- Advertisements table
 CREATE TABLE
     IF NOT EXISTS advertisements (
@@ -268,7 +283,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
 
 
 
---================================================2025-12-3 Start(Pasan)========================================
+-- ================================================2025-12-3 Start(Pasan)========================================
 
 
 CREATE TABLE
@@ -316,7 +331,12 @@ CREATE TABLE
 ALTER TABLE sites
 ADD COLUMN IF NOT EXISTS image VARCHAR(255);
 
---================================================2025-12-3 End(Pasan)========================================
+ALTER TABLE sites 
+ADD COLUMN IF NOT EXISTS latitude DECIMAL(10, 8) NULL AFTER image,
+ADD COLUMN IF NOT EXISTS longitude DECIMAL(11, 8) NULL AFTER latitude;
+
+
+-- ================================================2025-12-3 End(Pasan)========================================
 
 CREATE TABLE
   IF NOT EXISTS jobApplication (
@@ -424,7 +444,7 @@ CREATE TABLE IF NOT EXISTS officer_attendance (
     INDEX idx_attendance_date (attendance_date),
     INDEX idx_status (status),
     UNIQUE KEY unique_officer_date (officer_id, attendance_date)
-) 
+) ;
 -- ========================================
 -- CARETAKER NOTES TABLE
 -- Personal notes system for caretakers
@@ -452,7 +472,7 @@ CREATE TABLE IF NOT EXISTS `caretaker_notes` (
   INDEX `idx_priority` (`priority`),
   INDEX `idx_reminder_date` (`reminder_date`),
   INDEX `idx_created_at` (`created_at`)
-) 
+) ;
 -- Sample data for caretaker_notes (optional)
 INSERT INTO `caretaker_notes` (`caretaker_id`, `title`, `note_content`, `category`, `priority`, `reminder_date`) VALUES
 (9, 'Check main gate lock', 'Need to inspect the main gate lock mechanism as it was sticking yesterday. May need lubrication or replacement.', 'Observation', 'High', CURDATE()),
@@ -701,12 +721,114 @@ LEFT JOIN Users u ON ct.userID = u.id
 WHERE u.role = 'care taker' OR ct.userID IS NOT NULL;
 
 -- ============================================
+-- REDFORCE DB MIGRATION (ADD-ONLY)
+-- Compatible with MariaDB 10.4
+-- ============================================
+
+START TRANSACTION;
+
+-- ============================================
+-- 1. ADD status column to incident_reports
+-- ============================================
+ALTER TABLE incident_reports
+ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Open' AFTER incident_date;
+
+-- ============================================
+-- 2. Messages Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  sender_id INT NOT NULL,
+  recipient_id INT NOT NULL,
+  message LONGTEXT NOT NULL,
+  is_read TINYINT(1) DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  INDEX idx_sender_recipient (sender_id, recipient_id),
+  INDEX idx_recipient_read (recipient_id, is_read),
+  INDEX idx_created_at (created_at),
+
+  CONSTRAINT fk_messages_sender 
+    FOREIGN KEY (sender_id) REFERENCES Users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_messages_recipient 
+    FOREIGN KEY (recipient_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- ============================================
+-- 3. Message Attachments Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS message_attachments (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  message_id INT NOT NULL,
+  file_path VARCHAR(255) NOT NULL,
+  file_name VARCHAR(255) NOT NULL,
+  file_size INT DEFAULT NULL,
+  file_type VARCHAR(50) DEFAULT NULL,
+  uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  INDEX idx_message_attach (message_id),
+
+  CONSTRAINT fk_attach_message 
+    FOREIGN KEY (message_id) REFERENCES messages(id) ON DELETE CASCADE
+);
+
+-- ============================================
+-- 4. Conversation Participants Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS conversation_participants (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  conversation_id INT NOT NULL,
+  user_id INT NOT NULL,
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE KEY unique_participant (conversation_id, user_id),
+  INDEX fk_conv_user (user_id),
+
+  CONSTRAINT fk_conv_user 
+    FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE
+);
+
+-- ============================================
+-- 5. Mobile Rider Leave Requests Table
+-- ============================================
+CREATE TABLE IF NOT EXISTS mobile_rider_leave_requests (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  mobile_rider_id INT NOT NULL,
+  leave_type VARCHAR(50) NOT NULL,
+  reason TEXT NOT NULL,
+  start_date DATE NOT NULL,
+  end_date DATE NOT NULL,
+  proof_file VARCHAR(255) DEFAULT NULL,
+  status ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
+  admin_response TEXT DEFAULT NULL,
+  reviewed_by INT DEFAULT NULL,
+  reviewed_at TIMESTAMP NULL DEFAULT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  INDEX idx_mobilerider (mobile_rider_id),
+  INDEX idx_reviewed_by (reviewed_by),
+
+  CONSTRAINT fk_mr_leave_user 
+    FOREIGN KEY (mobile_rider_id) REFERENCES Users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_mr_leave_review 
+    FOREIGN KEY (reviewed_by) REFERENCES Users(id) ON DELETE SET NULL
+);
+
+COMMIT;
+
+
+-- ============================================
 -- Package Requests Table (for Client Package System)
 -- ============================================
 CREATE TABLE IF NOT EXISTS package_requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
     client_id INT NOT NULL,
     package_name VARCHAR(100) NOT NULL,
+    site_name VARCHAR(255) NOT NULL,
+    district VARCHAR(100) NOT NULL,
+    city VARCHAR(100) NOT NULL,
     site_address TEXT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
@@ -726,3 +848,29 @@ CREATE TABLE IF NOT EXISTS package_requests (
     INDEX idx_client (client_id),
     INDEX idx_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Create officer_site_assignments table
+
+DROP TABLE IF EXISTS officer_site_assignments;
+
+CREATE TABLE officer_site_assignments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    site_id BIGINT UNSIGNED NOT NULL,
+    officer_id INT NOT NULL,
+    shift_type ENUM('Day', 'Night', 'Full Time', 'Flexible') DEFAULT 'Full Time',
+    assignment_start DATE NOT NULL,
+    assignment_end DATE DEFAULT NULL,
+    status ENUM('Active', 'Completed', 'Cancelled') DEFAULT 'Active',
+    assigned_by INT DEFAULT NULL,
+    assigned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_site (site_id),
+    KEY idx_officer (officer_id),
+    KEY idx_status (status),
+    CONSTRAINT fk_officer_assignment_site FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_officer FOREIGN KEY (officer_id) REFERENCES Users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_officer_assignment_assigner FOREIGN KEY (assigned_by) REFERENCES Users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+

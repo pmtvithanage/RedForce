@@ -75,7 +75,7 @@
                 <span class="material-symbols-outlined">menu</span>
             </button>
 
-            <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
+            <h1 class="page-title"><?php echo $data['title']; ?></h1>
 
             <div class="topbar-right">
 

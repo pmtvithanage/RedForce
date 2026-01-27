@@ -27,6 +27,7 @@
             <div class="menu-section"></div>
             <a class="menu-item <?php echo ($data['title'] === 'Dashboard') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/premiseofficer/dashboard"><span class="icon"></span><span class="material-symbols-outlined">dashboard</span><span class="label">Dashboard</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Schedule') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/premiseofficer/schedule"><span class="icon"></span><span class="material-symbols-outlined">schedule</span><span class="label">Schedule</span></a>
+            <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/premiseofficer/messages"><span class="icon"></span><span class="material-symbols-outlined">message</span><span class="label">Messages</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Leave Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/premiseofficer/leaverequests"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Request Leaves</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/premiseofficer/profile"><span class="icon"></span><span class="material-symbols-outlined">account_circle</span><span class="label">Profile</span></a>
 
@@ -39,7 +40,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
+          <h1 class="page-title"><?php echo $data['title']; ?></h1>
 
           <div class="topbar-right">
   <!-- Profile Toggle -->

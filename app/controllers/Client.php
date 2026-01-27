@@ -2,12 +2,14 @@
 class Client extends Controller {
     private $clientModel;
     private $userModel;
+    private $messageModel;
 
     public function __construct() {
         // Check if user is logged in and has client role
         requireAuth('client');
         $this->clientModel = $this->model('M_client');
         $this->userModel = $this->model('M_users');
+        $this->messageModel = $this->model('M_mobilerider');
     }
 
     // Default action - redirect to dashboard
@@ -141,6 +143,162 @@ class Client extends Controller {
         $this->view('client/v_profile', $data); 
     }
 
+    // ==================== MESSAGES (Client) ====================
+    public function messages()
+    {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$user_id) {
+            redirect('client/dashboard');
+            return;
+        }
+        
+        $conversations = $this->messageModel->getConversations($user_id);
+        $all_users = $this->messageModel->getAllUsers($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
+        
+        $data = [
+            'title' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users,
+            'unread_count' => $unread_count,
+            'current_recipient_id' => isset($_GET['with']) ? $_GET['with'] : null
+        ];
+        
+        $this->view('Client/v_messages', $data);
+    }
+
+    // Load messages with a specific user (AJAX)
+    public function loadMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    // Send a message (AJAX)
+    public function sendMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            if ($this->messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    // Get all available users (AJAX)
+    public function getAllUsers()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $users = $this->messageModel->getAllUsers($user_id);
+            echo json_encode(['status' => 'success', 'users' => $users]);
+        }
+    }
+
+    // Get conversations (AJAX for updates)
+    public function getConversations()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    // Search conversations (AJAX)
+    public function searchMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $search_term = trim($_POST['search'] ?? '');
+            
+            if (!$user_id || empty($search_term)) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
+            echo json_encode(['status' => 'success', 'results' => $results]);
+        }
+    }
+
+    // Delete a message (AJAX)
+    public function deleteMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
     public function requestHistory() {
         $clientId = $_SESSION['user_id'];
         $requests = $this->clientModel->getClientServiceRequests($clientId);
@@ -169,15 +327,15 @@ class Client extends Controller {
         exit;
     }
 
-    public function messages($conversationId = null) {
-        $data = [
-            'title' => 'Messages',
-            'pageTitle' => 'Messages',
-            'conversationId' => $conversationId
-        ];
+    // public function messages($conversationId = null) {
+    //     $data = [
+    //         'title' => 'Messages',
+    //         'pageTitle' => 'Messages',
+    //         'conversationId' => $conversationId
+    //     ];
         
-        $this->view('Client/dashboard/v_messages', $data);
-    }
+    //     $this->view('Client/dashboard/v_messages', $data);
+    // }
 
     public function incidents() {
         $data = [
@@ -255,16 +413,30 @@ class Client extends Controller {
     // Handle package request submission
     public function submitPackageRequest() {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Calculate end date and total price based on number of months
+            $startDate = $_POST['start_date'];
+            $numMonths = isset($_POST['num_months']) ? (int)$_POST['num_months'] : 1;
+            $monthlyPrice = isset($_POST['monthly_price']) ? (int)$_POST['monthly_price'] : (int)$_POST['package_price'];
+            
+            // Calculate end date (start date + num_months)
+            $endDate = date('Y-m-d', strtotime($startDate . ' + ' . $numMonths . ' months'));
+            
+            // Calculate total price
+            $totalPrice = $monthlyPrice * $numMonths;
+            
             $requestData = [
                 'client_id' => $_SESSION['user_id'],
                 'package_name' => $_POST['package_name'],
+                'site_name' => trim($_POST['site_name']),
+                'district' => trim($_POST['district']),
+                'city' => trim($_POST['city']),
                 'site_address' => trim($_POST['site_address']),
-                'start_date' => $_POST['start_date'],
-                'end_date' => $_POST['end_date'],
+                'start_date' => $startDate,
+                'end_date' => $endDate,
                 'number_of_guards' => $_POST['number_of_guards'],
                 'day_guards' => $_POST['day_guards'] ?? null,
                 'night_guards' => $_POST['night_guards'] ?? null,
-                'package_price' => $_POST['package_price'],
+                'package_price' => $totalPrice,
                 'comments' => trim($_POST['comments'] ?? '')
             ];
 
@@ -292,5 +464,124 @@ class Client extends Controller {
             }
         }
         redirect('client/packageHistory');
+    }
+
+    // ==================== EQUIPMENT REQUESTS METHODS ====================
+
+    // View all equipment requests from caretakers
+    public function equipmentRequests() {
+        // Get filters
+        $filters = [];
+        if (isset($_GET['status']) && !empty($_GET['status'])) {
+            $filters['status'] = $_GET['status'];
+        }
+        if (isset($_GET['priority']) && !empty($_GET['priority'])) {
+            $filters['priority'] = $_GET['priority'];
+        }
+        if (isset($_GET['caretaker_id']) && !empty($_GET['caretaker_id'])) {
+            $filters['caretaker_id'] = $_GET['caretaker_id'];
+        }
+        if (isset($_GET['date_from']) && !empty($_GET['date_from'])) {
+            $filters['date_from'] = $_GET['date_from'];
+        }
+        if (isset($_GET['date_to']) && !empty($_GET['date_to'])) {
+            $filters['date_to'] = $_GET['date_to'];
+        }
+
+        // Get client ID
+        $client_id = $_SESSION['user_id'];
+
+        // Get data
+        $requests = $this->clientModel->getAllEquipmentRequests($client_id, $filters);
+        $stats = $this->clientModel->getEquipmentRequestStats($client_id);
+        $caretakers = $this->clientModel->getCaretakersForClient($client_id);
+
+        $data = [
+            'title' => 'Equipment Requests',
+            'pageTitle' => 'Equipment Requests Management',
+            'requests' => $requests,
+            'stats' => $stats,
+            'caretakers' => $caretakers,
+            'filters' => $filters
+        ];
+
+        $this->view('client/v_equipment_requests', $data);
+    }
+
+    // View single equipment request details for review
+    public function reviewEquipmentRequest($id) {
+        $client_id = $_SESSION['user_id'];
+        $request = $this->clientModel->getEquipmentRequestDetails($id, $client_id);
+
+        if (!$request) {
+            flash('equipment_error', 'Request not found', 'alert alert-danger');
+            redirect('client/equipmentRequests');
+            return;
+        }
+
+        $data = [
+            'title' => 'Review Equipment Request',
+            'pageTitle' => 'Review Equipment Request',
+            'request' => $request
+        ];
+
+        $this->view('client/v_review_equipment', $data);
+    }
+
+    // Approve equipment request
+    public function approveEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'client_notes' => trim($_POST['client_notes'] ?? ''),
+                'client_id' => $_SESSION['user_id']
+            ];
+
+            // Approve
+            if ($this->clientModel->approveEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request approved successfully', 'alert alert-success');
+            } else {
+                flash('equipment_error', 'Failed to approve request', 'alert alert-danger');
+            }
+
+            redirect('client/equipmentRequests');
+        } else {
+            redirect('client/equipmentRequests');
+        }
+    }
+
+    // Reject equipment request
+    public function rejectEquipmentRequest($id) {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Validate
+            if (empty($_POST['client_notes'])) {
+                flash('equipment_error', 'Please provide a reason for rejection', 'alert alert-danger');
+                redirect('client/reviewEquipmentRequest/' . $id);
+                return;
+            }
+
+            // Prepare data
+            $data = [
+                'id' => $id,
+                'client_notes' => trim($_POST['client_notes']),
+                'client_id' => $_SESSION['user_id']
+            ];
+
+            // Reject
+            if ($this->clientModel->rejectEquipmentRequest($data)) {
+                flash('equipment_message', 'Equipment request rejected', 'alert alert-info');
+            } else {
+                flash('equipment_error', 'Failed to reject request', 'alert alert-danger');
+            }
+
+            redirect('client/equipmentRequests');
+        } else {
+            redirect('client/equipmentRequests');
+        }
     }
 }

@@ -1,90 +1,42 @@
-// Sample incident data
-const incidentsData = [
-    {
-        id: '#IN2312',
-        site: 'SLT - Z1232',
-        location: 'No. 05, Dalada Veediya, Kandy',
-        officer: '#IN2312',
-        status: 'Resolved',
-        time: '#IN2312',
-        description: 'Security breach detected at main entrance. Unauthorized access attempt.',
-        notes: 'Officer responded within 5 minutes. Situation resolved without incident.'
-    },
-    {
-        id: '#IN2311',
-        site: "People's Bank - Z2243",
-        location: 'No 40, Station Rd, Weligama',
-        officer: '#IN2312',
-        status: 'Resolved',
-        time: '#IN2312',
-        description: 'Suspicious activity reported in parking area.',
-        notes: 'False alarm - customer was retrieving items from vehicle.'
-    },
-    {
-        id: '#IN2310',
-        site: 'SLS Bank - Z2134',
-        location: 'No 265 Ward Pl, Colombo 00700',
-        officer: '#IN2312',
-        status: 'In View',
-        time: '#IN2312',
-        description: 'ATM malfunction causing transaction issues.',
-        notes: 'Technician scheduled for maintenance. Monitoring ongoing.'
-    },
-    {
-        id: '#IN2309',
-        site: "People's Bank - Z2256",
-        location: 'No.75, Sir Chittampalam A. Gardiner Mawatha, Colombo',
-        officer: '#IN2312',
-        status: 'Escalated',
-        time: '#IN2312',
-        description: 'Fire alarm triggered in basement area.',
-        notes: 'Emergency services contacted. Building evacuated safely.'
-    },
-    {
-        id: '#IN2308',
-        site: "People's Leasing - Z2314",
-        location: 'No.1161, Maradana Road, Borella.',
-        officer: '#IN2312',
-        status: 'Resolved',
-        time: '#IN2312',
-        description: 'Power outage affecting security systems.',
-        notes: 'Backup generators activated. All systems operational.'
-    },
-    {
-        id: '#IN2307',
-        site: 'USW - Z3288',
-        location: '18, Norris Avenue, Colombo 00800',
-        officer: '#IN2312',
-        status: 'Pending Report',
-        time: '#IN2312',
-        description: 'Vandalism reported on exterior walls.',
-        notes: 'Photos taken. Police report filed. Cleanup pending.'
-    },
-    {
-        id: '#IN2306',
-        site: "People's Bank - Z2214",
-        location: 'No : 19 Kaduwela Road Battaramulla',
-        officer: '#IN2312',
-        status: 'Resolved',
-        time: '#IN2312',
-        description: 'Medical emergency in lobby area.',
-        notes: 'Ambulance called. Patient transported to hospital.'
+// incidentsData will be populated from the server (AJAX)
+let incidentsData = [];
+
+// Fetch incidents from server and initialize the table
+async function loadIncidentsFromServer() {
+    const url = window.API_GET_INCIDENTS || '/Admin/getIncidents';
+    try {
+        const resp = await fetch(url, { credentials: 'same-origin' });
+        const json = await resp.json();
+        if (json && json.status === 'success' && Array.isArray(json.incidents)) {
+            incidentsData = json.incidents;
+        } else {
+            console.warn('Unexpected response fetching incidents:', json);
+            incidentsData = [];
+        }
+    } catch (err) {
+        console.error('Failed to load incidents from server:', err);
+        incidentsData = [];
     }
-];
+
+    // Render after data is loaded
+    renderIncidentsTable(incidentsData);
+}
 
 // Function to get status class
 function getStatusClass(status) {
     switch (status.toLowerCase()) {
         case 'resolved':
             return 'status-resolved';
-        case 'in view':
-            return 'status-inview';
+        case 'in progress':
+            return 'status-in-progress';
+        case 'open':
+            return 'status-open';
         case 'escalated':
             return 'status-escalated';
         case 'pending report':
             return 'status-pending';
         default:
-            return 'status-resolved';
+            return 'status-open';
     }
 }
 
@@ -148,7 +100,10 @@ function openIncidentModal(incident, index) {
     document.getElementById('modalSite').value = incident.site;
     document.getElementById('modalLocation').value = incident.location;
     document.getElementById('modalOfficer').value = incident.officer;
-    document.getElementById('modalStatus').value = incident.status;
+    // Only allow the three official statuses in the select. If incident.status is unknown, default to 'Open'.
+    const allowedStatuses = ['Open', 'In Progress', 'Resolved'];
+    const currentStatus = (incident.status || '').trim();
+    document.getElementById('modalStatus').value = allowedStatuses.includes(currentStatus) ? currentStatus : 'Open';
     document.getElementById('modalTime').value = incident.time;
     document.getElementById('modalDescription').value = incident.description || '';
     document.getElementById('modalNotes').value = incident.notes || '';
@@ -166,28 +121,65 @@ function saveIncidentChanges() {
     if (currentEditingIndex === -1) return;
     
     // Get form values
-    const formData = new FormData(document.getElementById('incidentForm'));
-    
-    // Update the incident data
-    incidentsData[currentEditingIndex] = {
-        id: formData.get('incidentId'),
-        site: formData.get('site'),
-        location: formData.get('location'),
-        officer: formData.get('officer'),
-        status: formData.get('status'),
-        time: formData.get('time'),
-        description: formData.get('description'),
-        notes: formData.get('notes')
-    };
-    
-    // Re-render the table to reflect changes
-    renderIncidentsTable(incidentsData);
-    
-    // Close modal
-    closeModal();
-    
-    // Show success message
-    showNotification('Incident updated successfully!', 'success');
+    const form = document.getElementById('incidentForm');
+    const formData = new FormData(form);
+
+    const incidentId = formData.get('incidentId');
+    const status = formData.get('status');
+
+    // Basic validation
+    if (!incidentId || !status) {
+        showNotification('Please provide a valid status', 'error');
+        return;
+    }
+
+    const updateUrl = window.API_UPDATE_INCIDENT || '/Admin/updateIncident';
+
+    // Disable save button while saving
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) saveBtn.disabled = true;
+
+    fetch(updateUrl, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+            'Accept': 'application/json'
+        },
+        body: new URLSearchParams({
+            incident_id: incidentId,
+            status: status
+        })
+    })
+    .then(r => r.json())
+    .then(json => {
+        if (json && json.status === 'success') {
+            // Persist change locally and re-render
+            incidentsData[currentEditingIndex] = Object.assign({}, incidentsData[currentEditingIndex], {
+                id: incidentId,
+                status: status,
+                site: formData.get('site'),
+                location: formData.get('location'),
+                officer: formData.get('officer'),
+                time: formData.get('time'),
+                description: formData.get('description'),
+                notes: formData.get('notes')
+            });
+
+            renderIncidentsTable(incidentsData);
+            closeModal();
+            showNotification('Incident updated successfully!', 'success');
+        } else {
+            console.error('Failed to update incident', json);
+            showNotification(json.message || 'Failed to update incident', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('Error updating incident', err);
+        showNotification('Error updating incident', 'error');
+    })
+    .finally(() => {
+        if (saveBtn) saveBtn.disabled = false;
+    });
 }
 
 function showNotification(message, type = 'info') {
@@ -219,8 +211,9 @@ function showNotification(message, type = 'info') {
 }
 
 // Initialize the dashboard
-function initializeDashboard() {
-    renderIncidentsTable(incidentsData);
+async function initializeDashboard() {
+    // Load incidents from the server then wire up UI
+    await loadIncidentsFromServer();
     initializeSearch();
     initializeModal();
 }
@@ -256,4 +249,7 @@ function initializeModal() {
 }
 
 // Wait for DOM to be loaded
-document.addEventListener('DOMContentLoaded', initializeDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    // entrypoint
+    initializeDashboard().catch(err => console.error('Failed to initialize dashboard', err));
+});
