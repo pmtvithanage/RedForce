@@ -912,8 +912,18 @@
             <div class="detail-value"><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></div>
           </div>
           <div class="detail-item">
-            <div class="detail-label">Officer Role</div>
-            <div class="detail-value"><?php echo htmlspecialchars($incident->officer_role ?? 'N/A'); ?></div>
+            <div class="detail-label">Reporter Role</div>
+            <div class="detail-value">
+              <?php 
+                $role = $incident->officer_role ?? 'N/A';
+                // Display "Supervisor" if role contains "premise officer"
+                if (stripos($role, 'premise officer') !== false) {
+                  echo 'Supervisor';
+                } else {
+                  echo htmlspecialchars($role);
+                }
+              ?>
+            </div>
           </div>
           <div class="detail-item">
             <div class="detail-label">Reported At</div>
@@ -1033,11 +1043,10 @@
       <?php
       // Calculate timeline progress based on status
       $status = $incident->status ?? 'Pending';
-      $hasReviews = !empty($data['reviews']) && count($data['reviews']) > 0;
       
-      // Determine which stages are completed
+      // Determine which stages are completed (based on status only, not supervisor reviews)
       $reportedCompleted = true; // Always completed
-      $underReviewCompleted = $hasReviews || ($status != 'Pending');
+      $underReviewCompleted = ($status != 'Pending');
       $inProgressCompleted = ($status == 'In Progress' || $status == 'Resolved' || $status == 'Closed');
       $resolvedCompleted = ($status == 'Resolved' || $status == 'Closed');
       
@@ -1073,30 +1082,22 @@
           </div>
 
           <!-- Under Review -->
-          <?php 
-          $reviewDate = $hasReviews ? $data['reviews'][count($data['reviews']) - 1]->created_at : $incident->updated_at;
-          ?>
           <div class="timeline-item <?php echo $underReviewCompleted ? 'completed' : 'pending'; ?>">
             <div class="timeline-circle">
               <span class="material-symbols-outlined">visibility</span>
               <div class="timeline-tooltip">
                 <div class="tooltip-title">Under Review</div>
-                <?php if($hasReviews): ?>
-                  <div class="tooltip-detail">Reviews: <?php echo count($data['reviews']); ?></div>
-                  <div class="tooltip-detail">First review added</div>
+                <div class="tooltip-detail">Status: <?php echo $status; ?></div>
+                <?php if($status != 'Pending'): ?>
+                  <div class="tooltip-detail">Reviewed by admin</div>
                 <?php else: ?>
-                  <div class="tooltip-detail">Status: <?php echo $status; ?></div>
-                  <?php if($status != 'Pending'): ?>
-                    <div class="tooltip-detail">Reviewed by admin</div>
-                  <?php else: ?>
-                    <div class="tooltip-detail">Awaiting review</div>
-                  <?php endif; ?>
+                  <div class="tooltip-detail">Awaiting review</div>
                 <?php endif; ?>
               </div>
             </div>
             <div class="timeline-label">Under Review</div>
             <div class="timeline-date">
-              <?php echo $underReviewCompleted ? date('M d, Y', strtotime($reviewDate)) : 'Pending'; ?>
+              <?php echo $underReviewCompleted ? date('M d, Y', strtotime($incident->updated_at)) : 'Pending'; ?>
             </div>
           </div>
 
@@ -1178,7 +1179,16 @@
                   <div class="review-name">
                     <?php echo htmlspecialchars($review->reviewer_name); ?>
                     <?php if(!empty($review->role)): ?>
-                      <span style="color: #6b7280; font-weight: 400; font-size: 13px;"> - <?php echo htmlspecialchars($review->role); ?></span>
+                      <span style="color: #6b7280; font-weight: 400; font-size: 13px;"> - 
+                        <?php 
+                          // Display "Supervisor" if role contains "premise officer"
+                          if (stripos($review->role, 'premise officer') !== false) {
+                            echo 'Supervisor';
+                          } else {
+                            echo htmlspecialchars($review->role);
+                          }
+                        ?>
+                      </span>
                     <?php endif; ?>
                   </div>
                   <div class="review-date">

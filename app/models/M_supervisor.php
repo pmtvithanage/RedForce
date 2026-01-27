@@ -259,5 +259,176 @@ class M_supervisor {
         $result = $this->db->single();
         return $result->total ?? 0;
     }
+
+    // Get recent activities for supervisor
+    public function getRecentActivities($userId, $limit = 50) {
+        $this->db->query('
+            SELECT * FROM recent_activities 
+            WHERE user_id = :user_id 
+            ORDER BY created_at DESC 
+            LIMIT :limit
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':limit', $limit);
+        
+        return $this->db->resultSet();
+    }
+
+    // Log activity for supervisor
+    public function logActivity($data) {
+        $this->db->query('
+            INSERT INTO recent_activities 
+            (user_id, activity_type, activity_titel, activity_details, created_at) 
+            VALUES 
+            (:user_id, :activity_type, :activity_titel, :activity_details, NOW())
+        ');
+        
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':activity_type', $data['activity_type']);
+        $this->db->bind(':activity_titel', $data['activity_titel']);
+        $this->db->bind(':activity_details', $data['activity_details']);
+        
+        return $this->db->execute();
+    }
+
+    // ========== Incident Management ==========
+    
+    // Get all incidents for a supervisor
+    public function getIncidentsByUserId($userId)
+    {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            WHERE ir.user_id = :user_id
+            ORDER BY ir.created_at DESC
+        ");
+        $this->db->bind(':user_id', $userId);
+        return $this->db->resultSet();
+    }
+
+    // Add new incident
+    public function addIncident($data)
+    {
+        $this->db->query("
+        INSERT INTO incident_reports 
+        (user_id, officer_name, officer_role, site_id, property_site, incident_type, 
+         incident_date, incident_time, incident_description, action_taken, 
+         severity, priority, people_involved, additional_details, media_files, 
+         latitude, longitude, status, created_at) 
+        VALUES 
+        (:user_id, :officer_name, :officer_role, :site_id, :property_site, :incident_type, 
+         :incident_date, :incident_time, :incident_description, :action_taken, 
+         :severity, :priority, :people_involved, :additional_details, :media_files, 
+         :latitude, :longitude, :status, NOW())");
+
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':officer_name', $data['officer_name'] ?? '');
+        $this->db->bind(':officer_role', $data['officer_role'] ?? 'supervisor');
+        $this->db->bind(':site_id', $data['site_id'] ?? null);
+        $this->db->bind(':property_site', $data['property_site'] ?? $data['site_id'] ?? null);
+        $this->db->bind(':incident_type', $data['incident_type']);
+        $this->db->bind(':incident_date', $data['incident_date']);
+        $this->db->bind(':incident_time', $data['incident_time']);
+        $this->db->bind(':incident_description', $data['incident_description']);
+        $this->db->bind(':action_taken', $data['action_taken'] ?? '');
+        $this->db->bind(':severity', $data['severity'] ?? null);
+        $this->db->bind(':priority', $data['priority'] ?? 'Medium');
+        $this->db->bind(':people_involved', $data['people_involved'] ?? null);
+        $this->db->bind(':additional_details', $data['additional_details'] ?? null);
+        $this->db->bind(':media_files', $data['media_files'] ?? null);
+        $this->db->bind(':latitude', $data['latitude'] ?? null);
+        $this->db->bind(':longitude', $data['longitude'] ?? null);
+        $this->db->bind(':status', $data['status'] ?? 'Pending');
+
+        return $this->db->execute();
+    }
+
+    // Get incident by ID
+    public function getIncidentById($id)
+    {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            WHERE ir.id = :id 
+            LIMIT 1
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+
+    // Get incident reviews
+    public function getIncidentReviews($incidentId) {
+        $this->db->query('
+            SELECT 
+                ir.*,
+                u.profile_image,
+                u.name as user_name,
+                u.role
+            FROM incident_reviews ir
+            LEFT JOIN Users u ON ir.user_id = u.id
+            WHERE ir.incident_id = :incident_id
+            ORDER BY ir.created_at DESC
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
+        return $this->db->resultSet();
+    }
+
+    // Get all sites (for incident creation)
+    public function getAllSites() {
+        $this->db->query('
+            SELECT id, site_name, address, city, district, latitude, longitude
+            FROM sites 
+            ORDER BY site_name ASC
+        ');
+        return $this->db->resultSet();
+    }
+
+    // Get sites assigned to a specific supervisor
+    public function getAssignedSites($supervisorId) {
+        $this->db->query('
+            SELECT s.id, s.site_name, s.address, s.city, s.district, s.latitude, s.longitude
+            FROM sites s
+            INNER JOIN officer_site_assignments osa ON s.id = osa.site_id
+            WHERE osa.officer_id = :supervisor_id 
+            AND osa.status = "Active"
+            AND osa.shift_type = "Supervisor"
+            ORDER BY s.site_name ASC
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Add a review to an incident
+     */
+    public function addIncidentReview($data) {
+        $this->db->query('
+            INSERT INTO incident_reviews 
+            (incident_id, user_id, reviewer_name, review_type, review_title, review_details, created_at) 
+            VALUES 
+            (:incident_id, :user_id, :reviewer_name, :review_type, :review_title, :review_details, NOW())
+        ');
+        
+        $this->db->bind(':incident_id', $data['incident_id']);
+        $this->db->bind(':user_id', $data['user_id']);
+        $this->db->bind(':reviewer_name', $data['reviewer_name']);
+        $this->db->bind(':review_type', $data['review_type']);
+        $this->db->bind(':review_title', $data['review_title']);
+        $this->db->bind(':review_details', $data['review_details']);
+        
+        return $this->db->execute();
+    }
 }
 ?>

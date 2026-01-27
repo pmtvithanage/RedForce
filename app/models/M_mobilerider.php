@@ -100,10 +100,18 @@ class M_mobilerider
                 ir.*,
                 s.site_name,
                 COALESCE(ir.status, 'Pending') as status,
-                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority,
+                u.name as reporter_name,
+                u.role as reporter_role
             FROM incident_reports ir
             LEFT JOIN sites s ON ir.site_id = s.id
-            WHERE ir.user_id = :user_id
+            LEFT JOIN Users u ON ir.user_id = u.id
+            WHERE ir.site_id IN (
+                SELECT DISTINCT rs.site_id 
+                FROM route_sites rs
+                INNER JOIN routes r ON rs.route_id = r.id
+                WHERE r.assigned_rider_id = :user_id
+            )
             ORDER BY ir.created_at DESC
         ");
         $this->db->bind(':user_id', $userId);

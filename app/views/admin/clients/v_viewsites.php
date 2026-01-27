@@ -330,6 +330,11 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+
+    @keyframes progressBar {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
 </style>
 
 <div class="shell" role="main">
@@ -376,7 +381,7 @@
     <!-- ASSIGN OFFICERS SECTION -->
     <div class="duty-points-section">
       <div class="section-header">
-        <h2 class="section-title">Officer Management</h2>
+        <h2 class="section-title">Officer Assignment</h2>
       </div>
 
       <!-- Tab Navigation -->
@@ -389,6 +394,10 @@
           <button class="tab-btn" onclick="switchTab('available')" id="availableTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
             <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">person_search</span>
             Find Officers
+          </button>
+          <button class="tab-btn" onclick="switchTab('supervisor')" id="supervisorTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">supervisor_account</span>
+            Find Supervisor
           </button>
         </div>
 
@@ -452,7 +461,7 @@
                     </div>
                   </div>
                   <div class="duty-card-footer">
-                    <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>)">
+                    <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>, '<?php echo addslashes($officer->name); ?>')">
                       <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
                       Unassign
                     </button>
@@ -536,6 +545,68 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab Content: Find Supervisor -->
+        <div id="supervisorContent" class="tab-content" style="display: none; padding: 24px;">
+          <!-- Filter Section -->
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px; color: var(--accent);">filter_alt</span>
+                Filter Supervisors
+              </h3>
+              <button onclick="resetSupervisorFilters()" style="padding: 6px 16px; background: transparent; color: #666; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">refresh</span>
+                Reset
+              </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">map</span>
+                  District
+                </label>
+                <select id="supervisorDistrictFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-district">Same District (<?php echo htmlspecialchars($data['site']->district ?? 'N/A'); ?>)</option>
+                  <option value="all">All Districts</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">location_city</span>
+                  City
+                </label>
+                <select id="supervisorCityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-city">Same City (<?php echo htmlspecialchars($data['site']->city); ?>)</option>
+                  <option value="all">All Cities</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">event_available</span>
+                  Availability
+                </label>
+                <select id="supervisorAvailabilityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="available">Available Only</option>
+                  <option value="all">All Supervisors</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="loadSupervisors()" style="width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle; margin-right: 6px;">search</span>
+              Search Supervisors
+            </button>
+          </div>
+
+          <!-- Supervisors List -->
+          <div id="supervisorsList" class="duty-cards-container">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;">
+              <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">supervisor_account</span>
+              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Supervisors</h3>
+              <p style="color: #999;">Use the filters above to find supervisors available for assignment</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -569,6 +640,36 @@
   </div>
 </div>
 
+<!-- Supervisor Assignment Modal -->
+<div id="supervisorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="width: 64px; height: 64px; background: #f3e5f5; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+        <span class="material-symbols-outlined" style="font-size: 32px; color: #a40000;">supervisor_account</span>
+      </div>
+      <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Assign Supervisor</h3>
+      <p id="supervisorNameDisplay" style="color: #666; margin: 0; font-size: 15px; font-weight: 500;"></p>
+    </div>
+    
+    <div style="background: #f9fafb; border-left: 4px solid #a40000; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.6;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; color: #a40000;">info</span>
+        This supervisor will be assigned to oversee and manage operations at this site.
+      </p>
+    </div>
+    
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button onclick="closeSupervisorModal()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+        Cancel
+      </button>
+      <button onclick="confirmSupervisorAssignment()" style="padding: 12px 24px; background: #a40000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#a40000'" onmouseout="this.style.background='#a40000'">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">check_circle</span>
+        Confirm Assignment
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
@@ -583,27 +684,39 @@ const urlRoot = '<?php echo URL_ROOT; ?>';
 function switchTab(tab) {
     const assignedTab = document.getElementById('assignedTab');
     const availableTab = document.getElementById('availableTab');
+    const supervisorTab = document.getElementById('supervisorTab');
     const assignedContent = document.getElementById('assignedContent');
     const availableContent = document.getElementById('availableContent');
+    const supervisorContent = document.getElementById('supervisorContent');
     
+    // Reset all tabs
+    [assignedTab, availableTab, supervisorTab].forEach(t => {
+        t.classList.remove('active');
+        t.style.color = '#666';
+        t.style.borderBottomColor = 'transparent';
+    });
+    
+    // Hide all content
+    assignedContent.style.display = 'none';
+    availableContent.style.display = 'none';
+    supervisorContent.style.display = 'none';
+    
+    // Show selected tab
     if (tab === 'assigned') {
         assignedTab.classList.add('active');
-        availableTab.classList.remove('active');
         assignedTab.style.color = '#a40000';
         assignedTab.style.borderBottomColor = '#a40000';
-        availableTab.style.color = '#666';
-        availableTab.style.borderBottomColor = 'transparent';
         assignedContent.style.display = 'block';
-        availableContent.style.display = 'none';
-    } else {
+    } else if (tab === 'available') {
         availableTab.classList.add('active');
-        assignedTab.classList.remove('active');
         availableTab.style.color = '#a40000';
         availableTab.style.borderBottomColor = '#a40000';
-        assignedTab.style.color = '#666';
-        assignedTab.style.borderBottomColor = 'transparent';
         availableContent.style.display = 'block';
-        assignedContent.style.display = 'none';
+    } else if (tab === 'supervisor') {
+        supervisorTab.classList.add('active');
+        supervisorTab.style.color = '#a40000';
+        supervisorTab.style.borderBottomColor = '#a40000';
+        supervisorContent.style.display = 'block';
     }
 }
 
@@ -691,10 +804,10 @@ function displayOfficers(officers) {
                     ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
                 </div>
                 <div class="duty-card-footer">
-                    <button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name.replace(/'/g, "\\'")}')" ${isAssigned ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span>
-                        Assign to Site
-                    </button>
+                    ${isAssigned ? 
+                        '<button class="action-btn" disabled style="opacity: 0.5; cursor: not-allowed; background: #e0e0e0; color: #999;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">block</span> Already Assigned</button>' :
+                        `<button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span> Assign to Site</button>`
+                    }
                 </div>
             </div>
         `;
@@ -713,26 +826,40 @@ function resetFilters() {
 
 // Global variable to store officer ID for assignment
 let selectedOfficerId = null;
+let selectedOfficerName = null;
 
 function openShiftModal(officerId, officerName) {
     selectedOfficerId = officerId;
+    selectedOfficerName = officerName;
     document.getElementById('officerNameDisplay').textContent = `Officer: ${officerName}`;
     document.getElementById('shiftModal').style.display = 'flex';
 }
 
 function closeShiftModal() {
     selectedOfficerId = null;
+    selectedOfficerName = null;
     document.getElementById('shiftModal').style.display = 'none';
     document.getElementById('shiftTypeSelect').value = 'Day';
 }
 
 function confirmAssignment() {
     const shiftType = document.getElementById('shiftTypeSelect').value;
-    assignOfficer(selectedOfficerId, shiftType);
+    assignOfficer(selectedOfficerId, shiftType, selectedOfficerName);
     closeShiftModal();
 }
 
-function assignOfficer(officerId, shiftType) {
+function assignOfficer(officerId, shiftType, officerName) {
+    // Create a temporary modal to show progress
+    const progressModal = document.createElement('div');
+    progressModal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
+    progressModal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 16px; color: #666;">Assigning officer...</p>
+        </div>
+    `;
+    document.body.appendChild(progressModal);
+    
     fetch(urlRoot + '/admin/assignOfficerToSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -745,22 +872,104 @@ function assignOfficer(officerId, shiftType) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Officer assigned successfully!');
-            location.reload();
+            // Show success message
+            progressModal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 50px 40px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #28a745;">check_circle</span>
+                    </div>
+                    <h3 style="margin: 0 0 12px 0; color: #28a745; font-size: 24px; font-weight: 700;">Assignment Successful!</h3>
+                    <p style="color: #666; margin: 0 0 8px 0; font-size: 16px; line-height: 1.5;">
+                        <strong style="color: #333;">${officerName}</strong> has been assigned
+                    </p>
+                    <p style="color: #999; margin: 0 0 4px 0; font-size: 14px;">
+                        Shift Type: <strong style="color: #333;">${shiftType}</strong>
+                    </p>
+                    <p style="color: #999; margin: 0; font-size: 14px;">
+                        Redirecting to updated site view...
+                    </p>
+                    <div style="margin-top: 20px; width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, #28a745, #20c997); border-radius: 2px; animation: progressBar 1.5s ease-out;"></div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.message);
+            // Show error message
+            progressModal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                    <p style="color: #666; margin: 0 0 20px 0;">${data.message}</p>
+                    <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                </div>
+            `;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error assigning officer');
+        progressModal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                <p style="color: #666; margin: 0 0 20px 0;">Failed to assign officer</p>
+                <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+            </div>
+        `;
     });
 }
 
-function unassignOfficer(assignmentId) {
-    if (!confirm('Are you sure you want to unassign this officer from this site?')) {
-        return;
-    }
+function unassignOfficer(assignmentId, officerName) {
+    // Create confirmation modal
+    const confirmModal = document.createElement('div');
+    confirmModal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
+    confirmModal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 64px; height: 64px; background: #fff3e0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #ff9800;">warning</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Confirm Unassignment</h3>
+                <p style="color: #666; margin: 0; font-size: 15px; line-height: 1.5;">
+                    Are you sure you want to unassign <strong style="color: #333;">${officerName}</strong> from this site?
+                </p>
+            </div>
+            
+            <div style="background: #f9fafb; border-left: 4px solid #ff9800; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.6;">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; color: #ff9800;">info</span>
+                    This action will remove the officer's current assignment from this site.
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+                    Cancel
+                </button>
+                <button onclick="confirmUnassignment(${assignmentId}, this)" style="padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">person_remove</span>
+                    Unassign Officer
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(confirmModal);
+}
+
+function confirmUnassignment(assignmentId, buttonElement) {
+    const modal = buttonElement.closest('div[style*="z-index"]');
+    
+    // Show loading
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 16px; color: #666;">Unassigning officer...</p>
+        </div>
+    `;
     
     fetch(urlRoot + '/admin/unassignOfficerFromSite', {
         method: 'POST',
@@ -772,15 +981,236 @@ function unassignOfficer(assignmentId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Officer unassigned successfully!');
-            location.reload();
+            // Show success message
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 50px 40px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #28a745;">check_circle</span>
+                    </div>
+                    <h3 style="margin: 0 0 12px 0; color: #28a745; font-size: 24px; font-weight: 700;">Unassignment Successful!</h3>
+                    <p style="color: #666; margin: 0 0 8px 0; font-size: 16px; line-height: 1.5;">
+                        Officer has been successfully removed from this site
+                    </p>
+                    <p style="color: #999; margin: 0; font-size: 14px;">
+                        Redirecting to updated site view...
+                    </p>
+                    <div style="margin-top: 20px; width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, #28a745, #20c997); border-radius: 2px; animation: progressBar 1.5s ease-out;"></div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => location.reload(), 1500);
         } else {
-            alert('Error: ' + data.message);
+            // Show error message
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                    <p style="color: #666; margin: 0 0 20px 0;">${data.message}</p>
+                    <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                </div>
+            `;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('Error unassigning officer');
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                <p style="color: #666; margin: 0 0 20px 0;">Failed to unassign officer</p>
+                <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+            </div>
+        `;
+    });
+}
+
+// Supervisor search functionality
+function loadSupervisors() {
+    const districtFilter = document.getElementById('supervisorDistrictFilter').value;
+    const cityFilter = document.getElementById('supervisorCityFilter').value;
+    const availability = document.getElementById('supervisorAvailabilityFilter').value;
+    
+    // Show loading
+    document.getElementById('supervisorsList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px;"><div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 16px; color: #666;">Loading supervisors...</p></div>';
+    
+    // Make AJAX call to fetch supervisors
+    fetch(urlRoot + '/admin/getAvailableSupervisors', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            district_filter: districtFilter,
+            city_filter: cityFilter,
+            availability: availability,
+            district: siteDistrict,
+            city: siteCity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        displaySupervisors(data.supervisors);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('supervisorsList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #dc2626;"><span class="material-symbols-outlined" style="font-size: 64px;">error</span><p style="margin-top: 16px; font-weight: 600;">Error loading supervisors</p></div>';
+    });
+}
+
+function displaySupervisors(supervisors) {
+    const container = document.getElementById('supervisorsList');
+    
+    if (supervisors.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_off</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Supervisors Found</h3><p style="color: #999;">No supervisors match your current filter criteria</p></div>';
+        return;
+    }
+    
+    let html = '';
+    supervisors.forEach(supervisor => {
+        const isAssigned = supervisor.current_assignment_count > 0;
+        html += `
+            <div class="duty-card" style="border-left: 4px solid ${isAssigned ? '#ff9800' : '#9c27b0'};">
+                <div class="duty-card-header">
+                    <div>
+                        <h3 class="duty-location">${supervisor.name}</h3>
+                        <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">badge</span>
+                            ${supervisor.userID} • 
+                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">location_on</span>
+                            ${supervisor.city || 'N/A'}
+                        </p>
+                    </div>
+                    <span class="duty-status" style="background-color: ${isAssigned ? '#ff9800' : '#9c27b0'}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        ${isAssigned ? 'Assigned' : 'Supervisor'}
+                    </span>
+                </div>
+                <div style="background: #fafafa; border-radius: 8px; padding: 16px; margin: 12px 0;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Email</p>
+                            <p style="font-weight: 600; font-size: 14px;">${supervisor.email || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                        <p style="font-weight: 600; font-size: 14px;">
+                            <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                            ${supervisor.contact || 'N/A'}
+                        </p>
+                    </div>
+                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
+                </div>
+                <div class="duty-card-footer">
+                    ${isAssigned ? 
+                        '<button class="action-btn" disabled style="opacity: 0.5; cursor: not-allowed; background: #e0e0e0; color: #999;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">block</span> Already Assigned</button>' :
+                        `<button class="action-btn" onclick="assignSupervisor(${supervisor.id}, '${supervisor.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span> Assign Supervisor</button>`
+                    }
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function resetSupervisorFilters() {
+    document.getElementById('supervisorDistrictFilter').value = 'same-district';
+    document.getElementById('supervisorCityFilter').value = 'same-city';
+    document.getElementById('supervisorAvailabilityFilter').value = 'available';
+    document.getElementById('supervisorsList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">supervisor_account</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Supervisors</h3><p style="color: #999;">Use the filters above to find supervisors available for assignment</p></div>';
+}
+
+// Global variable for supervisor assignment
+let selectedSupervisorId = null;
+let selectedSupervisorName = null;
+
+function assignSupervisor(supervisorId, supervisorName) {
+    selectedSupervisorId = supervisorId;
+    selectedSupervisorName = supervisorName;
+    document.getElementById('supervisorNameDisplay').textContent = supervisorName;
+    document.getElementById('supervisorModal').style.display = 'flex';
+}
+
+function closeSupervisorModal() {
+    selectedSupervisorId = null;
+    selectedSupervisorName = null;
+    document.getElementById('supervisorModal').style.display = 'none';
+}
+
+function confirmSupervisorAssignment() {
+    if (!selectedSupervisorId) return;
+    
+    // Show loading state
+    const modal = document.getElementById('supervisorModal');
+    modal.style.pointerEvents = 'none';
+    modal.style.opacity = '0.7';
+    
+    fetch(urlRoot + '/admin/assignSupervisorToSite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            supervisor_id: selectedSupervisorId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reset opacity and show success message
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 50px 40px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #28a745;">check_circle</span>
+                    </div>
+                    <h3 style="margin: 0 0 12px 0; color: #28a745; font-size: 24px; font-weight: 700;">Assignment Successful!</h3>
+                    <p style="color: #666; margin: 0 0 8px 0; font-size: 16px; line-height: 1.5;">
+                        <strong style="color: #333;">${selectedSupervisorName}</strong> has been assigned as supervisor
+                    </p>
+                    <p style="color: #999; margin: 0; font-size: 14px;">
+                        Redirecting to updated site view...
+                    </p>
+                    <div style="margin-top: 20px; width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, #28a745, #20c997); border-radius: 2px; animation: progressBar 1.5s ease-out;"></div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            // Show error message
+            modal.style.pointerEvents = 'auto';
+            modal.style.opacity = '1';
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                    <p style="color: #666; margin: 0 0 20px 0;">${data.message}</p>
+                    <button onclick="closeSupervisorModal()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        modal.style.pointerEvents = 'auto';
+        modal.style.opacity = '1';
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                <p style="color: #666; margin: 0 0 20px 0;">Failed to assign supervisor</p>
+                <button onclick="closeSupervisorModal()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+            </div>
+        `;
     });
 }
 </script>

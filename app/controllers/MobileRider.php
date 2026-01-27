@@ -431,12 +431,26 @@ class MobileRider extends Controller
             return;
         }
         
-        // Verify this incident belongs to the current user
+        // Verify this incident is from a site in the mobile rider's route
         $userId = $_SESSION['user_id'] ?? null;
-        if ($incident->user_id != $userId) {
-            flash('incident_message', 'Unauthorized access.', 'alert alert-danger');
-            redirect('MobileRider/incidents');
-            return;
+        $route = $this->mobileRiderModel->getRouteByUserId($userId);
+        
+        if ($route) {
+            $routeSites = $this->mobileRiderModel->getRouteSites($route->id);
+            $routeSiteIds = array_column($routeSites, 'id');
+            
+            if (!in_array($incident->site_id, $routeSiteIds)) {
+                flash('incident_message', 'Unauthorized access.', 'alert alert-danger');
+                redirect('MobileRider/incidents');
+                return;
+            }
+        } else {
+            // If no route assigned, only allow viewing own incidents
+            if ($incident->user_id != $userId) {
+                flash('incident_message', 'Unauthorized access.', 'alert alert-danger');
+                redirect('MobileRider/incidents');
+                return;
+            }
         }
         
         // Get reviews for this incident

@@ -2099,6 +2099,55 @@ public function rejectLeave($id) {
             ]);
         }
     }
+
+    // AJAX endpoint to get available supervisors (premise officers with rank = Supervisor)
+    public function getAvailableSupervisors() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $filters = [
+            'site_id' => $input['site_id'] ?? null,
+            'city' => $input['city'] ?? '',
+            'district' => $input['district'] ?? '',
+            'district_filter' => $input['district_filter'] ?? 'same-district',
+            'city_filter' => $input['city_filter'] ?? 'same-city',
+            'availability' => $input['availability'] ?? 'available'
+        ];
+
+        $supervisors = $this->adminModel->getAvailableSupervisors($filters);
+        
+        echo json_encode(['supervisors' => $supervisors]);
+    }
+
+    // AJAX endpoint to assign supervisor to site
+    public function assignSupervisorToSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $siteId = $input['site_id'] ?? null;
+        $supervisorId = $input['supervisor_id'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
+
+        if (!$siteId || !$supervisorId || !$assignedBy) {
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
+        echo json_encode($result);
+    }
 }
 
 

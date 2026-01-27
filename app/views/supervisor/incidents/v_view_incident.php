@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
+  <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 
 <style>
 /* Incident Detail Page Styles */
@@ -891,7 +891,7 @@
             <div class="detail-value">
               <?php 
                 $role = $incident->officer_role ?? 'N/A';
-                // Display "Supervisor" if role contains "premise officer"
+                // Display "Supervisor" if role contains "premise officer" and the user is a supervisor
                 if (stripos($role, 'premise officer') !== false) {
                   echo 'Supervisor';
                 } else {
@@ -1019,7 +1019,7 @@
       // Calculate timeline progress based on status
       $status = $incident->status ?? 'Pending';
       
-      // Determine which stages are completed (based on status only, not mobile rider reviews)
+      // Determine which stages are completed (based on status only, not supervisor reviews)
       $reportedCompleted = true; // Always completed
       $underReviewCompleted = ($status != 'Pending');
       $inProgressCompleted = ($status == 'In Progress' || $status == 'Resolved' || $status == 'Closed');
@@ -1208,7 +1208,7 @@
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      <form id="reviewForm" method="POST" action="<?php echo URL_ROOT; ?>/MobileRider/addIncidentReview">
+      <form id="reviewForm" method="POST" action="<?php echo URL_ROOT; ?>/Supervisor/addIncidentReview">
         <div class="review-modal-body">
           <input type="hidden" name="incident_id" value="<?php echo $incident->id ?? ''; ?>">
           

@@ -1064,7 +1064,8 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
                   FROM Users u
                   INNER JOIN premise_officers po ON u.id = po.userID
                   LEFT JOIN officer_site_assignments osa ON u.id = osa.officer_id AND osa.status = 'Active'
-                  WHERE u.role = 'premise officer'";
+                  WHERE u.role = 'premise officer'
+                  AND po.rank != 'Supervisor'";
 
         $bindParams = [];
 
@@ -1614,5 +1615,106 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':user_id', $officerId);
         
         return $this->db->execute();
+    }
+
+    // ==============================
+    // ====== Supervisor Management =====
+    // ==============================
+
+    // Get available supervisors (premise officers with rank = Supervisor)
+    public function getAvailableSupervisors($filters) {
+        $sql = "SELECT DISTINCT
+                    u.id,
+                    u.userID,
+                    u.name,
+                    u.email,
+                    u.phone_number as contact,
+                    po.city,
+                    po.district,
+                    po.rank,
+                    po.employment_status,
+                    (SELECT COUNT(*) FROM officer_site_assignments osa 
+                     WHERE osa.officer_id = u.id AND osa.status = 'Active') as current_assignment_count
+                FROM Users u
+                INNER JOIN premise_officers po ON u.id = po.userID
+                WHERE u.role = 'premise officer'
+                AND po.rank = 'Supervisor'";
+
+        $params = [];
+
+        // District filter
+        if (isset($filters['district_filter'])) {
+            if ($filters['district_filter'] === 'same-district' && !empty($filters['district'])) {
+                $sql .= " AND po.district = :district";
+                $params[':district'] = $filters['district'];
+            }
+            // 'all' means no district filter
+        }
+
+        // City filter
+        if (isset($filters['city_filter'])) {
+            if ($filters['city_filter'] === 'same-city' && !empty($filters['city'])) {
+                $sql .= " AND po.city = :city";
+                $params[':city'] = $filters['city'];
+            }
+            // 'all' means no city filter
+        }
+
+        // Availability filter - Available means NOT assigned to any site
+        if (isset($filters['availability']) && $filters['availability'] === 'available') {
+            $sql .= " AND NOT EXISTS (
+                        SELECT 1 FROM officer_site_assignments osa 
+                        WHERE osa.officer_id = u.id AND osa.status = 'Active'
+                      )";
+        }
+        // 'all' means show everyone regardless of assignment status
+
+        $sql .= " ORDER BY u.name ASC";
+
+        $this->db->query($sql);
+        
+        foreach ($params as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    // Assign supervisor to site
+    public function assignSupervisorToSite($siteId, $supervisorId, $assignedBy) {
+        // Check if supervisor is already assigned to another site
+        $this->db->query("SELECT id FROM officer_site_assignments 
+                          WHERE officer_id = :officer_id AND status = 'Active'");
+        $this->db->bind(':officer_id', $supervisorId);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Supervisor is already assigned to another site'];
+        }
+
+        // Verify the user is actually a supervisor
+        $this->db->query("SELECT po.rank FROM premise_officers po
+                          INNER JOIN Users u ON po.userID = u.id
+                          WHERE u.id = :user_id AND po.rank = 'Supervisor'");
+        $this->db->bind(':user_id', $supervisorId);
+        $supervisor = $this->db->single();
+
+        if (!$supervisor) {
+            return ['success' => false, 'message' => 'User is not a valid supervisor'];
+        }
+
+        // Create new assignment with shift_type as 'Supervisor'
+        $this->db->query("INSERT INTO officer_site_assignments 
+                          (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
+                          VALUES (:site_id, :officer_id, 'Supervisor', CURDATE(), :assigned_by, 'Active')");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_id', $supervisorId);
+        $this->db->bind(':assigned_by', $assignedBy);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Supervisor assigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to assign supervisor'];
     }
 }

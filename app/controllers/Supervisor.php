@@ -14,7 +14,7 @@ class Supervisor extends Controller {
 
     // Default action - redirect to dashboard
     public function index() {
-        redirect('supervisor/dashboard');
+        redirect('supervisor/dashboard/dashboard');
     }
 
     // dashboard
@@ -36,6 +36,9 @@ class Supervisor extends Controller {
         
         // Get total unique officers count
         $totalOfficers = 0;
+        
+        // Get recent activities
+        $recentActivities = [];
         
         if ($supervisor_id) {
             // Get today's date
@@ -59,15 +62,19 @@ class Supervisor extends Controller {
             } else {
                 $attendanceStats['total'] = $totalOfficers;
             }
+            
+            // Get recent activities
+            $recentActivities = $this->supervisorModel->getRecentActivities($supervisor_id, 50);
         }
 
         $data = [
             'title' => 'Dashboard',
             'advertisements' => $advertisements,
             'todayAttendance' => $todayAttendance,
-            'attendanceStats' => $attendanceStats
+            'attendanceStats' => $attendanceStats,
+            'recent_activities' => $recentActivities
         ];
-        $this->view('supervisor/v_dashboard', $data);
+        $this->view('supervisor/dashboard/v_dashboard', $data);
     }
 
     // Messages
@@ -576,6 +583,332 @@ class Supervisor extends Controller {
             redirect('supervisor/attendance');
         } else {
             redirect('supervisor/attendance');
+        }
+    }
+
+    public function site_info(){
+        $data = [
+            'title' => 'Sites',
+        ];
+        $this->view('supervisor/site/v_site_info', $data);
+    }
+
+    // Incidents - List all incidents
+    public function incidents() {
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+        
+        // Get incidents for this supervisor
+        $incidents = $this->supervisorModel->getIncidentsByUserId($userId);
+        
+        // Calculate statistics
+        $stats = [
+            'total_incidents' => count($incidents),
+            'pending_incidents' => 0,
+            'inprogress_incidents' => 0,
+            'resolved_incidents' => 0
+        ];
+        
+        foreach ($incidents as $incident) {
+            $status = strtolower($incident->status ?? 'pending');
+            if ($status === 'pending') {
+                $stats['pending_incidents']++;
+            } elseif ($status === 'in progress') {
+                $stats['inprogress_incidents']++;
+            } elseif ($status === 'resolved' || $status === 'closed') {
+                $stats['resolved_incidents']++;
+            }
+        }
+        
+        $data = array_merge([
+            'title' => 'Incidents',
+            'pageTitle' => 'Incident Reports',
+            'incidents' => $incidents
+        ], $stats);
+        
+        $this->view('supervisor/incidents/v_incidents', $data);
+    }
+
+    // Create Incident
+    public function createIncident()
+    {
+        $userId = $_SESSION['user_id'] ?? null;
+        
+        if (!$userId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+        
+        // Get sites assigned to this supervisor only
+        $sites = $this->supervisorModel->getAssignedSites($userId);
+        
+        // Handle POST request
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize input
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            // Initialize data array
+            $data = [
+                'title' => 'Incidents',
+                'pageTitle' => 'Report New Incident',
+                'sites' => $sites,
+                // Form values
+                'incident_type' => trim($_POST['incident_type'] ?? ''),
+                'site_id' => trim($_POST['site_id'] ?? ''),
+                'incident_date' => trim($_POST['incident_date'] ?? ''),
+                'incident_time' => trim($_POST['incident_time'] ?? ''),
+                'priority' => trim($_POST['priority'] ?? 'Medium'),
+                'description' => trim($_POST['description'] ?? ''),
+                'actions_taken' => trim($_POST['actions_taken'] ?? ''),
+                'people_involved' => trim($_POST['people_involved'] ?? ''),
+                'latitude' => trim($_POST['latitude'] ?? ''),
+                'longitude' => trim($_POST['longitude'] ?? ''),
+                // Form errors
+                'incident_type_err' => '',
+                'site_id_err' => '',
+                'incident_date_err' => '',
+                'incident_time_err' => '',
+                'priority_err' => '',
+                'description_err' => '',
+            ];
+            
+            // Validation
+            if (empty($data['incident_type'])) {
+                $data['incident_type_err'] = 'Please select an incident type';
+            }
+            
+            if (empty($data['site_id'])) {
+                $data['site_id_err'] = 'Please select a site';
+            }
+            
+            if (empty($data['incident_date'])) {
+                $data['incident_date_err'] = 'Please select incident date';
+            }
+            
+            if (empty($data['incident_time'])) {
+                $data['incident_time_err'] = 'Please select incident time';
+            }
+            
+            if (empty($data['description'])) {
+                $data['description_err'] = 'Please provide a description';
+            }
+            
+            // Handle file uploads
+            $uploadedFiles = [];
+            if (!empty($_FILES['evidence_files']['name'][0])) {
+                $uploadDir = 'uploads/evidence/';
+                
+                // Create directory if it doesn't exist
+                if (!file_exists($uploadDir)) {
+                    mkdir($uploadDir, 0777, true);
+                }
+                
+                $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                $maxFileSize = 5 * 1024 * 1024; // 5MB
+                
+                foreach ($_FILES['evidence_files']['tmp_name'] as $key => $tmp_name) {
+                    if ($_FILES['evidence_files']['error'][$key] == 0) {
+                        $fileType = $_FILES['evidence_files']['type'][$key];
+                        $fileSize = $_FILES['evidence_files']['size'][$key];
+                        
+                        // Validate file type and size
+                        if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
+                            $fileName = uniqid() . '_' . basename($_FILES['evidence_files']['name'][$key]);
+                            $targetFile = $uploadDir . $fileName;
+                            
+                            if (move_uploaded_file($tmp_name, $targetFile)) {
+                                $uploadedFiles[] = $fileName;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Check if there are no validation errors
+            if (empty($data['incident_type_err']) && empty($data['site_id_err']) && 
+                empty($data['incident_date_err']) && empty($data['incident_time_err']) && 
+                empty($data['description_err'])) {
+                
+                // Get user details
+                $user = $this->userModel->getUserById($userId);
+                
+                // Prepare incident data
+                $incidentData = [
+                    'user_id' => $userId,
+                    'officer_name' => $user->name ?? 'Unknown',
+                    'officer_role' => 'supervisor',
+                    'site_id' => $data['site_id'],
+                    'property_site' => $data['site_id'],
+                    'incident_type' => $data['incident_type'],
+                    'incident_date' => $data['incident_date'],
+                    'incident_time' => $data['incident_time'],
+                    'incident_description' => $data['description'],
+                    'action_taken' => $data['actions_taken'],
+                    'severity' => $data['priority'],
+                    'priority' => $data['priority'],
+                    'people_involved' => $data['people_involved'],
+                    'additional_details' => null,
+                    'media_files' => !empty($uploadedFiles) ? implode(',', $uploadedFiles) : null,
+                    'latitude' => !empty($data['latitude']) ? $data['latitude'] : null,
+                    'longitude' => !empty($data['longitude']) ? $data['longitude'] : null,
+                    'status' => 'Pending'
+                ];
+                
+                // Add incident to database
+                if ($this->supervisorModel->addIncident($incidentData)) {
+                    // Log activity
+                    $this->supervisorModel->logActivity([
+                        'user_id' => $userId,
+                        'activity_type' => 'incident',
+                        'activity_titel' => 'New Incident Reported',
+                        'activity_details' => "Reported incident: {$data['incident_type']} at site ID {$data['site_id']}"
+                    ]);
+                    
+                    flash('incident_message', 'Incident reported successfully!', 'alert alert-success');
+                    redirect('supervisor/incidents');
+                } else {
+                    flash('incident_message', 'Error submitting incident report. Please try again.', 'alert alert-danger');
+                }
+            }
+            
+            // Load view with errors
+            $this->view('supervisor/incidents/v_create_Incident', $data);
+        } else {
+            // GET request - show form
+            $data = [
+                'title' => 'Incidents',
+                'pageTitle' => 'Report New Incident',
+                'sites' => $sites,
+                // Form error fields
+                'incident_type_err' => '',
+                'site_id_err' => '',
+                'incident_date_err' => '',
+                'incident_time_err' => '',
+                'priority_err' => '',
+                'description_err' => '',
+                // Form values
+                'incident_type' => '',
+                'site_id' => '',
+                'incident_date' => date('Y-m-d'),
+                'incident_time' => date('H:i'),
+                'priority' => 'Medium',
+                'description' => '',
+                'actions_taken' => '',
+                'people_involved' => '',
+                'latitude' => '',
+                'longitude' => ''
+            ];
+            $this->view('supervisor/incidents/v_create_Incident', $data);
+        }
+    }
+
+    // View Incident Detail
+    public function viewIncident($id = null)
+    {
+        // Get incident ID from parameter or query string
+        $incidentId = $id ?? $_GET['id'] ?? null;
+        
+        if (!$incidentId) {
+            flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
+            redirect('supervisor/incidents');
+            return;
+        }
+        
+        // Get incident details
+        $incident = $this->supervisorModel->getIncidentById($incidentId);
+        
+        if (!$incident) {
+            flash('incident_message', 'Incident not found.', 'alert alert-danger');
+            redirect('supervisor/incidents');
+            return;
+        }
+        
+        // Verify this incident belongs to the current user
+        $userId = $_SESSION['user_id'] ?? null;
+        if ($incident->user_id != $userId) {
+            flash('incident_message', 'Unauthorized access.', 'alert alert-danger');
+            redirect('supervisor/incidents');
+            return;
+        }
+        
+        // Get reviews for this incident
+        $reviews = $this->supervisorModel->getIncidentReviews($incidentId);
+        
+        $data = [
+            'title' => 'Incidents',
+            'pageTitle' => 'Incident Details',
+            'incident' => $incident,
+            'reviews' => $reviews
+        ];
+        
+        $this->view('supervisor/incidents/v_view_incident', $data);
+    }
+
+    public function addIncidentReview()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Sanitize input
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            
+            $userId = $_SESSION['user_id'] ?? null;
+            $incidentId = $_POST['incident_id'] ?? null;
+            
+            if (!$userId) {
+                flash('incident_message', 'Session expired. Please login again.', 'alert alert-danger');
+                redirect('users/login');
+                return;
+            }
+            
+            if (!$incidentId) {
+                flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
+                redirect('supervisor/incidents');
+                return;
+            }
+            
+            // Validate input
+            if (empty($_POST['review_title']) || empty($_POST['review_details'])) {
+                flash('incident_message', 'Review title and details are required.', 'alert alert-danger');
+                redirect('supervisor/viewIncident/' . $incidentId);
+                return;
+            }
+            
+            // Get user details
+            $user = $this->userModel->getUserById($userId);
+            
+            // Prepare review data
+            $reviewData = [
+                'incident_id' => $incidentId,
+                'user_id' => $userId,
+                'reviewer_name' => $user->name ?? 'Unknown',
+                'review_type' => $_POST['review_type'] ?? 'Comment',
+                'review_title' => trim($_POST['review_title']),
+                'review_details' => trim($_POST['review_details'])
+            ];
+            
+            // Add review to database
+            if ($this->supervisorModel->addIncidentReview($reviewData)) {
+                // Log activity
+                $this->supervisorModel->logActivity([
+                    'user_id' => $userId,
+                    'activity_type' => 'incident_review',
+                    'activity_titel' => 'Added Review to Incident',
+                    'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
+                ]);
+                
+                flash('incident_message', 'Review added successfully!', 'alert alert-success');
+            } else {
+                flash('incident_message', 'Error adding review. Please try again.', 'alert alert-danger');
+            }
+            
+            redirect('supervisor/viewIncident/' . $incidentId);
+        } else {
+            redirect('supervisor/incidents');
         }
     }
 
