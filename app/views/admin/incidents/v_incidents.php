@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
+  <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 
 <style>
 /* Stat Cards Container */
@@ -24,10 +24,10 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.stat-card:nth-child(1) { border-left-color: #9333ea; } /* Purple */
-.stat-card:nth-child(2) { border-left-color: #22c55e; } /* Green */
-.stat-card:nth-child(3) { border-left-color: #f59e0b; } /* Gold */
-.stat-card:nth-child(4) { border-left-color: #ef4444; } /* Red */
+.stat-card:nth-child(1) { border-left-color: #3b82f6; } /* Blue */
+.stat-card:nth-child(2) { border-left-color: #f59e0b; } /* Orange */
+.stat-card:nth-child(3) { border-left-color: #8b5cf6; } /* Purple */
+.stat-card:nth-child(4) { border-left-color: #10b981; } /* Green */
 
 .stat-card:hover {
   transform: translateY(-6px);
@@ -41,10 +41,10 @@
   color: #555;
 }
 
-.stat-card:nth-child(1) .stat-icon { color: #9333ea; }
-.stat-card:nth-child(2) .stat-icon { color: #22c55e; }
-.stat-card:nth-child(3) .stat-icon { color: #f59e0b; }
-.stat-card:nth-child(4) .stat-icon { color: #ef4444; }
+.stat-card:nth-child(1) .stat-icon { color: #3b82f6; }
+.stat-card:nth-child(2) .stat-icon { color: #f59e0b; }
+.stat-card:nth-child(3) .stat-icon { color: #8b5cf6; }
+.stat-card:nth-child(4) .stat-icon { color: #10b981; }
 
 .stat-card:hover .stat-icon {
   transform: scale(1.15);
@@ -96,27 +96,6 @@
   display: flex;
   align-items: center;
   gap: 10px;
-}
-
-.add-incident-btn {
-  background: white;
-  color: #a40000;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
-
-.add-incident-btn:hover {
-  background: #f3f4f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .incidents-table-container {
@@ -265,6 +244,14 @@
   background: #1d4ed8;
 }
 
+.table-action-btn.delete {
+  background: #ef4444;
+}
+
+.table-action-btn.delete:hover {
+  background: #dc2626;
+}
+
 /* Empty state */
 .empty-state {
   text-align: center;
@@ -291,35 +278,48 @@
 }
 </style>
 
+<!-- Statistics Cards -->
 <div class="stats-container">
+  <!-- Total Incidents -->
   <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">assessment</span>
+    <span class="material-symbols-outlined stat-icon">report</span>
     <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['total_incidents']) ? $data['total_incidents'] : '0'; ?></div>
+      <div class="stat-value">
+        <?php echo isset($data['stats']->total) ? $data['stats']->total : 0; ?>
+      </div>
       <div class="stat-label">Total Incidents</div>
     </div>
   </div>
 
+  <!-- Pending Incidents -->
   <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">schedule</span>
+    <span class="material-symbols-outlined stat-icon">pending_actions</span>
     <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['pending_incidents']) ? $data['pending_incidents'] : '0'; ?></div>
+      <div class="stat-value">
+        <?php echo isset($data['stats']->pending) ? $data['stats']->pending : 0; ?>
+      </div>
       <div class="stat-label">Pending</div>
     </div>
   </div>
 
+  <!-- In Progress -->
   <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">sync</span>
+    <span class="material-symbols-outlined stat-icon">engineering</span>
     <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['inprogress_incidents']) ? $data['inprogress_incidents'] : '0'; ?></div>
+      <div class="stat-value">
+        <?php echo isset($data['stats']->in_progress) ? $data['stats']->in_progress : 0; ?>
+      </div>
       <div class="stat-label">In Progress</div>
     </div>
   </div>
 
+  <!-- Resolved Incidents -->
   <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">check_circle</span>
+    <span class="material-symbols-outlined stat-icon">task_alt</span>
     <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['resolved_incidents']) ? $data['resolved_incidents'] : '0'; ?></div>
+      <div class="stat-value">
+        <?php echo isset($data['stats']->resolved) ? $data['stats']->resolved : 0; ?>
+      </div>
       <div class="stat-label">Resolved</div>
     </div>
   </div>
@@ -330,12 +330,8 @@
   <div class="incidents-header">
     <h2 class="incidents-title">
       <span class="material-symbols-outlined">report_problem</span>
-      Incident Reports
+      All Incident Reports
     </h2>
-    <button class="add-incident-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/createIncident'">
-      <span class="material-symbols-outlined">add</span>
-      Report Incident
-    </button>
   </div>
 
   <div class="incidents-table-container">
@@ -351,8 +347,10 @@
         <tr>
           <th>ID</th>
           <th>Date & Time</th>
+          <th>Reporter</th>
           <th>Site</th>
           <th>Type</th>
+          <th>Description</th>
           <th>Priority</th>
           <th>Status</th>
           <th>Actions</th>
@@ -362,12 +360,14 @@
         <?php foreach($data['incidents'] as $incident): ?>
         <tr>
           <td><strong>#<?php echo htmlspecialchars($incident->id); ?></strong></td>
-          <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at)); ?></td>
+          <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at ?? $incident->incident_date . ' ' . $incident->incident_time)); ?></td>
+          <td><?php echo htmlspecialchars($incident->officer_name ?? 'N/A'); ?></td>
           <td><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></td>
           <td><?php echo htmlspecialchars($incident->incident_type ?? 'General'); ?></td>
+          <td><?php echo htmlspecialchars(substr($incident->incident_description ?? '', 0, 50)) . (strlen($incident->incident_description ?? '') > 50 ? '...' : ''); ?></td>
           <td>
-            <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? 'medium'); ?>">
-              <?php echo htmlspecialchars($incident->priority ?? 'Medium'); ?>
+            <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? $incident->severity ?? 'medium'); ?>">
+              <?php echo htmlspecialchars($incident->priority ?? $incident->severity ?? 'Medium'); ?>
             </span>
           </td>
           <td>
@@ -376,7 +376,7 @@
             </span>
           </td>
           <td>
-            <button class="table-action-btn view" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/viewIncident/<?php echo $incident->id; ?>'">
+            <button class="table-action-btn view" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewIncident/<?php echo $incident->id; ?>'">
               View
             </button>
           </td>
@@ -395,4 +395,4 @@
     <div class="backdrop" id="backdrop" hidden></div>
 
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
-<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>                       
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

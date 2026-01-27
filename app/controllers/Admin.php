@@ -1601,13 +1601,155 @@ public function rejectLeave($id) {
         }
         exit;
     }
-
+// ======================================================================== //
+// =======================      Admin incidents        ====================== //
+// ======================================================================== //
     public function incidents() {
+        // Fetch all incidents from database
+        $incidents = $this->adminModel->getAllIncidents();
+        $stats = $this->adminModel->getIncidentStats();
+        
         $data = [
             'title' => 'Incidents',
-            'pageTitle' => 'Incidents Dashboard'
+            'pageTitle' => 'Incidents Dashboard',
+            'incidents' => $incidents,
+            'stats' => $stats
         ];
-        $this->view('admin/v_incidents', $data);
+        $this->view('admin/incidents/v_incidents', $data);
+    }
+    
+    public function viewIncident($id) {
+        // Get incident details
+        $incident = $this->adminModel->getIncidentById($id);
+        
+        if (!$incident) {
+            flash('incident_message', 'Incident not found', 'alert-danger');
+            redirect('admin/incidents');
+            return;
+        }
+        
+        // Get incident reviews
+        $reviews = $this->adminModel->getIncidentReviews($id);
+        
+        $data = [
+            'title' => 'Incidents',
+            'pageTitle' => 'Incident Details',
+            'incident' => $incident,
+            'reviews' => $reviews
+        ];
+        
+        $this->view('admin/incidents/v_view_incidents', $data);
+    }
+    
+    public function addIncidentReview() {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/incidents');
+            return;
+        }
+        
+        // Get form data (PDO prepared statements handle SQL injection)
+        $incidentId = trim($_POST['incident_id'] ?? '');
+        $reviewTitle = trim($_POST['review_title'] ?? '');
+        $reviewType = trim($_POST['review_type'] ?? '');
+        $reviewDetails = trim($_POST['review_details'] ?? '');
+        $userId = $_SESSION['user_id'] ?? null;
+        $userName = $_SESSION['user_name'] ?? 'Admin';
+        
+        // Validate required fields
+        if (empty($incidentId) || empty($reviewTitle) || empty($reviewDetails) || empty($userId)) {
+            flash('incident_message', 'Please fill all required fields', 'alert-danger');
+            redirect('admin/viewIncident/' . $incidentId);
+            return;
+        }
+        
+        // Add review using admin model
+        $result = $this->adminModel->addIncidentReview(
+            $incidentId,
+            $userId,
+            $userName,
+            $reviewTitle,
+            $reviewType,
+            $reviewDetails
+        );
+        
+        if ($result) {
+            // Update incident status to In Progress
+            $statusUpdated = $this->adminModel->updateIncidentStatus($incidentId, 'In Progress');
+            
+            if (!$statusUpdated) {
+                error_log("Failed to update incident status for incident ID: " . $incidentId);
+            }
+            
+            // Log activity
+            $this->adminModel->insertRecentActivity(
+                'Incident Review Added',
+                'Admin added a review to incident #' . $incidentId,
+                'Incident',
+                $userId
+            );
+            
+            flash('incident_message', 'Review added successfully and status updated to In Progress', 'alert-success');
+        } else {
+            flash('incident_message', 'Failed to add review. Please try again.', 'alert-danger');
+        }
+        
+        redirect('admin/viewIncident/' . $incidentId);
+    }
+    
+    public function resolveIncident() {
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/incidents');
+            return;
+        }
+        
+        // Get form data
+        $incidentId = trim($_POST['incident_id'] ?? '');
+        $resolutionTitle = trim($_POST['resolution_title'] ?? '');
+        $resolutionDetails = trim($_POST['resolution_details'] ?? '');
+        $actionsTaken = trim($_POST['actions_taken'] ?? '');
+        $userId = $_SESSION['user_id'] ?? null;
+        $userName = $_SESSION['user_name'] ?? 'Admin';
+        
+        // Validate required fields
+        if (empty($incidentId) || empty($resolutionTitle) || empty($resolutionDetails) || empty($userId)) {
+            flash('incident_message', 'Please fill all required fields', 'alert-danger');
+            redirect('admin/viewIncident/' . $incidentId);
+            return;
+        }
+        
+        // Add resolution as a review
+        $reviewResult = $this->adminModel->addIncidentReview(
+            $incidentId,
+            $userId,
+            $userName,
+            $resolutionTitle,
+            'Action',
+            $resolutionDetails
+        );
+        
+        // Update incident status to Resolved
+        $statusUpdated = $this->adminModel->updateIncidentStatus($incidentId, 'Resolved');
+        
+        // Update action_taken field if provided
+        if (!empty($actionsTaken)) {
+            $this->adminModel->updateIncidentActionsTaken($incidentId, $actionsTaken);
+        }
+        
+        if ($reviewResult && $statusUpdated) {
+            // Log activity
+            $this->adminModel->insertRecentActivity(
+                'Incident Resolved',
+                'Admin marked incident #' . $incidentId . ' as resolved',
+                'Incident',
+                $userId
+            );
+            
+            flash('incident_message', 'Incident marked as resolved successfully', 'alert-success');
+        } else {
+            flash('incident_message', 'Failed to resolve incident. Please try again.', 'alert-danger');
+        }
+        
+        redirect('admin/viewIncident/' . $incidentId);
     }
 
 // ======================================================================== //

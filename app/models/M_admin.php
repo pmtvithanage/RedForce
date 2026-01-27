@@ -1425,4 +1425,149 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':route_id', $routeId);
         return $this->db->execute();
     }
+    
+    /**
+     * Get all incidents for admin dashboard
+     */
+    public function getAllIncidents() {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                u.name as officer_name,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            LEFT JOIN Users u ON ir.user_id = u.id
+            ORDER BY ir.created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+    
+    /**
+     * Get incident statistics
+     */
+    public function getIncidentStats() {
+        $this->db->query("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN COALESCE(status, 'Pending') = 'Pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as in_progress,
+                SUM(CASE WHEN status IN ('Resolved', 'Closed') THEN 1 ELSE 0 END) as resolved
+            FROM incident_reports
+        ");
+        return $this->db->single();
+    }
+    
+    /**
+     * Get incident by ID
+     */
+    public function getIncidentById($id) {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                u.name as officer_name,
+                u.role as officer_role,
+                u.profile_image,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            LEFT JOIN Users u ON ir.user_id = u.id
+            WHERE ir.id = :id 
+            LIMIT 1
+        ");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
+    
+    /**
+     * Get all reviews for an incident
+     */
+    public function getIncidentReviews($incidentId) {
+        $this->db->query('
+            SELECT 
+                ir.*,
+                u.profile_image,
+                u.name as reviewer_name,
+                u.role
+            FROM incident_reviews ir
+            LEFT JOIN Users u ON ir.user_id = u.id
+            WHERE ir.incident_id = :incident_id
+            ORDER BY ir.created_at DESC
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
+        return $this->db->resultSet();
+    }
+    
+    /**
+     * Add a review to an incident
+     */
+    public function addIncidentReview($incidentId, $userId, $reviewerName, $reviewTitle, $reviewType, $reviewDetails) {
+        $this->db->query('
+            INSERT INTO incident_reviews (
+                incident_id,
+                user_id,
+                reviewer_name,
+                review_title,
+                review_type,
+                review_details,
+                created_at
+            ) VALUES (
+                :incident_id,
+                :user_id,
+                :reviewer_name,
+                :review_title,
+                :review_type,
+                :review_details,
+                NOW()
+            )
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':reviewer_name', $reviewerName);
+        $this->db->bind(':review_title', $reviewTitle);
+        $this->db->bind(':review_type', $reviewType);
+        $this->db->bind(':review_details', $reviewDetails);
+        
+        return $this->db->execute();
+    }
+    
+    /**
+     * Update incident status
+     */
+    public function updateIncidentStatus($incidentId, $status) {
+        $this->db->query('
+            UPDATE incident_reports 
+            SET status = :status, 
+                updated_at = NOW() 
+            WHERE id = :incident_id
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
+        $this->db->bind(':status', $status);
+        
+        return $this->db->execute();
+    }
+    
+    /**
+     * Update incident actions taken
+     */
+    public function updateIncidentActionsTaken($incidentId, $actionsTaken) {
+        $this->db->query('
+            UPDATE incident_reports 
+            SET action_taken = :actions_taken, 
+                updated_at = NOW() 
+            WHERE id = :incident_id
+        ');
+        
+        $this->db->bind(':incident_id', $incidentId);
+        $this->db->bind(':actions_taken', $actionsTaken);
+        
+        return $this->db->execute();
+    }
 }

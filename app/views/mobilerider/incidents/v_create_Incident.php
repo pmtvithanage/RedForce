@@ -218,7 +218,7 @@ textarea.field-input {
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
 
 <!-- Content will be loaded here -->
-<button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+<button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/viewIncident'"> 
     <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
     Back
 </button>
