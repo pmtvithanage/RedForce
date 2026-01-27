@@ -2,12 +2,10 @@
 <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
 
 
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/dashboard_style.css">
 
-
-
-<!-- Material Icons -->
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<!-- Material Symbols -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
 <!-- Link to Schedule CSS -->
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseofficer/schedule_style.css">
@@ -67,7 +65,7 @@
                 
                 <div class="shift-content" id="shiftContent">
                     <div class="no-selection">
-                        <span class="material-icons no-selection-icon">event</span>
+                        <span class="material-symbols-outlined no-selection-icon">event</span>
                         <p>Click on a date to view your schedule</p>
                     </div>
                 </div>
@@ -81,7 +79,7 @@
                         
                         <div class="shift-details-grid">
                             <div class="detail-item">
-                                <span class="material-icons detail-icon">location_on</span>
+                                <span class="material-symbols-outlined detail-icon">location_on</span>
                                 <div class="detail-content">
                                     <span class="detail-label">Location</span>
                                     <span class="detail-value" id="shiftLocation">-</span>
@@ -89,7 +87,7 @@
                             </div>
                             
                             <div class="detail-item">
-                                <span class="material-icons detail-icon">access_time</span>
+                                <span class="material-symbols-outlined detail-icon">access_time</span>
                                 <div class="detail-content">
                                     <span class="detail-label">Shift Time</span>
                                     <span class="detail-value" id="shiftTime">-</span>
@@ -97,7 +95,7 @@
                             </div>
                             
                             <div class="detail-item">
-                                <span class="material-icons detail-icon">business</span>
+                                <span class="material-symbols-outlined detail-icon">business</span>
                                 <div class="detail-content">
                                     <span class="detail-label">Shift Type</span>
                                     <span class="detail-value" id="shiftType">-</span>
@@ -105,7 +103,7 @@
                             </div>
                             
                             <div class="detail-item">
-                                <span class="material-icons detail-icon">supervisor_account</span>
+                                <span class="material-symbols-outlined detail-icon">supervisor_account</span>
                                 <div class="detail-content">
                                     <span class="detail-label">Supervisor</span>
                                     <span class="detail-value" id="shiftSupervisor">-</span>
@@ -115,7 +113,7 @@
                         
                         <div class="shift-notes">
                             <div class="notes-header">
-                                <span class="material-icons">note</span>
+                                <span class="material-symbols-outlined">note</span>
                                 <h4>Additional Notes</h4>
                             </div>
                             <p id="shiftNotes">No additional notes for this shift.</p>
@@ -126,11 +124,11 @@
                 <!-- No Shift Template (hidden) -->
                 <div class="no-shift-template" id="noShiftTemplate" style="display: none;">
                     <div class="no-shift-card">
-                        <span class="material-icons no-shift-icon">free_breakfast</span>
+                        <span class="material-symbols-outlined no-shift-icon">free_breakfast</span>
                         <h4>No Shift Scheduled</h4>
                         <p>You have no scheduled shifts for this date.</p>
                         <div class="day-off-badge">
-                            <span class="material-icons">beach_access</span>
+                            <span class="material-symbols-outlined">beach_access</span>
                             Day Off
                         </div>
                     </div>
