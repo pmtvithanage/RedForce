@@ -211,6 +211,61 @@ textarea.field-input {
   
   .page {
     width: 100%;
+    margin: 20px auto;
+    padding: 0 10px;
+  }
+  
+  .application-form {
+    padding: 15px;
+  }
+  
+  .section-head h2 {
+    font-size: 18px;
+  }
+  
+  #map {
+    height: 250px;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .photo-preview img {
+    width: 80px;
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    margin: 10px auto;
+  }
+  
+  .card {
+    padding: 15px;
+  }
+  
+  .field-label {
+    font-size: 14px;
+  }
+  
+  .field-input {
+    font-size: 14px;
+    padding: 8px 10px;
+  }
+  
+  .btn-upload {
+    width: 100%;
+  }
+  
+  .custom-file {
+    flex-direction: column;
   }
 }
 </style>

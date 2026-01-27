@@ -1019,9 +1019,10 @@
       // Calculate timeline progress based on status
       $status = $incident->status ?? 'Pending';
       
-      // Determine which stages are completed (based on status only, not supervisor reviews)
+      // Determine which stages are completed
       $reportedCompleted = true; // Always completed
-      $underReviewCompleted = ($status != 'Pending');
+      // Under review if there are any reviews OR status is not pending
+      $underReviewCompleted = (!empty($data['reviews']) || $status != 'Pending');
       $inProgressCompleted = ($status == 'In Progress' || $status == 'Resolved' || $status == 'Closed');
       $resolvedCompleted = ($status == 'Resolved' || $status == 'Closed');
       

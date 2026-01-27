@@ -289,6 +289,81 @@
   margin: 0 0 20px 0;
   font-size: 14px;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 968px) {
+  .stats-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 15px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-icon {
+    font-size: 32px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .incidents-section {
+    margin: 15px;
+  }
+  
+  .incidents-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+  
+  .add-incident-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .incidents-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .incidents-table {
+    min-width: 700px;
+  }
+}
+
+@media (max-width: 640px) {
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 12px;
+  }
+  
+  .stat-icon {
+    font-size: 28px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .stat-label {
+    font-size: 11px;
+  }
+  
+  .incidents-header {
+    padding: 15px;
+  }
+  
+  .incidents-title {
+    font-size: 16px;
+  }
+}
 </style>
 
 <div class="stats-container">

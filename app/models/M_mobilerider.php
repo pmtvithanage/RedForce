@@ -625,4 +625,41 @@ class M_mobilerider
         $this->db->bind(':incident_id', $incidentId);
         return $this->db->resultSet();
     }
+
+    /**
+     * Calculate average response time for mobile rider's incidents
+     * Response time = time from incident creation to first review
+     */
+    public function getAverageResponseTime($userId) {
+        $this->db->query("
+            SELECT 
+                AVG(TIMESTAMPDIFF(MINUTE, ir.created_at, rev.first_review_time)) as avg_minutes
+            FROM incident_reports ir
+            INNER JOIN (
+                SELECT incident_id, MIN(created_at) as first_review_time
+                FROM incident_reviews
+                GROUP BY incident_id
+            ) rev ON ir.id = rev.incident_id
+            WHERE ir.user_id = :user_id
+            AND ir.status != 'Pending'
+        ");
+        
+        $this->db->bind(':user_id', $userId);
+        $result = $this->db->single();
+        
+        if (!$result || $result->avg_minutes === null) {
+            return 'N/A';
+        }
+        
+        $avgMinutes = round($result->avg_minutes);
+        
+        // Format the response time
+        if ($avgMinutes < 60) {
+            return $avgMinutes . ' min';
+        } else {
+            $hours = floor($avgMinutes / 60);
+            $minutes = $avgMinutes % 60;
+            return $hours . 'h ' . $minutes . 'm';
+        }
+    }
 }

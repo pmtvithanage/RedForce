@@ -2,12 +2,78 @@
 <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/admin/dashboard_style.css">
 
+<style>
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 10px;
+  }
+  
+  .stat-card {
+    padding: 15px;
+  }
+  
+  .stat-icon {
+    font-size: 32px;
+  }
+  
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .card.section {
+    padding: 15px;
+  }
+  
+  .card.section h3 {
+    font-size: 18px;
+  }
+  
+  .activity-item {
+    padding: 12px;
+  }
+  
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .activity-icon {
+    font-size: 20px;
+  }
+  
+  .ad-item {
+    flex-direction: column;
+  }
+  
+  .ad-image {
+    width: 100%;
+  }
+  
+  .ad-image img {
+    width: 100%;
+    height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 20px;
+  }
+  
+  .stat-card > div > div:last-child {
+    font-size: 12px;
+  }
+}
+</style>
+
 <div class="dashboard">
 <!-- Stats -->
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">route</span>
   <div>
-    <div class="stat-value">12</div>
+    <div class="stat-value"><?php echo $data['stats']['total_sites']; ?></div>
     <div>Total Sites</div>
   </div>
 </div>
@@ -15,7 +81,7 @@
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">check_circle</span>
   <div>
-    <div class="stat-value">8</div>
+    <div class="stat-value"><?php echo $data['stats']['completed_visits']; ?></div>
     <div>Completed Visits</div>
   </div>
 </div>
@@ -23,16 +89,16 @@
 <div class="card stat-card">
   <span class="material-symbols-outlined stat-icon">report</span>
   <div>
-    <div class="stat-value">4</div>
+    <div class="stat-value"><?php echo $data['stats']['incidents']; ?></div>
     <div>Incidents</div>
   </div>
 </div>
 
 <div class="card stat-card">
-  <span class="material-symbols-outlined stat-icon">map</span>
+  <span class="material-symbols-outlined stat-icon">schedule</span>
   <div>
-    <div class="stat-value">125 km</div>
-    <div>Distance</div>
+    <div class="stat-value"><?php echo htmlspecialchars($data['stats']['avg_response_time']); ?></div>
+    <div>Avg Response Time</div>
   </div>
 </div>
 

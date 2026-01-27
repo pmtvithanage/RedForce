@@ -825,6 +825,167 @@
   color: #9ca3af;
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 968px) {
+  .incident-detail-page {
+    padding: 10px;
+  }
+  
+  .detail-header {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .detail-badges {
+    align-items: flex-start;
+    flex-direction: row;
+  }
+  
+  .detail-body {
+    padding: 20px;
+  }
+  
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .timeline-items {
+    gap: 10px;
+  }
+  
+  .timeline-circle {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .timeline-circle img {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .timeline-circle .material-symbols-outlined {
+    font-size: 24px;
+  }
+  
+  .timeline-label {
+    font-size: 11px;
+  }
+  
+  .timeline-date {
+    font-size: 10px;
+  }
+  
+  .evidence-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .review-modal-content {
+    width: 95%;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+  }
+  
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .page-header {
+    margin-bottom: 15px;
+  }
+  
+  .detail-header-content h1 {
+    font-size: 20px;
+  }
+  
+  .detail-header-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .detail-body {
+    padding: 15px;
+  }
+  
+  .section-title {
+    font-size: 14px;
+  }
+  
+  .detail-value {
+    font-size: 14px;
+  }
+  
+  .timeline-section {
+    padding: 20px 15px;
+  }
+  
+  .timeline-header h2 {
+    font-size: 18px;
+  }
+  
+  .timeline-container {
+    padding: 10px 0;
+  }
+  
+  .timeline-circle {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .timeline-circle img {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .timeline-circle .material-symbols-outlined {
+    font-size: 20px;
+  }
+  
+  .timeline-label {
+    font-size: 10px;
+  }
+  
+  .timeline-tooltip {
+    display: none;
+  }
+  
+  .reviews-section {
+    padding: 15px;
+  }
+  
+  .reviews-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .btn-add-review-inline {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .review-item {
+    padding: 15px;
+  }
+  
+  .review-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .evidence-gallery {
+    grid-template-columns: 1fr;
+  }
+  
+  .location-map {
+    height: 200px;
+  }
+}
+
 </style>
 
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
@@ -1019,9 +1180,10 @@
       // Calculate timeline progress based on status
       $status = $incident->status ?? 'Pending';
       
-      // Determine which stages are completed (based on status only, not mobile rider reviews)
+      // Determine which stages are completed
       $reportedCompleted = true; // Always completed
-      $underReviewCompleted = ($status != 'Pending');
+      // Under review if there are any reviews OR status is not pending
+      $underReviewCompleted = (!empty($data['reviews']) || $status != 'Pending');
       $inProgressCompleted = ($status == 'In Progress' || $status == 'Resolved' || $status == 'Closed');
       $resolvedCompleted = ($status == 'Resolved' || $status == 'Closed');
       

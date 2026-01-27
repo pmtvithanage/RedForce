@@ -31,8 +31,35 @@ class MobileRider extends Controller
         
         // Get recent activities for current user
         $recentActivities = [];
+        $stats = [
+            'total_sites' => 0,
+            'completed_visits' => 0,
+            'incidents' => 0,
+            'avg_response_time' => 'N/A'
+        ];
+        
         if ($userId) {
             $recentActivities = $this->mobileRiderModel->getRecentActivities($userId, 50);
+            
+            // Get route assigned to this mobile rider
+            $route = $this->mobileRiderModel->getRouteByUserId($userId);
+            
+            if ($route) {
+                // Get total sites in route
+                $routeSites = $this->mobileRiderModel->getRouteSites($route->id);
+                $stats['total_sites'] = count($routeSites);
+                
+                // Get site visit stats
+                $siteStats = $this->mobileRiderModel->getSiteVisitStats($route->id);
+                $stats['completed_visits'] = $siteStats->sites_visited ?? 0;
+                
+                // Calculate average response time for incidents
+                $stats['avg_response_time'] = $this->mobileRiderModel->getAverageResponseTime($userId);
+            }
+            
+            // Get incidents count for this user
+            $incidents = $this->mobileRiderModel->getIncidentsByUserId($userId);
+            $stats['incidents'] = count($incidents);
         }
 
         $data = [
@@ -41,6 +68,7 @@ class MobileRider extends Controller
             'advertisements' => $advertisements,
             'notes' => $notes,
             'recent_activities' => $recentActivities,
+            'stats' => $stats
         ];
         $this->view('mobilerider/dashboard/v_dashboard', $data);
     }

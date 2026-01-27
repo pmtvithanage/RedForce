@@ -13,6 +13,7 @@ class M_admin {
         SELECT ra.*, u.name as user_name
         FROM recent_activities ra 
         LEFT JOIN Users u ON ra.user_id = u.id 
+        WHERE u.role = "admin"
         ORDER BY ra.created_at DESC 
         LIMIT :limit
     ');

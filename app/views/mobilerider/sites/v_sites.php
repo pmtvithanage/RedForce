@@ -396,6 +396,125 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
+
+/* Additional Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .page-container {
+    margin: 10px;
+  }
+  
+  .stats-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+  
+  .stat-card {
+    padding: 20px;
+  }
+  
+  .stat-icon {
+    font-size: 36px;
+  }
+  
+  .stat-value {
+    font-size: 28px;
+  }
+  
+  .route-info-section {
+    padding: 20px;
+  }
+  
+  .route-title {
+    font-size: 22px;
+  }
+  
+  .route-description {
+    font-size: 14px;
+  }
+  
+  .map-section,
+  .sites-section {
+    padding: 20px;
+  }
+  
+  #route-map {
+    height: 350px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .sites-table {
+    font-size: 13px;
+  }
+  
+  .sites-table th,
+  .sites-table td {
+    padding: 8px 10px;
+  }
+  
+  .confirm-modal-content {
+    width: 95%;
+    padding: 20px;
+  }
+  
+  .confirm-modal-actions {
+    flex-direction: column;
+  }
+  
+  .confirm-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-value {
+    font-size: 24px;
+  }
+  
+  .stat-label {
+    font-size: 13px;
+  }
+  
+  .route-title {
+    font-size: 20px;
+  }
+  
+  .route-stats {
+    min-width: auto;
+  }
+  
+  #route-map {
+    height: 250px;
+  }
+  
+  .sites-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .sites-table {
+    min-width: 600px;
+  }
+  
+  .confirm-modal-content {
+    padding: 15px;
+  }
+  
+  .confirm-modal-title {
+    font-size: 18px;
+  }
+  
+  .form-group label {
+    font-size: 13px;
+  }
+  
+  .form-control {
+    font-size: 14px;
+  }
+}
 </style>
 
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
