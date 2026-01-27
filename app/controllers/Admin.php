@@ -576,7 +576,8 @@ class Admin extends Controller {
 
                 'site_name' => $this->sanitizeInput($_POST['site_name'] ?? ''),
                 'site_address' => $this->sanitizeInput($_POST['site_address'] ?? ''),
-                'site_city' => $this->sanitizeInput($_POST['site_city'] ?? ''),
+                'district' => $this->sanitizeInput($_POST['district'] ?? ''),
+                'site_city' => $this->sanitizeInput($_POST['city'] ?? ''),
                 'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
                 'latitude' => $this->sanitizeInput($_POST['latitude'] ?? ''),
                 'longitude' => $this->sanitizeInput($_POST['longitude'] ?? ''),
@@ -584,6 +585,7 @@ class Admin extends Controller {
                 'image_err' => '',
                 'site_name_err' => '',
                 'site_address_err' => '',
+                'district_err' => '',
                 'site_city_err' => '',
                 'phone_number_err' => '',
             ];
@@ -607,6 +609,10 @@ class Admin extends Controller {
                 $data['site_address_err'] = 'Please enter site address';
             }
 
+            if(empty($data['district'])){
+                $data['district_err'] = 'Please enter district';
+            }
+
             if(empty($data['site_city'])){
                 $data['site_city_err'] = 'Please enter site city';
             }
@@ -621,6 +627,7 @@ class Admin extends Controller {
             if(empty($data['image_err']) && 
             empty($data['site_name_err']) && 
             empty($data['site_address_err']) && 
+            empty($data['district_err']) && 
             empty($data['site_city_err']) && 
             empty($data['phone_number_err'])){
 
@@ -655,6 +662,7 @@ class Admin extends Controller {
 
                 'site_name' => '',
                 'site_address' => '',
+                'district' => '',
                 'site_city' => '',
                 'phone_number' => '',
                 'latitude' => '',
@@ -663,6 +671,7 @@ class Admin extends Controller {
                 'image_err' => '',
                 'site_name_err' => '',
                 'site_address_err' => '',
+                'district_err' => '',
                 'site_city_err' => '',
                 'phone_number_err' => '',
             ];
@@ -1970,7 +1979,9 @@ public function rejectLeave($id) {
         $filters = [
             'site_id' => $input['site_id'] ?? null,
             'city' => $input['city'] ?? '',
-            'location' => $input['location'] ?? 'same-city',
+            'district' => $input['district'] ?? '',
+            'district_filter' => $input['district_filter'] ?? 'same-district',
+            'city_filter' => $input['city_filter'] ?? 'same-city',
             'availability' => $input['availability'] ?? 'available',
             'status' => $input['status'] ?? 'Active'
         ];

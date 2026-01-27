@@ -479,12 +479,13 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Add Site
     public function addSite($data){
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, image, latitude, longitude) 
-                        VALUES (:client_id, :site_name, :site_address, :site_city, :phone_number, :image_name, :latitude, :longitude)");
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, district, city, phone_number, image, latitude, longitude) 
+                        VALUES (:client_id, :site_name, :site_address, :district, :site_city, :phone_number, :image_name, :latitude, :longitude)");
         
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':site_name', $data['site_name']);
         $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':district', $data['district']);
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
@@ -503,9 +504,10 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->execute();
     }
     public function updateSite($data){
-        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, city = :site_city, phone_number = :phone_number, image = :image_name, latitude = :latitude, longitude = :longitude WHERE id = :site_id");
+        $this->db->query("UPDATE sites SET site_name = :site_name, address = :site_address, district = :district, city = :site_city, phone_number = :phone_number, image = :image_name, latitude = :latitude, longitude = :longitude WHERE id = :site_id");
         $this->db->bind(':site_name', $data['site_name']);
         $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':district', $data['district']);
         $this->db->bind(':site_city', $data['site_city']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':image_name', $data['image_name']);
@@ -1037,7 +1039,9 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     // Get available officers with filters
     public function getAvailableOfficers($filters) {
         $city = $filters['city'];
-        $location = $filters['location'];
+        $district = $filters['district'];
+        $districtFilter = $filters['district_filter'];
+        $cityFilter = $filters['city_filter'];
         $availability = $filters['availability'];
         $status = $filters['status'];
         $siteId = $filters['site_id'];
@@ -1062,15 +1066,18 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
                   LEFT JOIN officer_site_assignments osa ON u.id = osa.officer_id AND osa.status = 'Active'
                   WHERE u.role = 'premise officer'";
 
-        // Add location filter
-        if ($location === 'same-city') {
+        $bindParams = [];
+
+        // Add district filter
+        if ($districtFilter === 'same-district' && !empty($district)) {
+            $query .= " AND LOWER(po.district) = LOWER(:district)";
+            $bindParams[':district'] = $district;
+        }
+
+        // Add city filter
+        if ($cityFilter === 'same-city' && !empty($city)) {
             $query .= " AND LOWER(po.city) = LOWER(:city)";
-        } elseif ($location === 'same-district') {
-            // Get district from city using the mapping
-            $district = $this->getDistrictFromCity($city);
-            if ($district) {
-                $query .= " AND LOWER(po.district) = LOWER(:district)";
-            }
+            $bindParams[':city'] = $city;
         }
 
         // Add availability filter
@@ -1083,25 +1090,26 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         // Add employment status filter
         if ($status !== 'all') {
             $query .= " AND po.employment_status = :status";
+            $bindParams[':status'] = $status;
         }
 
-        $query .= " ORDER BY po.city = :city DESC, po.district, u.name";
+        // Order by: same district first, then same city, then by name
+        $query .= " ORDER BY ";
+        if (!empty($district)) {
+            $query .= "LOWER(po.district) = LOWER(:order_district) DESC, ";
+            $bindParams[':order_district'] = $district;
+        }
+        if (!empty($city)) {
+            $query .= "LOWER(po.city) = LOWER(:order_city) DESC, ";
+            $bindParams[':order_city'] = $city;
+        }
+        $query .= "u.name";
 
         $this->db->query($query);
 
-        // Bind parameters
-        if ($location === 'same-city' || $location === 'all') {
-            $this->db->bind(':city', $city);
-        }
-        if ($location === 'same-district') {
-            $district = $this->getDistrictFromCity($city);
-            if ($district) {
-                $this->db->bind(':district', $district);
-                $this->db->bind(':city', $city);
-            }
-        }
-        if ($status !== 'all') {
-            $this->db->bind(':status', $status);
+        // Bind all parameters
+        foreach ($bindParams as $param => $value) {
+            $this->db->bind($param, $value);
         }
 
         return $this->db->resultSet();

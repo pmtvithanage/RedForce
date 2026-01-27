@@ -319,6 +319,17 @@
     .empty-text {
       font-size: 16px;
     }
+
+    /* Tab styles */
+    .tab-btn.active {
+      color: var(--accent) !important;
+      border-bottom-color: var(--accent) !important;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
 </style>
 
 <div class="shell" role="main">
@@ -351,6 +362,9 @@
 
           <h1><?php echo $site->site_name?></h1>
           <p><strong>Location:</strong> <?php echo $site->address?></p>
+          <?php if(!empty($site->district)): ?>
+          <p><strong>District:</strong> <?php echo $site->district?></p>
+          <?php endif; ?>
           <p><strong>City:</strong> <?php echo $site->city?></p>
           <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
           <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
@@ -362,114 +376,165 @@
     <!-- ASSIGN OFFICERS SECTION -->
     <div class="duty-points-section">
       <div class="section-header">
-        <h2 class="section-title">Assign Officers</h2>
-        <button class="secondary-btn add-duty-btn" id="assignOfficerBtn">
-          <span class="material-symbols-outlined" style="font-size:18px;">add</span>
-          Assign Officer
-        </button>
+        <h2 class="section-title">Officer Management</h2>
       </div>
 
-      <!-- Filter Section -->
-      <div class="filter-section" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #333;">Filter Officers</h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-          <div>
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Location</label>
-            <select id="locationFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-              <option value="same-city">Same City (<?php echo htmlspecialchars($data['site']->city); ?>)</option>
-              <option value="same-district">Same District</option>
-              <option value="all">All Locations</option>
-            </select>
-          </div>
-          <div>
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Availability</label>
-            <select id="availabilityFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-              <option value="available">Available Only</option>
-              <option value="assigned">Currently Assigned</option>
-              <option value="all">All Officers</option>
-            </select>
-          </div>
-          <div>
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Employment Status</label>
-            <select id="statusFilter" class="form-control" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
-              <option value="Active">Active</option>
-              <option value="On Leave">On Leave</option>
-              <option value="all">All Status</option>
-            </select>
-          </div>
-        </div>
-        <div style="margin-top: 15px;">
-          <button id="applyFilters" class="secondary-btn" style="padding: 8px 20px;">
-            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">filter_alt</span>
-            Apply Filters
+      <!-- Tab Navigation -->
+      <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; margin-bottom: 24px;">
+        <div class="tab-navigation" style="display: flex; border-bottom: 2px solid #f0f0f0;">
+          <button class="tab-btn active" onclick="switchTab('assigned')" id="assignedTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">badge</span>
+            Currently Assigned (<?php echo count($data['assigned_officers']); ?>)
           </button>
-          <button id="resetFilters" class="secondary-btn" style="padding: 8px 20px; margin-left: 10px; background: #6c757d;">
-            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">refresh</span>
-            Reset
+          <button class="tab-btn" onclick="switchTab('available')" id="availableTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">person_search</span>
+            Find Officers
           </button>
         </div>
-      </div>
 
-      <!-- Officers List -->
-      <div id="officersList" class="duty-cards-container">
-        <!-- Officers will be loaded here via AJAX -->
-        <div style="text-align: center; padding: 40px; color: #666;">
-          <span class="material-symbols-outlined" style="font-size: 48px;">person_search</span>
-          <p style="margin-top: 10px;">Click "Apply Filters" to load officers</p>
-        </div>
-      </div>
-
-      <!-- Currently Assigned Officers -->
-      <div style="margin-top: 40px;">
-        <h3 style="margin-bottom: 20px; color: #333;">Currently Assigned Officers</h3>
-        <div id="assignedOfficersList" class="duty-cards-container">
-          <!-- Assigned officers will be loaded here -->
+        <!-- Tab Content: Currently Assigned Officers -->
+        <div id="assignedContent" class="tab-content" style="padding: 24px;">
           <?php if(empty($data['assigned_officers'])): ?>
-            <div style="text-align: center; padding: 40px; color: #666; background: white; border-radius: 8px;">
-              <span class="material-symbols-outlined" style="font-size: 48px;">badge</span>
-              <p style="margin-top: 10px;">No officers assigned to this site yet</p>
+            <div style="text-align: center; padding: 60px 20px; color: #666;">
+              <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">badge</span>
+              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Officers Assigned</h3>
+              <p style="color: #999; margin-bottom: 24px;">This site currently has no officers assigned to it.</p>
+              <button class="secondary-btn" onclick="switchTab('available')" style="padding: 10px 24px;">
+                <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">add</span>
+                Assign Officers
+              </button>
             </div>
           <?php else: ?>
-            <?php foreach($data['assigned_officers'] as $officer): ?>
-              <div class="duty-card" style="border-left: 4px solid #4caf50;">
-                <div class="duty-card-header">
-                  <div>
-                    <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
-                    <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                      <?php echo htmlspecialchars($officer->officerID); ?> • 
-                      <?php echo htmlspecialchars($officer->city); ?>
-                    </p>
+            <div class="duty-cards-container" style="margin-top: 0;">
+              <?php foreach($data['assigned_officers'] as $officer): ?>
+                <div class="duty-card" style="border-left: 4px solid #4caf50;">
+                  <div class="duty-card-header">
+                    <div>
+                      <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
+                      <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                        <?php echo htmlspecialchars($officer->officerID); ?> • 
+                        <?php echo htmlspecialchars($officer->city); ?>
+                      </p>
+                    </div>
+                    <?php 
+                      $shift = $officer->shift_type ?? 'Full Time';
+                      $badgeColor = match($shift) {
+                        'Day' => '#4caf50',
+                        'Night' => '#2196f3',
+                        'Full Time' => '#9c27b0',
+                        'Flexible' => '#ff9800',
+                        default => '#4caf50'
+                      };
+                    ?>
+                    <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                      <?php echo htmlspecialchars($shift); ?>
+                    </span>
                   </div>
-                  <?php 
-                    $shift = $officer->shift_type ?? 'Full Time';
-                    $badgeColor = match($shift) {
-                      'Day' => '#4caf50',
-                      'Night' => '#2196f3',
-                      'Full Time' => '#4caf50',
-                      'Flexible' => '#ff9800',
-                      default => '#4caf50'
-                    };
-                  ?>
-                  <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
-                    <?php echo htmlspecialchars($shift); ?>
-                  </span>
+                  <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                      <div>
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
+                        <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
+                      </div>
+                      <?php if($officer->assignment_end): ?>
+                        <div>
+                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
+                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
+                        </div>
+                      <?php endif; ?>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                      <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                      <p style="font-weight: 600; font-size: 14px;">
+                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                        <?php echo htmlspecialchars($officer->phone_number); ?>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="duty-card-footer">
+                    <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>)">
+                      <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
+                      Unassign
+                    </button>
+                  </div>
                 </div>
-                <div style="padding: 15px;">
-                  <p><strong>Start Date:</strong> <?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
-                  <?php if($officer->assignment_end): ?>
-                    <p><strong>End Date:</strong> <?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
-                  <?php endif; ?>
-                  <p><strong>Phone:</strong> <?php echo htmlspecialchars($officer->phone_number); ?></p>
-                </div>
-                <div class="duty-card-footer">
-                  <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>)">
-                    <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
-                    Unassign
-                  </button>
-                </div>
-              </div>
-            <?php endforeach; ?>
+              <?php endforeach; ?>
+            </div>
           <?php endif; ?>
+        </div>
+
+        <!-- Tab Content: Find Officers -->
+        <div id="availableContent" class="tab-content" style="display: none; padding: 24px;">
+          <!-- Filter Section -->
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px; color: var(--accent);">filter_alt</span>
+                Filter Officers
+              </h3>
+              <button id="resetFilters" onclick="resetFilters()" style="padding: 6px 16px; background: transparent; color: #666; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">refresh</span>
+                Reset
+              </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">map</span>
+                  District
+                </label>
+                <select id="districtFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-district">Same District (<?php echo htmlspecialchars($data['site']->district ?? 'N/A'); ?>)</option>
+                  <option value="all">All Districts</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">location_city</span>
+                  City
+                </label>
+                <select id="cityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-city">Same City (<?php echo htmlspecialchars($data['site']->city); ?>)</option>
+                  <option value="all">All Cities</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">event_available</span>
+                  Availability
+                </label>
+                <select id="availabilityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="available">Available Only</option>
+                  <option value="assigned">Currently Assigned</option>
+                  <option value="all">All Officers</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">work</span>
+                  Employment Status
+                </label>
+                <select id="statusFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="Active">Active</option>
+                  <option value="On Leave">On Leave</option>
+                  <option value="all">All Status</option>
+                </select>
+              </div>
+            </div>
+            <button id="applyFilters" onclick="loadOfficers()" style="width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle; margin-right: 6px;">search</span>
+              Search Officers
+            </button>
+          </div>
+
+          <!-- Officers List -->
+          <div id="officersList" class="duty-cards-container">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;">
+              <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_search</span>
+              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Officers</h3>
+              <p style="color: #999;">Use the filters above to find officers available for assignment</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -511,18 +576,50 @@
 // Filter and assign officer functionality
 const siteId = <?php echo $data['site']->id; ?>;
 const siteCity = '<?php echo addslashes($data['site']->city); ?>';
+const siteDistrict = '<?php echo addslashes($data['site']->district ?? ''); ?>';
 const urlRoot = '<?php echo URL_ROOT; ?>';
 
-document.getElementById('applyFilters').addEventListener('click', loadOfficers);
-document.getElementById('resetFilters').addEventListener('click', resetFilters);
+// Tab switching functionality
+function switchTab(tab) {
+    const assignedTab = document.getElementById('assignedTab');
+    const availableTab = document.getElementById('availableTab');
+    const assignedContent = document.getElementById('assignedContent');
+    const availableContent = document.getElementById('availableContent');
+    
+    if (tab === 'assigned') {
+        assignedTab.classList.add('active');
+        availableTab.classList.remove('active');
+        assignedTab.style.color = '#a40000';
+        assignedTab.style.borderBottomColor = '#a40000';
+        availableTab.style.color = '#666';
+        availableTab.style.borderBottomColor = 'transparent';
+        assignedContent.style.display = 'block';
+        availableContent.style.display = 'none';
+    } else {
+        availableTab.classList.add('active');
+        assignedTab.classList.remove('active');
+        availableTab.style.color = '#a40000';
+        availableTab.style.borderBottomColor = '#a40000';
+        assignedTab.style.color = '#666';
+        assignedTab.style.borderBottomColor = 'transparent';
+        availableContent.style.display = 'block';
+        assignedContent.style.display = 'none';
+    }
+}
+
+// Initialize first tab as active
+document.addEventListener('DOMContentLoaded', function() {
+    switchTab('assigned');
+});
 
 function loadOfficers() {
-    const location = document.getElementById('locationFilter').value;
+    const districtFilter = document.getElementById('districtFilter').value;
+    const cityFilter = document.getElementById('cityFilter').value;
     const availability = document.getElementById('availabilityFilter').value;
     const status = document.getElementById('statusFilter').value;
     
     // Show loading
-    document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px;"><p>Loading officers...</p></div>';
+    document.getElementById('officersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px;"><div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 16px; color: #666;">Loading officers...</p></div>';
     
     // Make AJAX call to fetch officers
     fetch(urlRoot + '/admin/getAvailableOfficers', {
@@ -530,9 +627,11 @@ function loadOfficers() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             site_id: siteId,
-            location: location,
+            district_filter: districtFilter,
+            city_filter: cityFilter,
             availability: availability,
             status: status,
+            district: siteDistrict,
             city: siteCity
         })
     })
@@ -542,7 +641,7 @@ function loadOfficers() {
     })
     .catch(error => {
         console.error('Error:', error);
-        document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px; color: red;">Error loading officers</div>';
+        document.getElementById('officersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #dc2626;"><span class="material-symbols-outlined" style="font-size: 64px;">error</span><p style="margin-top: 16px; font-weight: 600;">Error loading officers</p></div>';
     });
 }
 
@@ -550,31 +649,49 @@ function displayOfficers(officers) {
     const container = document.getElementById('officersList');
     
     if (officers.length === 0) {
-        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><span class="material-symbols-outlined" style="font-size: 48px;">person_off</span><p style="margin-top: 10px;">No officers found matching the filters</p></div>';
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_off</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Officers Found</h3><p style="color: #999;">No officers match your current filter criteria</p></div>';
         return;
     }
     
     let html = '';
     officers.forEach(officer => {
+        const isAssigned = officer.current_assignment;
         html += `
-            <div class="duty-card" style="border-left: 4px solid #2196F3;">
+            <div class="duty-card" style="border-left: 4px solid ${isAssigned ? '#ff9800' : '#2196F3'};">
                 <div class="duty-card-header">
                     <div>
                         <h3 class="duty-location">${officer.name}</h3>
                         <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                            ${officer.officerID} • ${officer.city}, ${officer.district}
+                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">badge</span>
+                            ${officer.officerID} • 
+                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">location_on</span>
+                            ${officer.city}, ${officer.district}
                         </p>
                     </div>
                     <span class="duty-status ${officer.employment_status === 'Active' ? 'status-active' : 'status-inactive'}">${officer.employment_status}</span>
                 </div>
-                <div style="padding: 15px;">
-                    <p><strong>Rank:</strong> ${officer.rank}</p>
-                    <p><strong>Phone:</strong> ${officer.phone_number}</p>
-                    <p><strong>Shift Pattern:</strong> ${officer.shift_pattern || 'Flexible'}</p>
-                    ${officer.current_assignment ? '<p style="color: #ff9800;"><strong>Currently assigned to another site</strong></p>' : ''}
+                <div style="background: #fafafa; border-radius: 8px; padding: 16px; margin: 12px 0;">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Rank</p>
+                            <p style="font-weight: 600; font-size: 14px;">${officer.rank}</p>
+                        </div>
+                        <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Shift Pattern</p>
+                            <p style="font-weight: 600; font-size: 14px;">${officer.shift_pattern || 'Flexible'}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                        <p style="font-weight: 600; font-size: 14px;">
+                            <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                            ${officer.phone_number}
+                        </p>
+                    </div>
+                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
                 </div>
                 <div class="duty-card-footer">
-                    <button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name}')" ${officer.current_assignment ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                    <button class="action-btn" onclick="openShiftModal(${officer.user_id}, '${officer.name.replace(/'/g, "\\'")}')" ${isAssigned ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
                         <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span>
                         Assign to Site
                     </button>
@@ -587,10 +704,11 @@ function displayOfficers(officers) {
 }
 
 function resetFilters() {
-    document.getElementById('locationFilter').value = 'same-city';
+    document.getElementById('districtFilter').value = 'same-district';
+    document.getElementById('cityFilter').value = 'same-city';
     document.getElementById('availabilityFilter').value = 'available';
     document.getElementById('statusFilter').value = 'Active';
-    document.getElementById('officersList').innerHTML = '<div style="text-align: center; padding: 40px; color: #666;"><span class="material-symbols-outlined" style="font-size: 48px;">person_search</span><p style="margin-top: 10px;">Click "Apply Filters" to load officers</p></div>';
+    document.getElementById('officersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_search</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Officers</h3><p style="color: #999;">Use the filters above to find officers available for assignment</p></div>';
 }
 
 // Global variable to store officer ID for assignment

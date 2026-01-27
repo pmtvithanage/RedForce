@@ -307,9 +307,15 @@
         </div>
 
         <div class="field">
+          <div class="field-label">District:</div>
+          <input type="text" class="field-input" id="district" name="district" value="<?php echo $data['district'] ?? ''; ?>" placeholder="Enter district">
+          <span class="form-input-error"><?php echo $data['district_err'] ?? '';?></span>
+        </div>
+
+        <div class="field" id="city-field" style="display: none;">
           <div class="field-label">City:</div>
-          <input type="text" class="field-input" id="site_city" name="site_city" value="<?php echo $data['site_city'] ?>" placeholder="Enter city">
-          <span class="form-input-error"><?php echo $data['site_city_err'];?></span>
+          <input type="text" class="field-input" id="city" name="city" value="<?php echo $data['site_city'] ?? ''; ?>" placeholder="Enter city">
+          <span class="form-input-error"><?php echo $data['site_city_err'] ?? '';?></span>
         </div>
 
         <div class="field">
@@ -437,6 +443,7 @@
 
 <!-- Site Location Map JavaScript -->
 <script src="<?php echo URL_ROOT; ?>/js/map.js"></script>
+<script src="<?php echo URL_ROOT; ?>/js/components/select_district_city.js"></script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
