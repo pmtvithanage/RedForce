@@ -2,13 +2,16 @@
 
   <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 
+    <!-- Messages Page for Admin -->
+    <div style="padding: 20px;">
+        <button class="tertiary-btn" style="display:flex; width:100px; margin-bottom: 20px; align-items:center;" onclick="history.back()"> 
+            <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+            Back
+        </button>
+        
+        <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
+    </div>
 
-    <!-- Content will be loaded here -->
-    <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
-        Back
-    </button>
-    
     </main>
     </div>
 

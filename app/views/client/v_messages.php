@@ -1,7 +1,7 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
-<?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
-<!-- Messages Page for Supervisor -->
+<!-- Messages Page for Client -->
 <div style="padding: 20px;">
     <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
 </div>

@@ -274,5 +274,29 @@
                 return false;
             }
         }
+
+        // Get user online status
+        public function getUserOnlineStatus($userId)
+        {
+            $this->db->query("SELECT is_online, last_seen FROM Users WHERE id = :id");
+            $this->db->bind(':id', $userId);
+            return $this->db->single();
+        }
+
+        // Update user last seen
+        public function updateLastSeen($userId)
+        {
+            $this->db->query("UPDATE Users SET last_seen = NOW(), is_online = 1 WHERE id = :id");
+            $this->db->bind(':id', $userId);
+            return $this->db->execute();
+        }
+
+        // Set user offline
+        public function setUserOffline($userId)
+        {
+            $this->db->query("UPDATE Users SET is_online = 0, last_seen = NOW() WHERE id = :id");
+            $this->db->bind(':id', $userId);
+            return $this->db->execute();
+        }
     }
 ?>

@@ -117,6 +117,12 @@
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 session_start();
             }
+            
+            // Set user offline before destroying session
+            if (isset($_SESSION['user_id'])) {
+                $this->userModel->setUserOffline($_SESSION['user_id']);
+            }
+            
             // Unset all session values
             $_SESSION = [];
 

@@ -1,14 +1,18 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
-
 <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
 
+<!-- Messages Page for Mobile Rider -->
+<div style="padding: 20px;">
+    <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
+</div>
 
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
+</main>
+</div>
 
+<div class="backdrop" id="backdrop" hidden></div>
 
-
-
-<!-- Content will be loaded here -->
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?><!-- Content will be loaded here -->
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 

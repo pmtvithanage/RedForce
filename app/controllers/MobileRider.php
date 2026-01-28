@@ -4,6 +4,7 @@ class MobileRider extends Controller
     private $mobileRiderModel;
     private $userModel;
     private $advertisementModel;
+    private $messageModel;
 
     public function __construct()
     {
@@ -12,6 +13,7 @@ class MobileRider extends Controller
         $this->advertisementModel = $this->model('M_advertisements');
         $this->mobileRiderModel = $this->model('M_mobilerider');
         $this->userModel = $this->model('M_users');
+        $this->messageModel = $this->model('M_message');
     }
 
     // Default action - redirect to dashboard
@@ -212,11 +214,275 @@ class MobileRider extends Controller
     // Messages
     public function messages()
     {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$user_id) {
+            redirect('mobilerider/dashboard');
+            return;
+        }
+        
+        $conversations = $this->messageModel->getConversations($user_id);
+        // Use specialized method for mobile riders - only admins and supervisors of route sites
+        $all_users = $this->messageModel->getAllUsersForMobileRider($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
+        
         $data = [
             'title' => 'Messages',
-            'pageTitle' => 'Messages'
+            'pageTitle' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users,
+            'unread_count' => $unread_count,
+            'current_recipient_id' => isset($_GET['with']) ? $_GET['with'] : null
         ];
-        $this->view('mobilerider/v_messages', $data);
+        
+        $this->view('mobilerider/messages/v_messages', $data);
+    }
+
+    // Load messages with a specific user (AJAX)
+    public function loadMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    // Mark messages as seen (AJAX)
+    public function markAsSeen()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            // Mark messages as seen
+            $this->messageModel->markAsSeen($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success']);
+        }
+    }
+
+    // Send a message (AJAX)
+    public function sendMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            error_log("MobileRider sendMessage called");
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            error_log("Sender: $sender_id, Recipient: $recipient_id, Message: $message");
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                error_log("Validation failed - missing data");
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            error_log("Attempting to send message via model");
+            
+            try {
+                $result = $this->messageModel->sendMessage($sender_id, $recipient_id, $message);
+                error_log("Model sendMessage result: " . ($result ? 'true' : 'false'));
+                
+                if ($result) {
+                    echo json_encode([
+                        'status' => 'success',
+                        'message' => $message,
+                        'created_at' => date('Y-m-d H:i:s')
+                    ]);
+                } else {
+                    error_log("sendMessage returned false");
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+                }
+            } catch (Exception $e) {
+                error_log("Exception in sendMessage: " . $e->getMessage());
+                echo json_encode(['status' => 'error', 'message' => 'Exception: ' . $e->getMessage()]);
+            }
+        }
+    }
+
+    // Get all available users (AJAX)
+    public function getAllUsers()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            // Use specialized method for mobile riders
+            $users = $this->messageModel->getAllUsersForMobileRider($user_id);
+            echo json_encode(['status' => 'success', 'users' => $users]);
+        }
+    }
+
+    // Get all conversations (AJAX)
+    public function getConversations()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    // Search conversations (AJAX)
+    public function searchMessages()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $search_term = trim($_POST['search'] ?? '');
+            
+            if (!$user_id || empty($search_term)) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
+            echo json_encode(['status' => 'success', 'results' => $results]);
+        }
+    }
+
+    // Delete a message (AJAX)
+    public function deleteMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
+    // Get user online status (AJAX)
+    public function getUserStatus()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_POST['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User ID required']);
+                return;
+            }
+            
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
+            
+            if ($userStatus) {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => $userStatus->is_online ?? false,
+                    'last_seen' => $userStatus->last_seen ?? null
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => false,
+                    'last_seen' => null
+                ]);
+            }
+        }
+    }
+
+    // Update a message (AJAX)
+    public function updateMessage()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            $message = $_POST['message'] ?? null;
+            
+            if (!$user_id || !$message_id || !$message) {
+                echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
+                return;
+            }
+            
+            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
+            }
+        }
+    }
+
+    // Update user last seen (AJAX)
+    public function updateLastSeen()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
+            }
+        }
+    }
+
+    // Set user offline (AJAX)
+    public function setOffline()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
+            }
+        }
     }
 
     // Incidents

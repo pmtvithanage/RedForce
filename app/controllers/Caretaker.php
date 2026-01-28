@@ -21,14 +21,16 @@ class Caretaker extends Controller {
         
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
         $stats = $this->caretakerModel->getDashboardStats($caretaker_id);
+        $recent_activities = $this->caretakerModel->getRecentActivities($caretaker_id);
 
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Dashboard',
             'advertisements' => $advertisements,
-            'stats' => $stats
+            'stats' => $stats,
+            'recent_activities' => $recent_activities
         ];
-        $this->view('caretaker/v_dashboard', $data);
+        $this->view('caretaker/dashboard/v_dashboard', $data);
     }
 
     public function messages() {

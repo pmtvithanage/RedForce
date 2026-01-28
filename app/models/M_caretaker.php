@@ -316,4 +316,20 @@ class M_caretaker {
             'incidents' => $incidents
         ];
     }
+
+    // Get recent activities for caretaker dashboard
+    public function getRecentActivities($caretaker_id = null, $limit = 10) {
+        $this->db->query('
+            SELECT 
+                "attendance" as activity_type,
+                CONCAT("Officer Attendance - ", status) as activity_titel,
+                CONCAT("Officer ID: ", officer_id, " - ", status, " on ", attendance_date) as activity_details,
+                created_at
+            FROM officer_attendance
+            ORDER BY created_at DESC
+            LIMIT :limit
+        ');
+        $this->db->bind(':limit', $limit, PDO::PARAM_INT);
+        return $this->db->resultSet();
+    }
 }

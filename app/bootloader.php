@@ -15,4 +15,12 @@
     require_once 'libraries/Core.php';
     require_once 'libraries/Controller.php';
     require_once 'libraries/Database.php';
+    
+    // Update user's last_seen and is_online status if logged in
+    if (isset($_SESSION['user_id'])) {
+        $db = new Database();
+        $db->query("UPDATE Users SET last_seen = NOW(), is_online = 1 WHERE id = :user_id");
+        $db->bind(':user_id', $_SESSION['user_id']);
+        $db->execute();
+    }
 ?>
