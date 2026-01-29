@@ -43,7 +43,7 @@
       <main class="main">
         <header class="topbar">
           <button id="menuToggle" class="topbar-btn" aria-label="Toggle menu" aria-expanded="false"><span class="material-symbols-outlined">menu</span></button>
-          <h1 class="page-title"><?php echo $data['title'] ?? 'Dashboard'; ?></h1>
+          <h1 class="page-title"><?php echo $data['pageTitle'] ?? 'Dashboard'; ?></h1>
 
           <div class="topbar-right">
   <!-- Profile Toggle -->

@@ -430,5 +430,120 @@ class M_supervisor {
         
         return $this->db->execute();
     }
+
+    /**
+     * Get assigned officers for a supervisor's site
+     * Separates officers and supervisors
+     */
+    public function getSiteOfficers($supervisorId) {
+        // First get the supervisor's assigned site
+        $this->db->query('
+            SELECT site_id 
+            FROM officer_site_assignments 
+            WHERE officer_id = :supervisor_id 
+            AND status = "Active" 
+            AND shift_type = "Supervisor"
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        $siteAssignment = $this->db->single();
+        
+        if (!$siteAssignment) {
+            return ['officers' => [], 'supervisors' => [], 'site' => null];
+        }
+        
+        $siteId = $siteAssignment->site_id;
+        
+        // Get site details
+        $this->db->query('
+            SELECT * FROM sites WHERE id = :site_id
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $site = $this->db->single();
+        
+        // Get all assigned staff to this site
+        $this->db->query("SELECT 
+                            osa.id as assignment_id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.status,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            po.officerID,
+                            po.city,
+                            po.district,
+                            po.rank,
+                            po.employment_status
+                          FROM officer_site_assignments osa
+                          INNER JOIN Users u ON osa.officer_id = u.id
+                          INNER JOIN premise_officers po ON u.id = po.userID
+                          WHERE osa.site_id = :site_id AND osa.status = 'Active'
+                          ORDER BY po.rank DESC, u.name ASC");
+        $this->db->bind(':site_id', $siteId);
+        $allStaff = $this->db->resultSet();
+        
+        // Separate officers and supervisors
+        $officers = [];
+        $supervisors = [];
+        
+        foreach ($allStaff as $staff) {
+            if ($staff->rank === 'Supervisor' || $staff->shift_type === 'Supervisor') {
+                $supervisors[] = $staff;
+            } else {
+                $officers[] = $staff;
+            }
+        }
+        
+        return [
+            'officers' => $officers,
+            'supervisors' => $supervisors,
+            'site' => $site
+        ];
+    }
+
+    /**
+     * Get mobile riders assigned to a supervisor's site
+     */
+    public function getSiteMobileRiders($supervisorId) {
+        // First get the supervisor's assigned site
+        $this->db->query('
+            SELECT site_id 
+            FROM officer_site_assignments 
+            WHERE officer_id = :supervisor_id 
+            AND status = "Active" 
+            AND shift_type = "Supervisor"
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        $siteAssignment = $this->db->single();
+        
+        if (!$siteAssignment) {
+            return [];
+        }
+        
+        $siteId = $siteAssignment->site_id;
+        
+        // Get all mobile riders assigned to this site through route_sites
+        $this->db->query("SELECT DISTINCT
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            u.userID
+                          FROM routes r
+                          INNER JOIN route_sites rs ON r.id = rs.route_id
+                          INNER JOIN Users u ON r.assigned_rider_id = u.id
+                          WHERE rs.site_id = :site_id
+                          AND u.role = 'Mobile Rider'
+                          AND r.assigned_rider_id IS NOT NULL
+                          ORDER BY u.name ASC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
 }
 ?>

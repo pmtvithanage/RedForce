@@ -329,4 +329,42 @@ class M_message {
         
         return $this->db->resultSet();
     }
+
+    /**
+     * Get all messageable users for a supervisor
+     * Returns: admins + all officers in supervisor's assigned site
+     */
+    public function getAllUsersForSupervisor($supervisor_user_id) {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                CASE 
+                    WHEN u.role = 'premise officer' AND po.rank = 'Supervisor' THEN 'Supervisor'
+                    ELSE u.role
+                END as role
+            FROM Users u
+            LEFT JOIN premise_officers po ON po.userID = u.id
+            WHERE 
+                (u.role = 'admin')
+                OR 
+                (u.role = 'premise officer' AND u.id IN (
+                    SELECT officer_id FROM officer_site_assignments 
+                    WHERE site_id = (
+                        SELECT site_id FROM officer_site_assignments 
+                        WHERE officer_id = :supervisor_id AND shift_type = 'Supervisor' LIMIT 1
+                    )
+                ))
+            AND u.id != :supervisor_id2
+            ORDER BY u.role DESC, u.name ASC
+        ");
+        
+        $this->db->bind(':supervisor_id', $supervisor_user_id);
+        $this->db->bind(':supervisor_id2', $supervisor_user_id);
+        
+        return $this->db->resultSet();
+    }
 }
