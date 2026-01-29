@@ -266,12 +266,26 @@ class Client extends Controller {
             // Calculate total price
             $totalPrice = $monthlyPrice * $numMonths;
             
+            // Handle image upload if present
+            $imageName = null;
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+                $imageName = time() . '_' . $_FILES['image']['name'];
+                if (!uploadImage($_FILES['image']['tmp_name'], $imageName, '/uploads/siteImages/')) {
+                    $imageName = null; // Reset if upload failed
+                }
+            }
+            
             $requestData = [
                 'client_id' => $_SESSION['user_id'],
                 'package_name' => $_POST['package_name'],
                 'site_name' => trim($_POST['site_name']),
+                'district' => trim($_POST['district'] ?? ''),
                 'city' => trim($_POST['city']),
                 'site_address' => trim($_POST['site_address']),
+                'latitude' => $_POST['latitude'] ?? null,
+                'longitude' => $_POST['longitude'] ?? null,
+                'phone_number' => trim($_POST['phone_number'] ?? ''),
+                'image_name' => $imageName,
                 'start_date' => $startDate,
                 'end_date' => $endDate,
                 'number_of_guards' => $_POST['number_of_guards'],

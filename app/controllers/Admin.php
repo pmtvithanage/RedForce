@@ -800,8 +800,10 @@ class Admin extends Controller {
     
 
      public function clientprofile($Id){
-        $client = $this->adminModel->getClientById($Id);
-        $sites = $this->adminModel->getSiteByClientId($Id);
+        // $Id is Users.id, convert to Clients.id
+        $clientsTableId = $this->adminModel->getClientsTableId($Id);
+        $client = $this->adminModel->getClientById($clientsTableId);
+        $sites = $this->adminModel->getSiteByClientId($clientsTableId);
         $data = [
             
             'title' => 'Clients',

@@ -70,13 +70,18 @@ class M_client {
 
     // Package request methods
     public function createPackageRequest($data) {
-        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, city, site_address, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments) 
-            VALUES (:client_id, :package_name, :site_name, :city, :site_address, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments)');
+        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments) 
+            VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments)');
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':package_name', $data['package_name']);
         $this->db->bind(':site_name', $data['site_name']);
+        $this->db->bind(':district', $data['district'] ?? null);
         $this->db->bind(':city', $data['city']);
         $this->db->bind(':site_address', $data['site_address']);
+        $this->db->bind(':latitude', $data['latitude'] ?? null);
+        $this->db->bind(':longitude', $data['longitude'] ?? null);
+        $this->db->bind(':phone_number', $data['phone_number'] ?? null);
+        $this->db->bind(':image_name', $data['image_name'] ?? null);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':number_of_guards', $data['number_of_guards']);

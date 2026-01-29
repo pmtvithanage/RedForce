@@ -337,14 +337,15 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 // ======================================================================== //
     public function getClientById($id) {
         // Get client with contact person name and profile image
+        // $id parameter is Clients.id, not Users.id
         $this->db->query("
             SELECT 
                 u.*, 
                 c.contact_person_name,
                 u.profile_image as client_profile
-            FROM Users u 
-            LEFT JOIN Clients c ON u.id = c.user_id 
-            WHERE u.id = :id
+            FROM Clients c
+            LEFT JOIN Users u ON c.user_id = u.id 
+            WHERE c.id = :id
         ");
         $this->db->bind(':id', $id);
         return $this->db->single();
@@ -976,34 +977,55 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("SELECT id FROM Clients WHERE user_id = :user_id");
         $this->db->bind(':user_id', $user_id);
         $result = $this->db->single();
-        return $result ? $result->id : null;
+        
+        if ($result) {
+            error_log("Found Clients.id = {$result->id} for user_id = {$user_id}");
+            return $result->id;
+        } else {
+            error_log("ERROR: No Clients record found for user_id = {$user_id}");
+            return null;
+        }
     }
 
     // Create site from approved package request
     public function createSiteFromPackageRequest($packageRequest) {
+        // Log the package request details
+        error_log("Creating site from package request ID: {$packageRequest->id}, client_id (Users.id): {$packageRequest->client_id}");
+        
         // Get the Clients table ID (sites table references Clients.id, not Users.id)
         $clientsTableId = $this->getClientsTableId($packageRequest->client_id);
         
         if (!$clientsTableId) {
+            error_log("CRITICAL ERROR: Failed to get Clients table ID for user_id: {$packageRequest->client_id}");
             return false;
         }
         
-        // Get client's phone number from Users table
-        $phoneNumber = $this->getClientPhoneNumber($packageRequest->client_id);
+        error_log("Using Clients.id = {$clientsTableId} to create site for user_id = {$packageRequest->client_id}");
         
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, phone_number, created_at, updated_at) 
-                          VALUES (:client_id, :site_name, :address, :city, :phone_number, NOW(), NOW())");
+        // Get client's phone number from package request or Users table
+        $phoneNumber = !empty($packageRequest->phone_number) ? $packageRequest->phone_number : $this->getClientPhoneNumber($packageRequest->client_id);
+        
+        // Insert site with all available fields (sites table uses 'image' not 'image_name')
+        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, district, phone_number, latitude, longitude, image, created_at, updated_at) 
+                          VALUES (:client_id, :site_name, :address, :city, :district, :phone_number, :latitude, :longitude, :image, NOW(), NOW())");
         $this->db->bind(':client_id', $clientsTableId);
         $this->db->bind(':site_name', $packageRequest->site_name);
         $this->db->bind(':address', $packageRequest->site_address);
         $this->db->bind(':city', $packageRequest->city);
+        $this->db->bind(':district', $packageRequest->district ?? null);
         $this->db->bind(':phone_number', $phoneNumber);
+        $this->db->bind(':latitude', $packageRequest->latitude ?? null);
+        $this->db->bind(':longitude', $packageRequest->longitude ?? null);
+        $this->db->bind(':image', $packageRequest->image_name ?? null);
         
         if ($this->db->execute()) {
             // Return the last inserted site ID
-            return $this->db->lastInsertId();
+            $siteId = $this->db->lastInsertId();
+            error_log("SUCCESS: Site created with ID: {$siteId} for Clients.id: {$clientsTableId} (Users.id: {$packageRequest->client_id})");
+            return $siteId;
         }
         
+        error_log("ERROR: Failed to insert site for Clients.id: {$clientsTableId}");
         return false;
     }
 
