@@ -963,6 +963,15 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Get package request details from site
+    public function getPackageRequestBySiteId($site_id) {
+        $this->db->query("SELECT pr.* FROM package_requests pr 
+                          INNER JOIN sites s ON s.package_request_id = pr.id 
+                          WHERE s.id = :site_id");
+        $this->db->bind(':site_id', $site_id);
+        return $this->db->single();
+    }
+
     // Get client's phone number
     public function getClientPhoneNumber($user_id) {
         // client_id in package_requests references Users.id directly
@@ -1006,9 +1015,10 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $phoneNumber = !empty($packageRequest->phone_number) ? $packageRequest->phone_number : $this->getClientPhoneNumber($packageRequest->client_id);
         
         // Insert site with all available fields (sites table uses 'image' not 'image_name')
-        $this->db->query("INSERT INTO sites (client_id, site_name, address, city, district, phone_number, latitude, longitude, image, created_at, updated_at) 
-                          VALUES (:client_id, :site_name, :address, :city, :district, :phone_number, :latitude, :longitude, :image, NOW(), NOW())");
+        $this->db->query("INSERT INTO sites (client_id, package_request_id, site_name, address, city, district, phone_number, latitude, longitude, image, created_at, updated_at) 
+                          VALUES (:client_id, :package_request_id, :site_name, :address, :city, :district, :phone_number, :latitude, :longitude, :image, NOW(), NOW())");
         $this->db->bind(':client_id', $clientsTableId);
+        $this->db->bind(':package_request_id', $packageRequest->id);
         $this->db->bind(':site_name', $packageRequest->site_name);
         $this->db->bind(':address', $packageRequest->site_address);
         $this->db->bind(':city', $packageRequest->city);

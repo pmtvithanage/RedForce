@@ -934,13 +934,15 @@ class Admin extends Controller {
         $site = $this->adminModel->getSiteById($site_id);
         $clients = $this->adminModel->getClientById($site->client_id);
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);
+        $packageRequest = $this->adminModel->getPackageRequestBySiteId($site_id);
         
         $data = [
             'title' => 'Clients',
             'pageTitle' => $clients->name . ' - ' . $site->site_name,
             'site' => $site,
             'client' => $clients,
-            'assigned_officers' => $assignedOfficers
+            'assigned_officers' => $assignedOfficers,
+            'package_request' => $packageRequest
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }

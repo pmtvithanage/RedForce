@@ -372,6 +372,11 @@
           <?php endif; ?>
           <p><strong>City:</strong> <?php echo $site->city?></p>
           <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
+          <?php if(!empty($data['package_request'])): ?>
+          <p><strong>Package:</strong> <?php echo $data['package_request']->package_name?></p>
+          <p><strong>Officers Requested:</strong> <?php echo $data['package_request']->number_of_guards?></p>
+          <p><strong>Service Period:</strong> <?php echo date('d M Y', strtotime($data['package_request']->start_date))?> - <?php echo date('d M Y', strtotime($data['package_request']->end_date))?></p>
+          <?php endif; ?>
           <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
 
         </div>
