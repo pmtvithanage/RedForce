@@ -83,6 +83,82 @@
         margin-bottom: 20px;
     }
 
+    /* Image Upload Styles */
+    .image-upload-section {
+        margin-bottom: 20px;
+    }
+
+    .imagePlaceholder {
+        width: 100%;
+        max-width: 300px;
+        height: 200px;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        margin: 0 auto 10px;
+        display: block;
+        object-fit: cover;
+        background-color: #f8f9fa;
+    }
+
+    .btn-upload {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #a40000;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        margin: 5px;
+    }
+
+    .btn-upload:hover {
+        background-color: #b50000;
+    }
+
+    /* Map Section Styles */
+    .map-section {
+        margin: 20px 0;
+    }
+
+    #map {
+        width: 100%;
+        height: 400px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        margin-bottom: 10px;
+    }
+
+    .map-instructions {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 10px;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+    }
+
+    .location-search-box {
+        margin-bottom: 15px;
+    }
+
+    #location-search {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 15px;
+        transition: all 0.3s ease;
+    }
+
+    #location-search:focus {
+        outline: none;
+        border-color: #a40000;
+        box-shadow: 0 0 0 3px rgba(164, 0, 0, 0.1);
+    }
+
     @media (max-width: 768px) {
         .form-row {
             grid-template-columns: 1fr;
@@ -112,7 +188,7 @@
                     <p class="price-note" id="priceBreakdown">Select number of guards to calculate price</p>
                 </div>
 
-                <form method="POST" action="<?php echo URL_ROOT; ?>/client/submitPackageRequest" id="customPackageForm">
+                <form method="POST" action="<?php echo URL_ROOT; ?>/client/submitPackageRequest" id="customPackageForm" enctype="multipart/form-data">
                     <input type="hidden" name="package_name" value="Custom Package">
                     <input type="hidden" name="number_of_guards" id="totalGuards" value="0">
                     <input type="hidden" name="package_price" id="packagePrice" value="0">
@@ -138,7 +214,41 @@
                     <!-- Site Location -->
                     <div class="form-group">
                         <label for="siteAddress">Site Location</label>
-                        <textarea id="siteAddress" name="site_address" rows="3" required></textarea>
+                        <textarea id="siteAddress" name="site_address" id="site_address" rows="3" required></textarea>
+                    </div>
+
+                    <!-- Site Image Upload -->
+                    <div class="form-group image-upload-section">
+                        <label>Upload Site Image</label>
+                        <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/public/img/photo.png" 
+                            alt="Site image preview" 
+                            id="imagePlaceholder"
+                            data-default-src="<?php echo URL_ROOT; ?>/public/img/photo.png" />
+                        <div style="text-align: center;">
+                            <button type="button" class="btn-upload" id="addImageBtn" onclick="toggleBrowse()">Add Image</button>
+                            <button type="button" class="btn-upload" id="removeImageBtn" style="display: none;" onclick="removeImage()">Remove</button>
+                        </div>
+                        <input type="file" name="image" id="image" accept="image/*" hidden />
+                    </div>
+
+                    <!-- Map Section -->
+                    <div class="map-section">
+                        <label>Select Location on Map:</label>
+                        <div class="map-instructions">
+                            📍 Search for a location below, click on the map, or type the address above to pin the exact site location.
+                        </div>
+                        
+                        <!-- Location Search Box -->
+                        <div class="location-search-box">
+                            <input type="text" 
+                                id="location-search" 
+                                placeholder="🔍 Search for places, addresses, or landmarks..." 
+                                autocomplete="off">
+                        </div>
+                        
+                        <div id="map"></div>
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
                     </div>
 
                     <!-- Date Range -->
@@ -271,6 +381,65 @@
     // Initialize
     calculatePrice();
 </script>
+
+<!-- Image Upload JavaScript -->
+<script>
+const addImageBtn = document.getElementById("addImageBtn");
+const removeImageBtn = document.getElementById("removeImageBtn");
+const imagePlaceholder = document.getElementById("imagePlaceholder");
+let inputPath = document.querySelector("#image");
+let file;
+
+const defaultImagePath = imagePlaceholder.getAttribute('data-default-src');
+
+function toggleBrowse(){
+    inputPath.click();
+}
+
+function removeImage(){
+    addImageBtn.style.display = "inline-block";
+    removeImageBtn.style.display = "none";
+    imagePlaceholder.setAttribute('src', defaultImagePath);
+    inputPath.value = null;
+    file = null;
+}
+
+inputPath.addEventListener('change', function(){
+    file = this.files[0];
+    if (file) {
+        addImageBtn.style.display = "none";
+        removeImageBtn.style.display = "inline-block";
+        showImage();
+    } else {
+        removeImage();
+    }
+});
+
+function showImage(){
+    let fileType = file.type;
+    let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+    
+    if(validExtensions.includes(fileType)){
+        let fileReader = new FileReader();
+        fileReader.onload = () => {
+            let fileURL = fileReader.result;
+            imagePlaceholder.setAttribute('src', fileURL);
+        }
+        fileReader.onerror = () => {
+            alert('Error reading file');
+            removeImage();
+        }
+        fileReader.readAsDataURL(file);
+    } else {
+        alert('This is not a valid image file');
+        removeImage();
+    }
+}
+</script>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog&libraries=places&callback=initSiteMap" async defer></script>
+<script src="<?php echo URL_ROOT; ?>/js/map.js"></script>
 
 </main>
 </div>
