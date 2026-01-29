@@ -2396,6 +2396,221 @@ public function rejectLeave($id) {
         $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
         echo json_encode($result);
     }
+
+    // Update Admin (AJAX)
+    public function updateAdmin() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            $name = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone_number = trim($_POST['phone_number'] ?? '');
+            
+            if (!$admin_id || empty($name) || empty($email) || empty($phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+                return;
+            }
+            
+            // Validate email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid email format']);
+                return;
+            }
+            
+            // Validate phone number
+            if (!preg_match('/^[0-9]{10,15}$/', $phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid phone number (10-15 digits required)']);
+                return;
+            }
+            
+            $data = [
+                'admin_id' => $admin_id,
+                'name' => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
+                'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
+                'phone_number' => htmlspecialchars($phone_number, ENT_QUOTES, 'UTF-8')
+            ];
+            
+            if ($this->adminModel->updateAdmin($data)) {
+                echo json_encode(['status' => 'success', 'message' => 'Admin updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update admin']);
+            }
+        }
+    }
+
+    // Delete Admin (AJAX)
+    public function deleteAdmin() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            
+            if (!$admin_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin ID is required']);
+                return;
+            }
+            
+            // Prevent deleting own account
+            $current_user_id = $_SESSION['user_id'] ?? null;
+            if ($admin_id == $current_user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'You cannot delete your own account']);
+                return;
+            }
+            
+            if ($this->adminModel->deleteAdmin($admin_id)) {
+                echo json_encode(['status' => 'success', 'message' => 'Admin deleted successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to delete admin']);
+            }
+        }
+    }
+
+    // Update Profile Phone (AJAX)
+    public function updateProfilePhone() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $phone_number = trim($_POST['phone_number'] ?? '');
+            
+            if (!$user_id || empty($phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Phone number is required']);
+                return;
+            }
+            
+            // Validate phone number
+            if (!preg_match('/^[0-9]{10,15}$/', $phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid phone number (10-15 digits required)']);
+                return;
+            }
+            
+            if ($this->adminModel->updateProfilePhone($user_id, $phone_number)) {
+                echo json_encode(['status' => 'success', 'message' => 'Phone number updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update phone number']);
+            }
+        }
+    }
+
+    // Update Profile Email (AJAX)
+    public function updateProfileEmail() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $email = trim($_POST['email'] ?? '');
+            
+            if (!$user_id || empty($email)) {
+                echo json_encode(['status' => 'error', 'message' => 'Email is required']);
+                return;
+            }
+            
+            // Validate email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid email format']);
+                return;
+            }
+            
+            if ($this->adminModel->updateProfileEmail($user_id, $email)) {
+                echo json_encode(['status' => 'success', 'message' => 'Email updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update email']);
+            }
+        }
+    }
+
+    // Update Profile Password (AJAX)
+    public function updateProfilePassword() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $current_password = $_POST['current_password'] ?? '';
+            $new_password = $_POST['new_password'] ?? '';
+            
+            if (!$user_id || empty($current_password) || empty($new_password)) {
+                echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+                return;
+            }
+            
+            // Validate new password length
+            if (strlen($new_password) < 6) {
+                echo json_encode(['status' => 'error', 'message' => 'Password must be at least 6 characters long']);
+                return;
+            }
+            
+            // Verify current password
+            $user = $this->adminModel->getUserByID($user_id);
+            if (!$user || !password_verify($current_password, $user->password)) {
+                echo json_encode(['status' => 'error', 'message' => 'Current password is incorrect']);
+                return;
+            }
+            
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            
+            if ($this->adminModel->updateProfilePassword($user_id, $hashed_password)) {
+                echo json_encode(['status' => 'success', 'message' => 'Password changed successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to change password']);
+            }
+        }
+    }
+
+    // Update Profile Image (AJAX)
+    public function updateProfileImage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                echo json_encode(['status' => 'error', 'message' => 'Please select an image']);
+                return;
+            }
+            
+            $image = $_FILES['profile_image'];
+            $image_name = time() . '_' . $image['name'];
+            
+            // Validate image
+            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!in_array($image['type'], $allowed_types)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid image type. Only JPG, PNG, and GIF allowed']);
+                return;
+            }
+            
+            if ($image['size'] > 5000000) { // 5MB
+                echo json_encode(['status' => 'error', 'message' => 'Image size too large. Maximum 5MB allowed']);
+                return;
+            }
+            
+            // Upload image
+            if (uploadImage($image['tmp_name'], $image_name, '/uploads/image/')) {
+                if ($this->adminModel->updateProfileImage($user_id, $image_name)) {
+                    echo json_encode(['status' => 'success', 'message' => 'Profile picture updated successfully']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to update profile picture']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to upload image']);
+            }
+        }
+    }
 }
 
 

@@ -1718,4 +1718,64 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         return ['success' => false, 'message' => 'Failed to assign supervisor'];
     }
+
+    // Update Admin
+    public function updateAdmin($data) {
+        $this->db->query("UPDATE Users 
+                         SET name = :name, 
+                             email = :email, 
+                             phone_number = :phone_number
+                         WHERE id = :admin_id AND role = 'admin'");
+        
+        $this->db->bind(':admin_id', $data['admin_id']);
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':email', $data['email']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        
+        return $this->db->execute();
+    }
+
+    // Delete Admin
+    public function deleteAdmin($admin_id) {
+        $this->db->query("DELETE FROM Users WHERE id = :admin_id AND role = 'admin'");
+        $this->db->bind(':admin_id', $admin_id);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Phone
+    public function updateProfilePhone($user_id, $phone_number) {
+        $this->db->query("UPDATE Users SET phone_number = :phone_number WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':phone_number', $phone_number);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Email
+    public function updateProfileEmail($user_id, $email) {
+        $this->db->query("UPDATE Users SET email = :email WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':email', $email);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Password
+    public function updateProfilePassword($user_id, $hashed_password) {
+        $this->db->query("UPDATE Users SET password = :password WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':password', $hashed_password);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Image
+    public function updateProfileImage($user_id, $image_name) {
+        $this->db->query("UPDATE Users SET profile_image = :profile_image WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':profile_image', $image_name);
+        
+        return $this->db->execute();
+    }
 }
