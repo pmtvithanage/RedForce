@@ -152,14 +152,19 @@ function updateCoordinates(latLng) {
 }
 
 function updateAddressFromLocation(latLng) {
-    if (!geocoder) return;
+    if (!geocoder) {
+        geocoder = new google.maps.Geocoder();
+    }
     
     geocoder.geocode({ location: latLng }, (results, status) => {
         if (status === 'OK' && results[0]) {
             const addressInput = document.getElementById('site_address');
-            if (addressInput && (!addressInput.value || addressInput.value.length < 5)) {
+            if (addressInput) {
+                // Always update the address when a location is selected on the map
                 addressInput.value = results[0].formatted_address;
             }
+        } else {
+            console.log('Reverse geocode was not successful for the following reason: ' + status);
         }
     });
 }
@@ -167,17 +172,23 @@ function updateAddressFromLocation(latLng) {
 function initSiteAutocomplete() {
     const addressInput = document.getElementById('site_address');
     
-    if (!addressInput) return;
+    if (!addressInput) {
+        console.log('site_address field not found');
+        return;
+    }
     
+    // Initialize autocomplete for dropdown suggestions
     autocomplete = new google.maps.places.Autocomplete(addressInput, {
-        types: ['address'],
+        types: ['geocode', 'establishment'],
         componentRestrictions: { country: 'lk' } // Restrict to Sri Lanka, change as needed
     });
     
+    // When user selects from autocomplete dropdown
     autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         
         if (!place.geometry) {
+            console.log('No geometry found for place');
             return;
         }
         
@@ -191,23 +202,92 @@ function initSiteAutocomplete() {
         }
     });
     
-    // Geocode when address is manually entered
-    addressInput.addEventListener('blur', function() {
-        const address = this.value;
+    // Geocode when address is manually typed (after user stops typing)
+    let typingTimer;
+    const typingDelay = 1000; // Wait 1 second after user stops typing
+    
+    addressInput.addEventListener('input', function() {
+        clearTimeout(typingTimer);
+        const address = this.value.trim();
+        
+        // Reduced minimum length to 10 characters
         if (address && address.length > 10) {
+            typingTimer = setTimeout(() => {
+                console.log('Geocoding address:', address);
+                geocodeAddress(address);
+            }, typingDelay);
+        }
+    });
+    
+    // Also geocode when user clicks away from the field
+    addressInput.addEventListener('blur', function() {
+        clearTimeout(typingTimer);
+        const address = this.value.trim();
+        if (address && address.length > 10) {
+            console.log('Geocoding on blur:', address);
             geocodeAddress(address);
         }
     });
+    
+    console.log('Site autocomplete initialized');
 }
 
 function geocodeAddress(address) {
-    if (!geocoder) return;
+    if (!geocoder) {
+        geocoder = new google.maps.Geocoder();
+    }
     
-    geocoder.geocode({ address: address }, (results, status) => {
+    console.log('Starting geocode for:', address);
+    
+    geocoder.geocode({ 
+        address: address,
+        componentRestrictions: { country: 'lk' }
+    }, (results, status) => {
+        console.log('Geocode status:', status);
+        
         if (status === 'OK' && results[0]) {
+            console.log('Geocode successful:', results[0].formatted_address);
             const location = results[0].geometry.location;
             addSiteMarker(location);
             updateCoordinates(location);
+            
+            // Update the address input with the formatted address from Google
+            const addressInput = document.getElementById('site_address');
+            if (addressInput && results[0].formatted_address) {
+                addressInput.value = results[0].formatted_address;
+            }
+            
+            // Center and zoom the map to the location
+            if (siteMap) {
+                siteMap.setCenter(location);
+                siteMap.setZoom(16);
+            }
+        } else {
+            console.log('Geocode was not successful for the following reason: ' + status);
+            if (status === 'ZERO_RESULTS') {
+                console.log('Trying without country restriction...');
+                // Try again without country restriction
+                geocoder.geocode({ address: address }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        console.log('Second attempt successful:', results[0].formatted_address);
+                        const location = results[0].geometry.location;
+                        addSiteMarker(location);
+                        updateCoordinates(location);
+                        
+                        const addressInput = document.getElementById('site_address');
+                        if (addressInput && results[0].formatted_address) {
+                            addressInput.value = results[0].formatted_address;
+                        }
+                        
+                        if (siteMap) {
+                            siteMap.setCenter(location);
+                            siteMap.setZoom(16);
+                        }
+                    } else {
+                        console.log('Second attempt also failed:', status);
+                    }
+                });
+            }
         }
     });
 }

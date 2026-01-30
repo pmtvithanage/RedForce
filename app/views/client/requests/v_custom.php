@@ -213,8 +213,8 @@
 
                     <!-- Site Location -->
                     <div class="form-group">
-                        <label for="siteAddress">Site Location</label>
-                        <textarea id="siteAddress" name="site_address" id="site_address" rows="3" required></textarea>
+                        <label for="site_address">Site Location</label>
+                        <input type="text" id="site_address" name="site_address" placeholder="Enter address" required />
                     </div>
 
                     <!-- Site Image Upload -->
@@ -437,9 +437,9 @@ function showImage(){
 }
 </script>
 
-<!-- Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog&libraries=places&callback=initSiteMap" async defer></script>
+<!-- Load map.js first, then Google Maps API -->
 <script src="<?php echo URL_ROOT; ?>/js/map.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog&libraries=places&callback=initSiteMap" async defer></script>
 
 </main>
 </div>
