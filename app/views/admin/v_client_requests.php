@@ -167,16 +167,12 @@ $errorMessage = flash('request_error');
               </div>
             <?php endif; ?>
 
-            <!-- Action Buttons (only show for Pending requests) -->
+            <!-- Action Buttons -->
             <?php if ($request->status === 'Pending'): ?>
             <div class="request-actions">
-              <button type="button" class="action-btn approve-btn" onclick="showApproveModal(<?php echo $request->id; ?>, '<?php echo htmlspecialchars($request->package_name); ?>')">
-                <span class="material-symbols-outlined">check_circle</span>
-                Approve
-              </button>
-              <button type="button" class="action-btn reject-btn" onclick="showRejectModal(<?php echo $request->id; ?>, '<?php echo htmlspecialchars($request->package_name); ?>')">
-                <span class="material-symbols-outlined">cancel</span>
-                Reject
+              <button type="button" class="action-btn review-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/reviewPackageRequest/<?php echo $request->id; ?>'">
+                <span class="material-symbols-outlined">visibility</span>
+                Review Request
               </button>
             </div>
             <?php endif; ?>

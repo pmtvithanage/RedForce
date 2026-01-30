@@ -821,3 +821,22 @@ ADD COLUMN latitude DECIMAL(10, 8) DEFAULT NULL AFTER site_address,
 ADD COLUMN longitude DECIMAL(11, 8) DEFAULT NULL AFTER latitude,
 ADD COLUMN phone_number VARCHAR(15) DEFAULT NULL AFTER longitude,
 ADD COLUMN image_name VARCHAR(255) DEFAULT NULL AFTER phone_number;
+
+
+
+-- Add columns for draft site workflow
+
+
+-- Add draft_site_id to package_requests to link to the temporary site
+ALTER TABLE package_requests 
+ADD COLUMN IF NOT EXISTS draft_site_id INT NULL;
+
+-- Add is_draft flag to sites table to mark temporary sites
+ALTER TABLE sites 
+ADD COLUMN IF NOT EXISTS is_draft TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Add package_request_id to sites to link back to the request
+ALTER TABLE sites 
+ADD COLUMN IF NOT EXISTS package_request_id INT NULL;
+
+

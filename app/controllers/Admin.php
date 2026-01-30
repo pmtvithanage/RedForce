@@ -1220,6 +1220,121 @@ public function editSite($site_id){
         $this->view('admin/v_client_requests', $data);
     }
 
+    // Review package request - create draft site and redirect to assignment
+    public function reviewPackageRequest($requestId) {
+        if (!$requestId) {
+            flash('request_error', 'Invalid request');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Get package request
+        $packageRequest = $this->adminModel->getPackageRequestById($requestId);
+        
+        if (!$packageRequest) {
+            flash('request_error', 'Package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Check if draft site already exists
+        if ($packageRequest->draft_site_id) {
+            // Draft already exists, redirect to it
+            redirect('admin/viewsites/' . $packageRequest->draft_site_id);
+            return;
+        }
+
+        // Create draft site
+        $draftSiteId = $this->adminModel->createDraftSite($packageRequest);
+        
+        if (!$draftSiteId) {
+            flash('request_error', 'Failed to create draft site');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Link draft site to package request
+        $this->adminModel->linkDraftSiteToRequest($requestId, $draftSiteId);
+
+        // Redirect to viewsites page for officer assignment
+        flash('site_success', 'Draft site created. Assign exactly ' . $packageRequest->number_of_guards . ' officer(s) to continue.');
+        redirect('admin/viewsites/' . $draftSiteId);
+    }
+
+    // Approve draft site - finalize and approve package request
+    public function approveDraftSite($siteId) {
+        $site = $this->adminModel->getSiteById($siteId);
+        
+        if (!$site || $site->is_draft != 1) {
+            flash('request_error', 'Invalid draft site');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Get package request
+        $packageRequest = $this->adminModel->getPackageRequestBySiteId($siteId);
+        
+        if (!$packageRequest) {
+            flash('request_error', 'Package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Verify correct number of officers assigned
+        $assignedCount = $this->adminModel->getAssignedOfficerCount($siteId);
+        $requiredCount = $packageRequest->number_of_guards;
+
+        if ($assignedCount != $requiredCount) {
+            flash('site_error', 'You must assign exactly ' . $requiredCount . ' officer(s). Currently assigned: ' . $assignedCount);
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        // Finalize the draft site (make it official)
+        if ($this->adminModel->finalizeDraftSite($siteId)) {
+            // Update package request to Approved
+            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+            
+            flash('request_success', 'Package request approved and site created successfully');
+            redirect('admin/viewsites/' . $siteId);
+        } else {
+            flash('request_error', 'Failed to approve site');
+            redirect('admin/viewsites/' . $siteId);
+        }
+    }
+
+    // Reject draft site - delete draft and reject package request
+    public function rejectDraftSite($siteId) {
+        $site = $this->adminModel->getSiteById($siteId);
+        
+        if (!$site || $site->is_draft != 1) {
+            flash('request_error', 'Invalid draft site');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Get package request
+        $packageRequest = $this->adminModel->getPackageRequestBySiteId($siteId);
+        
+        if (!$packageRequest) {
+            flash('request_error', 'Package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        // Delete draft site
+        if ($this->adminModel->deleteDraftSite($siteId)) {
+            // Update package request to Rejected
+            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+            
+            flash('request_success', 'Package request rejected and draft site deleted');
+            redirect('admin/clientRequests');
+        } else {
+            flash('request_error', 'Failed to reject request');
+            redirect('admin/clientRequests');
+        }
+    }
+
 // ======================================================================== //
 // =======================      Admin Scheduling       ====================== //
 // ======================================================================== //

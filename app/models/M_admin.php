@@ -1257,6 +1257,109 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->execute();
     }
 
+    // Create draft site from package request
+    public function createDraftSite($packageRequest) {
+        // Get client's Clients table ID
+        $clientsTableId = $this->getClientsTableId($packageRequest->client_id);
+        
+        if (!$clientsTableId) {
+            return false;
+        }
+
+        // Get phone number
+        $phoneNumber = $packageRequest->phone_number ?? $this->getClientPhoneNumber($packageRequest->client_id);
+        
+        // Insert draft site (is_draft = 1) - matching exact structure of createSiteFromPackageRequest
+        $this->db->query("INSERT INTO sites 
+            (is_draft, client_id, package_request_id, site_name, address, city, district, phone_number, 
+             latitude, longitude, image) 
+            VALUES 
+            (1, :client_id, :package_request_id, :site_name, :address, :city, :district, :phone_number,
+             :latitude, :longitude, :image)");
+        
+        $this->db->bind(':client_id', $clientsTableId);
+        $this->db->bind(':package_request_id', $packageRequest->id);
+        $this->db->bind(':site_name', $packageRequest->site_name);
+        $this->db->bind(':address', $packageRequest->site_address);
+        $this->db->bind(':city', $packageRequest->city ?? '');
+        $this->db->bind(':district', $packageRequest->district ?? '');
+        $this->db->bind(':phone_number', $phoneNumber);
+        $this->db->bind(':latitude', $packageRequest->latitude ?? null);
+        $this->db->bind(':longitude', $packageRequest->longitude ?? null);
+        $this->db->bind(':image', $packageRequest->image_name ?? null);
+        
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId();
+        }
+        
+        return false;
+    }
+
+    // Link draft site to package request
+    public function linkDraftSiteToRequest($requestId, $draftSiteId) {
+        $this->db->query("UPDATE package_requests SET draft_site_id = :draft_site_id WHERE id = :id");
+        $this->db->bind(':draft_site_id', $draftSiteId);
+        $this->db->bind(':id', $requestId);
+        return $this->db->execute();
+    }
+
+    // Get count of assigned officers for a site
+    public function getAssignedOfficerCount($siteId) {
+        $this->db->query("SELECT COUNT(*) as count FROM officer_site_assignments WHERE site_id = :site_id AND status = 'Active'");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result ? $result->count : 0;
+    }
+
+    // Finalize draft site (convert to official)
+    public function finalizeDraftSite($siteId) {
+        $this->db->query("UPDATE sites SET is_draft = 0 WHERE id = :id");
+        $this->db->bind(':id', $siteId);
+        return $this->db->execute();
+    }
+
+    // Delete draft site and all assignments
+    public function deleteDraftSite($siteId) {
+        // Delete officer assignments first
+        $this->db->query("DELETE FROM officer_site_assignments WHERE site_id = :site_id");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->execute();
+        
+        // Delete the site
+        $this->db->query("DELETE FROM sites WHERE id = :id AND is_draft = 1");
+        $this->db->bind(':id', $siteId);
+        return $this->db->execute();
+    }
+
+    // Approve package request (final)
+    public function approvePackageRequestFinal($requestId, $adminId) {
+        $this->db->query("UPDATE package_requests 
+            SET status = 'Approved', 
+                approved_by = :admin_id, 
+                approved_at = NOW() 
+            WHERE id = :id");
+        
+        $this->db->bind(':id', $requestId);
+        $this->db->bind(':admin_id', $adminId);
+        
+        return $this->db->execute();
+    }
+
+    // Reject package request (final) and clear draft_site_id
+    public function rejectPackageRequestFinal($requestId, $adminId) {
+        $this->db->query("UPDATE package_requests 
+            SET status = 'Rejected', 
+                approved_by = :admin_id, 
+                approved_at = NOW(),
+                draft_site_id = NULL
+            WHERE id = :id");
+        
+        $this->db->bind(':id', $requestId);
+        $this->db->bind(':admin_id', $adminId);
+        
+        return $this->db->execute();
+    }
+
     
 
     // ==============================
@@ -1344,6 +1447,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             FROM sites s
             LEFT JOIN Clients c ON s.client_id = c.id
             LEFT JOIN Users u ON c.user_id = u.id
+            WHERE s.is_draft = 0
             ORDER BY s.site_name
         ");
         return $this->db->resultSet();

@@ -355,6 +355,19 @@
     box-shadow: 0 6px 14px rgba(164, 0, 0, 0.4);
 }
 
+/* Review button - blue style */
+.review-btn {
+    background-color: #0d6efd;
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.review-btn:hover {
+    background-color: #0b5ed7;
+    box-shadow: 0 6px 14px rgba(13, 110, 253, 0.4);
+}
+
 /* Reject button - matches secondary-btn style */
 .reject-btn {
     background-color: transparent;

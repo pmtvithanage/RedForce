@@ -339,6 +339,24 @@
 
 <div class="shell" role="main">
 
+    <?php if ($data['site']->is_draft == 1): ?>
+    <!-- Draft Site Notice -->
+    <div style="margin: 12px; padding: 16px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 8px;">
+      <h3 style="margin: 0 0 8px 0; color: #856404; font-size: 18px;">
+        <span class="material-symbols-outlined" style="vertical-align: middle;">info</span>
+        Draft Site - Review in Progress
+      </h3>
+      <p style="margin: 0; color: #856404;">
+        This is a temporary draft site. You must assign exactly <strong><?php echo $data['package_request']->number_of_guards ?? 0; ?> officer(s)</strong> before you can approve and create the official site.
+        <?php 
+          $assignedCount = count($data['assigned_officers'] ?? []);
+          $requiredCount = $data['package_request']->number_of_guards ?? 0;
+        ?>
+        Currently assigned: <strong><?php echo $assignedCount; ?>/<?php echo $requiredCount; ?></strong>
+      </p>
+    </div>
+    <?php endif; ?>
+
     <!-- COVER -->
     <div class="cover" aria-hidden="true">
       <button class="tertiary-btn" style="display:flex; width:100px; margin:20px;align-items:center;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile/<?php echo $data['client']->id; ?>'"> 
@@ -347,8 +365,35 @@
         </button>
       <img class="site-img" src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $data['site']->image; ?>" alt="Cover Image"> 
       <div style="position:absolute;right:12px;bottom:12px">
-        <button class="tertiary-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/editSite/<?php echo $data['site']->id; ?>'">Edit Site</button>
-        <button class="primary-btn" style="float: right; margin-left: 10px; padding: 12px 20px;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/deleteSite/<?php echo $data['site']->id; ?>'">Remove Site</button>
+        <?php if ($data['site']->is_draft == 1): ?>
+          <!-- Draft site - show Approve/Reject buttons -->
+          <?php 
+            $assignedCount = count($data['assigned_officers'] ?? []);
+            $requiredCount = $data['package_request']->number_of_guards ?? 0;
+            $canApprove = ($assignedCount == $requiredCount);
+          ?>
+          <?php if ($canApprove): ?>
+            <button class="primary-btn" style="padding: 12px 20px; background: #28a745;" 
+                    onclick="if(confirm('Approve this request and create the site?')) window.location.href='<?php echo URL_ROOT; ?>/admin/approveDraftSite/<?php echo $data['site']->id; ?>'">
+              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
+              Approve & Create Site
+            </button>
+          <?php else: ?>
+            <button class="secondary-btn" style="padding: 12px 20px; opacity: 0.6; cursor: not-allowed;" disabled title="Assign exactly <?php echo $requiredCount; ?> officer(s) to approve">
+              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
+              Approve (<?php echo $assignedCount; ?>/<?php echo $requiredCount; ?> officers)
+            </button>
+          <?php endif; ?>
+          <button class="tertiary-btn" style="padding: 12px 20px; margin-left: 10px;" 
+                  onclick="if(confirm('Reject this request? Draft site will be deleted.')) window.location.href='<?php echo URL_ROOT; ?>/admin/rejectDraftSite/<?php echo $data['site']->id; ?>'">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">cancel</span>
+            Reject Request
+          </button>
+        <?php else: ?>
+          <!-- Normal site - show Edit/Remove buttons -->
+          <button class="tertiary-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/editSite/<?php echo $data['site']->id; ?>'">Edit Site</button>
+          <button class="primary-btn" style="float: right; margin-left: 10px; padding: 12px 20px;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/deleteSite/<?php echo $data['site']->id; ?>'">Remove Site</button>
+        <?php endif; ?>
       </div>
     </div>
 
