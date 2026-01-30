@@ -6,12 +6,6 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/flash_msg.css">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/admin/client_requests_style.css">
 
-<?php
-// Get flash messages
-$successMessage = flash('request_success');
-$errorMessage = flash('request_error');
-?>
-
 <div class="main-content">
   <div class="page-header">
     
@@ -19,21 +13,6 @@ $errorMessage = flash('request_error');
       <span class="material-symbols-outlined">arrow_back</span> Back to Clients
     </a>
   </div>
-
-  <!-- Flash Messages -->
-  <?php if (!empty($successMessage)): ?>
-  <div class="alert-success">
-    <span class="material-symbols-outlined">check_circle</span>
-    <?php echo $successMessage; ?>
-  </div>
-  <?php endif; ?>
-
-  <?php if (!empty($errorMessage)): ?>
-  <div class="alert-danger">
-    <span class="material-symbols-outlined">error</span>
-    <?php echo $errorMessage; ?>
-  </div>
-  <?php endif; ?>
 
   <!-- Stats Cards -->
   <div class="stats-container">
@@ -171,7 +150,6 @@ $errorMessage = flash('request_error');
             <?php if ($request->status === 'Pending'): ?>
             <div class="request-actions">
               <button type="button" class="action-btn review-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/reviewPackageRequest/<?php echo $request->id; ?>'">
-                <span class="material-symbols-outlined">visibility</span>
                 Review Request
               </button>
             </div>
@@ -372,5 +350,21 @@ document.addEventListener('DOMContentLoaded', function() {
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
+<script>
+// Show flash notifications
+<?php if (flash('request_success')): ?>
+  showNotification('<?php echo addslashes(flash('request_success')); ?>', 'success');
+<?php endif; ?>
+<?php if (flash('request_error')): ?>
+  showNotification('<?php echo addslashes(flash('request_error')); ?>', 'error');
+<?php endif; ?>
+<?php if (flash('site_success')): ?>
+  showNotification('<?php echo addslashes(flash('site_success')); ?>', 'success');
+<?php endif; ?>
+<?php if (flash('site_error')): ?>
+  showNotification('<?php echo addslashes(flash('site_error')); ?>', 'error');
+<?php endif; ?>
+</script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
 

@@ -365,31 +365,7 @@
         </button>
       <img class="site-img" src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $data['site']->image; ?>" alt="Cover Image"> 
       <div style="position:absolute;right:12px;bottom:12px">
-        <?php if ($data['site']->is_draft == 1): ?>
-          <!-- Draft site - show Approve/Reject buttons -->
-          <?php 
-            $assignedCount = count($data['assigned_officers'] ?? []);
-            $requiredCount = $data['package_request']->number_of_guards ?? 0;
-            $canApprove = ($assignedCount == $requiredCount);
-          ?>
-          <?php if ($canApprove): ?>
-            <button class="primary-btn" style="padding: 12px 20px; background: #28a745;" 
-                    onclick="if(confirm('Approve this request and create the site?')) window.location.href='<?php echo URL_ROOT; ?>/admin/approveDraftSite/<?php echo $data['site']->id; ?>'">
-              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
-              Approve & Create Site
-            </button>
-          <?php else: ?>
-            <button class="secondary-btn" style="padding: 12px 20px; opacity: 0.6; cursor: not-allowed;" disabled title="Assign exactly <?php echo $requiredCount; ?> officer(s) to approve">
-              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
-              Approve (<?php echo $assignedCount; ?>/<?php echo $requiredCount; ?> officers)
-            </button>
-          <?php endif; ?>
-          <button class="tertiary-btn" style="padding: 12px 20px; margin-left: 10px;" 
-                  onclick="if(confirm('Reject this request? Draft site will be deleted.')) window.location.href='<?php echo URL_ROOT; ?>/admin/rejectDraftSite/<?php echo $data['site']->id; ?>'">
-            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">cancel</span>
-            Reject Request
-          </button>
-        <?php else: ?>
+        <?php if ($data['site']->is_draft == 0): ?>
           <!-- Normal site - show Edit/Remove buttons -->
           <button class="tertiary-btn" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/editSite/<?php echo $data['site']->id; ?>'">Edit Site</button>
           <button class="primary-btn" style="float: right; margin-left: 10px; padding: 12px 20px;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/deleteSite/<?php echo $data['site']->id; ?>'">Remove Site</button>
@@ -659,6 +635,50 @@
         </div>
       </div>
     </div>
+
+    <!-- Draft Site Action Buttons (after officer assignment section) -->
+    <?php if ($data['site']->is_draft == 1): ?>
+    <div style="margin: 24px 12px; padding: 20px; background: white; border-radius: 12px; box-shadow: var(--shadow);">
+      <div style="margin-bottom: 16px;">
+        <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">
+          <span class="material-symbols-outlined" style="vertical-align: middle; color: #a40000;">task_alt</span>
+          Review & Approval
+        </h3>
+        <?php 
+          $assignedCount = count($data['assigned_officers'] ?? []);
+          $requiredCount = $data['package_request']->number_of_guards ?? 0;
+          $canApprove = ($assignedCount == $requiredCount);
+        ?>
+        <p style="margin: 0; color: #666; font-size: 14px;">
+          Officers assigned: <strong style="color: <?php echo $canApprove ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedCount; ?>/<?php echo $requiredCount; ?></strong>
+          <?php if (!$canApprove): ?>
+            - Assign exactly <?php echo $requiredCount; ?> officer(s) to approve this request.
+          <?php else: ?>
+            - All required officers assigned. You can now approve or reject this request.
+          <?php endif; ?>
+        </p>
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <?php if ($canApprove): ?>
+          <button class="primary-btn" style="padding: 14px 24px; background: #28a745; flex: 1;" 
+                  onclick="openApproveModal()">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
+            Approve & Create Site
+          </button>
+        <?php else: ?>
+          <button class="secondary-btn" style="padding: 14px 24px; opacity: 0.6; cursor: not-allowed; flex: 1;" disabled title="Assign exactly <?php echo $requiredCount; ?> officer(s) to approve">
+            <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
+            Approve (Requires <?php echo $requiredCount; ?> officers)
+          </button>
+        <?php endif; ?>
+        <button class="tertiary-btn" style="padding: 14px 24px; flex: 1;" 
+                onclick="openRejectModal()">
+          <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">cancel</span>
+          Reject Request
+        </button>
+      </div>
+    </div>
+    <?php endif; ?>
     
 </div>
 
@@ -720,6 +740,70 @@
   </div>
 </div>
 
+<!-- Approve Confirmation Modal -->
+<div id="approveModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="width: 64px; height: 64px; background: #d4edda; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+        <span class="material-symbols-outlined" style="font-size: 32px; color: #28a745;">check_circle</span>
+      </div>
+      <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Approve Package Request?</h3>
+      <p style="color: #666; margin: 0; font-size: 14px;">Create the official site and activate assignments</p>
+    </div>
+    
+    <div style="background: #f0f8ff; border-left: 4px solid #28a745; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0 0 12px 0; font-size: 14px; color: #333; font-weight: 600;">This action will:</p>
+      <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #555; line-height: 1.8;">
+        <li>Convert the draft to an official site</li>
+        <li>Notify the client of approval</li>
+        <li>Activate all officer assignments</li>
+      </ul>
+    </div>
+    
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button onclick="closeApproveModal()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+        Cancel
+      </button>
+      <button onclick="confirmApprove()" style="padding: 12px 24px; background: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">check_circle</span>
+        Approve & Create
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Confirmation Modal -->
+<div id="rejectModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">cancel</span>
+      </div>
+      <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Reject Package Request?</h3>
+      <p style="color: #666; margin: 0; font-size: 14px;">This action cannot be undone</p>
+    </div>
+    
+    <div style="background: #fff3cd; border-left: 4px solid #dc3545; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0 0 12px 0; font-size: 14px; color: #333; font-weight: 600;">⚠️ This will:</p>
+      <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #555; line-height: 1.8;">
+        <li>Delete the draft site permanently</li>
+        <li>Remove all officer assignments</li>
+        <li>Notify the client of rejection</li>
+      </ul>
+    </div>
+    
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button onclick="closeRejectModal()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+        Cancel
+      </button>
+      <button onclick="confirmReject()" style="padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">delete</span>
+        Reject Request
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
@@ -774,6 +858,35 @@ function switchTab(tab) {
 document.addEventListener('DOMContentLoaded', function() {
     switchTab('assigned');
 });
+
+// Approve/Reject Modal Functions
+function openApproveModal() {
+    const modal = document.getElementById('approveModal');
+    modal.style.display = 'flex';
+}
+
+function closeApproveModal() {
+    const modal = document.getElementById('approveModal');
+    modal.style.display = 'none';
+}
+
+function confirmApprove() {
+    window.location.href = '<?php echo URL_ROOT; ?>/admin/approveDraftSite/<?php echo $data['site']->id; ?>';
+}
+
+function openRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.style.display = 'flex';
+}
+
+function closeRejectModal() {
+    const modal = document.getElementById('rejectModal');
+    modal.style.display = 'none';
+}
+
+function confirmReject() {
+    window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectDraftSite/<?php echo $data['site']->id; ?>';
+}
 
 function loadOfficers() {
     const districtFilter = document.getElementById('districtFilter').value;
@@ -1263,6 +1376,22 @@ function confirmSupervisorAssignment() {
         `;
     });
 }
+</script>
+<?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
+<script>
+// Show flash notifications
+<?php if (flash('site_success')): ?>
+  showNotification('<?php echo addslashes(flash('site_success')); ?>', 'success');
+<?php endif; ?>
+<?php if (flash('site_error')): ?>
+  showNotification('<?php echo addslashes(flash('site_error')); ?>', 'error');
+<?php endif; ?>
+<?php if (flash('request_success')): ?>
+  showNotification('<?php echo addslashes(flash('request_success')); ?>', 'success');
+<?php endif; ?>
+<?php if (flash('request_error')): ?>
+  showNotification('<?php echo addslashes(flash('request_error')); ?>', 'error');
+<?php endif; ?>
 </script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
 ```
