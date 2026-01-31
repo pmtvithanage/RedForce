@@ -353,17 +353,23 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
 <script>
 // Show flash notifications
-<?php if (flash('request_success')): ?>
-  showNotification('<?php echo addslashes(flash('request_success')); ?>', 'success');
+<?php 
+$requestSuccess = flash('request_success');
+$requestError = flash('request_error');
+$siteSuccess = flash('site_success');
+$siteError = flash('site_error');
+?>
+<?php if ($requestSuccess): ?>
+  showNotification('<?php echo addslashes($requestSuccess); ?>', 'success');
 <?php endif; ?>
-<?php if (flash('request_error')): ?>
-  showNotification('<?php echo addslashes(flash('request_error')); ?>', 'error');
+<?php if ($requestError): ?>
+  showNotification('<?php echo addslashes($requestError); ?>', 'error');
 <?php endif; ?>
-<?php if (flash('site_success')): ?>
-  showNotification('<?php echo addslashes(flash('site_success')); ?>', 'success');
+<?php if ($siteSuccess): ?>
+  showNotification('<?php echo addslashes($siteSuccess); ?>', 'success');
 <?php endif; ?>
-<?php if (flash('site_error')): ?>
-  showNotification('<?php echo addslashes(flash('site_error')); ?>', 'error');
+<?php if ($siteError): ?>
+  showNotification('<?php echo addslashes($siteError); ?>', 'error');
 <?php endif; ?>
 </script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
