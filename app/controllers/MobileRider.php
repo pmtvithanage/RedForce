@@ -5,6 +5,7 @@ class MobileRider extends Controller
     private $userModel;
     private $advertisementModel;
     private $messageModel;
+    private $notificationModel;
 
     public function __construct()
     {
@@ -14,12 +15,26 @@ class MobileRider extends Controller
         $this->mobileRiderModel = $this->model('M_mobilerider');
         $this->userModel = $this->model('M_users');
         $this->messageModel = $this->model('M_message');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     // Default action - redirect to dashboard
     public function index()
     {
         redirect('MobileRider/dashboard');
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'mobile rider',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 
     // Dashboard action

@@ -1241,11 +1241,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $last = $this->db->single();
         
         if ($last) {
-            // Extract number from CLIENT001
-            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            // Extract number from ADMIN001
+            $number = (int) substr($last->userID, 5); // Remove "ADMIN" (5 characters)
             $nextNumber = $number + 1;
         } else {
-            $nextNumber = 1; // First client
+            $nextNumber = 1; // First admin
         }
         
         $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
@@ -1263,9 +1263,16 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
     
         if ($this->db->execute()) {
-            return $this->db->lastInsertId(); // Return the new user ID
+            return [
+                'success' => true,
+                'id' => $this->db->lastInsertId(),
+                'userID' => $userID,
+                'tempPassword' => $tempPassword,
+                'email' => $data['email'],
+                'name' => $data['name']
+            ];
         }
-        return false;
+        return ['success' => false];
 
     }
 

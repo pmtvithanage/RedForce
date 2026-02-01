@@ -3,12 +3,14 @@ class Caretaker extends Controller {
     private $caretakerModel;
     private $userModel;
     private $advertisementModel;
+    private $notificationModel;
 
     public function __construct() {
         requireAuth('caretaker');
         $this->advertisementModel = $this->model('M_advertisements');
         $this->caretakerModel = $this->model('M_caretaker');
         $this->userModel = $this->model('M_users');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     public function index() {
@@ -39,6 +41,19 @@ class Caretaker extends Controller {
             'pageTitle' => 'Messages'
         ];
         $this->view('caretaker/v_messages', $data);
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'caretaker',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 
     /* --------------------------

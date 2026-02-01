@@ -3,6 +3,7 @@ class Supervisor extends Controller {
     private $supervisorModel;
     private $userModel;
     private $advertisementModel;
+    private $notificationModel;
 
     public function __construct() {
         // Check if user is logged in and has supervisor role
@@ -10,13 +11,26 @@ class Supervisor extends Controller {
         $this->advertisementModel = $this->model('M_advertisements');
         $this->supervisorModel = $this->model('M_supervisor');
         $this->userModel = $this->model('M_users');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     // Default action - redirect to dashboard
     public function index() {
         redirect('supervisor/dashboard/dashboard');
     }
-
+    // Notifications
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'supervisor',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
+    }
     // dashboard
     public function dashboard() {
         $role = 'supervisor';

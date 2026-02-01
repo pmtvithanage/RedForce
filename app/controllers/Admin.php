@@ -5,6 +5,7 @@ class Admin extends Controller {
     private $homeModel;
     private $chartModel;
     private $messageModel;
+    private $notificationModel;
     
 
     public function __construct() {
@@ -13,7 +14,7 @@ class Admin extends Controller {
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
         $this->messageModel = $this->model('M_message');
-        
+        $this->notificationModel = $this->model('M_notifications');
         // Load route helper
         require_once APP_ROOT . '/helpers/route_helper.php';
         
@@ -26,6 +27,19 @@ class Admin extends Controller {
 
     public function index() {
         redirect('admin/dashboard');
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'admin',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 
     public function dashboard() {
@@ -646,17 +660,66 @@ class Admin extends Controller {
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
-        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+        $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
+        
+        if ($result && isset($result['success']) && $result['success']) {
+            // Get officer details for email
+            $officer = $this->homeModel->getApplicationById($id);
+            
             // Add activity log
             $title = "Officer Application Accepted";
             $description = $role_name . " application #" . $id . " was approved";
             $type = "registration";
             $this->adminModel->insertRecentActivity($title, $description, $type);
             
-            flash('msg', 'Officer application accepted successfully', 'alert-success');
+            // Get numeric user ID for notification
+            $this->db = new Database();
+            $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+            $this->db->bind(':userID', $result['userID']);
+            $userRow = $this->db->single();
+            $numericUserId = $userRow ? $userRow->id : null;
+            
+            if ($numericUserId) {
+                // Send notification to officer
+                $this->notificationModel->insertNotification(
+                    $numericUserId,
+                    'registration',
+                    'Application Approved',
+                    'Congratulations! Your ' . $role_name . ' application has been approved.',
+                    '/' . strtolower(str_replace(' ', '', $role_name)) . '/dashboard',
+                    'check_circle',
+                    $adminId
+                );
+            }
+            
+            // Send welcome email with credentials
+            if ($officer && isset($result['userID']) && isset($result['tempPassword'])) {
+                $emailVars = [
+                    'site_name' => SITE_NAME,
+                    'officer_name' => $officer->name ?? 'Officer',
+                    'login_id' => $result['userID'],
+                    'temp_password' => $result['tempPassword'],
+                    'role_name' => $role_name,
+                    'login_url' => URL_ROOT . '/users/login'
+                ];
+                
+                $emailResult = send_templated_email(
+                    $officer->email,
+                    'welcome_officer',
+                    $emailVars,
+                    'Welcome to ' . SITE_NAME . ' - Officer Account Created'
+                );
+                
+                if (!$emailResult['success']) {
+                    error_log('Failed to send welcome email to officer: ' . $emailResult['message']);
+                }
+            }
+            
+            flash('msg', 'Officer application accepted successfully and welcome email sent', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
-            flash('msg', 'Failed to accept officer application', 'alert-danger');
+            $errorMsg = isset($result['message']) ? $result['message'] : 'Failed to accept officer application';
+            flash('msg', $errorMsg, 'alert-danger');
             redirect('admin/pending_officer_applications/all');
         }
     }
@@ -667,6 +730,18 @@ class Admin extends Controller {
             $description = "Officer application #" . $id . " was rejected";
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            // Send notification to officer
+            $adminId = $_SESSION['user_id'] ?? 1;
+            $this->notificationModel->insertNotification(
+                $id,
+                'alert',
+                'Application Rejected',
+                'Your officer application has been rejected. Please contact HR for more information.',
+                '/users/login',
+                'cancel',
+                $adminId
+            );
             
             flash('msg', 'Officer application rejected successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
@@ -727,14 +802,57 @@ class Admin extends Controller {
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
-    if ($this->adminModel->acceptClient($clientId, $adminId)) {
+    $result = $this->adminModel->acceptClient($clientId, $adminId);
+    
+    if ($result && isset($result['success']) && $result['success']) {
+        // Get client details for email
+        $this->db = new Database();
+        $this->db->query("SELECT * FROM client_requests WHERE id = :id");
+        $this->db->bind(':id', $clientId);
+        $clientRequest = $this->db->single();
+        
         // Add activity log
         $title = "Client Accepted";
         $description = "Client #" . $clientId . " registration was approved";
-        $type = "updregistrationate";
+        $type = "registration";
         $this->adminModel->insertRecentActivity($title, $description, $type);
         
-        flash('msg', 'Client accepted successfully', 'alert-success');
+        // Send notification to client using numeric ID
+        if (isset($result['id']) && $result['id']) {
+            $this->notificationModel->insertNotification(
+                $result['id'],
+                'registration',
+                'Registration Approved',
+                'Your registration has been approved. Welcome to RED FORCE!',
+                '/client/dashboard',
+                'check_circle',
+                $adminId
+            );
+        }
+        
+        // Send welcome email with credentials
+        if ($clientRequest && isset($result['new_user_id']) && isset($result['temp_password'])) {
+            $emailVars = [
+                'site_name' => SITE_NAME,
+                'client_name' => $clientRequest->company_name ?? 'Client',
+                'login_id' => $result['new_user_id'],
+                'temp_password' => $result['temp_password'],
+                'login_url' => URL_ROOT . '/users/login'
+            ];
+            
+            $emailResult = send_templated_email(
+                $result['email'],
+                'welcome_client',
+                $emailVars,
+                'Welcome to ' . SITE_NAME . ' - Client Account Created'
+            );
+            
+            if (!$emailResult['success']) {
+                error_log('Failed to send welcome email to client: ' . $emailResult['message']);
+            }
+        }
+        
+        flash('msg', 'Client accepted successfully and welcome email sent', 'alert-success');
         redirect('admin/addclients');
     } else {
         flash('client_message', 'Failed to accept client', 'alert-danger');
@@ -748,6 +866,18 @@ class Admin extends Controller {
             $description = "Client #" . $clientId . " registration was rejected";
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            // Send notification to client
+            $adminId = $_SESSION['user_id'] ?? 1;
+            $this->notificationModel->insertNotification(
+                $clientId,
+                'alert',
+                'Registration Rejected',
+                'Your registration has been rejected. Please contact support for more information.',
+                '/client/dashboard',
+                'cancel',
+                $adminId
+            );
             
             flash('msg', 'Client rejected successfully', 'alert-success');
             redirect('admin/addclients');
@@ -1567,6 +1697,22 @@ public function approveLeave($id) {
         $admin_id = $_SESSION['user_id'];
         
         if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
+            // Get leave request details for notification
+            $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+            
+            if ($leaveRequest) {
+                // Send notification to employee
+                $this->notificationModel->insertNotification(
+                    $leaveRequest->officer_id,
+                    'leave',
+                    'Leave Request Approved',
+                    'Your leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' has been approved.',
+                    '/supervisor/leaverequests',
+                    'check_circle',
+                    $admin_id
+                );
+            }
+            
             flash('leave_success', 'Leave request approved successfully');
         } else {
             flash('leave_error', 'Failed to approve leave request');
@@ -1590,6 +1736,22 @@ public function rejectLeave($id) {
         }
         
         if ($this->adminModel->rejectLeaveRequest($id, $admin_id, $reason)) {
+            // Get leave request details for notification
+            $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+            
+            if ($leaveRequest) {
+                // Send notification to employee
+                $this->notificationModel->insertNotification(
+                    $leaveRequest->officer_id,
+                    'alert',
+                    'Leave Request Rejected',
+                    'Your leave request has been rejected. Reason: ' . $reason,
+                    '/supervisor/leaverequests',
+                    'cancel',
+                    $admin_id
+                );
+            }
+            
             flash('leave_success', 'Leave request rejected');
         } else {
             flash('leave_error', 'Failed to reject leave request');
@@ -2146,18 +2308,40 @@ public function rejectLeave($id) {
             empty($data['email_err']) && 
             empty($data['phone_number_err'])){
 
-                // Insert admin and get the new admin ID
-                $adminId = $this->adminModel->addAdmin($data);
+                // Insert admin and get the result
+                $result = $this->adminModel->addAdmin($data);
                 
-                if($adminId){
+                if($result && isset($result['success']) && $result['success']){
                     // Add activity log
                     $title = "New Admin Added";
                     $description = "Admin '" . $data['name'] . "' added";
                     $type = "shift";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
                     
-                    flash('msg', 'Admin added successfully', 'alert-success');
-                    redirect('admin/admins/'.$adminId); // Redirect properly
+                    // Send welcome email with credentials
+                    if (isset($result['userID']) && isset($result['tempPassword'])) {
+                        $emailVars = [
+                            'site_name' => SITE_NAME,
+                            'admin_name' => $result['name'],
+                            'login_id' => $result['userID'],
+                            'temp_password' => $result['tempPassword'],
+                            'login_url' => URL_ROOT . '/users/login'
+                        ];
+                        
+                        $emailResult = send_templated_email(
+                            $result['email'],
+                            'welcome_admin',
+                            $emailVars,
+                            'Welcome to ' . SITE_NAME . ' - Administrator Account Created'
+                        );
+                        
+                        if (!$emailResult['success']) {
+                            error_log('Failed to send welcome email to admin: ' . $emailResult['message']);
+                        }
+                    }
+                    
+                    flash('msg', 'Admin added successfully and welcome email sent', 'alert-success');
+                    redirect('admin/admins/'.$result['id']); // Redirect properly
                 } else {
                     flash('msg', 'Failed to add admin', 'alert-danger');
                     $this->view('admin/admins/v_create_admin',$data);
@@ -2261,6 +2445,23 @@ public function rejectLeave($id) {
         }
 
         $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType);
+        
+        // Send notification to officer if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $officerId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned to ' . $siteName . ' (' . $shiftType . ').',
+                '/premiseofficer/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
         echo json_encode($result);
     }
 
@@ -2394,6 +2595,23 @@ public function rejectLeave($id) {
         }
 
         $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
+        
+        // Send notification to supervisor if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $supervisorId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned as supervisor to ' . $siteName . '.',
+                '/supervisor/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
         echo json_encode($result);
     }
 

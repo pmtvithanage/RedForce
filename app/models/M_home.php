@@ -62,6 +62,12 @@ class M_home {
         return $this->db->resultSet();
     }
 
+    // Get application by ID
+    public function getApplicationById($id) {
+        $this->db->query("SELECT * FROM submittedApplications WHERE id = :id");
+        $this->db->bind(':id', $id);
+        return $this->db->single();
+    }
 
     // Save client requests from service page
     public function getPendingRequest() {
