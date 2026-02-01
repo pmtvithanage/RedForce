@@ -428,7 +428,7 @@
                     <button class="btn btn-secondary">
                         <i class="fas fa-edit"></i> Edit Profile
                     </button>
-                    <button class="btn btn-primary">
+                    <button class="btn btn-primary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewOfficerCalendar/<?php echo $officer->user_id; ?>'">
                         View Calander
                     </button>
                 </div>

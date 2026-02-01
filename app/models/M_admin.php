@@ -51,7 +51,7 @@ public function getAllPO() {
 }
 
 public function getPOById($premise_officer_id) {
-    $this->db->query("SELECT * FROM premise_officers_full_details WHERE premise_officer_id = :id");
+    $this->db->query("SELECT * FROM premise_officers_full_details WHERE premise_officer_id = :id OR user_id = :id");
     $this->db->bind(':id', $premise_officer_id);
     return $this->db->single();
 }

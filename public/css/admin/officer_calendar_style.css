@@ -1,0 +1,631 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f9f9f9;
+}
+
+.main-content {
+    padding: 20px;
+    margin-left: 0;
+    min-height: 100vh;
+    background-color: #f9f9f9;
+}
+
+/* Officer Info Header */
+.officer-info-header {
+    background: white;
+    padding: 20px;
+    margin: 0 20px 20px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.officer-info-header h2 {
+    color: #a40000;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.officer-info-header p {
+    color: #666;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+.schedule-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    max-width: 1400px;
+}
+
+.calendar-container {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+}
+
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.nav-btn {
+    background: #a40000;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    width: 36px;
+    height: 36px;
+}
+
+.nav-btn:hover {
+    background: #b50000;
+    transform: scale(1.05);
+}
+
+.nav-btn .material-icons {
+    font-size: 20px;
+}
+
+.current-month-year {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+}
+
+.month-select,
+.year-select {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+
+.month-select:focus,
+.year-select:focus {
+    outline: none;
+    border-color: #a40000;
+}
+
+.calendar {
+    width: 100%;
+}
+
+.calendar-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.day-name {
+    padding: 15px 10px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 14px;
+    color: #666;
+    border-right: 1px solid #e9ecef;
+}
+
+.day-name:last-child {
+    border-right: none;
+}
+
+.calendar-body {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.calendar-day {
+    background: white;
+    min-height: 80px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.calendar-day:hover {
+    background: #f8f9fa;
+    transform: scale(1.02);
+}
+
+.calendar-day.other-month {
+    color: #ccc;
+    background: #f8f9fa;
+}
+
+.calendar-day.today {
+    background: #e3f2fd;
+    border: 2px solid #2196f3;
+}
+
+.calendar-day.selected {
+    background: #ffebee;
+    border: 2px solid #a40000;
+}
+
+.calendar-day.has-shift {
+    background: #fff3e0;
+}
+
+.calendar-day.has-shift::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 8px;
+    height: 8px;
+    background: #ff9800;
+    border-radius: 50%;
+}
+
+/* Work day styling - Green background */
+.calendar-day.work-day {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border: 1px solid #81c784;
+}
+
+.calendar-day.work-day:hover {
+    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+}
+
+.calendar-day.work-day.selected {
+    background: #4caf50;
+    border: 2px solid #2e7d32;
+    color: white;
+}
+
+.calendar-day.work-day.selected .day-number {
+    color: white;
+}
+
+/* Leave day styling - Red background */
+.calendar-day.leave-day {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border: 1px solid #e57373;
+}
+
+.calendar-day.leave-day:hover {
+    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+}
+
+.calendar-day.leave-day.selected {
+    background: #f44336;
+    border: 2px solid #c62828;
+    color: white;
+}
+
+.calendar-day.leave-day.selected .day-number {
+    color: white;
+}
+
+.day-number {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.shift-indicator {
+    font-size: 10px;
+    color: #666;
+    line-height: 1.2;
+}
+
+/* Calendar Legend */
+.calendar-legend {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.legend-color.work-day {
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    border-color: #81c784;
+}
+
+.legend-color.leave-day {
+    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    border-color: #e57373;
+}
+
+.legend-color.today {
+    background: #e3f2fd;
+    border: 2px solid #2196f3;
+}
+
+.legend-item span {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* Shift Details Panel */
+.shift-details-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.shift-details {
+    padding: 20px;
+}
+
+.shift-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 15px;
+}
+
+.shift-header h3 {
+    color: #333;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.selected-date {
+    color: #666;
+    font-size: 14px;
+}
+
+/* No Selection State */
+.no-selection {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.no-selection-icon {
+    font-size: 48px !important;
+    margin-bottom: 15px;
+    color: #ccc;
+    display: block;
+}
+
+.no-selection p {
+    font-size: 16px;
+    font-style: italic;
+}
+
+/* Shift Card */
+.shift-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #a40000;
+}
+
+.shift-status {
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    background: #4caf50;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.work-badge {
+    background: #4caf50;
+}
+
+.status-badge.leave-badge {
+    background: #f44336;
+}
+
+.shift-details-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+}
+
+.detail-icon {
+    font-size: 20px !important;
+    color: #a40000;
+    width: 24px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.detail-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.detail-label {
+    font-size: 12px;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.detail-value {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+.shift-notes {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+.notes-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.notes-header .material-icons {
+    font-size: 18px;
+    color: #a40000;
+}
+
+.notes-header h4 {
+    font-size: 14px;
+    color: #333;
+    margin: 0;
+}
+
+.shift-notes p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* No Shift Card */
+.no-shift-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #4caf50;
+}
+
+.no-shift-icon {
+    font-size: 48px !important;
+    margin-bottom: 15px;
+    color: #4caf50;
+    display: block;
+}
+
+.no-shift-card h4 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.no-shift-card p {
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.day-off-badge {
+    background: #4caf50;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.day-off-badge .material-icons {
+    font-size: 16px;
+}
+
+/* Leave Card Styles */
+.leave-card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border-left: 4px solid #f44336;
+}
+
+.leave-icon-container {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.leave-icon {
+    font-size: 64px !important;
+    color: #f44336;
+}
+
+.leave-details {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.leave-message {
+    background: white;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+}
+
+.leave-message p {
+    color: #666;
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Loading and Error States */
+.loading-state,
+.error-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.loading-icon {
+    font-size: 48px !important;
+    color: #2196f3;
+    margin-bottom: 15px;
+    display: block;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-icon {
+    font-size: 48px !important;
+    color: #f44336;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.loading-state p,
+.error-state p {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .schedule-layout {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .shift-details-panel {
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 15px;
+    }
+    
+    .calendar-day {
+        min-height: 60px;
+        padding: 5px;
+    }
+    
+    .day-number {
+        font-size: 12px;
+    }
+    
+    .shift-indicator {
+        font-size: 9px;
+    }
+    
+    .day-name {
+        padding: 10px 5px;
+        font-size: 12px;
+    }
+    
+    .shift-details {
+        padding: 15px;
+    }
+    
+    .detail-item {
+        padding: 8px;
+    }
+    
+    .no-selection-icon {
+        font-size: 36px !important;
+    }
+    
+    .no-shift-icon {
+        font-size: 36px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .month-select,
+    .year-select {
+        width: 100%;
+    }
+    
+    .shift-card {
+        padding: 15px;
+    }
+    
+    .no-selection {
+        padding: 30px 15px;
+    }
+}

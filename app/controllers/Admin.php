@@ -5,6 +5,7 @@ class Admin extends Controller {
     private $homeModel;
     private $chartModel;
     private $messageModel;
+    private $premiseOfficerModel;
     
 
     public function __construct() {
@@ -13,6 +14,7 @@ class Admin extends Controller {
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
         $this->messageModel = $this->model('M_message');
+        $this->premiseOfficerModel = $this->model('M_premiseofficer');
         
         // Load route helper
         require_once APP_ROOT . '/helpers/route_helper.php';
@@ -393,6 +395,67 @@ class Admin extends Controller {
             'officer' => $officer
     ];
         $this->view('admin/officers/v_caretaker_profile', $data);
+    }
+
+    public function viewOfficerCalendar($officerId) {
+        // Get officer details
+        $officer = $this->adminModel->getPOById($officerId);
+        
+        // Get officer assignments
+        $assignments = $this->premiseOfficerModel->getActiveAssignments($officerId);
+        
+        // Get approved leave dates
+        $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($officerId);
+        
+        $data = [
+            'title' => 'Officer Calendar',
+            'pageTitle' => 'Officer Schedule',
+            'officer' => $officer,
+            'assignments' => $assignments,
+            'leaveDates' => $leaveDates
+        ];
+        
+        $this->view('admin/officers/v_officer_calendar', $data);
+    }
+
+    public function getOfficerShiftDetails() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $date = $_POST['date'] ?? null;
+            $officerId = $_POST['officer_id'] ?? null;
+            
+            if (!$date || !$officerId) {
+                echo json_encode(['success' => false, 'message' => 'Missing date or officer ID']);
+                return;
+            }
+            
+            // Get shift details for the date
+            $shiftDetails = $this->premiseOfficerModel->getShiftDetailsForDate($officerId, $date);
+            
+            // Get leave details if any
+            $leaveDetails = $this->premiseOfficerModel->getLeaveForDate($officerId, $date);
+            
+            if ($leaveDetails) {
+                echo json_encode([
+                    'success' => true,
+                    'isLeave' => true,
+                    'leave_type' => $leaveDetails->leave_type,
+                    'reason' => $leaveDetails->reason
+                ]);
+            } elseif ($shiftDetails) {
+                echo json_encode([
+                    'success' => true,
+                    'isLeave' => false,
+                    'shift_type' => $shiftDetails->shift_type,
+                    'location' => $shiftDetails->site_name,
+                    'address' => $shiftDetails->address . ', ' . $shiftDetails->city,
+                    'time' => $shiftDetails->shift_type === 'day' ? '6:00 AM - 6:00 PM' : '6:00 PM - 6:00 AM',
+                    'client' => $shiftDetails->contact_person_name ?? 'N/A',
+                    'notes' => $shiftDetails->notes ?? 'No additional notes'
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'No shift details found']);
+            }
+        }
     }
 
     public function porecruitment() {
