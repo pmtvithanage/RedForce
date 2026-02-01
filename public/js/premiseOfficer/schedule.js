@@ -1,45 +1,88 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const monthSelect = document.getElementById('monthSelect');
-    const yearSelect = document.getElementById('yearSelect');
     const calendarBody = document.getElementById('calendarBody');
-    const shiftDetails = document.getElementById('shiftDetails');
+    const currentMonthYearSpan = document.getElementById('currentMonthYear');
     const selectedDateSpan = document.getElementById('selectedDate');
     const shiftContent = document.getElementById('shiftContent');
+    const prevMonthBtn = document.getElementById('prevMonth');
+    const nextMonthBtn = document.getElementById('nextMonth');
     
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
     let selectedDay = null;
     
-    // Sample shift data - Replace with actual data from your backend
-    const shiftData = {
-        '2024-11-09': {
-            location: 'People\'s Bank PLC - Kandy Branch',
-            time: '08:00 AM - 06:00 PM',
-            type: 'Day Shift',
-            supervisor: 'John Silva',
-            notes: 'Please arrive 15 minutes early for briefing. Remember to bring your ID card and uniform.'
-        },
-        '2024-11-16': {
-            location: 'Commercial Bank - Colombo Main',
-            time: '10:00 PM - 06:00 AM',
-            type: 'Night Shift',
-            supervisor: 'Naduni Senanayake',
-            notes: 'Night shift requires extra security protocols. Contact supervisor for emergency procedures.'
-        },
-        '2024-11-23': {
-            location: 'People\'s Bank PLC - Kandy Branch',
-            time: '08:00 AM - 06:00 PM',
-            type: 'Day Shift',
-            supervisor: 'John Silva',
-            notes: 'Regular day shift. Monitor main entrance and customer area.'
-        },
-        '2024-11-30': {
-            location: 'Bank of Ceylon - Galle Road',
-            time: '02:00 PM - 10:00 PM',
-            type: 'Evening Shift',
-            supervisor: 'Manager Williams',
-            notes: 'Evening shift covers peak hours. Pay attention to cash transport timing.'
-        }
-    };
+    // Process assignment data to create work day mappings
+    const workDays = new Set();
+    const shiftInfo = {};
     
+    if (typeof assignmentData !== 'undefined' && assignmentData) {
+        assignmentData.forEach(assignment => {
+            const startDate = new Date(assignment.assignment_start);
+            // Only use assignment_end if it exists, otherwise skip this assignment
+            if (!assignment.assignment_end) {
+                console.warn('Assignment without end date detected:', assignment);
+                return; // Skip assignments without end date
+            }
+            const endDate = new Date(assignment.assignment_end);
+            
+            // Add all days in the service period
+            let currentDay = new Date(startDate);
+            while (currentDay <= endDate) {
+                const dateStr = formatDateForKey(currentDay);
+                workDays.add(dateStr);
+                
+                // Store shift info for this date
+                if (!shiftInfo[dateStr]) {
+                    shiftInfo[dateStr] = {
+                        shift_type: assignment.shift_type,
+                        site_name: assignment.site_name,
+                        address: assignment.address,
+                        city: assignment.city
+                    };
+                }
+                
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+        });
+    }
+    
+    // Process leave data to create leave day mappings
+    const leaveDays = new Set();
+    const leaveInfo = {};
+    
+    if (typeof leaveDatesData !== 'undefined' && leaveDatesData) {
+        leaveDatesData.forEach(leave => {
+            const startDate = new Date(leave.start_date);
+            const endDate = new Date(leave.end_date);
+            
+            // Add all days in the leave period
+            let currentDay = new Date(startDate);
+            while (currentDay <= endDate) {
+                const dateStr = formatDateForKey(currentDay);
+                leaveDays.add(dateStr);
+                
+                // Store leave info for this date
+                if (!leaveInfo[dateStr]) {
+                    leaveInfo[dateStr] = {
+                        leave_type: leave.leave_type,
+                        reason: leave.reason
+                    };
+                }
+                
+                currentDay.setDate(currentDay.getDate() + 1);
+            }
+        });
+    }
+    
+    // Helper function to format date as YYYY-MM-DD
+    function formatDateForKey(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    
+    // Generate calendar for a specific month and year
     function generateCalendar(month, year) {
         const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
@@ -51,6 +94,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const todayDate = today.getDate();
         
         calendarBody.innerHTML = '';
+        
+        // Update month/year display
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+        currentMonthYearSpan.textContent = `${monthNames[month]} ${year}`;
         
         // Add previous month's trailing days
         const prevMonth = month === 0 ? 11 : month - 1;
@@ -71,14 +121,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 dayElement.classList.add('today');
             }
             
-            // Check if there's a shift on this day
+            // Check if there's a work shift on this day
             const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            if (shiftData[dateString]) {
-                dayElement.classList.add('has-shift');
-                const shiftIndicator = document.createElement('div');
-                shiftIndicator.className = 'shift-indicator';
-                shiftIndicator.textContent = 'Shift';
-                dayElement.appendChild(shiftIndicator);
+            
+            // Check if it's a leave day (red) - takes priority
+            if (leaveDays.has(dateString)) {
+                dayElement.classList.add('leave-day');
+            } 
+            // Check if it's a work day (green)
+            else if (workDays.has(dateString)) {
+                dayElement.classList.add('work-day');
             }
             
             // Add click event to show shift details
@@ -99,6 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Create a day element
     function createDayElement(day, isOtherMonth, month, year) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
@@ -114,12 +167,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add click event for other month days too
         if (isOtherMonth) {
             const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // Check if it's a leave day or work day even for other months
+            if (leaveDays.has(dateString)) {
+                dayElement.classList.add('leave-day');
+            } else if (workDays.has(dateString)) {
+                dayElement.classList.add('work-day');
+            }
+            
             dayElement.addEventListener('click', () => selectDate(dateString, day, month, year));
         }
         
         return dayElement;
     }
     
+    // Select a date and show details
     function selectDate(dateString, day, month, year) {
         // Remove previous selection
         const previousSelected = document.querySelector('.calendar-day.selected');
@@ -140,66 +202,229 @@ document.addEventListener('DOMContentLoaded', function() {
         const formattedDate = `${day} ${monthNames[month]} ${year}`;
         selectedDateSpan.textContent = formattedDate;
         
-        // Show shift details or no shift message
-        showShiftDetails(dateString);
+        // Fetch and show shift details via AJAX
+        fetchShiftDetails(dateString);
         
         selectedDay = {day, month, year, dateString};
     }
     
-    function showShiftDetails(dateString) {
-        const shift = shiftData[dateString];
-        const shiftInfoTemplate = document.getElementById('shiftInfoTemplate');
-        const noShiftTemplate = document.getElementById('noShiftTemplate');
+    // Fetch shift details from server
+    function fetchShiftDetails(dateString) {
+        console.log('Fetching shift details for:', dateString);
+        console.log('Base URL:', baseURL);
+        console.log('Full URL:', baseURL + '/premiseofficer/getShiftDetails');
         
-        // Clear current content
-        shiftContent.innerHTML = '';
+        // Show loading state
+        shiftContent.innerHTML = `
+            <div class="loading-state">
+                <span class="material-icons loading-icon">hourglass_empty</span>
+                <p>Loading shift details...</p>
+            </div>
+        `;
         
-        if (shift) {
-            // Clone and populate shift info template
-            const shiftInfo = shiftInfoTemplate.cloneNode(true);
-            shiftInfo.style.display = 'block';
-            shiftInfo.id = '';
-            
-            shiftInfo.querySelector('#shiftLocation').textContent = shift.location;
-            shiftInfo.querySelector('#shiftTime').textContent = shift.time;
-            shiftInfo.querySelector('#shiftType').textContent = shift.type;
-            shiftInfo.querySelector('#shiftSupervisor').textContent = shift.supervisor;
-            shiftInfo.querySelector('#shiftNotes').textContent = shift.notes;
-            
-            shiftContent.appendChild(shiftInfo);
-        } else {
-            // Clone and show no shift template
-            const noShift = noShiftTemplate.cloneNode(true);
-            noShift.style.display = 'block';
-            noShift.id = '';
-            
-            shiftContent.appendChild(noShift);
-        }
+        // Make AJAX request
+        fetch(baseURL + '/premiseofficer/getShiftDetails', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'date=' + encodeURIComponent(dateString)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response ok:', response.ok);
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.error('Error response body:', text);
+                    throw new Error('Network response was not ok: ' + response.status + ' - ' + text);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Shift details response:', data);
+            if (data.success) {
+                if (data.type === 'leave') {
+                    showLeaveDetails(data);
+                } else if (data.type === 'shift') {
+                    showShiftDetails(data);
+                } else {
+                    showNoShift();
+                }
+            } else {
+                console.error('Server returned error:', data.message);
+                showError(data.message || 'Failed to load shift details');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching shift details:', error);
+            showError('Failed to load shift details. Please try again.');
+        });
     }
     
-    function updateCalendar() {
-        const month = parseInt(monthSelect.value);
-        const year = parseInt(yearSelect.value);
-        generateCalendar(month, year);
-        
-        // Reset selection when changing months
+    // Show shift details
+    function showShiftDetails(data) {
+        shiftContent.innerHTML = `
+            <div class="shift-card">
+                <div class="shift-status">
+                    <span class="status-badge work-badge">Scheduled Work Day</span>
+                </div>
+                
+                <div class="shift-details-grid">
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">location_on</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Location</span>
+                            <span class="detail-value">${data.location}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">map</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Address</span>
+                            <span class="detail-value">${data.address}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">access_time</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Shift Time</span>
+                            <span class="detail-value">${data.time}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">work</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Shift Type</span>
+                            <span class="detail-value">${data.shift_type}</span>
+                        </div>
+                    </div>
+                    
+                    ${data.client ? `
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">person</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Client</span>
+                            <span class="detail-value">${data.client}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="shift-notes">
+                    <div class="notes-header">
+                        <span class="material-icons">note</span>
+                        <h4>Additional Notes</h4>
+                    </div>
+                    <p>${data.notes}</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Show leave details
+    function showLeaveDetails(data) {
+        shiftContent.innerHTML = `
+            <div class="leave-card">
+                <div class="leave-status">
+                    <span class="status-badge leave-badge">Approved Leave</span>
+                </div>
+                
+                <div class="leave-icon-container">
+                    <span class="material-icons leave-icon">beach_access</span>
+                </div>
+                
+                <div class="leave-details">
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">event_busy</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Leave Type</span>
+                            <span class="detail-value">${data.leave_type}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-item">
+                        <span class="material-icons detail-icon">description</span>
+                        <div class="detail-content">
+                            <span class="detail-label">Reason</span>
+                            <span class="detail-value">${data.reason}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="leave-message">
+                    <p>You are on approved leave for this date. Enjoy your time off!</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Show no shift message
+    function showNoShift() {
+        shiftContent.innerHTML = `
+            <div class="no-shift-card">
+                <span class="material-icons no-shift-icon">free_breakfast</span>
+                <h4>No Shift Scheduled</h4>
+                <p>You have no scheduled shifts for this date.</p>
+                <div class="day-off-badge">
+                    <span class="material-icons">beach_access</span>
+                    Day Off
+                </div>
+            </div>
+        `;
+    }
+    
+    // Show error message
+    function showError(message) {
+        shiftContent.innerHTML = `
+            <div class="error-state">
+                <span class="material-icons error-icon">error_outline</span>
+                <p>${message}</p>
+            </div>
+        `;
+    }
+    
+    // Navigate to previous month
+    function previousMonth() {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        generateCalendar(currentMonth, currentYear);
+        resetSelection();
+    }
+    
+    // Navigate to next month
+    function nextMonth() {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        generateCalendar(currentMonth, currentYear);
+        resetSelection();
+    }
+    
+    // Reset selection when changing months
+    function resetSelection() {
         selectedDay = null;
         selectedDateSpan.textContent = 'Select a date';
         shiftContent.innerHTML = `
             <div class="no-selection">
-                <div class="no-selection-icon">📅</div>
+                <span class="material-icons no-selection-icon">event</span>
                 <p>Click on a date to view your schedule</p>
             </div>
         `;
     }
     
     // Event listeners
-    monthSelect.addEventListener('change', updateCalendar);
-    yearSelect.addEventListener('change', updateCalendar);
+    prevMonthBtn.addEventListener('click', previousMonth);
+    nextMonthBtn.addEventListener('click', nextMonth);
     
     // Initialize calendar with current month
-    const now = new Date();
-    monthSelect.value = now.getMonth();
-    yearSelect.value = now.getFullYear();
-    updateCalendar();
+    generateCalendar(currentMonth, currentYear);
 });

@@ -1012,6 +1012,9 @@ function confirmAssignment() {
 }
 
 function assignOfficer(officerId, shiftType, officerName) {
+    // Get service period end date from package request
+    const servicePeriodEnd = '<?php echo $data['package_request']->end_date ?? ''; ?>';
+    
     // Create a temporary modal to show progress
     const progressModal = document.createElement('div');
     progressModal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
@@ -1029,7 +1032,8 @@ function assignOfficer(officerId, shiftType, officerName) {
         body: JSON.stringify({
             site_id: siteId,
             officer_id: officerId,
-            shift_type: shiftType
+            shift_type: shiftType,
+            assignment_end: servicePeriodEnd
         })
     })
     .then(response => response.json())

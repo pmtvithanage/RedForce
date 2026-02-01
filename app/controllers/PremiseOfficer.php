@@ -35,11 +35,108 @@ class PremiseOfficer extends Controller {
 
     // Schedule action
     public function schedule() {
+        $premiseofficer_id = $_SESSION['user_id'] ?? null;
+        
+        $assignments = [];
+        $leaveDates = [];
+        
+        if ($premiseofficer_id) {
+            $assignments = $this->premiseOfficerModel->getActiveAssignments($premiseofficer_id);
+            $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($premiseofficer_id);
+        }
+        
         $data = [
             'title' => 'Schedule',
-            'pageTitle' => 'My Schedule'
+            'pageTitle' => 'My Schedule',
+            'assignments' => $assignments,
+            'leaveDates' => $leaveDates
         ];
         $this->view('premiseofficer/v_schedule', $data);
+    }
+    
+    // AJAX endpoint to get shift details for a specific date
+    public function getShiftDetails() {
+        header('Content-Type: application/json');
+        
+        // Log the request for debugging
+        error_log('getShiftDetails called');
+        error_log('REQUEST_METHOD: ' . $_SERVER['REQUEST_METHOD']);
+        error_log('POST data: ' . print_r($_POST, true));
+        error_log('SESSION user_id: ' . ($_SESSION['user_id'] ?? 'not set'));
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $premiseofficer_id = $_SESSION['user_id'] ?? null;
+        $date = $_POST['date'] ?? null;
+        
+        if (!$premiseofficer_id || !$date) {
+            error_log('Missing parameters - premiseofficer_id: ' . ($premiseofficer_id ?? 'null') . ', date: ' . ($date ?? 'null'));
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters - ID: ' . ($premiseofficer_id ? 'OK' : 'MISSING') . ', Date: ' . ($date ? 'OK' : 'MISSING')]);
+            return;
+        }
+        
+        error_log('Fetching shift details for officer ' . $premiseofficer_id . ' on date ' . $date);
+        
+        // Get shift details
+        $shift = $this->premiseOfficerModel->getShiftDetailsForDate($premiseofficer_id, $date);
+        
+        error_log('Shift query result: ' . ($shift ? 'Found' : 'Not found'));
+        if ($shift) {
+            error_log('Shift details: ' . print_r($shift, true));
+        }
+        
+        // Check if it's a leave day using the model method
+        $leaveInfo = $this->premiseOfficerModel->getLeaveForDate($premiseofficer_id, $date);
+        
+        if ($leaveInfo) {
+            echo json_encode([
+                'success' => true,
+                'type' => 'leave',
+                'leave_type' => $leaveInfo->leave_type,
+                'reason' => $leaveInfo->reason
+            ]);
+            return;
+        }
+        
+        if ($shift) {
+            // Determine shift time based on shift type
+            $shiftTime = '';
+            switch ($shift->shift_type) {
+                case 'Day':
+                    $shiftTime = '08:00 AM - 06:00 PM';
+                    break;
+                case 'Night':
+                    $shiftTime = '06:00 PM - 06:00 AM';
+                    break;
+                case 'Full Time':
+                    $shiftTime = '08:00 AM - 06:00 PM';
+                    break;
+                case 'Flexible':
+                    $shiftTime = 'Flexible Hours';
+                    break;
+                default:
+                    $shiftTime = 'Not Specified';
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'type' => 'shift',
+                'location' => $shift->site_name,
+                'address' => $shift->address . ', ' . $shift->city,
+                'time' => $shiftTime,
+                'shift_type' => $shift->shift_type,
+                'client' => $shift->contact_person_name ?? '',
+                'notes' => $shift->notes ?? 'No additional notes'
+            ]);
+        } else {
+            echo json_encode([
+                'success' => true,
+                'type' => 'no_shift'
+            ]);
+        }
     }
 
     // Leave Requests

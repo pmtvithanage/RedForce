@@ -2372,6 +2372,7 @@ public function rejectLeave($id) {
         $siteId = $input['site_id'] ?? null;
         $officerId = $input['officer_id'] ?? null;
         $shiftType = $input['shift_type'] ?? 'Full Time';
+        $assignmentEnd = $input['assignment_end'] ?? null;
         $assignedBy = $_SESSION['user_id'] ?? null;
 
         if (!$siteId || !$officerId || !$assignedBy) {
@@ -2379,7 +2380,7 @@ public function rejectLeave($id) {
             return;
         }
 
-        $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType);
+        $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType, $assignmentEnd);
         echo json_encode($result);
     }
 

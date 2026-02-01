@@ -88,4 +88,75 @@ class M_premiseofficer {
         return $this->db->resultSet();
     }
     
+    // Get active site assignments for a premise officer
+    public function getActiveAssignments($premiseofficer_id) {
+        $this->db->query("SELECT 
+                            osa.id,
+                            osa.site_id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.assignment_end,
+                            osa.notes,
+                            s.site_name,
+                            s.address,
+                            s.city,
+                            c.contact_person_name
+                         FROM officer_site_assignments osa
+                         INNER JOIN sites s ON osa.site_id = s.id
+                         LEFT JOIN Clients c ON s.client_id = c.id
+                         WHERE osa.officer_id = :premiseofficer_id 
+                         AND osa.status = 'Active'
+                         ORDER BY osa.assignment_start DESC");
+        $this->db->bind(':premiseofficer_id', $premiseofficer_id);
+        return $this->db->resultSet();
+    }
+    
+    // Get approved leave dates for a premise officer
+    public function getApprovedLeaveDates($premiseofficer_id) {
+        $this->db->query("SELECT start_date, end_date, leave_type, reason 
+                         FROM leave_requests 
+                         WHERE premiseofficer_id = :premiseofficer_id 
+                         AND status = 'Approved'
+                         ORDER BY start_date ASC");
+        $this->db->bind(':premiseofficer_id', $premiseofficer_id);
+        return $this->db->resultSet();
+    }
+    
+    // Get shift details for a specific date
+    public function getShiftDetailsForDate($premiseofficer_id, $date) {
+        $this->db->query("SELECT 
+                            osa.id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.assignment_end,
+                            osa.notes,
+                            s.site_name,
+                            s.address,
+                            s.city,
+                            s.phone_number,
+                            c.contact_person_name
+                         FROM officer_site_assignments osa
+                         INNER JOIN sites s ON osa.site_id = s.id
+                         LEFT JOIN Clients c ON s.client_id = c.id
+                         WHERE osa.officer_id = :premiseofficer_id 
+                         AND osa.status = 'Active'
+                         AND :date BETWEEN osa.assignment_start 
+                         AND IFNULL(osa.assignment_end, '2099-12-31')");
+        $this->db->bind(':premiseofficer_id', $premiseofficer_id);
+        $this->db->bind(':date', $date);
+        return $this->db->single();
+    }
+    
+    // Check if a specific date is a leave day for the premise officer
+    public function getLeaveForDate($premiseofficer_id, $date) {
+        $this->db->query("SELECT leave_type, reason 
+                         FROM leave_requests 
+                         WHERE premiseofficer_id = :premiseofficer_id 
+                         AND :date BETWEEN start_date AND end_date
+                         AND status = 'Approved'");
+        $this->db->bind(':premiseofficer_id', $premiseofficer_id);
+        $this->db->bind(':date', $date);
+        return $this->db->single();
+    }
+    
 }
