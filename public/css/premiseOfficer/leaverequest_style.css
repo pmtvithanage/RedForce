@@ -1,3 +1,11 @@
+body {
+    background-color: #f9f9f9;
+}
+
+.main-content {
+    background-color: #f9f9f9;
+    min-height: 100vh;
+}
 
 /* Request Leave Section */
 .request-leave-section {
@@ -253,7 +261,7 @@
 
 /* Submit Button */
 .submit-btn {
-    background-color: #6c757d;
+    background-color: #a40000;
     color: white;
     border: none;
     padding: 12px 24px;
@@ -262,10 +270,13 @@
     font-weight: 500;
     cursor: pointer;
     margin-top: 10px;
+    transition: all 0.3s ease;
 }
 
 .submit-btn:hover {
-    background-color: #5a6268;
+    background-color: #b50000;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(164, 0, 0, 0.3);
 }
 
 /* Leave History Section */

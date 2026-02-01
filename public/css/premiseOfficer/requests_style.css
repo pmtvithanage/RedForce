@@ -1,9 +1,14 @@
 /* Leave Request Form Styles - Based on Client Request Form */
 
+body {
+    background-color: #f9f9f9;
+}
+
 .main-content {
     margin-left: 0;
     padding: 20px;
     min-height: 100vh;
+    background-color: #f9f9f9;
 }
 
 .request-services-container {

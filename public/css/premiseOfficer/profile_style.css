@@ -1,7 +1,7 @@
 /* Profile Page Styles */
 .main-content {
     padding: 30px;
-    background-color: #FFEAEA;
+    background-color: #f9f9f9;
     min-height: calc(100vh - 60px);
     margin-left: 0px;
 }
@@ -207,8 +207,8 @@
 }
 
 .action-btn:hover {
-    background: #d32f2f;
-    border-color: #d32f2f;
+    background: #a40000;
+    border-color: #a40000;
 }
 
 .action-btn:hover .material-icons {
@@ -269,7 +269,7 @@
 }
 
 .btn-primary {
-    background: #d32f2f;
+    background: #a40000;
     color: white;
     padding: 10px 24px;
     border-radius: 6px;
@@ -283,9 +283,9 @@
 }
 
 .btn-primary:hover {
-    background: #b71c1c;
+    background: #b50000;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 4px 12px rgba(164, 0, 0, 0.3);
 }
 
 /* Modal Styles */
