@@ -1476,6 +1476,28 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         ");
         return $this->db->single();
     }
+
+    /**
+     * Get recent incidents with limit
+     */
+    public function getRecentIncidents($limit = 10) {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                u.name as officer_name,
+                u.role as officer_role,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            LEFT JOIN Users u ON ir.user_id = u.id
+            ORDER BY ir.created_at DESC
+            LIMIT :limit
+        ");
+        $this->db->bind(':limit', $limit);
+        return $this->db->resultSet();
+    }
     
     /**
      * Get incident by ID

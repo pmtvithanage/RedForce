@@ -2050,6 +2050,29 @@ public function rejectLeave($id) {
         ];
         $this->view('admin/incidents/v_incidents', $data);
     }
+
+    public function incidentReports() {
+        // Get comprehensive incident analytics data
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        $stats = $this->adminModel->getIncidentStats();
+        $recentIncidents = $this->adminModel->getRecentIncidents(1000);
+        
+        $data = [
+            'title' => 'Incident Reports & Analytics',
+            'pageTitle' => 'Incident Reports & Analytics',
+            'chartData' => $chartData,
+            'stats' => $stats,
+            'recentIncidents' => $recentIncidents
+        ];
+        $this->view('admin/reports/v_incidents', $data);
+    }
+
+    public function getIncidentChartData() {
+        // AJAX endpoint for chart data
+        header('Content-Type: application/json');
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        echo json_encode($chartData);
+    }
     
     public function viewIncident($id) {
         // Get incident details
@@ -2229,9 +2252,23 @@ public function rejectLeave($id) {
     }
 
     public function incidentsreports() {
+        // Get comprehensive incident analytics data
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        $stats = $this->adminModel->getIncidentStats();
+        
+        // Get recent incidents for the report
+        $incidents = $this->adminModel->getAllIncidents();
+        
+        // Get all sites for filter dropdown
+        $sites = $this->adminModel->getAllSites();
+        
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Incidents Reports'
+            'pageTitle' => 'Incidents Reports',
+            'chartData' => $chartData,
+            'stats' => $stats,
+            'incidents' => $incidents,
+            'sites' => $sites
         ];
         $this->view('admin/reports/v_incidents', $data);  
     }
