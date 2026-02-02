@@ -813,6 +813,9 @@ class Supervisor extends Controller {
                         'activity_details' => "Reported incident: {$data['incident_type']} at site ID {$data['site_id']}"
                     ]);
                     
+                    // Send notifications to mobile riders and admins
+                    $this->sendIncidentNotifications($userId, $data['site_id'], $data['incident_type'], $data['priority']);
+                    
                     flash('incident_message', 'Incident reported successfully!', 'alert alert-success');
                     redirect('supervisor/incidents');
                 } else {
@@ -943,6 +946,9 @@ class Supervisor extends Controller {
                     'activity_titel' => 'Added Review to Incident',
                     'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
                 ]);
+                
+                // Send notifications to related users
+                $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
                 
                 flash('incident_message', 'Review added successfully!', 'alert alert-success');
             } else {
@@ -1145,6 +1151,158 @@ class Supervisor extends Controller {
             if ($user_id) {
                 $this->userModel->setUserOffline($user_id);
             }
+        }
+    }
+
+    /**
+     * Send notifications when an incident is reported
+     * Sends to all admins and mobile riders assigned to the site
+     */
+    private function sendIncidentNotifications($supervisorId, $siteId, $incidentType, $priority) {
+        // Get supervisor details
+        $supervisor = $this->userModel->getUserById($supervisorId);
+        $supervisorName = $supervisor->name ?? 'A supervisor';
+        
+        // Get site name (if available)
+        $siteName = "Site ID: {$siteId}";
+        
+        // Prepare notification details
+        $notificationTitle = "New Incident Reported";
+        $notificationMessage = "{$supervisorName} reported a {$incidentType} incident at {$siteName}. Priority: {$priority}";
+        $notificationLink = URL_ROOT . '/admin/incidents'; // Admins can view all incidents
+        $notificationType = ($priority == 'High' || $priority == 'Critical') ? 'warning' : 'info';
+        $notificationIcon = 'warning';
+        
+        // 1. Send notifications to all admins
+        $adminModel = $this->model('M_admin');
+        $admins = $adminModel->getAllAdmins();
+        
+        if ($admins && is_array($admins)) {
+            foreach ($admins as $admin) {
+                $this->notificationModel->insertNotification(
+                    $admin->id,
+                    $notificationType,
+                    $notificationTitle,
+                    $notificationMessage,
+                    $notificationLink,
+                    $notificationIcon,
+                    $supervisorId
+                );
+            }
+        }
+        
+        // 2. Send notifications to mobile riders assigned to the supervisor's site
+        $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
+        
+        if ($mobileRiders && is_array($mobileRiders)) {
+            $riderNotificationLink = URL_ROOT . '/MobileRider/incidents'; // Mobile riders view
+            
+            foreach ($mobileRiders as $rider) {
+                $this->notificationModel->insertNotification(
+                    $rider->user_id,
+                    $notificationType,
+                    $notificationTitle,
+                    $notificationMessage,
+                    $riderNotificationLink,
+                    $notificationIcon,
+                    $supervisorId
+                );
+            }
+        }
+    }
+
+    /**
+     * Send notifications when an incident review is added
+     * For Supervisor: Notify admins + mobile riders of the site
+     */
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+        try {
+            // Get incident details
+            $incident = $this->supervisorModel->getIncidentById($incidentId);
+            
+            if (!$incident) {
+                error_log("Incident not found: {$incidentId}");
+                return;
+            }
+            
+            // Get reviewer details
+            $reviewer = $this->userModel->getUserById($reviewerId);
+            $reviewerName = $reviewer->name ?? 'A user';
+            $reviewerRole = $reviewer->role ?? 'supervisor';
+            
+            // Prepare notification details
+            $notificationTitle = "New Review on Incident #{$incidentId}";
+            $notificationMessage = "{$reviewerName} (Supervisor) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
+            $notificationType = 'info';
+            $notificationIcon = 'comment';
+            
+            // Collect all users to notify (use array to avoid duplicates)
+            $usersToNotify = [];
+            
+            // SUPERVISOR adds review: Notify admins + mobile riders of the site
+            
+            // 1. Notify all admins
+            try {
+                $adminModel = $this->model('M_admin');
+                $admins = $adminModel->getAllAdmins();
+                
+                if ($admins && is_array($admins)) {
+                    foreach ($admins as $admin) {
+                        if (isset($admin->id) && $admin->id != $reviewerId) {
+                            $usersToNotify[$admin->id] = [
+                                'link' => URL_ROOT . '/admin/incidents'
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting admins for notification: " . $e->getMessage());
+            }
+            
+            // 2. Notify mobile riders assigned to the incident site
+            if (isset($incident->site_id) && isset($incident->user_id)) {
+                try {
+                    $mobileRiders = $this->supervisorModel->getSiteMobileRiders($incident->user_id);
+                    
+                    if ($mobileRiders && is_array($mobileRiders)) {
+                        foreach ($mobileRiders as $rider) {
+                            if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
+                                $usersToNotify[$rider->user_id] = [
+                                    'link' => URL_ROOT . '/MobileRider/incidents'
+                                ];
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log("Error getting mobile riders for notification: " . $e->getMessage());
+                }
+            }
+            
+            // Send notifications to all collected users
+            $sentCount = 0;
+            foreach ($usersToNotify as $userId => $data) {
+                try {
+                    $result = $this->notificationModel->insertNotification(
+                        $userId,
+                        $notificationType,
+                        $notificationTitle,
+                        $notificationMessage,
+                        $data['link'],
+                        $notificationIcon,
+                        $reviewerId
+                    );
+                    if ($result) {
+                        $sentCount++;
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending notification to user {$userId}: " . $e->getMessage());
+                }
+            }
+            
+            error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by supervisor");
+            
+        } catch (Exception $e) {
+            error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
         }
     }
 

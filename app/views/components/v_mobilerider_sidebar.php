@@ -103,7 +103,7 @@ if (isset($_SESSION['user_id'])) {
       <?php endif; ?>
     </div>
     <div class="notification-footer">
-      <a href="<?php echo URL_ROOT; ?>/mobilerider/notifications" class="btn-view-all">View All Notifications</a>
+      <a href="<?php echo URL_ROOT; ?>/MobileRider/notifications" class="btn-view-all">View All Notifications</a>
     </div>
   </div>
 

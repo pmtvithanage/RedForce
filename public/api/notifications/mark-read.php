@@ -1,6 +1,6 @@
 <?php
 /**
- * API endpoint to delete a notification
+ * API endpoint to mark a notification as read
  */
 
 // Start session
@@ -41,17 +41,17 @@ $userId = $_SESSION['user_id'];
 // Initialize model
 $notificationModel = new M_notifications();
 
-// Delete notification (with user verification for security)
-$result = $notificationModel->deleteNotification($notificationId, $userId);
+// Mark notification as read (with user verification for security)
+$result = $notificationModel->markAsRead($notificationId, $userId);
 
 if ($result) {
     echo json_encode([
         'success' => true,
-        'message' => 'Notification deleted successfully'
+        'message' => 'Notification marked as read'
     ]);
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to delete notification'
+        'message' => 'Failed to mark notification as read'
     ]);
 }

@@ -6,19 +6,24 @@
 <?php elseif($data['role'] == 'caretaker'): ?>
     <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?> 
 
-<?php elseif($data['role'] == 'mobilerider'): ?>
+<?php elseif($data['role'] == 'mobile rider'): ?>
     <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>  
 
-<?php elseif($data['role'] == 'premisofficer'): ?>
+<?php elseif($data['role'] == 'premise officer'): ?>
     <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>   
 
-<?php elseif($data['role'] == 'premisofficer' && $data['status'] == 'supervisor'): ?>
+<?php elseif($data['role'] == 'supervisor'): ?>
     <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
 
 <?php elseif($data['role'] == 'client'): ?>
     <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>  
 
 <?php endif; ?>
+
+      <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
+        Back
+    </button>
 
 <!-- Notifications View - Common for All Users -->
 <div class="notifications-container">
@@ -29,35 +34,70 @@
         <?php endif; ?>
     </div>
 
-    <div class="notifications-content">
+    <div class="notifications-content">        
         <?php if(!empty($data['notifications']) && is_array($data['notifications'])): ?>
             <div class="notifications-list">
                 <?php foreach($data['notifications'] as $notification): ?>
-                    <div class="notification-item <?php echo !empty($notification->is_read) ? 'read' : 'unread'; ?>" 
+                    <div class="notification-item <?php echo !empty($notification->is_read) ? 'read' : 'unread'; ?> <?php echo htmlspecialchars($type); ?>" 
                          data-notification-id="<?php echo htmlspecialchars($notification->id ?? ''); ?>">
                         
                         <div class="notification-icon">
                             <?php 
                                 $type = $notification->type ?? 'info';
-                                $iconClass = '';
-                                switch($type) {
-                                    case 'success':
-                                        $iconClass = 'fa-check-circle';
-                                        break;
-                                    case 'warning':
-                                        $iconClass = 'fa-exclamation-triangle';
-                                        break;
-                                    case 'error':
-                                        $iconClass = 'fa-times-circle';
-                                        break;
-                                    case 'message':
-                                        $iconClass = 'fa-envelope';
-                                        break;
-                                    default:
-                                        $iconClass = 'fa-bell';
+                                $title = $notification->title ?? '';
+                                $message = $notification->message ?? '';
+                                
+                                // Debug output (remove this after testing)
+                                // echo "<!-- DEBUG: Type: $type, Title: $title, Message: " . substr($message, 0, 30) . "... -->";
+                                
+                                // Determine icon based on notification content
+                                $iconClass = 'fa-bell'; // default
+                                
+                                // Check for specific notification types based on title/message content
+                                if (stripos($title, 'incident') !== false || stripos($message, 'incident') !== false) {
+                                    if (stripos($title, 'review') !== false || stripos($message, 'review') !== false) {
+                                        $iconClass = 'fa-comment-dots'; // Review/comment icon
+                                    } else {
+                                        $iconClass = 'fa-exclamation-triangle'; // Incident report icon
+                                    }
+                                } elseif (stripos($title, 'admin') !== false || stripos($message, 'admin') !== false) {
+                                    $iconClass = 'fa-user-shield'; // Admin related
+                                } elseif (stripos($title, 'officer') !== false || stripos($message, 'officer') !== false) {
+                                    $iconClass = 'fa-user-check'; // Officer related
+                                } elseif (stripos($title, 'client') !== false || stripos($message, 'client') !== false) {
+                                    $iconClass = 'fa-user-plus'; // Client related
+                                } elseif (stripos($title, 'mobile rider') !== false || stripos($message, 'mobile rider') !== false) {
+                                    $iconClass = 'fa-motorcycle'; // Mobile rider related
+                                } elseif (stripos($title, 'supervisor') !== false || stripos($message, 'supervisor') !== false) {
+                                    $iconClass = 'fa-user-tie'; // Supervisor related
+                                } elseif (stripos($title, 'welcome') !== false || stripos($message, 'welcome') !== false) {
+                                    $iconClass = 'fa-handshake'; // Welcome messages
+                                } elseif (stripos($title, 'rank') !== false || stripos($message, 'rank') !== false) {
+                                    $iconClass = 'fa-star'; // Rank update icon
+                                } elseif (stripos($title, 'password') !== false || stripos($message, 'password') !== false) {
+                                    $iconClass = 'fa-key'; // Password related
+                                } elseif (stripos($title, 'leave') !== false || stripos($message, 'leave') !== false) {
+                                    $iconClass = 'fa-calendar-times'; // Leave requests
+                                } elseif (stripos($title, 'attendance') !== false || stripos($message, 'attendance') !== false) {
+                                    $iconClass = 'fa-clipboard-check'; // Attendance related
+                                } elseif (stripos($title, 'message') !== false || stripos($message, 'message') !== false) {
+                                    $iconClass = 'fa-envelope'; // Messages
+                                } elseif ($type === 'success') {
+                                    $iconClass = 'fa-check-circle';
+                                } elseif ($type === 'warning') {
+                                    $iconClass = 'fa-exclamation-triangle';
+                                } elseif ($type === 'error') {
+                                    $iconClass = 'fa-times-circle';
+                                } elseif ($type === 'info') {
+                                    $iconClass = 'fa-info-circle';
                                 }
+                                
+                                // Debug output (remove this after testing)
+                                // echo "<!-- DEBUG: Selected icon: $iconClass -->";
                             ?>
-                            <i class="fas <?php echo $iconClass; ?>"></i>
+                            <i class="fas <?php echo $iconClass; ?> notification-icon" style="font-size: 20px; font-family: 'Font Awesome 6 Free', sans-serif;"></i>
+                            <!-- Fallback text if FontAwesome doesn't load -->
+                            <noscript><span style="font-size: 12px; color: #666;">[<?php echo strtoupper(str_replace(['fa-', '-'], ['', ' '], $iconClass)); ?>]</span></noscript>
                         </div>
 
                         <div class="notification-content">
@@ -87,11 +127,11 @@
                         <div class="notification-actions">
                             <?php if(empty($notification->is_read)): ?>
                                 <button class="mark-read-btn" onclick="markAsRead(<?php echo $notification->id; ?>)" title="Mark as read">
-                                    <i class="fas fa-check"></i>
+                                    <i class="fas fa-check"></i> Mark as Read
                                 </button>
                             <?php endif; ?>
                             <button class="delete-notification-btn" onclick="deleteNotification(<?php echo $notification->id; ?>)" title="Delete">
-                                <i class="fas fa-trash"></i>
+                                <i class="fas fa-trash"></i> Delete
                             </button>
                         </div>
                     </div>
@@ -140,7 +180,7 @@
 .notifications-container {
     padding: 20px;
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 20px;
 }
 
 .notifications-header {
@@ -212,12 +252,35 @@
     justify-content: center;
     border-radius: 50%;
     background-color: #f5f5f5;
+    transition: all 0.3s ease;
+}
+
+.notification-item:hover .notification-icon {
+    transform: scale(1.1);
 }
 
 .notification-icon i {
     font-size: 20px;
     color: #2196F3;
 }
+
+/* Specific icon colors based on notification type */
+.notification-icon .fa-exclamation-triangle { color: #ff9800; } /* Incident reports - orange */
+.notification-icon .fa-comment-dots { color: #2196F3; } /* Reviews - blue */
+.notification-icon .fa-user-shield { color: #9c27b0; } /* Admin - purple */
+.notification-icon .fa-user-check { color: #4caf50; } /* Officer - green */
+.notification-icon .fa-user-plus { color: #00bcd4; } /* Client - cyan */
+.notification-icon .fa-motorcycle { color: #ff5722; } /* Mobile rider - deep orange */
+.notification-icon .fa-user-tie { color: #795548; } /* Supervisor - brown */
+.notification-icon .fa-handshake { color: #8bc34a; } /* Welcome - light green */
+.notification-icon .fa-key { color: #607d8b; } /* Password - blue grey */
+.notification-icon .fa-calendar-times { color: #e91e63; } /* Leave - pink */
+.notification-icon .fa-clipboard-check { color: #3f51b5; } /* Attendance - indigo */
+.notification-icon .fa-envelope { color: #2196F3; } /* Messages - blue */
+.notification-icon .fa-check-circle { color: #4caf50; } /* Success - green */
+.notification-icon .fa-times-circle { color: #f44336; } /* Error - red */
+.notification-icon .fa-info-circle { color: #2196F3; } /* Info - blue */
+.notification-icon .fa-bell { color: #9e9e9e; } /* Default - grey */
 
 .notification-content {
     flex-grow: 1;
@@ -266,12 +329,16 @@
 }
 
 .mark-read-btn, .delete-notification-btn {
-    padding: 6px 10px;
+    padding: 8px 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
-    font-size: 14px;
+    font-size: 13px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .mark-read-btn {
@@ -360,6 +427,143 @@
         flex-direction: row;
     }
 }
+
+/* Custom Delete Confirmation Modal Styles */
+.delete-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+}
+
+.delete-modal-content {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    margin: 20px;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.delete-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 20px 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.delete-modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.delete-modal-close {
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.delete-modal-close:hover {
+    color: #666;
+}
+
+.delete-modal-body {
+    padding: 20px;
+    text-align: center;
+}
+
+.delete-modal-icon {
+    font-size: 48px;
+    color: #f44336;
+    margin-bottom: 15px;
+}
+
+.delete-modal-body p {
+    margin: 10px 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.delete-modal-warning {
+    color: #f44336 !important;
+    font-weight: 500 !important;
+}
+
+.delete-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.delete-modal-cancel,
+.delete-modal-confirm {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.delete-modal-cancel {
+    background-color: #f5f5f5;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.delete-modal-cancel:hover {
+    background-color: #e0e0e0;
+    color: #333;
+}
+
+.delete-modal-confirm {
+    background-color: #f44336;
+    color: white;
+}
+
+.delete-modal-confirm:hover {
+    background-color: #d32f2f;
+}
+
+@media (max-width: 480px) {
+    .delete-modal-content {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+    
+    .delete-modal-footer {
+        flex-direction: column;
+    }
+    
+    .delete-modal-cancel,
+    .delete-modal-confirm {
+        width: 100%;
+    }
+}
 </style>
 
 <script>
@@ -409,9 +613,38 @@ function markAllAsRead() {
 function deleteNotification(notificationId) {
     if(!notificationId) return;
     
-    if(!confirm('Are you sure you want to delete this notification?')) {
-        return;
-    }
+    // Show custom confirmation modal
+    showDeleteConfirmation(notificationId);
+}
+
+// Helper function for time elapsed
+<?php if(!function_exists('time_elapsed_string')): ?>
+function time_elapsed_string(datetime) {
+    // This is a JavaScript version, but ideally use PHP function
+    return datetime;
+}
+<?php endif; ?>
+
+// Custom delete confirmation modal functions
+let notificationToDelete = null;
+
+function showDeleteConfirmation(notificationId) {
+    notificationToDelete = notificationId;
+    const modal = document.getElementById('deleteConfirmationModal');
+    modal.style.display = 'flex';
+}
+
+function hideDeleteConfirmation() {
+    const modal = document.getElementById('deleteConfirmationModal');
+    modal.style.display = 'none';
+    notificationToDelete = null;
+}
+
+function confirmDelete() {
+    if (!notificationToDelete) return;
+    
+    const notificationId = notificationToDelete;
+    hideDeleteConfirmation();
     
     fetch('<?php echo URL_ROOT; ?>/api/notifications/delete.php', {
         method: 'POST',
@@ -434,21 +667,47 @@ function deleteNotification(notificationId) {
                     }
                 }, 300);
             }
+        } else {
+            alert('Failed to delete notification. Please try again.');
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while deleting the notification.');
+    });
 }
 
-// Helper function for time elapsed
-<?php if(!function_exists('time_elapsed_string')): ?>
-function time_elapsed_string(datetime) {
-    // This is a JavaScript version, but ideally use PHP function
-    return datetime;
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('deleteConfirmationModal');
+    if (event.target == modal) {
+        hideDeleteConfirmation();
+    }
 }
-<?php endif; ?>
 </script>
 
     </main>
+    </div>
+
+    <!-- Custom Delete Confirmation Modal -->
+    <div id="deleteConfirmationModal" class="delete-modal" style="display: none;">
+        <div class="delete-modal-content">
+            <div class="delete-modal-header">
+                <h3>Delete Notification</h3>
+                <span class="delete-modal-close" onclick="hideDeleteConfirmation()">&times;</span>
+            </div>
+            <div class="delete-modal-body">
+                <div class="delete-modal-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <p>Are you sure you want to delete this notification?</p>
+                <p class="delete-modal-warning">This action cannot be undone.</p>
+            </div>
+            <div class="delete-modal-footer">
+                <button class="delete-modal-cancel" onclick="hideDeleteConfirmation()">Cancel</button>
+                <button class="delete-modal-confirm" onclick="confirmDelete()">Delete</button>
+            </div>
+        </div>
     </div>
 
     <div class="backdrop" id="backdrop" hidden></div>

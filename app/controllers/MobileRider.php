@@ -1351,6 +1351,9 @@ class MobileRider extends Controller
                     'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
                 ]);
                 
+                // Send notifications to related users
+                $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
+                
                 flash('incident_message', 'Review added successfully!', 'alert alert-success');
             } else {
                 flash('incident_message', 'Error adding review. Please try again.', 'alert alert-danger');
@@ -1359,6 +1362,88 @@ class MobileRider extends Controller
             redirect('MobileRider/viewIncident/' . $incidentId);
         } else {
             redirect('MobileRider/incidents');
+        }
+    }
+
+    /**
+     * Send notifications when a mobile rider adds an incident review
+     * For Mobile Rider: Notify admins + reported supervisor
+     */
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+        try {
+            // Get incident details
+            $incident = $this->mobileRiderModel->getIncidentById($incidentId);
+            
+            if (!$incident) {
+                error_log("Incident not found: {$incidentId}");
+                return;
+            }
+            
+            // Get reviewer details
+            $reviewer = $this->userModel->getUserById($reviewerId);
+            $reviewerName = $reviewer->name ?? 'A user';
+            
+            // Prepare notification details
+            $notificationTitle = "New Review on Incident #{$incidentId}";
+            $notificationMessage = "{$reviewerName} (Mobile Rider) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
+            $notificationType = 'info';
+            $notificationIcon = 'comment';
+            
+            // Collect all users to notify (use array to avoid duplicates)
+            $usersToNotify = [];
+            
+            // MOBILE RIDER adds review: Notify admins + reported supervisor
+            
+            // 1. Notify all admins
+            try {
+                $adminModel = $this->model('M_admin');
+                $admins = $adminModel->getAllAdmins();
+                
+                if ($admins && is_array($admins)) {
+                    foreach ($admins as $admin) {
+                        if (isset($admin->id) && $admin->id != $reviewerId) {
+                            $usersToNotify[$admin->id] = [
+                                'link' => URL_ROOT . '/admin/incidents'
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting admins for notification: " . $e->getMessage());
+            }
+            
+            // 2. Notify the supervisor who reported the incident (if not the reviewer)
+            if (isset($incident->user_id) && $incident->user_id != $reviewerId) {
+                $usersToNotify[$incident->user_id] = [
+                    'link' => URL_ROOT . '/supervisor/viewIncident/' . $incidentId
+                ];
+            }
+            
+            // Send notifications to all collected users
+            $sentCount = 0;
+            foreach ($usersToNotify as $userId => $data) {
+                try {
+                    $result = $this->notificationModel->insertNotification(
+                        $userId,
+                        $notificationType,
+                        $notificationTitle,
+                        $notificationMessage,
+                        $data['link'],
+                        $notificationIcon,
+                        $reviewerId
+                    );
+                    if ($result) {
+                        $sentCount++;
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending notification to user {$userId}: " . $e->getMessage());
+                }
+            }
+            
+            error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by mobile rider");
+            
+        } catch (Exception $e) {
+            error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
         }
     }
 }

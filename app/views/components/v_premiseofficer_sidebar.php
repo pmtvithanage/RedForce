@@ -100,7 +100,7 @@ if (isset($_SESSION['user_id'])) {
       <?php endif; ?>
     </div>
     <div class="notification-footer">
-      <a href="<?php echo URL_ROOT; ?>/premiseofficer/notifications" class="btn-view-all">View All Notifications</a>
+      <a href="<?php echo URL_ROOT; ?>/PremiseOfficer/notifications" class="btn-view-all">View All Notifications</a>
     </div>
   </div>
 

@@ -6,6 +6,7 @@ class Admin extends Controller {
     private $chartModel;
     private $messageModel;
     private $notificationModel;
+    private $db;
     
 
     public function __construct() {
@@ -15,6 +16,7 @@ class Admin extends Controller {
         $this->homeModel = $this->model('M_home');
         $this->messageModel = $this->model('M_message');
         $this->notificationModel = $this->model('M_notifications');
+        $this->db = new Database();
         // Load route helper
         require_once APP_ROOT . '/helpers/route_helper.php';
         
@@ -673,7 +675,6 @@ class Admin extends Controller {
             $this->adminModel->insertRecentActivity($title, $description, $type);
             
             // Get numeric user ID for notification
-            $this->db = new Database();
             $this->db->query("SELECT id FROM Users WHERE userID = :userID");
             $this->db->bind(':userID', $result['userID']);
             $userRow = $this->db->single();
@@ -683,9 +684,9 @@ class Admin extends Controller {
                 // Send notification to officer
                 $this->notificationModel->insertNotification(
                     $numericUserId,
-                    'registration',
+                    'success',
                     'Application Approved',
-                    'Congratulations! Your ' . $role_name . ' application has been approved.',
+                    'Congratulations! Your ' . $role_name . ' application has been approved. Welcome to RED FORCE!',
                     '/' . strtolower(str_replace(' ', '', $role_name)) . '/dashboard',
                     'check_circle',
                     $adminId
@@ -735,7 +736,7 @@ class Admin extends Controller {
             $adminId = $_SESSION['user_id'] ?? 1;
             $this->notificationModel->insertNotification(
                 $id,
-                'alert',
+                'error',
                 'Application Rejected',
                 'Your officer application has been rejected. Please contact HR for more information.',
                 '/users/login',
@@ -806,7 +807,6 @@ class Admin extends Controller {
     
     if ($result && isset($result['success']) && $result['success']) {
         // Get client details for email
-        $this->db = new Database();
         $this->db->query("SELECT * FROM client_requests WHERE id = :id");
         $this->db->bind(':id', $clientId);
         $clientRequest = $this->db->single();
@@ -821,7 +821,7 @@ class Admin extends Controller {
         if (isset($result['id']) && $result['id']) {
             $this->notificationModel->insertNotification(
                 $result['id'],
-                'registration',
+                'success',
                 'Registration Approved',
                 'Your registration has been approved. Welcome to RED FORCE!',
                 '/client/dashboard',
@@ -871,7 +871,7 @@ class Admin extends Controller {
             $adminId = $_SESSION['user_id'] ?? 1;
             $this->notificationModel->insertNotification(
                 $clientId,
-                'alert',
+                'error',
                 'Registration Rejected',
                 'Your registration has been rejected. Please contact support for more information.',
                 '/client/dashboard',
@@ -2107,6 +2107,14 @@ public function rejectLeave($id) {
                 $userId
             );
             
+            // Send notifications to related users
+            $reviewData = [
+                'review_title' => $reviewTitle,
+                'review_type' => $reviewType,
+                'review_details' => $reviewDetails
+            ];
+            $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
+            
             flash('incident_message', 'Review added successfully and status updated to In Progress', 'alert-success');
         } else {
             flash('incident_message', 'Failed to add review. Please try again.', 'alert-danger');
@@ -2536,6 +2544,115 @@ public function rejectLeave($id) {
                 $description = "Officer ID: $officerId - $field changed to: $value";
                 $this->adminModel->insertRecentActivity($title, $description, 'officer');
                 
+                // Send notification to officer for rank updates
+                if ($field === 'rank') {
+                    // Convert role name to role code if needed
+                    $roleCode = $role;
+                    $roleLower = strtolower($role);
+                    if ($roleLower === 'premise officer' || $roleLower === 'premiseofficer') {
+                        $roleCode = 'po';
+                    } elseif ($roleLower === 'mobile rider' || $roleLower === 'mobilerider') {
+                        $roleCode = 'mr';
+                    } elseif ($roleLower === 'care taker' || $roleLower === 'caretaker') {
+                        $roleCode = 'ct';
+                    }
+                    
+                    // Get officer details for notification based on role
+                    $officer = null;
+                    
+                    switch($roleCode) {
+                        case 'po':
+                            $officer = $this->adminModel->getPOById($officerId);
+                            $roleName = 'premiseofficer';
+                            
+                            // Fallback: If not found in premise_officers table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Premise Officer'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    // Try to find in premise_officers by userID
+                                    $this->db->query("SELECT * FROM premise_officers WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    // If still not found, create minimal object for notification
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                        case 'mr':
+                            $officer = $this->adminModel->getMRById($officerId);
+                            $roleName = 'mobilerider';
+                            
+                            // Fallback: If not found in mobile_riders table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Mobile Rider'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    $this->db->query("SELECT * FROM mobile_riders WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                        case 'ct':
+                            $officer = $this->adminModel->getCTById($officerId);
+                            $roleName = 'caretaker';
+                            
+                            // Fallback: If not found in care_takers table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Care Taker'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    $this->db->query("SELECT * FROM care_takers WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                    
+                    if ($officer) {
+                        // Get numeric user ID for notification
+                        $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+                        $this->db->bind(':userID', $officer->userID);
+                        $userRow = $this->db->single();
+                        $numericUserId = $userRow ? $userRow->id : null;
+                        
+                        if ($numericUserId) {
+                            // Send notification to officer about rank update
+                            $this->notificationModel->insertNotification(
+                                $numericUserId,
+                                'info',
+                                'Rank Updated',
+                                'Your rank has been updated to: ' . $value . '. Please check your profile for more details.',
+                                '/' . $roleName . '/dashboard',
+                                'star',
+                                $_SESSION['user_id'] ?? 1
+                            );
+                        }
+                    }
+                }
+                
                 echo json_encode(['success' => true, 'message' => 'Updated successfully']);
             } else {
                 echo json_encode(['success' => false, 'message' => 'Database update failed - no rows affected']);
@@ -2827,6 +2944,107 @@ public function rejectLeave($id) {
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to upload image']);
             }
+        }
+    }
+
+    /**
+     * Send notifications when an admin adds an incident review
+     * For Admin: Notify all other admins + supervisor + mobile riders that are related
+     */
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+        try {
+            // Get incident details
+            $incident = $this->adminModel->getIncidentById($incidentId);
+            
+            if (!$incident) {
+                error_log("Incident not found: {$incidentId}");
+                return;
+            }
+            
+            // Get reviewer details
+            $reviewer = $this->userModel->getUserById($reviewerId);
+            $reviewerName = $reviewer->name ?? 'An admin';
+            
+            // Prepare notification details
+            $notificationTitle = "New Review on Incident #{$incidentId}";
+            $notificationMessage = "{$reviewerName} (Admin) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
+            $notificationType = 'info';
+            $notificationIcon = 'comment';
+            
+            // Collect all users to notify (use array to avoid duplicates)
+            $usersToNotify = [];
+            
+            // ADMIN adds review: Notify all other admins + supervisor + mobile riders
+            
+            // 1. Notify all other admins
+            try {
+                $admins = $this->adminModel->getAllAdmins();
+                
+                if ($admins && is_array($admins)) {
+                    foreach ($admins as $admin) {
+                        if (isset($admin->id) && $admin->id != $reviewerId) {
+                            $usersToNotify[$admin->id] = [
+                                'link' => URL_ROOT . '/admin/incidents'
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting admins for notification: " . $e->getMessage());
+            }
+            
+            // 2. Notify the supervisor who reported the incident (if exists and not the reviewer)
+            if (isset($incident->user_id) && $incident->user_id != $reviewerId) {
+                $usersToNotify[$incident->user_id] = [
+                    'link' => URL_ROOT . '/supervisor/viewIncident/' . $incidentId
+                ];
+                
+                // 3. Also notify mobile riders assigned to that supervisor's site
+                if (isset($incident->site_id)) {
+                    try {
+                        $supervisorModel = $this->model('M_supervisor');
+                        $mobileRiders = $supervisorModel->getSiteMobileRiders($incident->user_id);
+                        
+                        if ($mobileRiders && is_array($mobileRiders)) {
+                            foreach ($mobileRiders as $rider) {
+                                if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
+                                    $usersToNotify[$rider->user_id] = [
+                                        'link' => URL_ROOT . '/MobileRider/incidents'
+                                    ];
+                                }
+                            }
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error getting mobile riders for notification: " . $e->getMessage());
+                    }
+                }
+            }
+            
+            // Send notifications to all collected users
+            $sentCount = 0;
+            foreach ($usersToNotify as $userId => $data) {
+                try {
+                    $result = $this->notificationModel->insertNotification(
+                        $userId,
+                        $notificationType,
+                        $notificationTitle,
+                        $notificationMessage,
+                        $data['link'],
+                        $notificationIcon,
+                        $reviewerId
+                    );
+                    if ($result) {
+                        $sentCount++;
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending notification to user {$userId}: " . $e->getMessage());
+                }
+            }
+            
+            error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by admin");
+            
+        } catch (Exception $e) {
+            error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
         }
     }
 }
