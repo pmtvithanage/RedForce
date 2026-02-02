@@ -1019,6 +1019,20 @@ class Admin extends Controller {
                     $type = "shift";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
                     
+                    // Notify the client about the new site
+                    $notificationTitle = "New Site Added";
+                    $notificationMessage = "A new site '" . $data['site_name'] . "' has been added to your account.";
+                    $notificationLink = "client/viewsite/" . $siteId;
+                    $this->notificationModel->addNotification(
+                        $Id, // client's user_id
+                        'info',
+                        $notificationTitle,
+                        $notificationMessage,
+                        $notificationLink,
+                        'business',
+                        $_SESSION['user_id'] // admin's user_id as the sender
+                    );
+                    
                     flash('msg', 'Site added successfully', 'alert-success');
                     redirect('admin/viewsites/'.$siteId); // Redirect properly
                 } else {
