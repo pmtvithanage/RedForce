@@ -3,6 +3,7 @@ class Supervisor extends Controller {
     private $supervisorModel;
     private $userModel;
     private $advertisementModel;
+    private $notificationModel;
 
     public function __construct() {
         // Check if user is logged in and has supervisor role
@@ -10,13 +11,26 @@ class Supervisor extends Controller {
         $this->advertisementModel = $this->model('M_advertisements');
         $this->supervisorModel = $this->model('M_supervisor');
         $this->userModel = $this->model('M_users');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     // Default action - redirect to dashboard
     public function index() {
         redirect('supervisor/dashboard/dashboard');
     }
-
+    // Notifications
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'supervisor',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
+    }
     // dashboard
     public function dashboard() {
         $role = 'supervisor';
@@ -79,10 +93,19 @@ class Supervisor extends Controller {
 
     // Messages
     public function messages() {
+        $user_id = $_SESSION['user_id'] ?? null;
+        $messageModel = $this->model('M_message');
+        
+        $conversations = $messageModel->getConversations($user_id);
+        $all_users = $messageModel->getAllUsersForSupervisor($user_id);
+        
         $data = [
             'title' => 'Messages',
+            'pageTitle' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users
         ];
-        $this->view('supervisor/v_messages', $data);
+        $this->view('supervisor/messages/v_messages', $data);
     }
 
     //Leave Requests - Display page with all leave requests
@@ -587,9 +610,33 @@ class Supervisor extends Controller {
     }
 
     public function site_info(){
+        $supervisorId = $_SESSION['user_id'] ?? null;
+        
+        if (!$supervisorId) {
+            flash('msg', 'Session expired. Please login again.', 'alert-danger');
+            redirect('users/login');
+            return;
+        }
+        
+        // Get officers and supervisors for this site
+        $siteData = $this->supervisorModel->getSiteOfficers($supervisorId);
+        
+        // Get mobile riders for this site
+        $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
+        
+        // Get caretakers for this site
+        $caretakers = $this->supervisorModel->getSiteCaretakers($supervisorId);
+        
         $data = [
             'title' => 'Sites',
+            'pageTitle' => 'Site Information',
+            'officers' => $siteData['officers'],
+            'supervisors' => $siteData['supervisors'],
+            'site' => $siteData['site'],
+            'mobile_riders' => $mobileRiders,
+            'caretakers' => $caretakers
         ];
+        
         $this->view('supervisor/site/v_site_info', $data);
     }
 
@@ -770,6 +817,9 @@ class Supervisor extends Controller {
                         'activity_details' => "Reported incident: {$data['incident_type']} at site ID {$data['site_id']}"
                     ]);
                     
+                    // Send notifications to mobile riders and admins
+                    $this->sendIncidentNotifications($userId, $data['site_id'], $data['incident_type'], $data['priority']);
+                    
                     flash('incident_message', 'Incident reported successfully!', 'alert alert-success');
                     redirect('supervisor/incidents');
                 } else {
@@ -901,6 +951,9 @@ class Supervisor extends Controller {
                     'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
                 ]);
                 
+                // Send notifications to related users
+                $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
+                
                 flash('incident_message', 'Review added successfully!', 'alert alert-success');
             } else {
                 flash('incident_message', 'Error adding review. Please try again.', 'alert alert-danger');
@@ -909,6 +962,540 @@ class Supervisor extends Controller {
             redirect('supervisor/viewIncident/' . $incidentId);
         } else {
             redirect('supervisor/incidents');
+        }
+    }
+
+    // ======================================================================== //
+    // =======================      Messaging          ====================== //
+    // ======================================================================== //
+
+    // Get conversations (AJAX)
+    public function getConversations() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $messageModel = $this->model('M_message');
+            $conversations = $messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    // Load messages (AJAX)
+    public function loadMessages() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            $messageModel = $this->model('M_message');
+            // Mark messages as read
+            $messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $messageModel->getMessages($sender_id, $recipient_id);
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    // Send message (AJAX)
+    public function sendMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            $messageModel = $this->model('M_message');
+            if ($messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    // Mark messages as seen (AJAX)
+    public function markAsSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $messageModel = $this->model('M_message');
+            // Mark messages as seen
+            $messageModel->markAsSeen($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success']);
+        }
+    }
+
+    // Delete message (AJAX)
+    public function deleteMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $messageModel = $this->model('M_message');
+            if ($messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
+    // Update message (AJAX)
+    public function updateMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            $message = $_POST['message'] ?? null;
+            
+            if (!$user_id || !$message_id || !$message) {
+                echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
+                return;
+            }
+            
+            $messageModel = $this->model('M_message');
+            if ($messageModel->updateMessage($message_id, $user_id, $message)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
+            }
+        }
+    }
+
+    // Get user online status (AJAX)
+    public function getUserStatus() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_POST['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User ID required']);
+                return;
+            }
+            
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
+            
+            if ($userStatus) {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => $userStatus->is_online ?? false,
+                    'last_seen' => $userStatus->last_seen ?? null
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => false,
+                    'last_seen' => null
+                ]);
+            }
+        }
+    }
+
+    // Update user last seen (AJAX)
+    public function updateLastSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
+            }
+        }
+    }
+
+    // Set user offline (AJAX)
+    public function setOffline() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
+            }
+        }
+    }
+
+    /**
+     * Send notifications when an incident is reported
+     * Sends to all admins and mobile riders assigned to the site
+     */
+    private function sendIncidentNotifications($supervisorId, $siteId, $incidentType, $priority) {
+        // Get supervisor details
+        $supervisor = $this->userModel->getUserById($supervisorId);
+        $supervisorName = $supervisor->name ?? 'A supervisor';
+        
+        // Get site name (if available)
+        $siteName = "Site ID: {$siteId}";
+        
+        // Prepare notification details
+        $notificationTitle = "New Incident Reported";
+        $notificationMessage = "{$supervisorName} reported a {$incidentType} incident at {$siteName}. Priority: {$priority}";
+        $notificationLink = URL_ROOT . '/admin/incidents'; // Admins can view all incidents
+        $notificationType = ($priority == 'High' || $priority == 'Critical') ? 'warning' : 'info';
+        $notificationIcon = 'warning';
+        
+        // 1. Send notifications to all admins
+        $adminModel = $this->model('M_admin');
+        $admins = $adminModel->getAllAdmins();
+        
+        if ($admins && is_array($admins)) {
+            foreach ($admins as $admin) {
+                $this->notificationModel->insertNotification(
+                    $admin->id,
+                    $notificationType,
+                    $notificationTitle,
+                    $notificationMessage,
+                    $notificationLink,
+                    $notificationIcon,
+                    $supervisorId
+                );
+            }
+        }
+        
+        // 2. Send notifications to mobile riders assigned to the supervisor's site
+        $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
+        
+        if ($mobileRiders && is_array($mobileRiders)) {
+            $riderNotificationLink = URL_ROOT . '/MobileRider/incidents'; // Mobile riders view
+            
+            foreach ($mobileRiders as $rider) {
+                $this->notificationModel->insertNotification(
+                    $rider->user_id,
+                    $notificationType,
+                    $notificationTitle,
+                    $notificationMessage,
+                    $riderNotificationLink,
+                    $notificationIcon,
+                    $supervisorId
+                );
+            }
+        }
+    }
+
+    /**
+     * Send notifications when an incident review is added
+     * For Supervisor: Notify admins + mobile riders of the site
+     */
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+        try {
+            // Get incident details
+            $incident = $this->supervisorModel->getIncidentById($incidentId);
+            
+            if (!$incident) {
+                error_log("Incident not found: {$incidentId}");
+                return;
+            }
+            
+            // Get reviewer details
+            $reviewer = $this->userModel->getUserById($reviewerId);
+            $reviewerName = $reviewer->name ?? 'A user';
+            $reviewerRole = $reviewer->role ?? 'supervisor';
+            
+            // Prepare notification details
+            $notificationTitle = "New Review on Incident #{$incidentId}";
+            $notificationMessage = "{$reviewerName} (Supervisor) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
+            $notificationType = 'info';
+            $notificationIcon = 'comment';
+            
+            // Collect all users to notify (use array to avoid duplicates)
+            $usersToNotify = [];
+            
+            // SUPERVISOR adds review: Notify admins + mobile riders of the site
+            
+            // 1. Notify all admins
+            try {
+                $adminModel = $this->model('M_admin');
+                $admins = $adminModel->getAllAdmins();
+                
+                if ($admins && is_array($admins)) {
+                    foreach ($admins as $admin) {
+                        if (isset($admin->id) && $admin->id != $reviewerId) {
+                            $usersToNotify[$admin->id] = [
+                                'link' => URL_ROOT . '/admin/incidents'
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting admins for notification: " . $e->getMessage());
+            }
+            
+            // 2. Notify mobile riders assigned to the incident site
+            if (isset($incident->site_id) && isset($incident->user_id)) {
+                try {
+                    $mobileRiders = $this->supervisorModel->getSiteMobileRiders($incident->user_id);
+                    
+                    if ($mobileRiders && is_array($mobileRiders)) {
+                        foreach ($mobileRiders as $rider) {
+                            if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
+                                $usersToNotify[$rider->user_id] = [
+                                    'link' => URL_ROOT . '/MobileRider/incidents'
+                                ];
+                            }
+                        }
+                    }
+                } catch (Exception $e) {
+                    error_log("Error getting mobile riders for notification: " . $e->getMessage());
+                }
+            }
+            
+            // Send notifications to all collected users
+            $sentCount = 0;
+            foreach ($usersToNotify as $userId => $data) {
+                try {
+                    $result = $this->notificationModel->insertNotification(
+                        $userId,
+                        $notificationType,
+                        $notificationTitle,
+                        $notificationMessage,
+                        $data['link'],
+                        $notificationIcon,
+                        $reviewerId
+                    );
+                    if ($result) {
+                        $sentCount++;
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending notification to user {$userId}: " . $e->getMessage());
+                }
+            }
+            
+            error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by supervisor");
+            
+        } catch (Exception $e) {
+            error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display equipment approval requests
+     */
+    public function equipmentApprovals() {
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            redirect('users/login');
+        }
+
+        $supervisor_id = $_SESSION['user_id'];
+        
+        // Get pending equipment requests for this supervisor's sites
+        $pending_requests = $this->supervisorModel->getPendingEquipmentRequests($supervisor_id);
+        
+        // Get stats for the dashboard cards
+        $stats = $this->supervisorModel->getEquipmentApprovalStats($supervisor_id);
+        
+        $data = [
+            'title' => 'Equipment Approvals',
+            'pending_requests' => $pending_requests,
+            'stats' => $stats
+        ];
+        
+        $this->view('supervisor/equipmentApprovals/v_equipment_approvals', $data);
+    }
+
+    /**
+     * Get equipment requests for a caretaker (AJAX)
+     */
+    public function getCaretakerEquipmentRequests() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $caretaker_id = $_POST['caretaker_id'] ?? null;
+        
+        if (!$caretaker_id) {
+            echo json_encode(['success' => false, 'message' => 'Caretaker ID required']);
+            return;
+        }
+        
+        $requests = $this->supervisorModel->getCaretakerEquipmentRequests($caretaker_id);
+        echo json_encode(['success' => true, 'requests' => $requests]);
+    }
+
+    /**
+     * Approve an equipment request
+     */
+    public function approveEquipmentRequest() {
+        header('Content-Type: application/json');
+        
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $supervisor_id = $_SESSION['user_id'];
+            $request_id = $_POST['request_id'] ?? null;
+            $supervisor_notes = $_POST['supervisor_notes'] ?? '';
+
+            if (!$request_id) {
+                echo json_encode(['success' => false, 'message' => 'Invalid request ID']);
+                exit;
+            }
+
+            // Get request details before approval
+            $request = $this->supervisorModel->getEquipmentRequestById($request_id);
+            
+            if (!$request) {
+                echo json_encode(['success' => false, 'message' => 'Request not found']);
+                return;
+            }
+
+            // Approve the request
+            $result = $this->supervisorModel->approveEquipmentRequest($request_id, $supervisor_id, $supervisor_notes);
+
+            if ($result) {
+                // Try to send notification to client (if client_id exists)
+                try {
+                    if (isset($request->client_id) && $request->client_id) {
+                        $clientId = $request->client_id;
+                        $caretakerName = $request->caretaker_name;
+                        $equipmentName = $request->equipment_name;
+                        
+                        $notificationTitle = "Equipment Request Approved by Supervisor";
+                        $notificationMessage = "Equipment request for {$equipmentName} from {$caretakerName} has been approved by supervisor and needs your approval.";
+                        $notificationLink = URL_ROOT . '/client/equipmentApprovals';
+                        
+                        $this->notificationModel->insertNotification(
+                            $clientId,
+                            'info',
+                            $notificationTitle,
+                            $notificationMessage,
+                            $notificationLink,
+                            'approval',
+                            $supervisor_id
+                        );
+                    }
+                } catch (Exception $e) {
+                    // Log error but don't fail the approval
+                    error_log("Failed to send notification: " . $e->getMessage());
+                }
+
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Equipment request approved successfully.'
+                ]);
+                exit;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to approve request. The request may have already been processed.']);
+                exit;
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+    }
+
+    /**
+     * Reject an equipment request
+     */
+    public function rejectEquipmentRequest() {
+        header('Content-Type: application/json');
+        
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $supervisor_id = $_SESSION['user_id'];
+            $request_id = $_POST['request_id'] ?? null;
+            $rejection_reason = $_POST['rejection_reason'] ?? '';
+
+            if (!$request_id || empty($rejection_reason)) {
+                echo json_encode(['success' => false, 'message' => 'Request ID and rejection reason are required']);
+                return;
+            }
+
+            // Get request details before rejection
+            $request = $this->supervisorModel->getEquipmentRequestById($request_id);
+            
+            if (!$request) {
+                echo json_encode(['success' => false, 'message' => 'Request not found']);
+                return;
+            }
+
+            // Reject the request
+            $result = $this->supervisorModel->rejectEquipmentRequest($request_id, $supervisor_id, $rejection_reason);
+
+            if ($result) {
+                // Try to send notification to caretaker
+                try {
+                    $caretakerId = $request->caretaker_id;
+                    $equipmentName = $request->equipment_name;
+                    
+                    $notificationTitle = "Equipment Request Rejected";
+                    $notificationMessage = "Your equipment request for {$equipmentName} has been rejected by supervisor. Reason: {$rejection_reason}";
+                    $notificationLink = URL_ROOT . '/caretaker/equipment';
+                    
+                    $this->notificationModel->insertNotification(
+                        $caretakerId,
+                        'warning',
+                        $notificationTitle,
+                        $notificationMessage,
+                        $notificationLink,
+                        'cancel',
+                        $supervisor_id
+                    );
+                } catch (Exception $e) {
+                    // Log error but don't fail the rejection
+                    error_log("Failed to send notification: " . $e->getMessage());
+                }
+
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Equipment request rejected successfully.'
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to reject request. The request may have already been processed.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
         }
     }
 

@@ -54,12 +54,44 @@
 
     /* Profile card (left) */
     .profile-card{
-      background: #fff;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
       border-radius: 20px;
-      padding: 18px;
-      box-shadow: var(--shadow);
+      padding: 28px;
+      box-shadow: 0 8px 24px rgba(20,20,40,0.08), 0 2px 8px rgba(0,0,0,0.04);
       position: relative;
-      margin:12px;
+      margin: 12px;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+    }
+
+    .profile-card:hover {
+      box-shadow: 0 12px 32px rgba(20,20,40,0.12), 0 4px 12px rgba(0,0,0,0.06);
+      transform: translateY(-2px);
+    }
+
+    .profile-card h1 {
+      color: #1a1a1a;
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .profile-card p {
+      color: #4a5568;
+      font-size: 15px;
+      line-height: 1.8;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+
+    .profile-card p strong {
+      color: var(--accent);
+      font-weight: 600;
+      min-width: 140px;
+      display: inline-block;
     }
 
     .avatar-wrap{
@@ -354,17 +386,15 @@
 
     <!-- MAIN GRID -->
     <div class="profile-main" style="margin-top:18px;">
-      <!-- LEFT: Profile summary -->
-      <div class="left-column">
-        <div class="profile-card" aria-label="Profile summary">
+      <div class="profile-card" aria-label="Profile summary" style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+        <!-- LEFT: Profile Info -->
+        <div>
           <div class="avatar-wrap">
             <img class="avatar-image" src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $data['client']->client_profile; ?>" alt="Client Logo">
           </div>
 
           <div style="height:86px"></div> <!-- spacer to accommodate absolute avatar -->
           
-
-
           <h1><?php echo $site->site_name?></h1>
           <p><strong>Location:</strong> <?php echo $site->address?></p>
           <?php if(!empty($site->district)): ?>
@@ -373,7 +403,11 @@
           <p><strong>City:</strong> <?php echo $site->city?></p>
           <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
           <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
+        </div>
 
+        <!-- RIGHT: Site Statistics Chart -->
+        <div style="background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 20px;">
+          <canvas id="siteStatsChart" style="max-height: 280px;"></canvas>
         </div>
       </div>
     </div>
@@ -389,7 +423,7 @@
         <div class="tab-navigation" style="display: flex; border-bottom: 2px solid #f0f0f0;">
           <button class="tab-btn active" onclick="switchTab('assigned')" id="assignedTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
             <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">badge</span>
-            Currently Assigned (<?php echo count($data['assigned_officers']); ?>)
+            Currently Assigned (<?php echo count($data['assigned_officers']) + count($data['assigned_caretakers']); ?>)
           </button>
           <button class="tab-btn" onclick="switchTab('available')" id="availableTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
             <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">person_search</span>
@@ -399,75 +433,149 @@
             <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">supervisor_account</span>
             Find Supervisor
           </button>
+          <button class="tab-btn" onclick="switchTab('caretaker')" id="caretakerTab" style="flex: 1; padding: 16px 24px; background: transparent; border: none; font-weight: 600; font-size: 15px; color: #666; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.3s;">
+            <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px;">person_check</span>
+            Find Caretaker
+          </button>
         </div>
 
         <!-- Tab Content: Currently Assigned Officers -->
         <div id="assignedContent" class="tab-content" style="padding: 24px;">
-          <?php if(empty($data['assigned_officers'])): ?>
+          <?php if(empty($data['assigned_officers']) && empty($data['assigned_caretakers'])): ?>
             <div style="text-align: center; padding: 60px 20px; color: #666;">
               <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">badge</span>
-              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Officers Assigned</h3>
-              <p style="color: #999; margin-bottom: 24px;">This site currently has no officers assigned to it.</p>
+              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Staff Assigned</h3>
+              <p style="color: #999; margin-bottom: 24px;">This site currently has no officers or caretakers assigned to it.</p>
               <button class="secondary-btn" onclick="switchTab('available')" style="padding: 10px 24px;">
                 <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">add</span>
-                Assign Officers
+                Assign Staff
               </button>
             </div>
           <?php else: ?>
             <div class="duty-cards-container" style="margin-top: 0;">
-              <?php foreach($data['assigned_officers'] as $officer): ?>
-                <div class="duty-card" style="border-left: 4px solid #4caf50;">
-                  <div class="duty-card-header">
-                    <div>
-                      <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
-                      <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                        <?php echo htmlspecialchars($officer->officerID); ?> • 
-                        <?php echo htmlspecialchars($officer->city); ?>
-                      </p>
-                    </div>
-                    <?php 
-                      $shift = $officer->shift_type ?? 'Full Time';
-                      $badgeColor = match($shift) {
-                        'Day' => '#4caf50',
-                        'Night' => '#2196f3',
-                        'Full Time' => '#9c27b0',
-                        'Flexible' => '#ff9800',
-                        default => '#4caf50'
-                      };
-                    ?>
-                    <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
-                      <?php echo htmlspecialchars($shift); ?>
-                    </span>
-                  </div>
-                  <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                      <div>
-                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
-                        <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
-                      </div>
-                      <?php if($officer->assignment_end): ?>
+              <?php if(!empty($data['assigned_officers'])): ?>
+                <?php foreach($data['assigned_officers'] as $officer): ?>
+                  <div class="duty-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%); border: 1px solid #e8f5e9; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.08);">
+                    <div class="duty-card-header">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <?php if(!empty($officer->profile_image)): ?>
+                          <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 
+                               alt="<?php echo htmlspecialchars($officer->name); ?>" 
+                               style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid #c8e6c9;">
+                        <?php else: ?>
+                          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #c8e6c9;">
+                            <span style="font-weight: 700; font-size: 18px; color: #4caf50;"><?php echo strtoupper(substr($officer->name, 0, 1)); ?></span>
+                          </div>
+                        <?php endif; ?>
                         <div>
-                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
-                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
+                          <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
+                          <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                            <?php echo htmlspecialchars($officer->officerID); ?> • 
+                            <?php echo htmlspecialchars($officer->city); ?>
+                          </p>
                         </div>
-                      <?php endif; ?>
+                      </div>
+                      <?php 
+                        $shift = $officer->shift_type ?? 'Full Time';
+                        $badgeColor = match($shift) {
+                          'Day' => '#4caf50',
+                          'Night' => '#2196f3',
+                          'Full Time' => '#9c27b0',
+                          'Flexible' => '#ff9800',
+                          default => '#4caf50'
+                        };
+                      ?>
+                      <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        <?php echo htmlspecialchars($shift); ?>
+                      </span>
                     </div>
-                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
-                      <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
-                      <p style="font-weight: 600; font-size: 14px;">
-                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
-                        <?php echo htmlspecialchars($officer->phone_number); ?>
-                      </p>
+                    <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
+                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div>
+                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
+                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
+                        </div>
+                        <?php if($officer->assignment_end): ?>
+                          <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
+                            <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                        <p style="font-weight: 600; font-size: 14px;">
+                          <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                          <?php echo htmlspecialchars($officer->phone_number); ?>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="duty-card-footer">
+                      <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>, '<?php echo addslashes($officer->name); ?>')">
+                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
+                        Unassign
+                      </button>
                     </div>
                   </div>
-                  <div class="duty-card-footer">
-                    <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>, '<?php echo addslashes($officer->name); ?>')">
-                      <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
-                      Unassign
-                    </button>
+                <?php endforeach; ?>
+              <?php endif; ?>
+
+              <?php if(!empty($data['assigned_caretakers'])): ?>
+                <?php foreach($data['assigned_caretakers'] as $caretaker): ?>
+                  <div class="duty-card" style="background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%); border: 1px solid #e3f2fd; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.08);">
+                    <div class="duty-card-header">
+                      <div style="display: flex; align-items: center; gap: 12px;">
+                        <?php if(!empty($caretaker->profile_image)): ?>
+                          <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $caretaker->profile_image; ?>" 
+                               alt="<?php echo htmlspecialchars($caretaker->name); ?>" 
+                               style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid #bbdefb;">
+                        <?php else: ?>
+                          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #bbdefb;">
+                            <span style="font-weight: 700; font-size: 18px; color: #2196f3;"><?php echo strtoupper(substr($caretaker->name, 0, 1)); ?></span>
+                          </div>
+                        <?php endif; ?>
+                        <div>
+                          <h3 class="duty-location"><?php echo htmlspecialchars($caretaker->name); ?></h3>
+                          <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                            <?php echo htmlspecialchars($caretaker->caretakerID); ?> • 
+                            <?php echo htmlspecialchars($caretaker->city); ?>
+                          </p>
+                        </div>
+                      </div>
+                      <span class="duty-status" style="background-color: #2196f3; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        Caretaker
+                      </span>
+                    </div>
+                    <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
+                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                        <div>
+                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
+                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($caretaker->assignment_start)); ?></p>
+                        </div>
+                        <?php if($caretaker->assignment_end): ?>
+                          <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
+                            <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($caretaker->assignment_end)); ?></p>
+                          </div>
+                        <?php endif; ?>
+                      </div>
+                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                        <p style="font-weight: 600; font-size: 14px;">
+                          <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                          <?php echo htmlspecialchars($caretaker->phone_number); ?>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="duty-card-footer">
+                      <button class="action-btn" onclick="unassignCaretaker(<?php echo $caretaker->assignment_id; ?>, '<?php echo addslashes($caretaker->name); ?>')">
+                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
+                        Unassign
+                      </button>
+                    </div>
                   </div>
-                </div>
-              <?php endforeach; ?>
+                <?php endforeach; ?>
+              <?php endif; ?>
             </div>
           <?php endif; ?>
         </div>
@@ -607,6 +715,68 @@
             </div>
           </div>
         </div>
+
+        <!-- Tab Content: Find Caretaker -->
+        <div id="caretakerContent" class="tab-content" style="display: none; padding: 24px;">
+          <!-- Filter Section -->
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 24px; border: 1px solid #e9ecef;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+              <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:20px; vertical-align: middle; margin-right: 8px; color: var(--accent);">filter_alt</span>
+                Filter Caretakers
+              </h3>
+              <button onclick="resetCaretakerFilters()" style="padding: 6px 16px; background: transparent; color: #666; border: 1px solid #ddd; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">refresh</span>
+                Reset
+              </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">map</span>
+                  District
+                </label>
+                <select id="caretakerDistrictFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-district">Same District (<?php echo htmlspecialchars($data['site']->district ?? 'N/A'); ?>)</option>
+                  <option value="all">All Districts</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">location_city</span>
+                  City
+                </label>
+                <select id="caretakerCityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="same-city">Same City (<?php echo htmlspecialchars($data['site']->city); ?>)</option>
+                  <option value="all">All Cities</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #555;">
+                  <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; margin-right: 4px;">event_available</span>
+                  Availability
+                </label>
+                <select id="caretakerAvailabilityFilter" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white;">
+                  <option value="available">Available Only</option>
+                  <option value="all">All Caretakers</option>
+                </select>
+              </div>
+            </div>
+            <button onclick="loadCaretakers()" style="width: 100%; padding: 12px; background: var(--accent); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+              <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle; margin-right: 6px;">search</span>
+              Search Caretakers
+            </button>
+          </div>
+
+          <!-- Caretakers List -->
+          <div id="caretakersList" class="duty-cards-container">
+            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;">
+              <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_check</span>
+              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Caretakers</h3>
+              <p style="color: #999;">Use the filters above to find caretakers available for assignment</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -670,7 +840,40 @@
   </div>
 </div>
 
+<!-- Caretaker Assignment Modal -->
+<div id="caretakerModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+  <div style="background: white; border-radius: 12px; padding: 30px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <div style="width: 64px; height: 64px; background: #e3f2fd; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+        <span class="material-symbols-outlined" style="font-size: 32px; color: #a40000;">person_check</span>
+      </div>
+      <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Assign Caretaker</h3>
+      <p id="caretakerNameDisplay" style="color: #666; margin: 0; font-size: 15px; font-weight: 500;"></p>
+    </div>
+    
+    <div style="background: #f9fafb; border-left: 4px solid #a40000; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+      <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.6;">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; color: #a40000;">info</span>
+        This caretaker will manage equipment requests and officer attendance at this site.
+      </p>
+    </div>
+    
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <button onclick="closeCaretakerModal()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+        Cancel
+      </button>
+      <button onclick="confirmCaretakerAssignment()" style="padding: 12px 24px; background: #a40000; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#8b0000'" onmouseout="this.style.background='#a40000'">
+        <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">check_circle</span>
+        Confirm Assignment
+      </button>
+    </div>
+  </div>
+</div>
+
 <div class="backdrop" id="backdrop" hidden></div>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <script>
@@ -685,12 +888,14 @@ function switchTab(tab) {
     const assignedTab = document.getElementById('assignedTab');
     const availableTab = document.getElementById('availableTab');
     const supervisorTab = document.getElementById('supervisorTab');
+    const caretakerTab = document.getElementById('caretakerTab');
     const assignedContent = document.getElementById('assignedContent');
     const availableContent = document.getElementById('availableContent');
     const supervisorContent = document.getElementById('supervisorContent');
+    const caretakerContent = document.getElementById('caretakerContent');
     
     // Reset all tabs
-    [assignedTab, availableTab, supervisorTab].forEach(t => {
+    [assignedTab, availableTab, supervisorTab, caretakerTab].forEach(t => {
         t.classList.remove('active');
         t.style.color = '#666';
         t.style.borderBottomColor = 'transparent';
@@ -700,6 +905,7 @@ function switchTab(tab) {
     assignedContent.style.display = 'none';
     availableContent.style.display = 'none';
     supervisorContent.style.display = 'none';
+    caretakerContent.style.display = 'none';
     
     // Show selected tab
     if (tab === 'assigned') {
@@ -717,13 +923,136 @@ function switchTab(tab) {
         supervisorTab.style.color = '#a40000';
         supervisorTab.style.borderBottomColor = '#a40000';
         supervisorContent.style.display = 'block';
+    } else if (tab === 'caretaker') {
+        caretakerTab.classList.add('active');
+        caretakerTab.style.color = '#a40000';
+        caretakerTab.style.borderBottomColor = '#a40000';
+        caretakerContent.style.display = 'block';
     }
 }
 
 // Initialize first tab as active
 document.addEventListener('DOMContentLoaded', function() {
     switchTab('assigned');
+    initializeSiteChart();
 });
+
+// Initialize Site Statistics Chart
+function initializeSiteChart() {
+    const ctx = document.getElementById('siteStatsChart');
+    if (!ctx) return;
+
+    <?php 
+    $regularOfficersCount = 0;
+    $supervisorsCount = 0;
+    foreach($data['assigned_officers'] as $officer) {
+        if($officer->shift_type === 'Supervisor') {
+            $supervisorsCount++;
+        } else {
+            $regularOfficersCount++;
+        }
+    }
+    $caretakersCount = count($data['assigned_caretakers']);
+    ?>
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Officers', 'Supervisors', 'Caretakers'],
+            datasets: [{
+                label: 'Assigned Staff',
+                data: [<?php echo $regularOfficersCount; ?>, <?php echo $supervisorsCount; ?>, <?php echo $caretakersCount; ?>],
+                backgroundColor: [
+                    'rgba(76, 175, 80, 0.85)',  // Green for officers
+                    'rgba(156, 39, 176, 0.85)',  // Purple for supervisors
+                    'rgba(33, 150, 243, 0.85)'   // Blue for caretakers
+                ],
+                borderColor: [
+                    'rgba(76, 175, 80, 1)',
+                    'rgba(156, 39, 176, 1)',
+                    'rgba(33, 150, 243, 1)'
+                ],
+                borderWidth: 2,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        color: '#666'
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)',
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 13,
+                            weight: '600'
+                        },
+                        color: '#333'
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                title: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    padding: 12,
+                    titleFont: {
+                        size: 14,
+                        weight: '700'
+                    },
+                    bodyFont: {
+                        size: 13,
+                        weight: '600'
+                    },
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    displayColors: true,
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    boxPadding: 4,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y;
+                            if (context.parsed.y === 1) {
+                                label += ' person';
+                            } else {
+                                label += ' people';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
 
 function loadOfficers() {
     const districtFilter = document.getElementById('districtFilter').value;
@@ -769,17 +1098,30 @@ function displayOfficers(officers) {
     let html = '';
     officers.forEach(officer => {
         const isAssigned = officer.current_assignment;
+        const cardStyle = isAssigned 
+            ? 'background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%); border: 1px solid #ffe0b2; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.08);'
+            : 'background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%); border: 1px solid #e8f5e9; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.08);';
+        const avatarBorder = isAssigned ? '#ffe0b2' : '#c8e6c9';
+        const avatarBg = isAssigned 
+            ? 'background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);'
+            : 'background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);';
+        const avatarColor = isAssigned ? '#ff9800' : '#4caf50';
+        
+        const profileImg = officer.profile_image 
+            ? `<img src="${urlRoot}/uploads/applicantPhotos/${officer.profile_image}" alt="${officer.name}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid ${avatarBorder};">`
+            : `<div style="width: 48px; height: 48px; ${avatarBg} border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid ${avatarBorder};"><span style="font-weight: 700; font-size: 18px; color: ${avatarColor};">${officer.name.charAt(0).toUpperCase()}</span></div>`;
+        
         html += `
-            <div class="duty-card" style="border-left: 4px solid ${isAssigned ? '#ff9800' : '#2196F3'};">
+            <div class="duty-card" style="${cardStyle}">
                 <div class="duty-card-header">
-                    <div>
-                        <h3 class="duty-location">${officer.name}</h3>
-                        <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">badge</span>
-                            ${officer.officerID} • 
-                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">location_on</span>
-                            ${officer.city}, ${officer.district}
-                        </p>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        ${profileImg}
+                        <div>
+                            <h3 class="duty-location">${officer.name}</h3>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                ${officer.officerID} • ${officer.city}, ${officer.district}
+                            </p>
+                        </div>
                     </div>
                     <span class="duty-status ${officer.employment_status === 'Active' ? 'status-active' : 'status-inactive'}">${officer.employment_status}</span>
                 </div>
@@ -801,7 +1143,7 @@ function displayOfficers(officers) {
                             ${officer.phone_number}
                         </p>
                     </div>
-                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
+                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
                 </div>
                 <div class="duty-card-footer">
                     ${isAssigned ? 
@@ -1029,6 +1371,102 @@ function confirmUnassignment(assignmentId, buttonElement) {
     });
 }
 
+function unassignCaretaker(assignmentId, caretakerName) {
+    // Create confirmation modal
+    const confirmModal = document.createElement('div');
+    confirmModal.style.cssText = 'display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;';
+    confirmModal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 64px; height: 64px; background: #fff3e0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #ff9800;">warning</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #333; font-size: 20px;">Confirm Unassignment</h3>
+                <p style="color: #666; margin: 0; font-size: 15px; line-height: 1.5;">
+                    Are you sure you want to unassign <strong style="color: #333;">${caretakerName}</strong> from this site?
+                </p>
+            </div>
+            
+            <div style="background: #f9fafb; border-left: 4px solid #ff9800; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                <p style="margin: 0; font-size: 14px; color: #555; line-height: 1.6;">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; color: #ff9800;">info</span>
+                    This action will remove the caretaker's current assignment from this site.
+                </p>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 12px 24px; background: #f3f4f6; color: #374151; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">
+                    Cancel
+                </button>
+                <button onclick="confirmCaretakerUnassignment(${assignmentId}, this)" style="padding: 12px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
+                    <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle;">person_remove</span>
+                    Unassign Caretaker
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(confirmModal);
+}
+
+function confirmCaretakerUnassignment(assignmentId, buttonElement) {
+    const modal = buttonElement.closest('div[style*="z-index"]');
+    
+    // Show loading
+    modal.innerHTML = `
+        <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <p style="margin-top: 16px; color: #666;">Unassigning caretaker...</p>
+        </div>
+    `;
+    
+    fetch(urlRoot + '/admin/unassignCaretakerFromSite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            assignment_id: assignmentId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #d4edda; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #28a745;">check_circle</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #28a745; font-size: 20px;">Success!</h3>
+                    <p style="color: #666; margin: 0;">Caretaker unassigned successfully. Page will reload...</p>
+                </div>
+            `;
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                    <p style="color: #666; margin: 0 0 20px 0;">${data.message || 'Failed to unassign caretaker'}</p>
+                    <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 30px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                <p style="color: #666; margin: 0 0 20px 0;">Failed to unassign caretaker</p>
+                <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+            </div>
+        `;
+    });
+}
+
 // Supervisor search functionality
 function loadSupervisors() {
     const districtFilter = document.getElementById('supervisorDistrictFilter').value;
@@ -1072,17 +1510,30 @@ function displaySupervisors(supervisors) {
     let html = '';
     supervisors.forEach(supervisor => {
         const isAssigned = supervisor.current_assignment_count > 0;
+        const cardStyle = isAssigned 
+            ? 'background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%); border: 1px solid #ffe0b2; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.08);'
+            : 'background: linear-gradient(135deg, #ffffff 0%, #faf5ff 100%); border: 1px solid #e1bee7; box-shadow: 0 4px 12px rgba(156, 39, 176, 0.08);';
+        const avatarBorder = isAssigned ? '#ffe0b2' : '#ce93d8';
+        const avatarBg = isAssigned 
+            ? 'background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);'
+            : 'background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);';
+        const avatarColor = isAssigned ? '#ff9800' : '#9c27b0';
+        
+        const profileImg = supervisor.profile_image 
+            ? `<img src="${urlRoot}/uploads/applicantPhotos/${supervisor.profile_image}" alt="${supervisor.name}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid ${avatarBorder};">`
+            : `<div style="width: 48px; height: 48px; ${avatarBg} border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid ${avatarBorder};"><span style="font-weight: 700; font-size: 18px; color: ${avatarColor};">${supervisor.name.charAt(0).toUpperCase()}</span></div>`;
+        
         html += `
-            <div class="duty-card" style="border-left: 4px solid ${isAssigned ? '#ff9800' : '#9c27b0'};">
+            <div class="duty-card" style="${cardStyle}">
                 <div class="duty-card-header">
-                    <div>
-                        <h3 class="duty-location">${supervisor.name}</h3>
-                        <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">badge</span>
-                            ${supervisor.userID} • 
-                            <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">location_on</span>
-                            ${supervisor.city || 'N/A'}
-                        </p>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        ${profileImg}
+                        <div>
+                            <h3 class="duty-location">${supervisor.name}</h3>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                ${supervisor.userID} • ${supervisor.city || 'N/A'}
+                            </p>
+                        </div>
                     </div>
                     <span class="duty-status" style="background-color: ${isAssigned ? '#ff9800' : '#9c27b0'}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
                         ${isAssigned ? 'Assigned' : 'Supervisor'}
@@ -1102,7 +1553,7 @@ function displaySupervisors(supervisors) {
                             ${supervisor.contact || 'N/A'}
                         </p>
                     </div>
-                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px; border-left: 3px solid #ff9800;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
+                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
                 </div>
                 <div class="duty-card-footer">
                     ${isAssigned ? 
@@ -1209,6 +1660,205 @@ function confirmSupervisorAssignment() {
                 <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
                 <p style="color: #666; margin: 0 0 20px 0;">Failed to assign supervisor</p>
                 <button onclick="closeSupervisorModal()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+            </div>
+        `;
+    });
+}
+
+// Caretaker search functionality
+function loadCaretakers() {
+    const districtFilter = document.getElementById('caretakerDistrictFilter').value;
+    const cityFilter = document.getElementById('caretakerCityFilter').value;
+    const availability = document.getElementById('caretakerAvailabilityFilter').value;
+    
+    // Show loading
+    document.getElementById('caretakersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px;"><div style="display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #a40000; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 16px; color: #666;">Loading caretakers...</p></div>';
+    
+    // Make AJAX call to fetch caretakers
+    fetch(urlRoot + '/admin/getAvailableCaretakers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            district_filter: districtFilter,
+            city_filter: cityFilter,
+            availability: availability,
+            district: siteDistrict,
+            city: siteCity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayCaretakers(data.caretakers);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('caretakersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #dc2626;"><span class="material-symbols-outlined" style="font-size: 64px;">error</span><p style="margin-top: 16px; font-weight: 600;">Error loading caretakers</p></div>';
+    });
+}
+
+function displayCaretakers(caretakers) {
+    const container = document.getElementById('caretakersList');
+    
+    if (caretakers.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_off</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Caretakers Found</h3><p style="color: #999;">No caretakers match your current filter criteria</p></div>';
+        return;
+    }
+    
+    let html = '';
+    caretakers.forEach(caretaker => {
+        const isAssigned = caretaker.current_assignment_count > 0;
+        const cardStyle = isAssigned 
+            ? 'background: linear-gradient(135deg, #ffffff 0%, #fffbf5 100%); border: 1px solid #ffe0b2; box-shadow: 0 4px 12px rgba(255, 152, 0, 0.08);'
+            : 'background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%); border: 1px solid #e3f2fd; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.08);';
+        const avatarBorder = isAssigned ? '#ffe0b2' : '#bbdefb';
+        const avatarBg = isAssigned 
+            ? 'background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);'
+            : 'background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);';
+        const avatarColor = isAssigned ? '#ff9800' : '#2196f3';
+        
+        const profileImg = caretaker.profile_image 
+            ? `<img src="${urlRoot}/uploads/applicantPhotos/${caretaker.profile_image}" alt="${caretaker.name}" style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid ${avatarBorder};">`
+            : `<div style="width: 48px; height: 48px; ${avatarBg} border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid ${avatarBorder};"><span style="font-weight: 700; font-size: 18px; color: ${avatarColor};">${caretaker.name.charAt(0).toUpperCase()}</span></div>`;
+        
+        html += `
+            <div class="duty-card" style="${cardStyle}">
+                <div class="duty-card-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        ${profileImg}
+                        <div>
+                            <h3 class="duty-location">${caretaker.name}</h3>
+                            <p style="margin: 5px 0; color: #666; font-size: 14px;">
+                                ${caretaker.userID} • ${caretaker.city || 'N/A'}
+                            </p>
+                        </div>
+                    </div>
+                    <span class="duty-status" style="background-color: ${isAssigned ? '#ff9800' : '#2196f3'}; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        ${isAssigned ? 'Assigned' : 'Caretaker'}
+                    </span>
+                </div>
+                <div style="background: #fafafa; border-radius: 8px; padding: 16px; margin: 12px 0;">
+                    <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                        <div>
+                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Email</p>
+                            <p style="font-weight: 600; font-size: 14px;">${caretaker.email || 'N/A'}</p>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
+                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
+                        <p style="font-weight: 600; font-size: 14px;">
+                            <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
+                            ${caretaker.contact || 'N/A'}
+                        </p>
+                    </div>
+                    ${isAssigned ? '<div style="margin-top: 12px; padding: 8px 12px; background: #fff3e0; border-radius: 6px;"><p style="margin: 0; font-size: 13px; color: #e65100; font-weight: 600;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">info</span> Currently assigned to another site</p></div>' : ''}
+                </div>
+                <div class="duty-card-footer">
+                    ${isAssigned ? 
+                        '<button class="action-btn" disabled style="opacity: 0.5; cursor: not-allowed; background: #e0e0e0; color: #999;"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">block</span> Already Assigned</button>' :
+                        `<button class="action-btn" onclick="assignCaretaker(${caretaker.id}, '${caretaker.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_add</span> Assign Caretaker</button>`
+                    }
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function resetCaretakerFilters() {
+    document.getElementById('caretakerDistrictFilter').value = 'same-district';
+    document.getElementById('caretakerCityFilter').value = 'same-city';
+    document.getElementById('caretakerAvailabilityFilter').value = 'available';
+    document.getElementById('caretakersList').innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666;"><span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">person_check</span><h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">Search for Caretakers</h3><p style="color: #999;">Use the filters above to find caretakers available for assignment</p></div>';
+}
+
+// Global variable for caretaker assignment
+let selectedCaretakerId = null;
+let selectedCaretakerName = null;
+
+function assignCaretaker(caretakerId, caretakerName) {
+    selectedCaretakerId = caretakerId;
+    selectedCaretakerName = caretakerName;
+    document.getElementById('caretakerNameDisplay').textContent = caretakerName;
+    document.getElementById('caretakerModal').style.display = 'flex';
+}
+
+function closeCaretakerModal() {
+    selectedCaretakerId = null;
+    selectedCaretakerName = null;
+    document.getElementById('caretakerModal').style.display = 'none';
+}
+
+function confirmCaretakerAssignment() {
+    if (!selectedCaretakerId) return;
+    
+    // Show loading state
+    const modal = document.getElementById('caretakerModal');
+    modal.style.pointerEvents = 'none';
+    modal.style.opacity = '0.7';
+    
+    fetch(urlRoot + '/admin/assignCaretakerToSite', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: siteId,
+            caretaker_id: selectedCaretakerId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Reset opacity and show success message
+            modal.style.opacity = '1';
+            modal.style.pointerEvents = 'auto';
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 50px 40px; max-width: 450px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 48px; color: #28a745;">check_circle</span>
+                    </div>
+                    <h3 style="margin: 0 0 12px 0; color: #28a745; font-size: 24px; font-weight: 700;">Assignment Successful!</h3>
+                    <p style="color: #666; margin: 0 0 8px 0; font-size: 16px; line-height: 1.5;">
+                        <strong style="color: #333;">${selectedCaretakerName}</strong> has been assigned as caretaker
+                    </p>
+                    <p style="color: #999; margin: 0; font-size: 14px;">
+                        Redirecting to updated site view...
+                    </p>
+                    <div style="margin-top: 20px; width: 100%; height: 4px; background: #e9ecef; border-radius: 2px; overflow: hidden;">
+                        <div style="height: 100%; background: linear-gradient(90deg, #28a745, #20c997); border-radius: 2px; animation: progressBar 1.5s ease-out;"></div>
+                    </div>
+                </div>
+            `;
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            // Show error message
+            modal.style.pointerEvents = 'auto';
+            modal.style.opacity = '1';
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                    <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                        <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                    </div>
+                    <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                    <p style="color: #666; margin: 0 0 20px 0;">${data.message}</p>
+                    <button onclick="closeCaretakerModal()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        const modal = document.getElementById('caretakerModal');
+        modal.style.pointerEvents = 'auto';
+        modal.style.opacity = '1';
+        modal.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                    <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
+                </div>
+                <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
+                <p style="color: #666; margin: 0 0 20px 0;">Failed to assign caretaker</p>
+                <button onclick="closeCaretakerModal()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
             </div>
         `;
     });

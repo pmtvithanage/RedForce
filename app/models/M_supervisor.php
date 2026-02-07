@@ -430,5 +430,325 @@ class M_supervisor {
         
         return $this->db->execute();
     }
+
+    /**
+     * Get assigned officers for a supervisor's site
+     * Separates officers and supervisors
+     */
+    public function getSiteOfficers($supervisorId) {
+        // First get the supervisor's assigned site
+        $this->db->query('
+            SELECT site_id 
+            FROM officer_site_assignments 
+            WHERE officer_id = :supervisor_id 
+            AND status = "Active" 
+            AND shift_type = "Supervisor"
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        $siteAssignment = $this->db->single();
+        
+        if (!$siteAssignment) {
+            return ['officers' => [], 'supervisors' => [], 'site' => null];
+        }
+        
+        $siteId = $siteAssignment->site_id;
+        
+        // Get site details
+        $this->db->query('
+            SELECT * FROM sites WHERE id = :site_id
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $site = $this->db->single();
+        
+        // Get all assigned staff to this site
+        $this->db->query("SELECT 
+                            osa.id as assignment_id,
+                            osa.shift_type,
+                            osa.assignment_start,
+                            osa.status,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            po.officerID,
+                            po.city,
+                            po.district,
+                            po.rank,
+                            po.employment_status
+                          FROM officer_site_assignments osa
+                          INNER JOIN Users u ON osa.officer_id = u.id
+                          INNER JOIN premise_officers po ON u.id = po.userID
+                          WHERE osa.site_id = :site_id AND osa.status = 'Active'
+                          ORDER BY po.rank DESC, u.name ASC");
+        $this->db->bind(':site_id', $siteId);
+        $allStaff = $this->db->resultSet();
+        
+        // Separate officers and supervisors
+        $officers = [];
+        $supervisors = [];
+        
+        foreach ($allStaff as $staff) {
+            if ($staff->rank === 'Supervisor' || $staff->shift_type === 'Supervisor') {
+                $supervisors[] = $staff;
+            } else {
+                $officers[] = $staff;
+            }
+        }
+        
+        return [
+            'officers' => $officers,
+            'supervisors' => $supervisors,
+            'site' => $site
+        ];
+    }
+
+    /**
+     * Get mobile riders assigned to a supervisor's site
+     */
+    public function getSiteMobileRiders($supervisorId) {
+        // First get the supervisor's assigned site
+        $this->db->query('
+            SELECT site_id 
+            FROM officer_site_assignments 
+            WHERE officer_id = :supervisor_id 
+            AND status = "Active" 
+            AND shift_type = "Supervisor"
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        $siteAssignment = $this->db->single();
+        
+        if (!$siteAssignment) {
+            return [];
+        }
+        
+        $siteId = $siteAssignment->site_id;
+        
+        // Get all mobile riders assigned to this site through route_sites
+        $this->db->query("SELECT DISTINCT
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            u.userID
+                          FROM routes r
+                          INNER JOIN route_sites rs ON r.id = rs.route_id
+                          INNER JOIN Users u ON r.assigned_rider_id = u.id
+                          WHERE rs.site_id = :site_id
+                          AND u.role = 'Mobile Rider'
+                          AND r.assigned_rider_id IS NOT NULL
+                          ORDER BY u.name ASC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get caretakers assigned to a supervisor's site
+     */
+    public function getSiteCaretakers($supervisorId) {
+        // First get the supervisor's assigned site
+        $this->db->query('
+            SELECT site_id 
+            FROM officer_site_assignments 
+            WHERE officer_id = :supervisor_id 
+            AND status = "Active" 
+            AND shift_type = "Supervisor"
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisorId);
+        $siteAssignment = $this->db->single();
+        
+        if (!$siteAssignment) {
+            return [];
+        }
+        
+        $siteId = $siteAssignment->site_id;
+        
+        // Get all caretakers assigned to this site with equipment request count
+        $this->db->query("SELECT 
+                            csa.id as assignment_id,
+                            csa.assignment_start,
+                            csa.assignment_end,
+                            csa.status,
+                            csa.notes,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            u.role,
+                            COUNT(er.id) as pending_requests_count
+                          FROM caretaker_site_assignments csa
+                          INNER JOIN Users u ON csa.caretaker_id = u.id
+                          LEFT JOIN equipment_requests er ON u.id = er.caretaker_id AND er.status = 'Pending'
+                          WHERE csa.site_id = :site_id 
+                          AND csa.status = 'Active'
+                          GROUP BY csa.id, u.id
+                          ORDER BY u.name ASC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get pending equipment requests for supervisor's sites
+     */
+    public function getPendingEquipmentRequests($supervisor_id) {
+        $this->db->query("
+            SELECT 
+                er.*,
+                u_caretaker.name as caretaker_name,
+                u_caretaker.phone_number as caretaker_phone,
+                s.site_name,
+                s.location as site_location,
+                c.name as client_name
+            FROM equipment_requests er
+            INNER JOIN Users u_caretaker ON er.caretaker_id = u_caretaker.id
+            INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = 'Active'
+            INNER JOIN sites s ON csa.site_id = s.id
+            INNER JOIN Users c ON s.client_id = c.id
+            INNER JOIN officer_site_assignments osa ON s.id = osa.site_id
+            WHERE osa.officer_id = :supervisor_id
+            AND osa.shift_type = 'Supervisor'
+            AND osa.status = 'Active'
+            AND er.status = 'Pending'
+            ORDER BY 
+                CASE er.priority
+                    WHEN 'Critical' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Medium' THEN 3
+                    WHEN 'Low' THEN 4
+                END,
+                er.created_at DESC
+        ");
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get equipment approval statistics for supervisor
+     */
+    public function getEquipmentApprovalStats($supervisor_id) {
+        $this->db->query("
+            SELECT 
+                COUNT(CASE WHEN er.status = 'Pending' THEN 1 END) as pending_count,
+                COUNT(CASE WHEN er.status = 'Supervisor Approved' THEN 1 END) as approved_count,
+                COUNT(CASE WHEN er.status = 'Rejected' THEN 1 END) as rejected_count,
+                COUNT(*) as total_count
+            FROM equipment_requests er
+            INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = 'Active'
+            INNER JOIN officer_site_assignments osa ON csa.site_id = osa.site_id
+            WHERE osa.officer_id = :supervisor_id
+            AND osa.shift_type = 'Supervisor'
+            AND osa.status = 'Active'
+        ");
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        $result = $this->db->single();
+        
+        return [
+            'pending' => $result->pending_count ?? 0,
+            'approved' => $result->approved_count ?? 0,
+            'rejected' => $result->rejected_count ?? 0,
+            'total' => $result->total_count ?? 0
+        ];
+    }
+
+    /**
+     * Get equipment request by ID
+     */
+    public function getEquipmentRequestById($request_id) {
+        $this->db->query("
+            SELECT 
+                er.*,
+                u_caretaker.name as caretaker_name,
+                u_caretaker.phone_number as caretaker_phone,
+                s.site_name,
+                s.client_id,
+                c.name as client_name
+            FROM equipment_requests er
+            INNER JOIN Users u_caretaker ON er.caretaker_id = u_caretaker.id
+            INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = 'Active'
+            INNER JOIN sites s ON csa.site_id = s.id
+            INNER JOIN Users c ON s.client_id = c.id
+            WHERE er.id = :request_id
+        ");
+        $this->db->bind(':request_id', $request_id);
+        return $this->db->single();
+    }
+
+    /**
+     * Get equipment requests for a specific caretaker
+     */
+    public function getCaretakerEquipmentRequests($caretaker_id) {
+        $this->db->query("
+            SELECT 
+                er.*,
+                u.name as caretaker_name,
+                u.phone_number as caretaker_phone
+            FROM equipment_requests er
+            INNER JOIN Users u ON er.caretaker_id = u.id
+            WHERE er.caretaker_id = :caretaker_id
+            ORDER BY 
+                CASE er.status
+                    WHEN 'Pending' THEN 1
+                    WHEN 'Supervisor Approved' THEN 2
+                    WHEN 'Approved' THEN 3
+                    WHEN 'Rejected' THEN 4
+                END,
+                CASE er.priority
+                    WHEN 'High' THEN 1
+                    WHEN 'Medium' THEN 2
+                    WHEN 'Low' THEN 3
+                END,
+                er.created_at DESC
+        ");
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Approve an equipment request (supervisor level)
+     */
+    public function approveEquipmentRequest($request_id, $supervisor_id, $notes = '') {
+        $this->db->query("
+            UPDATE equipment_requests 
+            SET 
+                status = 'Supervisor Approved',
+                approved_by = :supervisor_id,
+                approved_date = CURDATE(),
+                supervisor_notes = :notes
+            WHERE id = :request_id
+            AND status = 'Pending'
+        ");
+        $this->db->bind(':request_id', $request_id);
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        $this->db->bind(':notes', $notes);
+        
+        return $this->db->execute();
+    }
+
+    /**
+     * Reject an equipment request
+     */
+    public function rejectEquipmentRequest($request_id, $supervisor_id, $reason) {
+        $this->db->query("
+            UPDATE equipment_requests 
+            SET 
+                status = 'Rejected',
+                approved_by = :supervisor_id,
+                approved_date = CURDATE(),
+                supervisor_notes = :reason
+            WHERE id = :request_id
+            AND status = 'Pending'
+        ");
+        $this->db->bind(':request_id', $request_id);
+        $this->db->bind(':supervisor_id', $supervisor_id);
+        $this->db->bind(':reason', $reason);
+        
+        return $this->db->execute();
+    }
+
 }
 ?>

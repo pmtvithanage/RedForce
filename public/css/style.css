@@ -12,3 +12,62 @@
   --text-color: #333;
   --background-color: #f9f9f9;
 }
+
+/* FontAwesome fallback styles */
+.fas:before {
+  font-family: 'Font Awesome 6 Free', sans-serif !important;
+  font-weight: 900;
+}
+
+/* Notification icon styles */
+.notification-icon {
+  font-size: 20px;
+  color: #2196F3;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+/* Fallback for when FontAwesome doesn't load */
+.notification-icon.fallback::before {
+  content: "●";
+  font-size: 16px;
+  color: #666;
+}
+
+/* Notification item type styles */
+.notification-item.success {
+  border-left-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.notification-item.warning {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.notification-item.info {
+  border-left-color: #3b82f6;
+  background: #eff6ff;
+}
+
+.notification-item.error, .notification-item.danger {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.notification-item.success .notification-icon {
+  color: #16a34a;
+}
+
+.notification-item.warning .notification-icon {
+  color: #d97706;
+}
+
+.notification-item.info .notification-icon {
+  color: #2563eb;
+}
+
+.notification-item.error .notification-icon,
+.notification-item.danger .notification-icon {
+  color: #dc2626;
+}

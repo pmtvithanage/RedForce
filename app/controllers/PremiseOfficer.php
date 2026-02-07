@@ -3,6 +3,7 @@ class PremiseOfficer extends Controller {
     private $premiseOfficerModel;
     private $userModel;
     private $advertisementModel;
+    private $notificationModel;
 
     public function __construct() {
         // Check if user is logged in and has premise officer role
@@ -11,6 +12,7 @@ class PremiseOfficer extends Controller {
         $this->advertisementModel = $this->model('M_advertisements');
         $this->premiseOfficerModel = $this->model('M_premiseofficer');
         $this->userModel = $this->model('M_users');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     // Default action - redirect to dashboard
@@ -265,6 +267,19 @@ class PremiseOfficer extends Controller {
 
         // Load view
         $this->view('premiseofficer/v_profile', $data);
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'premise officer',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 }
 ?>

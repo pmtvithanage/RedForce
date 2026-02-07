@@ -5,6 +5,8 @@ class Admin extends Controller {
     private $homeModel;
     private $chartModel;
     private $messageModel;
+    private $notificationModel;
+    private $db;
     
 
     public function __construct() {
@@ -13,7 +15,8 @@ class Admin extends Controller {
         $this->userModel = $this->model('M_users');
         $this->homeModel = $this->model('M_home');
         $this->messageModel = $this->model('M_message');
-        
+        $this->notificationModel = $this->model('M_notifications');
+        $this->db = new Database();
         // Load route helper
         require_once APP_ROOT . '/helpers/route_helper.php';
         
@@ -26,6 +29,19 @@ class Admin extends Controller {
 
     public function index() {
         redirect('admin/dashboard');
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'admin',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 
     public function dashboard() {
@@ -646,17 +662,65 @@ class Admin extends Controller {
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
         $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
-        if ($this->adminModel->acceptOfficerApplication($id, $adminId, $role)) {
+        $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
+        
+        if ($result && isset($result['success']) && $result['success']) {
+            // Get officer details for email
+            $officer = $this->homeModel->getApplicationById($id);
+            
             // Add activity log
             $title = "Officer Application Accepted";
             $description = $role_name . " application #" . $id . " was approved";
             $type = "registration";
             $this->adminModel->insertRecentActivity($title, $description, $type);
             
-            flash('msg', 'Officer application accepted successfully', 'alert-success');
+            // Get numeric user ID for notification
+            $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+            $this->db->bind(':userID', $result['userID']);
+            $userRow = $this->db->single();
+            $numericUserId = $userRow ? $userRow->id : null;
+            
+            if ($numericUserId) {
+                // Send notification to officer
+                $this->notificationModel->insertNotification(
+                    $numericUserId,
+                    'success',
+                    'Application Approved',
+                    'Congratulations! Your ' . $role_name . ' application has been approved. Welcome to RED FORCE!',
+                    '/' . strtolower(str_replace(' ', '', $role_name)) . '/dashboard',
+                    'check_circle',
+                    $adminId
+                );
+            }
+            
+            // Send welcome email with credentials
+            if ($officer && isset($result['userID']) && isset($result['tempPassword'])) {
+                $emailVars = [
+                    'site_name' => SITE_NAME,
+                    'officer_name' => $officer->name ?? 'Officer',
+                    'login_id' => $result['userID'],
+                    'temp_password' => $result['tempPassword'],
+                    'role_name' => $role_name,
+                    'login_url' => URL_ROOT . '/users/login'
+                ];
+                
+                $emailResult = send_templated_email(
+                    $officer->email,
+                    'welcome_officer',
+                    $emailVars,
+                    'Welcome to ' . SITE_NAME . ' - Officer Account Created'
+                );
+                
+                if (!$emailResult['success']) {
+                    error_log('Failed to send welcome email to officer: ' . $emailResult['message']);
+                }
+            }
+            
+            flash('msg', 'Officer application accepted successfully and welcome email sent', 'alert-success');
             redirect('admin/pending_officer_applications/all');
         } else {
-            flash('msg', 'Failed to accept officer application', 'alert-danger');
+            $errorMsg = isset($result['message']) ? $result['message'] : 'Failed to accept officer application';
+            flash('msg', $errorMsg, 'alert-danger');
             redirect('admin/pending_officer_applications/all');
         }
     }
@@ -667,6 +731,18 @@ class Admin extends Controller {
             $description = "Officer application #" . $id . " was rejected";
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            // Send notification to officer
+            $adminId = $_SESSION['user_id'] ?? 1;
+            $this->notificationModel->insertNotification(
+                $id,
+                'error',
+                'Application Rejected',
+                'Your officer application has been rejected. Please contact HR for more information.',
+                '/users/login',
+                'cancel',
+                $adminId
+            );
             
             flash('msg', 'Officer application rejected successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
@@ -703,6 +779,14 @@ class Admin extends Controller {
 
         $clients = $this->adminModel->getAllClients();
         
+        // Get staff counts for each client
+        foreach ($clients as $client) {
+            $staffCounts = $this->adminModel->getClientStaffCounts($client->id);
+            $client->officers_count = $staffCounts->officers_count ?? 0;
+            $client->supervisors_count = $staffCounts->supervisors_count ?? 0;
+            $client->caretakers_count = $staffCounts->caretakers_count ?? 0;
+        }
+        
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Manage Clients',
@@ -727,14 +811,56 @@ class Admin extends Controller {
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
     $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
-    if ($this->adminModel->acceptClient($clientId, $adminId)) {
+    $result = $this->adminModel->acceptClient($clientId, $adminId);
+    
+    if ($result && isset($result['success']) && $result['success']) {
+        // Get client details for email
+        $this->db->query("SELECT * FROM client_requests WHERE id = :id");
+        $this->db->bind(':id', $clientId);
+        $clientRequest = $this->db->single();
+        
         // Add activity log
         $title = "Client Accepted";
         $description = "Client #" . $clientId . " registration was approved";
-        $type = "updregistrationate";
+        $type = "registration";
         $this->adminModel->insertRecentActivity($title, $description, $type);
         
-        flash('msg', 'Client accepted successfully', 'alert-success');
+        // Send notification to client using numeric ID
+        if (isset($result['id']) && $result['id']) {
+            $this->notificationModel->insertNotification(
+                $result['id'],
+                'success',
+                'Registration Approved',
+                'Your registration has been approved. Welcome to RED FORCE!',
+                '/client/dashboard',
+                'check_circle',
+                $adminId
+            );
+        }
+        
+        // Send welcome email with credentials
+        if ($clientRequest && isset($result['new_user_id']) && isset($result['temp_password'])) {
+            $emailVars = [
+                'site_name' => SITE_NAME,
+                'client_name' => $clientRequest->company_name ?? 'Client',
+                'login_id' => $result['new_user_id'],
+                'temp_password' => $result['temp_password'],
+                'login_url' => URL_ROOT . '/users/login'
+            ];
+            
+            $emailResult = send_templated_email(
+                $result['email'],
+                'welcome_client',
+                $emailVars,
+                'Welcome to ' . SITE_NAME . ' - Client Account Created'
+            );
+            
+            if (!$emailResult['success']) {
+                error_log('Failed to send welcome email to client: ' . $emailResult['message']);
+            }
+        }
+        
+        flash('msg', 'Client accepted successfully and welcome email sent', 'alert-success');
         redirect('admin/addclients');
     } else {
         flash('client_message', 'Failed to accept client', 'alert-danger');
@@ -748,6 +874,18 @@ class Admin extends Controller {
             $description = "Client #" . $clientId . " registration was rejected";
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            // Send notification to client
+            $adminId = $_SESSION['user_id'] ?? 1;
+            $this->notificationModel->insertNotification(
+                $clientId,
+                'error',
+                'Registration Rejected',
+                'Your registration has been rejected. Please contact support for more information.',
+                '/client/dashboard',
+                'cancel',
+                $adminId
+            );
             
             flash('msg', 'Client rejected successfully', 'alert-success');
             redirect('admin/addclients');
@@ -889,6 +1027,20 @@ class Admin extends Controller {
                     $type = "shift";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
                     
+                    // Notify the client about the new site
+                    $notificationTitle = "New Site Added";
+                    $notificationMessage = "A new site '" . $data['site_name'] . "' has been added to your account.";
+                    $notificationLink = "client/viewsite/" . $siteId;
+                    $this->notificationModel->addNotification(
+                        $Id, // client's user_id
+                        'info',
+                        $notificationTitle,
+                        $notificationMessage,
+                        $notificationLink,
+                        'business',
+                        $_SESSION['user_id'] // admin's user_id as the sender
+                    );
+                    
                     flash('msg', 'Site added successfully', 'alert-success');
                     redirect('admin/viewsites/'.$siteId); // Redirect properly
                 } else {
@@ -932,13 +1084,15 @@ class Admin extends Controller {
         $site = $this->adminModel->getSiteById($site_id);
         $clients = $this->adminModel->getClientById($site->client_id);
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);
+        $assignedCaretakers = $this->adminModel->getAssignedCaretakers($site_id);
         
         $data = [
             'title' => 'Clients',
             'pageTitle' => $clients->name . ' - ' . $site->site_name,
             'site' => $site,
             'client' => $clients,
-            'assigned_officers' => $assignedOfficers
+            'assigned_officers' => $assignedOfficers,
+            'assigned_caretakers' => $assignedCaretakers
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }
@@ -1567,6 +1721,22 @@ public function approveLeave($id) {
         $admin_id = $_SESSION['user_id'];
         
         if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
+            // Get leave request details for notification
+            $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+            
+            if ($leaveRequest) {
+                // Send notification to employee
+                $this->notificationModel->insertNotification(
+                    $leaveRequest->officer_id,
+                    'leave',
+                    'Leave Request Approved',
+                    'Your leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' has been approved.',
+                    '/supervisor/leaverequests',
+                    'check_circle',
+                    $admin_id
+                );
+            }
+            
             flash('leave_success', 'Leave request approved successfully');
         } else {
             flash('leave_error', 'Failed to approve leave request');
@@ -1590,6 +1760,22 @@ public function rejectLeave($id) {
         }
         
         if ($this->adminModel->rejectLeaveRequest($id, $admin_id, $reason)) {
+            // Get leave request details for notification
+            $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+            
+            if ($leaveRequest) {
+                // Send notification to employee
+                $this->notificationModel->insertNotification(
+                    $leaveRequest->officer_id,
+                    'alert',
+                    'Leave Request Rejected',
+                    'Your leave request has been rejected. Reason: ' . $reason,
+                    '/supervisor/leaverequests',
+                    'cancel',
+                    $admin_id
+                );
+            }
+            
             flash('leave_success', 'Leave request rejected');
         } else {
             flash('leave_error', 'Failed to reject leave request');
@@ -1874,6 +2060,29 @@ public function rejectLeave($id) {
         ];
         $this->view('admin/incidents/v_incidents', $data);
     }
+
+    public function incidentReports() {
+        // Get comprehensive incident analytics data
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        $stats = $this->adminModel->getIncidentStats();
+        $recentIncidents = $this->adminModel->getRecentIncidents(1000);
+        
+        $data = [
+            'title' => 'Incident Reports & Analytics',
+            'pageTitle' => 'Incident Reports & Analytics',
+            'chartData' => $chartData,
+            'stats' => $stats,
+            'recentIncidents' => $recentIncidents
+        ];
+        $this->view('admin/reports/v_incidents', $data);
+    }
+
+    public function getIncidentChartData() {
+        // AJAX endpoint for chart data
+        header('Content-Type: application/json');
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        echo json_encode($chartData);
+    }
     
     public function viewIncident($id) {
         // Get incident details
@@ -1944,6 +2153,14 @@ public function rejectLeave($id) {
                 'Incident',
                 $userId
             );
+            
+            // Send notifications to related users
+            $reviewData = [
+                'review_title' => $reviewTitle,
+                'review_type' => $reviewType,
+                'review_details' => $reviewDetails
+            ];
+            $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
             
             flash('incident_message', 'Review added successfully and status updated to In Progress', 'alert-success');
         } else {
@@ -2045,9 +2262,23 @@ public function rejectLeave($id) {
     }
 
     public function incidentsreports() {
+        // Get comprehensive incident analytics data
+        $chartData = $this->chartModel->getIncidentAnalytics();
+        $stats = $this->adminModel->getIncidentStats();
+        
+        // Get recent incidents for the report
+        $incidents = $this->adminModel->getAllIncidents();
+        
+        // Get all sites for filter dropdown
+        $sites = $this->adminModel->getAllSites();
+        
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Incidents Reports'
+            'pageTitle' => 'Incidents Reports',
+            'chartData' => $chartData,
+            'stats' => $stats,
+            'incidents' => $incidents,
+            'sites' => $sites
         ];
         $this->view('admin/reports/v_incidents', $data);  
     }
@@ -2146,18 +2377,40 @@ public function rejectLeave($id) {
             empty($data['email_err']) && 
             empty($data['phone_number_err'])){
 
-                // Insert admin and get the new admin ID
-                $adminId = $this->adminModel->addAdmin($data);
+                // Insert admin and get the result
+                $result = $this->adminModel->addAdmin($data);
                 
-                if($adminId){
+                if($result && isset($result['success']) && $result['success']){
                     // Add activity log
                     $title = "New Admin Added";
                     $description = "Admin '" . $data['name'] . "' added";
                     $type = "shift";
                     $this->adminModel->insertRecentActivity($title, $description, $type);
                     
-                    flash('msg', 'Admin added successfully', 'alert-success');
-                    redirect('admin/admins/'.$adminId); // Redirect properly
+                    // Send welcome email with credentials
+                    if (isset($result['userID']) && isset($result['tempPassword'])) {
+                        $emailVars = [
+                            'site_name' => SITE_NAME,
+                            'admin_name' => $result['name'],
+                            'login_id' => $result['userID'],
+                            'temp_password' => $result['tempPassword'],
+                            'login_url' => URL_ROOT . '/users/login'
+                        ];
+                        
+                        $emailResult = send_templated_email(
+                            $result['email'],
+                            'welcome_admin',
+                            $emailVars,
+                            'Welcome to ' . SITE_NAME . ' - Administrator Account Created'
+                        );
+                        
+                        if (!$emailResult['success']) {
+                            error_log('Failed to send welcome email to admin: ' . $emailResult['message']);
+                        }
+                    }
+                    
+                    flash('msg', 'Admin added successfully and welcome email sent', 'alert-success');
+                    redirect('admin/admins/'.$result['id']); // Redirect properly
                 } else {
                     flash('msg', 'Failed to add admin', 'alert-danger');
                     $this->view('admin/admins/v_create_admin',$data);
@@ -2261,6 +2514,23 @@ public function rejectLeave($id) {
         }
 
         $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType);
+        
+        // Send notification to officer if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $officerId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned to ' . $siteName . ' (' . $shiftType . ').',
+                '/premiseofficer/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
         echo json_encode($result);
     }
 
@@ -2283,6 +2553,27 @@ public function rejectLeave($id) {
         }
 
         $result = $this->adminModel->unassignOfficerFromSite($assignmentId);
+        echo json_encode($result);
+    }
+
+    public function unassignCaretakerFromSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $assignmentId = $input['assignment_id'] ?? null;
+
+        if (!$assignmentId) {
+            echo json_encode(['success' => false, 'message' => 'Missing assignment ID']);
+            return;
+        }
+
+        $result = $this->adminModel->unassignCaretakerFromSite($assignmentId);
         echo json_encode($result);
     }
 
@@ -2334,6 +2625,115 @@ public function rejectLeave($id) {
                 $title = ucfirst(str_replace('_', ' ', $field)) . ' Updated';
                 $description = "Officer ID: $officerId - $field changed to: $value";
                 $this->adminModel->insertRecentActivity($title, $description, 'officer');
+                
+                // Send notification to officer for rank updates
+                if ($field === 'rank') {
+                    // Convert role name to role code if needed
+                    $roleCode = $role;
+                    $roleLower = strtolower($role);
+                    if ($roleLower === 'premise officer' || $roleLower === 'premiseofficer') {
+                        $roleCode = 'po';
+                    } elseif ($roleLower === 'mobile rider' || $roleLower === 'mobilerider') {
+                        $roleCode = 'mr';
+                    } elseif ($roleLower === 'care taker' || $roleLower === 'caretaker') {
+                        $roleCode = 'ct';
+                    }
+                    
+                    // Get officer details for notification based on role
+                    $officer = null;
+                    
+                    switch($roleCode) {
+                        case 'po':
+                            $officer = $this->adminModel->getPOById($officerId);
+                            $roleName = 'premiseofficer';
+                            
+                            // Fallback: If not found in premise_officers table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Premise Officer'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    // Try to find in premise_officers by userID
+                                    $this->db->query("SELECT * FROM premise_officers WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    // If still not found, create minimal object for notification
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                        case 'mr':
+                            $officer = $this->adminModel->getMRById($officerId);
+                            $roleName = 'mobilerider';
+                            
+                            // Fallback: If not found in mobile_riders table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Mobile Rider'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    $this->db->query("SELECT * FROM mobile_riders WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                        case 'ct':
+                            $officer = $this->adminModel->getCTById($officerId);
+                            $roleName = 'caretaker';
+                            
+                            // Fallback: If not found in care_takers table, get from Users table
+                            if (!$officer) {
+                                $this->db->query("SELECT userID FROM Users WHERE id = :id AND role = 'Care Taker'");
+                                $this->db->bind(':id', $officerId);
+                                $userRecord = $this->db->single();
+                                
+                                if ($userRecord) {
+                                    $this->db->query("SELECT * FROM care_takers WHERE userID = :userID");
+                                    $this->db->bind(':userID', $userRecord->userID);
+                                    $officer = $this->db->single();
+                                    
+                                    if (!$officer) {
+                                        $officer = new stdClass();
+                                        $officer->userID = $userRecord->userID;
+                                    }
+                                }
+                            }
+                            break;
+                    }
+                    
+                    if ($officer) {
+                        // Get numeric user ID for notification
+                        $this->db->query("SELECT id FROM Users WHERE userID = :userID");
+                        $this->db->bind(':userID', $officer->userID);
+                        $userRow = $this->db->single();
+                        $numericUserId = $userRow ? $userRow->id : null;
+                        
+                        if ($numericUserId) {
+                            // Send notification to officer about rank update
+                            $this->notificationModel->insertNotification(
+                                $numericUserId,
+                                'info',
+                                'Rank Updated',
+                                'Your rank has been updated to: ' . $value . '. Please check your profile for more details.',
+                                '/' . $roleName . '/dashboard',
+                                'star',
+                                $_SESSION['user_id'] ?? 1
+                            );
+                        }
+                    }
+                }
                 
                 echo json_encode(['success' => true, 'message' => 'Updated successfully']);
             } else {
@@ -2394,7 +2794,413 @@ public function rejectLeave($id) {
         }
 
         $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
+        
+        // Send notification to supervisor if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $supervisorId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned as supervisor to ' . $siteName . '.',
+                '/supervisor/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
         echo json_encode($result);
+    }
+
+    // AJAX endpoint to get available caretakers
+    public function getAvailableCaretakers() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $filters = [
+            'site_id' => $input['site_id'] ?? null,
+            'city' => $input['city'] ?? '',
+            'district' => $input['district'] ?? '',
+            'district_filter' => $input['district_filter'] ?? 'same-district',
+            'city_filter' => $input['city_filter'] ?? 'same-city',
+            'availability' => $input['availability'] ?? 'available'
+        ];
+
+        $caretakers = $this->adminModel->getAvailableCaretakers($filters);
+        
+        echo json_encode(['caretakers' => $caretakers]);
+    }
+
+    // AJAX endpoint to assign caretaker to site
+    public function assignCaretakerToSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $siteId = $input['site_id'] ?? null;
+        $caretakerId = $input['caretaker_id'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
+
+        if (!$siteId || !$caretakerId || !$assignedBy) {
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
+        
+        // Send notification to caretaker if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $caretakerId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned as caretaker to ' . $siteName . '.',
+                '/caretaker/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
+        echo json_encode($result);
+    }
+
+    // Update Admin (AJAX)
+    public function updateAdmin() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            $name = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
+            $phone_number = trim($_POST['phone_number'] ?? '');
+            
+            if (!$admin_id || empty($name) || empty($email) || empty($phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+                return;
+            }
+            
+            // Validate email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid email format']);
+                return;
+            }
+            
+            // Validate phone number
+            if (!preg_match('/^[0-9]{10,15}$/', $phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid phone number (10-15 digits required)']);
+                return;
+            }
+            
+            $data = [
+                'admin_id' => $admin_id,
+                'name' => htmlspecialchars($name, ENT_QUOTES, 'UTF-8'),
+                'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
+                'phone_number' => htmlspecialchars($phone_number, ENT_QUOTES, 'UTF-8')
+            ];
+            
+            if ($this->adminModel->updateAdmin($data)) {
+                echo json_encode(['status' => 'success', 'message' => 'Admin updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update admin']);
+            }
+        }
+    }
+
+    // Delete Admin (AJAX)
+    public function deleteAdmin() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            
+            if (!$admin_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin ID is required']);
+                return;
+            }
+            
+            // Prevent deleting own account
+            $current_user_id = $_SESSION['user_id'] ?? null;
+            if ($admin_id == $current_user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'You cannot delete your own account']);
+                return;
+            }
+            
+            // Prevent deleting system administrator
+            $admin = $this->adminModel->getAdminById($admin_id);
+            if ($admin && $admin->userID == 'ADMIN001') {
+                echo json_encode(['status' => 'error', 'message' => 'Cannot delete system administrator']);
+                return;
+            }
+            
+            if ($this->adminModel->deleteAdmin($admin_id)) {
+                echo json_encode(['status' => 'success', 'message' => 'Admin deleted successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to delete admin']);
+            }
+        }
+    }
+
+    // Update Profile Phone (AJAX)
+    public function updateProfilePhone() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $phone_number = trim($_POST['phone_number'] ?? '');
+            
+            if (!$user_id || empty($phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Phone number is required']);
+                return;
+            }
+            
+            // Validate phone number
+            if (!preg_match('/^[0-9]{10,15}$/', $phone_number)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid phone number (10-15 digits required)']);
+                return;
+            }
+            
+            if ($this->adminModel->updateProfilePhone($user_id, $phone_number)) {
+                echo json_encode(['status' => 'success', 'message' => 'Phone number updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update phone number']);
+            }
+        }
+    }
+
+    // Update Profile Email (AJAX)
+    public function updateProfileEmail() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $email = trim($_POST['email'] ?? '');
+            
+            if (!$user_id || empty($email)) {
+                echo json_encode(['status' => 'error', 'message' => 'Email is required']);
+                return;
+            }
+            
+            // Validate email
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid email format']);
+                return;
+            }
+            
+            if ($this->adminModel->updateProfileEmail($user_id, $email)) {
+                echo json_encode(['status' => 'success', 'message' => 'Email updated successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update email']);
+            }
+        }
+    }
+
+    // Update Profile Password (AJAX)
+    public function updateProfilePassword() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $current_password = $_POST['current_password'] ?? '';
+            $new_password = $_POST['new_password'] ?? '';
+            
+            if (!$user_id || empty($current_password) || empty($new_password)) {
+                echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
+                return;
+            }
+            
+            // Validate new password length
+            if (strlen($new_password) < 6) {
+                echo json_encode(['status' => 'error', 'message' => 'Password must be at least 6 characters long']);
+                return;
+            }
+            
+            // Verify current password
+            $user = $this->adminModel->getUserByID($user_id);
+            if (!$user || !password_verify($current_password, $user->password)) {
+                echo json_encode(['status' => 'error', 'message' => 'Current password is incorrect']);
+                return;
+            }
+            
+            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+            
+            if ($this->adminModel->updateProfilePassword($user_id, $hashed_password)) {
+                echo json_encode(['status' => 'success', 'message' => 'Password changed successfully']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to change password']);
+            }
+        }
+    }
+
+    // Update Profile Image (AJAX)
+    public function updateProfileImage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User not authenticated']);
+                return;
+            }
+            
+            if (!isset($_FILES['profile_image']) || $_FILES['profile_image']['error'] !== UPLOAD_ERR_OK) {
+                echo json_encode(['status' => 'error', 'message' => 'Please select an image']);
+                return;
+            }
+            
+            $image = $_FILES['profile_image'];
+            $image_name = time() . '_' . $image['name'];
+            
+            // Validate image
+            $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!in_array($image['type'], $allowed_types)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid image type. Only JPG, PNG, and GIF allowed']);
+                return;
+            }
+            
+            if ($image['size'] > 5000000) { // 5MB
+                echo json_encode(['status' => 'error', 'message' => 'Image size too large. Maximum 5MB allowed']);
+                return;
+            }
+            
+            // Upload image
+            if (uploadImage($image['tmp_name'], $image_name, '/uploads/image/')) {
+                if ($this->adminModel->updateProfileImage($user_id, $image_name)) {
+                    echo json_encode(['status' => 'success', 'message' => 'Profile picture updated successfully']);
+                } else {
+                    echo json_encode(['status' => 'error', 'message' => 'Failed to update profile picture']);
+                }
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to upload image']);
+            }
+        }
+    }
+
+    /**
+     * Send notifications when an admin adds an incident review
+     * For Admin: Notify all other admins + supervisor + mobile riders that are related
+     */
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+        try {
+            // Get incident details
+            $incident = $this->adminModel->getIncidentById($incidentId);
+            
+            if (!$incident) {
+                error_log("Incident not found: {$incidentId}");
+                return;
+            }
+            
+            // Get reviewer details
+            $reviewer = $this->userModel->getUserById($reviewerId);
+            $reviewerName = $reviewer->name ?? 'An admin';
+            
+            // Prepare notification details
+            $notificationTitle = "New Review on Incident #{$incidentId}";
+            $notificationMessage = "{$reviewerName} (Admin) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
+            $notificationType = 'info';
+            $notificationIcon = 'comment';
+            
+            // Collect all users to notify (use array to avoid duplicates)
+            $usersToNotify = [];
+            
+            // ADMIN adds review: Notify all other admins + supervisor + mobile riders
+            
+            // 1. Notify all other admins
+            try {
+                $admins = $this->adminModel->getAllAdmins();
+                
+                if ($admins && is_array($admins)) {
+                    foreach ($admins as $admin) {
+                        if (isset($admin->id) && $admin->id != $reviewerId) {
+                            $usersToNotify[$admin->id] = [
+                                'link' => URL_ROOT . '/admin/incidents'
+                            ];
+                        }
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("Error getting admins for notification: " . $e->getMessage());
+            }
+            
+            // 2. Notify the supervisor who reported the incident (if exists and not the reviewer)
+            if (isset($incident->user_id) && $incident->user_id != $reviewerId) {
+                $usersToNotify[$incident->user_id] = [
+                    'link' => URL_ROOT . '/supervisor/viewIncident/' . $incidentId
+                ];
+                
+                // 3. Also notify mobile riders assigned to that supervisor's site
+                if (isset($incident->site_id)) {
+                    try {
+                        $supervisorModel = $this->model('M_supervisor');
+                        $mobileRiders = $supervisorModel->getSiteMobileRiders($incident->user_id);
+                        
+                        if ($mobileRiders && is_array($mobileRiders)) {
+                            foreach ($mobileRiders as $rider) {
+                                if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
+                                    $usersToNotify[$rider->user_id] = [
+                                        'link' => URL_ROOT . '/MobileRider/incidents'
+                                    ];
+                                }
+                            }
+                        }
+                    } catch (Exception $e) {
+                        error_log("Error getting mobile riders for notification: " . $e->getMessage());
+                    }
+                }
+            }
+            
+            // Send notifications to all collected users
+            $sentCount = 0;
+            foreach ($usersToNotify as $userId => $data) {
+                try {
+                    $result = $this->notificationModel->insertNotification(
+                        $userId,
+                        $notificationType,
+                        $notificationTitle,
+                        $notificationMessage,
+                        $data['link'],
+                        $notificationIcon,
+                        $reviewerId
+                    );
+                    if ($result) {
+                        $sentCount++;
+                    }
+                } catch (Exception $e) {
+                    error_log("Error sending notification to user {$userId}: " . $e->getMessage());
+                }
+            }
+            
+            error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by admin");
+            
+        } catch (Exception $e) {
+            error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
+        }
     }
 }
 

@@ -1,4 +1,25 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
+<?php
+// Fetch notifications for current user
+$notificationModel = null;
+$notifications = [];
+$unreadCount = 0;
+
+if (isset($_SESSION['user_id'])) {
+    require_once APP_ROOT . '/models/M_notifications.php';
+    $notificationModel = new M_notifications();
+    $notifications = $notificationModel->getNotifications($_SESSION['user_id']);
+    // Count unread notifications
+    $unreadCount = 0;
+    foreach ($notifications as $notif) {
+        if (!$notif->is_read) {
+            $unreadCount++;
+        }
+    }
+    // Limit to first 5 for dropdown
+    $dropdownNotifications = array_slice($notifications, 0, 5);
+}
+?>
 
 
 <link rel="stylesheet" type="text/css" href="<?php echo URL_ROOT; ?>/css/components/sidebar_topbar_style.css">
@@ -42,6 +63,47 @@
           <h1 class="page-title"><?php echo $data['pageTitle']; ?></h1>
 
           <div class="topbar-right">
+  <!-- Notification Toggle -->
+  <div class="topbar-notification" id="notificationToggle">
+    <button class="notification-btn" aria-label="Notifications">
+      <span class="material-symbols-outlined">notifications</span>
+      <?php if ($unreadCount > 0): ?>
+      <span class="notification-badge"><?php echo $unreadCount; ?></span>
+      <?php endif; ?>
+    </button>
+  </div>
+
+  <!-- Notification Dropdown -->
+  <div class="notification-dropdown" id="notificationDropdown" hidden>
+    <div class="notification-header">
+      <h4>Notifications</h4>
+    </div>
+    <div class="notification-list">
+      <?php if (!empty($dropdownNotifications)): ?>
+        <?php foreach ($dropdownNotifications as $notification): ?>
+          <div class="notification-item <?php echo !$notification->is_read ? 'unread' : ''; ?>">
+            <span class="notification-icon">
+              <span class="material-symbols-outlined"><?php echo htmlspecialchars($notification->icon ?? 'notifications'); ?></span>
+            </span>
+            <div class="notification-content">
+              <div class="notification-title"><?php echo htmlspecialchars($notification->title); ?></div>
+              <div class="notification-time"><?php echo time_elapsed_string($notification->created_at); ?></div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <div class="notification-item">
+          <div class="notification-content">
+            <div class="notification-title">No notifications</div>
+          </div>
+        </div>
+      <?php endif; ?>
+    </div>
+    <div class="notification-footer">
+      <a href="<?php echo URL_ROOT; ?>/PremiseOfficer/notifications" class="btn-view-all">View All Notifications</a>
+    </div>
+  </div>
+
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
     <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
@@ -94,7 +156,49 @@
 <?php flash('msg')?>
 
 <script>
-  // Wait for DOM to be fully loaded
+  // Notification and Profile Dropdown Toggle
+  document.addEventListener('DOMContentLoaded', function() {
+    const notificationToggle = document.getElementById('notificationToggle');
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    const profileToggle = document.getElementById('profileToggle');
+    const profileDropdown = document.getElementById('profileDropdown');
+
+    // Toggle notification dropdown
+    if (notificationToggle && notificationDropdown) {
+      notificationToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        notificationDropdown.toggleAttribute('hidden');
+        if (profileDropdown && !profileDropdown.hasAttribute('hidden')) {
+          profileDropdown.setAttribute('hidden', '');
+        }
+      });
+    }
+
+    // Toggle profile dropdown
+    if (profileToggle && profileDropdown) {
+      profileToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        profileDropdown.toggleAttribute('hidden');
+        if (notificationDropdown && !notificationDropdown.hasAttribute('hidden')) {
+          notificationDropdown.setAttribute('hidden', '');
+        }
+      });
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+      if (notificationDropdown && !notificationDropdown.hasAttribute('hidden') && 
+          !notificationToggle.contains(e.target) && !notificationDropdown.contains(e.target)) {
+        notificationDropdown.setAttribute('hidden', '');
+      }
+      if (profileDropdown && !profileDropdown.hasAttribute('hidden') && 
+          !profileToggle.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.setAttribute('hidden', '');
+      }
+    });
+  });
+
+  // Flash message handler
   document.addEventListener('DOMContentLoaded', function() {
     const flashMessage = document.getElementById('msg-flash');
     

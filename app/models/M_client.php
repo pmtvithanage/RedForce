@@ -106,11 +106,17 @@ class M_client {
     public function getAllEquipmentRequests($client_id, $filters = []) {
         $query = '
             SELECT er.*, 
-                   u.name, ud.nic
+                   u.name as caretaker_name, 
+                   ud.nic,
+                   s.site_name,
+                   s.address as site_address
             FROM equipment_requests er
             JOIN Users u ON er.caretaker_id = u.id
             LEFT JOIN user_details ud ON u.id = ud.user_id
-            WHERE 1=1
+            JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
+            JOIN sites s ON csa.site_id = s.id
+            WHERE s.client_id = :client_id
+            AND er.status != "Pending"
         ';
         
         // Add filters
@@ -131,6 +137,12 @@ class M_client {
         }
         
         $query .= ' ORDER BY 
+                    CASE er.status
+                        WHEN "Supervisor Approved" THEN 1
+                        WHEN "Approved" THEN 2
+                        WHEN "Rejected" THEN 3
+                        WHEN "Pending" THEN 4
+                    END,
                     CASE er.priority 
                         WHEN "High" THEN 1 
                         WHEN "Medium" THEN 2 
@@ -139,6 +151,9 @@ class M_client {
                     er.requested_date DESC';
         
         $this->db->query($query);
+        
+        // Bind client_id first
+        $this->db->bind(':client_id', $client_id);
         
         if (!empty($filters['status'])) {
             $this->db->bind(':status', $filters['status']);
@@ -163,10 +178,15 @@ class M_client {
     public function getEquipmentRequestDetails($id, $client_id) {
         $this->db->query('
             SELECT er.*, 
-                   u.name, ud.nic, ud.mobile
+                   u.name as caretaker_name, 
+                   u.phone_number as contact_number,
+                   s.site_name,
+                   supervisor_user.name as supervisor_name
             FROM equipment_requests er
             JOIN Users u ON er.caretaker_id = u.id
-            LEFT JOIN user_details ud ON u.id = ud.user_id
+            LEFT JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
+            LEFT JOIN sites s ON csa.site_id = s.id
+            LEFT JOIN Users supervisor_user ON er.supervisor_approved_by = supervisor_user.id
             WHERE er.id = :id
         ');
         $this->db->bind(':id', $id);
@@ -178,15 +198,13 @@ class M_client {
         $this->db->query('
             UPDATE equipment_requests 
             SET status = "Approved",
-                supervisor_notes = :client_notes,
-                approved_by = :client_id,
+                client_notes = :client_notes,
                 approved_date = CURDATE()
-            WHERE id = :id AND status = "Pending"
+            WHERE id = :id AND status = "Supervisor Approved"
         ');
         
         $this->db->bind(':id', $data['id']);
-        $this->db->bind(':client_notes', $data['client_notes']);
-        $this->db->bind(':client_id', $data['client_id']);
+        $this->db->bind(':client_notes', $data['client_notes'] ?? '');
         
         return $this->db->execute();
     }
@@ -196,15 +214,14 @@ class M_client {
         $this->db->query('
             UPDATE equipment_requests 
             SET status = "Rejected",
-                supervisor_notes = :client_notes,
-                approved_by = :client_id,
+                client_notes = :client_notes,
                 approved_date = CURDATE()
-            WHERE id = :id AND status = "Pending"
+            WHERE id = :id AND status = "Supervisor Approved"
         ');
         
         $this->db->bind(':id', $data['id']);
-        $this->db->bind(':client_notes', $data['client_notes']);
-        $this->db->bind(':client_id', $data['client_id']);
+        $this->db->bind(':client_notes', $data['client_notes'] ?? '');
+        $this->db->bind(':client_id', $data['client_id'] ?? null);
         
         return $this->db->execute();
     }
@@ -214,14 +231,19 @@ class M_client {
         $this->db->query('
             SELECT 
                 COUNT(*) as total_requests,
-                SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending_count,
-                SUM(CASE WHEN status = "Approved" THEN 1 ELSE 0 END) as approved_count,
-                SUM(CASE WHEN status = "Rejected" THEN 1 ELSE 0 END) as rejected_count,
-                SUM(CASE WHEN status = "Pending" THEN total_cost ELSE 0 END) as pending_cost,
-                SUM(CASE WHEN status = "Approved" THEN total_cost ELSE 0 END) as approved_cost,
-                SUM(CASE WHEN status = "Rejected" THEN total_cost ELSE 0 END) as rejected_cost
-            FROM equipment_requests
+                SUM(CASE WHEN er.status = "Supervisor Approved" THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN er.status = "Approved" OR er.status = "Client Approved" THEN 1 ELSE 0 END) as approved_count,
+                SUM(CASE WHEN er.status = "Rejected" THEN 1 ELSE 0 END) as rejected_count,
+                SUM(CASE WHEN er.status = "Supervisor Approved" THEN er.total_cost ELSE 0 END) as pending_cost,
+                SUM(CASE WHEN er.status = "Approved" OR er.status = "Client Approved" THEN er.total_cost ELSE 0 END) as approved_cost,
+                SUM(CASE WHEN er.status = "Rejected" THEN er.total_cost ELSE 0 END) as rejected_cost
+            FROM equipment_requests er
+            INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
+            INNER JOIN sites s ON csa.site_id = s.id
+            WHERE s.client_id = :client_id
+            AND er.status != "Pending"
         ');
+        $this->db->bind(':client_id', $client_id);
         
         return $this->db->single();
     }
@@ -229,11 +251,16 @@ class M_client {
     // Get all caretakers for this client (for filter dropdown)
     public function getCaretakersForClient($client_id) {
         $this->db->query('
-            SELECT id, name 
-            FROM Users 
-            WHERE role = "Care-Taker"
-            ORDER BY name
+            SELECT DISTINCT u.id, u.name 
+            FROM Users u
+            INNER JOIN caretaker_site_assignments csa ON u.id = csa.caretaker_id
+            INNER JOIN sites s ON csa.site_id = s.id
+            WHERE u.role = "Care-Taker"
+            AND csa.status = "Active"
+            AND s.client_id = :client_id
+            ORDER BY u.name
         ');
+        $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }
 }
