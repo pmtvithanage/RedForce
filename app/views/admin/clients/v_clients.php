@@ -277,17 +277,17 @@
           </div>
 
             <div class="stat-box">
-                <span class="number">142</span>
+                <span class="number"><?php echo $clients->officers_count ?? 0; ?></span>
                 <span class="officer-label">Premise <br> officers</span>
             </div>
 
             <div class="stat-box">
-                <span class="number">13</span>
+                <span class="number"><?php echo $clients->supervisors_count ?? 0; ?></span>
                 <span class="officer-label">Supervisors</span>
             </div>
 
             <div class="stat-box">
-                <span class="number">3</span>
+                <span class="number"><?php echo $clients->caretakers_count ?? 0; ?></span>
                 <span class="officer-label">Care-Takers</span>
             </div>
 

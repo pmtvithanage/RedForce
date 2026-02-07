@@ -250,6 +250,58 @@
     .filter-btn.reset:hover {
         background: #e0e0e0;
     }
+    
+    .chart-controls {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .chart-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        user-select: none;
+    }
+    
+    .chart-checkbox input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #D32F2F;
+    }
+    
+    .chart-checkbox .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .chart-checkbox .color-indicator {
+        width: 20px;
+        height: 3px;
+        border-radius: 2px;
+    }
+    
+    .chart-checkbox .color-indicator.total {
+        background: #D32F2F;
+        height: 4px;
+    }
+    
+    .chart-checkbox .color-indicator.pending {
+        background: #FFC107;
+    }
+    
+    .chart-checkbox .color-indicator.in-progress {
+        background: #2196F3;
+    }
+    
+    .chart-checkbox .color-indicator.resolved {
+        background: #4CAF50;
+    }
 </style>
 
 <!-- Content -->
@@ -291,12 +343,12 @@
             
             <div class="filter-group">
                 <label>Date Range</label>
-                <input type="date" id="startDate" />
+                <input type="date" id="startDate" value="<?php echo date('Y-m-d', strtotime('-89 days')); ?>" />
             </div>
             
             <div class="filter-group">
                 <label>To</label>
-                <input type="date" id="endDate" />
+                <input type="date" id="endDate" value="<?php echo date('Y-m-d'); ?>" />
             </div>
             
             <div class="filter-buttons">
@@ -350,9 +402,39 @@
             </div>
         </div>
 
-        <!-- Monthly Trend -->
+        <!-- Daily Trend -->
         <div class="chart-card" style="grid-column: span 2;">
-            <h2>Monthly Incident Trend (Last 12 Months)</h2>
+            <h2>Daily Incident Trend (Last 90 Days)</h2>
+            <div class="chart-controls">
+                <label class="chart-checkbox">
+                    <input type="checkbox" id="toggleTotal" checked>
+                    <span class="checkbox-label">
+                        <span class="color-indicator total"></span>
+                        <span>Total Incidents</span>
+                    </span>
+                </label>
+                <label class="chart-checkbox">
+                    <input type="checkbox" id="togglePending" checked>
+                    <span class="checkbox-label">
+                        <span class="color-indicator pending"></span>
+                        <span>Pending</span>
+                    </span>
+                </label>
+                <label class="chart-checkbox">
+                    <input type="checkbox" id="toggleInProgress" checked>
+                    <span class="checkbox-label">
+                        <span class="color-indicator in-progress"></span>
+                        <span>In Progress</span>
+                    </span>
+                </label>
+                <label class="chart-checkbox">
+                    <input type="checkbox" id="toggleResolved" checked>
+                    <span class="checkbox-label">
+                        <span class="color-indicator resolved"></span>
+                        <span>Resolved</span>
+                    </span>
+                </label>
+            </div>
             <div class="chart-container tall">
                 <canvas id="monthlyTrendChart"></canvas>
             </div>
@@ -478,39 +560,157 @@ severityChart = new Chart(severityCtx, {
     }
 });
 
-// Monthly Trend Chart (Line)
+// Daily Trend Chart (Line with Points) - Multiple status lines
 const monthlyTrendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
 monthlyTrendChart = new Chart(monthlyTrendCtx, {
     type: 'line',
     data: {
         labels: chartData.monthlyTrend.labels,
-        datasets: [{
-            label: 'Incidents',
-            data: chartData.monthlyTrend.data,
-            borderColor: chartData.monthlyTrend.borderColor,
-            backgroundColor: chartData.monthlyTrend.backgroundColor,
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4
-        }]
+        datasets: [
+            {
+                label: 'Total Incidents',
+                data: chartData.monthlyTrend.total,
+                borderColor: '#D32F2F',
+                backgroundColor: 'rgba(211, 47, 47, 0.1)',
+                borderWidth: 1,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#D32F2F',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#B71C1C',
+                pointHoverBorderColor: '#fff'
+            },
+            {
+                label: 'Pending',
+                data: chartData.monthlyTrend.pending,
+                borderColor: '#FFC107',
+                backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#FFC107',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#FFB300',
+                pointHoverBorderColor: '#fff'
+            },
+            {
+                label: 'In Progress',
+                data: chartData.monthlyTrend.inProgress,
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#2196F3',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#1976D2',
+                pointHoverBorderColor: '#fff'
+            },
+            {
+                label: 'Resolved',
+                data: chartData.monthlyTrend.resolved,
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 5,
+                pointBackgroundColor: '#4CAF50',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverBackgroundColor: '#388E3C',
+                pointHoverBorderColor: '#fff'
+            }
+        ]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                display: false
+                display: true,
+                position: 'top',
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12
+                    },
+                    usePointStyle: true,
+                    pointStyle: 'circle'
+                }
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                callbacks: {
+                    title: function(context) {
+                        return context[0].label;
+                    },
+                    label: function(context) {
+                        const count = context.parsed.y;
+                        const label = context.dataset.label;
+                        return label + ': ' + (count === 1 ? '1 incident' : count + ' incidents');
+                    }
+                }
             }
         },
         scales: {
             y: {
                 beginAtZero: true,
                 ticks: {
-                    stepSize: 1
+                    stepSize: 1,
+                    precision: 0
+                },
+                title: {
+                    display: true,
+                    text: 'Number of Incidents'
+                }
+            },
+            x: {
+                ticks: {
+                    maxRotation: 45,
+                    minRotation: 45,
+                    autoSkip: true,
+                    maxTicksLimit: 15
                 }
             }
+        },
+        interaction: {
+            mode: 'index',
+            intersect: false
         }
     }
+});
+
+// Chart line visibility toggle functionality
+document.getElementById('toggleTotal').addEventListener('change', function() {
+    monthlyTrendChart.data.datasets[0].hidden = !this.checked;
+    monthlyTrendChart.update();
+});
+
+document.getElementById('togglePending').addEventListener('change', function() {
+    monthlyTrendChart.data.datasets[1].hidden = !this.checked;
+    monthlyTrendChart.update();
+});
+
+document.getElementById('toggleInProgress').addEventListener('change', function() {
+    monthlyTrendChart.data.datasets[2].hidden = !this.checked;
+    monthlyTrendChart.update();
+});
+
+document.getElementById('toggleResolved').addEventListener('change', function() {
+    monthlyTrendChart.data.datasets[3].hidden = !this.checked;
+    monthlyTrendChart.update();
 });
 
 // PDF Download Functionality
@@ -756,11 +956,11 @@ document.getElementById('downloadPdf').addEventListener('click', async function(
         
         // ===== CHARTS PAGES =====
         const chartIds = ['statusChart', 'severityChart', 'monthlyTrendChart'];
-        const chartTitles = ['Incidents by Status', 'Incidents by Severity', 'Monthly Incident Trend'];
+        const chartTitles = ['Incidents by Status', 'Incidents by Severity', 'Daily Incident Trend'];
         const chartDescriptions = [
             'Distribution of incidents across different status categories showing workflow progress.',
             'Breakdown of incidents by severity level indicating priority and urgency.',
-            'Trend analysis of incidents over the last 12 months identifying patterns.'
+            'Daily trend analysis showing incident occurrences over the last 90 days with visible data points.'
         ];
         
         for (let i = 0; i < chartIds.length; i++) {
@@ -773,7 +973,8 @@ document.getElementById('downloadPdf').addEventListener('click', async function(
             pdf.setTextColor(255);
             pdf.setFontSize(16);
             pdf.setFont(undefined, 'bold');
-            pdf.text(chartTitles[i], 20, 10);
+            const displayTitle = i === 2 ? 'Daily Incident Trend (Last 90 Days)' : chartTitles[i];
+            pdf.text(displayTitle, 20, 10);
             
             yPos = 30;
             pdf.setTextColor(100);
@@ -816,13 +1017,15 @@ document.getElementById('downloadPdf').addEventListener('click', async function(
                     (i.severity || '').toLowerCase() === 'high'
                 ).length);
                 insights = `${highPriority} high-priority incidents detected. Immediate action recommended for critical cases.`;
-            } else { // Monthly trend
-                const recentMonth = filteredIncidents.filter(i => {
+            } else { // Daily trend
+                const last7Days = filteredIncidents.filter(i => {
                     const date = new Date(i.created_at);
                     const now = new Date();
-                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                    const diffTime = now - date;
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    return diffDays <= 7;
                 }).length;
-                insights = `Current month shows ${recentMonth} incident(s). Monitor trends for resource allocation.`;
+                insights = `${last7Days} incident(s) reported in the last 7 days. Each point represents daily incident count.`;
             }
             
             const insightLines = pdf.splitTextToSize(insights, pageWidth - 50);
@@ -1023,8 +1226,18 @@ document.getElementById('downloadPdf').addEventListener('click', async function(
 const allIncidents = <?php echo json_encode($data['incidents'] ?? []); ?>;
 let filteredIncidents = allIncidents;
 
-// Apply filter
-document.getElementById('applyFilter').addEventListener('click', function() {
+// Apply initial filter on page load with default date range
+window.addEventListener('DOMContentLoaded', function() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (startDate || endDate) {
+        applyFilterFunction();
+    }
+});
+
+// Apply filter function
+function applyFilterFunction() {
     const siteId = document.getElementById('siteFilter').value;
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -1061,18 +1274,24 @@ document.getElementById('applyFilter').addEventListener('click', function() {
     // Show filter applied message
     const siteName = siteId ? document.querySelector(`#siteFilter option[value="${siteId}"]`).text : 'All Sites';
     console.log(`Filter applied: ${siteName}, ${filteredIncidents.length} incidents found`);
-});
+}
+
+// Apply filter
+document.getElementById('applyFilter').addEventListener('click', applyFilterFunction);
 
 // Reset filter
 document.getElementById('resetFilter').addEventListener('click', function() {
     document.getElementById('siteFilter').value = '';
-    document.getElementById('startDate').value = '';
-    document.getElementById('endDate').value = '';
     
-    filteredIncidents = allIncidents;
-    updateStats(allIncidents);
-    updateCharts(allIncidents);
-    updateIncidentTable(allIncidents);
+    // Reset to default 90-day range
+    const today = new Date();
+    const ninetyDaysAgo = new Date();
+    ninetyDaysAgo.setDate(today.getDate() - 89);
+    
+    document.getElementById('endDate').value = today.toISOString().split('T')[0];
+    document.getElementById('startDate').value = ninetyDaysAgo.toISOString().split('T')[0];
+    
+    applyFilterFunction();
 });
 
 // Update statistics
@@ -1102,11 +1321,43 @@ function updateCharts(incidents) {
     severityChart.data.datasets[0].data = severityData.data;
     severityChart.update();
     
-    // Calculate monthly trend
+    // Calculate daily trend
     const monthlyData = calculateMonthlyTrend(incidents);
+    
+    // Preserve hidden state of datasets
+    const hiddenStates = [
+        monthlyTrendChart.data.datasets[0].hidden || false,
+        monthlyTrendChart.data.datasets[1].hidden || false,
+        monthlyTrendChart.data.datasets[2].hidden || false,
+        monthlyTrendChart.data.datasets[3].hidden || false
+    ];
+    
     monthlyTrendChart.data.labels = monthlyData.labels;
-    monthlyTrendChart.data.datasets[0].data = monthlyData.data;
+    monthlyTrendChart.data.datasets[0].data = monthlyData.total;
+    monthlyTrendChart.data.datasets[1].data = monthlyData.pending;
+    monthlyTrendChart.data.datasets[2].data = monthlyData.inProgress;
+    monthlyTrendChart.data.datasets[3].data = monthlyData.resolved;
+    
+    // Restore hidden states
+    monthlyTrendChart.data.datasets[0].hidden = hiddenStates[0];
+    monthlyTrendChart.data.datasets[1].hidden = hiddenStates[1];
+    monthlyTrendChart.data.datasets[2].hidden = hiddenStates[2];
+    monthlyTrendChart.data.datasets[3].hidden = hiddenStates[3];
+    
     monthlyTrendChart.update();
+    
+    // Update chart title based on date range
+    const startDateInput = document.getElementById('startDate').value;
+    const endDateInput = document.getElementById('endDate').value;
+    const chartTitle = document.querySelector('.chart-card:has(#monthlyTrendChart) h2');
+    
+    if (startDateInput || endDateInput) {
+        const start = startDateInput ? new Date(startDateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Beginning';
+        const end = endDateInput ? new Date(endDateInput).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Present';
+        chartTitle.textContent = `Daily Incident Trend (${start} - ${end})`;
+    } else {
+        chartTitle.textContent = 'Daily Incident Trend (Last 90 Days)';
+    }
 }
 
 // Calculate status distribution from incidents
@@ -1147,38 +1398,107 @@ function calculateSeverityData(incidents) {
     return { labels, data };
 }
 
-// Calculate monthly trend from incidents
+// Calculate daily trend from incidents (respects date range filter) - Separated by status
 function calculateMonthlyTrend(incidents) {
-    const monthlyCount = {};
+    const dailyPending = {};
+    const dailyInProgress = {};
+    const dailyResolved = {};
+    const dailyTotal = {};
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
     
-    // Initialize last 12 months
-    for (let i = 11; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
-        monthlyCount[monthKey] = 0;
+    // Get filter dates
+    const startDateInput = document.getElementById('startDate').value;
+    const endDateInput = document.getElementById('endDate').value;
+    
+    let startDate, endDate;
+    
+    if (startDateInput || endDateInput) {
+        // Use filter dates if provided
+        startDate = startDateInput ? new Date(startDateInput) : new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+        endDate = endDateInput ? new Date(endDateInput) : new Date(now);
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+    } else {
+        // Default to last 90 days if no filter
+        startDate = new Date(now);
+        startDate.setDate(startDate.getDate() - 89);
+        endDate = new Date(now);
     }
     
-    // Count incidents per month
+    // Initialize all days in range for each status
+    const currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        const dayKey = currentDate.toISOString().slice(0, 10);
+        dailyPending[dayKey] = 0;
+        dailyInProgress[dayKey] = 0;
+        dailyResolved[dayKey] = 0;
+        dailyTotal[dayKey] = 0;
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Count incidents per day by status
     incidents.forEach(incident => {
         const date = new Date(incident.created_at);
-        const monthKey = date.toISOString().slice(0, 7);
-        if (monthlyCount.hasOwnProperty(monthKey)) {
-            monthlyCount[monthKey]++;
+        date.setHours(0, 0, 0, 0);
+        const dayKey = date.toISOString().slice(0, 10);
+        const status = incident.status || 'Pending';
+        
+        if (dailyPending.hasOwnProperty(dayKey)) {
+            dailyTotal[dayKey]++;
+            if (status === 'Pending') {
+                dailyPending[dayKey]++;
+            } else if (status === 'In Progress') {
+                dailyInProgress[dayKey]++;
+            } else if (status === 'Resolved' || status === 'Closed') {
+                dailyResolved[dayKey]++;
+            }
         }
     });
     
     // Format labels and data
     const labels = [];
-    const data = [];
-    Object.keys(monthlyCount).sort().forEach(monthKey => {
-        const date = new Date(monthKey + '-01');
-        const label = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const pendingData = [];
+    const inProgressData = [];
+    const resolvedData = [];
+    const totalData = [];
+    const sortedDays = Object.keys(dailyPending).sort();
+    
+    // Determine label format based on range length
+    const dayCount = sortedDays.length;
+    const showFullDates = dayCount <= 30;
+    
+    sortedDays.forEach((dayKey, index) => {
+        const date = new Date(dayKey + 'T00:00:00');
+        let label;
+        
+        if (showFullDates) {
+            // Show all dates for ranges <= 30 days
+            label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        } else {
+            // Show every 3rd or 7th label for longer ranges
+            const skipInterval = dayCount > 180 ? 7 : 3;
+            if (index % skipInterval === 0 || index === sortedDays.length - 1) {
+                label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            } else {
+                label = '';
+            }
+        }
+        
         labels.push(label);
-        data.push(monthlyCount[monthKey]);
+        totalData.push(dailyTotal[dayKey]);
+        pendingData.push(dailyPending[dayKey]);
+        inProgressData.push(dailyInProgress[dayKey]);
+        resolvedData.push(dailyResolved[dayKey]);
     });
     
-    return { labels, data };
+    return { 
+        labels, 
+        total: totalData,
+        pending: pendingData,
+        inProgress: inProgressData,
+        resolved: resolvedData
+    };
 }
 
 // Update incident table

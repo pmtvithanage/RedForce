@@ -779,6 +779,14 @@ class Admin extends Controller {
 
         $clients = $this->adminModel->getAllClients();
         
+        // Get staff counts for each client
+        foreach ($clients as $client) {
+            $staffCounts = $this->adminModel->getClientStaffCounts($client->id);
+            $client->officers_count = $staffCounts->officers_count ?? 0;
+            $client->supervisors_count = $staffCounts->supervisors_count ?? 0;
+            $client->caretakers_count = $staffCounts->caretakers_count ?? 0;
+        }
+        
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Manage Clients',
@@ -1076,13 +1084,15 @@ class Admin extends Controller {
         $site = $this->adminModel->getSiteById($site_id);
         $clients = $this->adminModel->getClientById($site->client_id);
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);
+        $assignedCaretakers = $this->adminModel->getAssignedCaretakers($site_id);
         
         $data = [
             'title' => 'Clients',
             'pageTitle' => $clients->name . ' - ' . $site->site_name,
             'site' => $site,
             'client' => $clients,
-            'assigned_officers' => $assignedOfficers
+            'assigned_officers' => $assignedOfficers,
+            'assigned_caretakers' => $assignedCaretakers
         ];
         $this->view('admin/clients/v_viewsites', $data);
     }
@@ -2546,6 +2556,27 @@ public function rejectLeave($id) {
         echo json_encode($result);
     }
 
+    public function unassignCaretakerFromSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $assignmentId = $input['assignment_id'] ?? null;
+
+        if (!$assignmentId) {
+            echo json_encode(['success' => false, 'message' => 'Missing assignment ID']);
+            return;
+        }
+
+        $result = $this->adminModel->unassignCaretakerFromSite($assignmentId);
+        echo json_encode($result);
+    }
+
     // AJAX endpoint to update officer field (rank or employment status)
     public function updateOfficerField() {
         header('Content-Type: application/json');
@@ -2783,6 +2814,72 @@ public function rejectLeave($id) {
         echo json_encode($result);
     }
 
+    // AJAX endpoint to get available caretakers
+    public function getAvailableCaretakers() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['error' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $filters = [
+            'site_id' => $input['site_id'] ?? null,
+            'city' => $input['city'] ?? '',
+            'district' => $input['district'] ?? '',
+            'district_filter' => $input['district_filter'] ?? 'same-district',
+            'city_filter' => $input['city_filter'] ?? 'same-city',
+            'availability' => $input['availability'] ?? 'available'
+        ];
+
+        $caretakers = $this->adminModel->getAvailableCaretakers($filters);
+        
+        echo json_encode(['caretakers' => $caretakers]);
+    }
+
+    // AJAX endpoint to assign caretaker to site
+    public function assignCaretakerToSite() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+
+        $input = json_decode(file_get_contents('php://input'), true);
+        
+        $siteId = $input['site_id'] ?? null;
+        $caretakerId = $input['caretaker_id'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
+
+        if (!$siteId || !$caretakerId || !$assignedBy) {
+            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
+        
+        // Send notification to caretaker if assignment was successful
+        if ($result['success']) {
+            $site = $this->adminModel->getSiteById($siteId);
+            $siteName = $site ? $site->site_name : 'a site';
+            
+            $this->notificationModel->insertNotification(
+                $caretakerId,
+                'assignment',
+                'New Site Assignment',
+                'You have been assigned as caretaker to ' . $siteName . '.',
+                '/caretaker/dashboard',
+                'location_on',
+                $assignedBy
+            );
+        }
+        
+        echo json_encode($result);
+    }
+
     // Update Admin (AJAX)
     public function updateAdmin() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -2851,6 +2948,13 @@ public function rejectLeave($id) {
             $current_user_id = $_SESSION['user_id'] ?? null;
             if ($admin_id == $current_user_id) {
                 echo json_encode(['status' => 'error', 'message' => 'You cannot delete your own account']);
+                return;
+            }
+            
+            // Prevent deleting system administrator
+            $admin = $this->adminModel->getAdminById($admin_id);
+            if ($admin && $admin->userID == 'ADMIN001') {
+                echo json_encode(['status' => 'error', 'message' => 'Cannot delete system administrator']);
                 return;
             }
             

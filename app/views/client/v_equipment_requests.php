@@ -3,7 +3,6 @@
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/supervisor/equipment_style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
 
 <main class="main-content">
     <div class="equipment-container">
@@ -15,11 +14,11 @@
         <div class="stats-grid">
             <div class="stat-card yellow">
                 <div class="stat-icon">
-                    <span class="material-symbols-outlined">schedule</span>
+                    <span class="material-symbols-outlined">pending_actions</span>
                 </div>
                 <div class="stat-info">
                     <div class="stat-value"><?php echo $data['stats']->pending_count ?? 0; ?></div>
-                    <div class="stat-label">Pending Requests</div>
+                    <div class="stat-label">Awaiting Your Decision</div>
                     <div class="stat-cost">Rs. <?php echo number_format($data['stats']->pending_cost ?? 0, 2); ?></div>
                 </div>
             </div>
@@ -59,7 +58,7 @@
         </div>
 
         <!-- Filters Section -->
-        <div class="filters-section animate__animated animate__fadeInUp animate__delay-1s">
+        <div class="filters-section">
             <div class="filters-header">
                 <h3>
                     <span class="material-symbols-outlined">filter_alt</span>
@@ -147,20 +146,12 @@
         </div>
 
         <!-- Requests Table -->
-        <div class="table-wrapper animate__animated animate__fadeInUp animate__delay-2s">
+        <div class="table-wrapper">
             <div class="table-header">
                 <h3>
                     <span class="material-symbols-outlined">list_alt</span>
                     Equipment Requests from Caretakers
                 </h3>
-                <div class="table-actions">
-                    <button class="btn-icon" onclick="exportTable()" title="Export">
-                        <span class="material-symbols-outlined">download</span>
-                    </button>
-                    <button class="btn-icon" onclick="printTable()" title="Print">
-                        <span class="material-symbols-outlined">print</span>
-                    </button>
-                </div>
             </div>
             <div class="table-container">
                 <table class="equipment-table">
@@ -180,7 +171,7 @@
                     <tbody>
                         <?php if (!empty($data['requests'])): ?>
                             <?php foreach ($data['requests'] as $index => $request): ?>
-                                <tr class="table-row animate__animated animate__fadeIn" style="animation-delay: <?php echo ($index * 0.05); ?>s;">
+                                <tr class="table-row">
                                     <td>
                                         <div class="date-cell">
                                             <span class="date-day"><?php echo date('d', strtotime($request->requested_date)); ?></span>
@@ -189,8 +180,8 @@
                                     </td>
                                     <td>
                                         <div class="caretaker-cell">
-                                            <div class="avatar"><?php echo strtoupper(substr($request->name, 0, 1)); ?></div>
-                                            <span><?php echo htmlspecialchars($request->name); ?></span>
+                                            <div class="avatar"><?php echo strtoupper(substr($request->caretaker_name ?? 'C', 0, 1)); ?></div>
+                                            <span><?php echo htmlspecialchars($request->caretaker_name ?? 'Unknown'); ?></span>
                                         </div>
                                     </td>
                                     <td>
@@ -213,11 +204,12 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="status-badge status-<?php echo strtolower($request->status); ?>">
+                                        <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $request->status)); ?>">
                                             <?php 
                                                 $statusIcon = '';
                                                 switch($request->status) {
                                                     case 'Pending': $statusIcon = 'schedule'; break;
+                                                    case 'Supervisor Approved': $statusIcon = 'verified'; break;
                                                     case 'Approved': $statusIcon = 'check_circle'; break;
                                                     case 'Rejected': $statusIcon = 'cancel'; break;
                                                 }
@@ -227,12 +219,21 @@
                                         </span>
                                     </td>
                                     <td class="action-cell">
-                                        <a href="<?php echo URL_ROOT; ?>/client/reviewEquipmentRequest/<?php echo $request->id; ?>" 
-                                           class="btn-view" 
-                                           title="Review Request">
-                                            <span class="material-symbols-outlined">visibility</span>
-                                            <span class="btn-text">Review</span>
-                                        </a>
+                                        <?php if ($request->status === 'Supervisor Approved'): ?>
+                                            <a href="<?php echo URL_ROOT; ?>/client/reviewEquipmentRequest/<?php echo $request->id; ?>" 
+                                               class="btn-approve" 
+                                               title="Review & Approve/Reject">
+                                                <span class="material-symbols-outlined">fact_check</span>
+                                                <span class="btn-text">Review & Decide</span>
+                                            </a>
+                                        <?php else: ?>
+                                            <a href="<?php echo URL_ROOT; ?>/client/reviewEquipmentRequest/<?php echo $request->id; ?>" 
+                                               class="btn-view" 
+                                               title="View Details">
+                                                <span class="material-symbols-outlined">visibility</span>
+                                                <span class="btn-text">View Details</span>
+                                            </a>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

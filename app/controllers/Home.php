@@ -33,14 +33,25 @@ class Home extends Controller {
                     'image' => $_FILES['image'],
                     'image_name' => time(). '_' . $_FILES['image']['name'],
                     'company_name' => $this->sanitizeInput($_POST['company_name'] ?? ''),
+                    'legal_company_name' => $this->sanitizeInput($_POST['legal_company_name'] ?? ''),
+                    'company_type' => $this->sanitizeInput($_POST['company_type'] ?? ''),
+                    'business_registration_number' => $this->sanitizeInput($_POST['business_registration_number'] ?? ''),
+                    'registered_address' => $this->sanitizeInput($_POST['registered_address'] ?? ''),
                     'email' => $this->sanitizeInput($_POST['email'] ?? ''),
                     'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
                     'contact_person_name' => $this->sanitizeInput($_POST['contact_person_name'] ?? ''),
+                    'business_document' => $_FILES['business_document'] ?? null,
+                    'business_document_name' => isset($_FILES['business_document']['name']) ? time(). '_' . $_FILES['business_document']['name'] : '',
                     'image_err' => '',
                     'company_name_err' => '',
+                    'legal_company_name_err' => '',
+                    'company_type_err' => '',
+                    'business_registration_number_err' => '',
+                    'registered_address_err' => '',
                     'email_err' => '',
                     'phone_number_err' => '',
                     'contact_person_name_err' => '',
+                    'business_document_err' => '',
                     
                 ];
 
@@ -57,6 +68,18 @@ class Home extends Controller {
                 if(empty($data['company_name'])){
                     $data['company_name_err'] = 'Please enter company name';
                 }
+                if(empty($data['legal_company_name'])){
+                    $data['legal_company_name_err'] = 'Please enter legal company name';
+                }
+                if(empty($data['company_type'])){
+                    $data['company_type_err'] = 'Please select company type';
+                }
+                if(empty($data['business_registration_number'])){
+                    $data['business_registration_number_err'] = 'Please enter business registration number';
+                }
+                if(empty($data['registered_address'])){
+                    $data['registered_address_err'] = 'Please enter registered address';
+                }
                 if(empty($data['email'])){
                     $data['email_err'] = 'Please enter email';
                 } elseif(!filter_var($data['email'], FILTER_VALIDATE_EMAIL)){
@@ -70,9 +93,39 @@ class Home extends Controller {
                 if(empty($data['contact_person_name'])){
                     $data['contact_person_name_err'] = 'Please enter contact person name';
                 }
+                
+                // Validate business document
+                if(empty($data['business_document']['name'])){
+                    $data['business_document_err'] = 'Please upload business documentation';
+                } elseif($data['business_document']['size'] > 0){
+                    // Check file size (5MB max)
+                    if($data['business_document']['size'] > 5242880){
+                        $data['business_document_err'] = 'File size must be less than 5MB';
+                    } else {
+                        // Check file type
+                        $allowed_types = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                        $file_extension = strtolower(pathinfo($data['business_document']['name'], PATHINFO_EXTENSION));
+                        $allowed_extensions = ['pdf', 'jpg', 'jpeg', 'png'];
+                        
+                        if(!in_array($file_extension, $allowed_extensions)){
+                            $data['business_document_err'] = 'Only PDF, JPG, and PNG files are allowed';
+                        } else {
+                            // Upload the document
+                            if(uploadImage($data['business_document']['tmp_name'], $data['business_document_name'], '/uploads/businessDocuments/')){
+                                // Document uploaded successfully
+                            } else {
+                                $data['business_document_err'] = 'Failed to upload business document';
+                            }
+                        }
+                    }
+                }
 
                 // Make sure no errors
-                if(empty($data['image_err']) && empty($data['company_name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) && empty($data['contact_person_name_err'])){
+                if(empty($data['image_err']) && empty($data['company_name_err']) && empty($data['legal_company_name_err']) && 
+                   empty($data['company_type_err']) && empty($data['business_registration_number_err']) && 
+                   empty($data['registered_address_err']) && empty($data['email_err']) && 
+                   empty($data['phone_number_err']) && empty($data['contact_person_name_err']) && 
+                   empty($data['business_document_err'])){
                     if($this->homeModel->saveServiceRequest($data)){
                         flash('msg', 'Service request sent successfully', 'alert-success');
                         $this->view('home/v_success', $data);
@@ -90,14 +143,25 @@ class Home extends Controller {
                     'image' => '', 
                     'image_name' => '',
                     'company_name' => '',
+                    'legal_company_name' => '',
+                    'company_type' => '',
+                    'business_registration_number' => '',
+                    'registered_address' => '',
                     'email' => '',
                     'phone_number' => '',
                     'contact_person_name' => '',
+                    'business_document' => '',
+                    'business_document_name' => '',
                     'image_err' => '',
                     'company_name_err' => '',
+                    'legal_company_name_err' => '',
+                    'company_type_err' => '',
+                    'business_registration_number_err' => '',
+                    'registered_address_err' => '',
                     'email_err' => '',
                     'phone_number_err' => '',
-                    'contact_person_name_err' => ''
+                    'contact_person_name_err' => '',
+                    'business_document_err' => ''
                 ];
                 
                 $this->view('home/v_services',$data);

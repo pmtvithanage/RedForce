@@ -13,7 +13,7 @@ body {
 /* Main container */
 .messages-container {
   display: flex;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 210px);
   border-radius: 20px;
   background: #fff;
   overflow: hidden;

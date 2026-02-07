@@ -528,10 +528,12 @@
                             <span class="material-symbols-outlined" style="font-size:16px;">edit</span>
                             Edit
                         </button>
+                        <?php if($admin->userID != 'ADMIN001'): ?>
                         <button class="action-btn btn-delete" onclick="openDeleteModal(<?php echo $admin->id; ?>, '<?php echo htmlspecialchars($admin->name, ENT_QUOTES); ?>', '<?php echo htmlspecialchars($admin->email, ENT_QUOTES); ?>')">
                             <span class="material-symbols-outlined" style="font-size:16px;">delete</span>
                             Delete
                         </button>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php endforeach; ?>

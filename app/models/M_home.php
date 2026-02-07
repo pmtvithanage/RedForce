@@ -92,14 +92,19 @@ public function getApprovedRequest() {
     return $this->db->resultSet();
 }
     public function saveServiceRequest($data) {
-        $this->db->query("INSERT INTO client_requests (company_name, email, phone_number, contact_person_name, logo_path, created_at) 
-                         VALUES (:company_name, :email, :phone_number, :contact_person_name, :logo_path, NOW())");
+        $this->db->query("INSERT INTO client_requests (company_name, legal_company_name, company_type, business_registration_number, registered_address, email, phone_number, contact_person_name, logo_path, business_document, created_at) 
+                         VALUES (:company_name, :legal_company_name, :company_type, :business_registration_number, :registered_address, :email, :phone_number, :contact_person_name, :logo_path, :business_document, NOW())");
         
         $this->db->bind(':company_name', $data['company_name']);
+        $this->db->bind(':legal_company_name', $data['legal_company_name']);
+        $this->db->bind(':company_type', $data['company_type']);
+        $this->db->bind(':business_registration_number', $data['business_registration_number']);
+        $this->db->bind(':registered_address', $data['registered_address']);
         $this->db->bind(':email', $data['email']);
         $this->db->bind(':phone_number', $data['phone_number']);
         $this->db->bind(':contact_person_name', $data['contact_person_name']);
         $this->db->bind(':logo_path', $data['image_name']);
+        $this->db->bind(':business_document', $data['business_document_name']);
         
         if($this->db->execute()) {
             return true;

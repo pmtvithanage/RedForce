@@ -33,8 +33,8 @@
                     <div class="detail-item">
                         <label>Requested By:</label>
                         <div class="detail-value">
-                            <strong><?php echo htmlspecialchars($request->name); ?></strong><br>
-                            <small>NIC: <?php echo htmlspecialchars($request->nic ?? 'N/A'); ?> | Contact: <?php echo htmlspecialchars($request->mobile ?? 'N/A'); ?></small>
+                            <strong><?php echo htmlspecialchars($request->caretaker_name ?? 'Unknown'); ?></strong><br>
+                            <small>Contact: <?php echo htmlspecialchars($request->contact_number ?? 'N/A'); ?></small>
                         </div>
                     </div>
 
@@ -79,25 +79,30 @@
                         <div class="detail-value reason-text"><?php echo nl2br(htmlspecialchars($request->reason)); ?></div>
                     </div>
 
+                    <?php if ($request->status != 'Pending' && $request->supervisor_notes): ?>
+                        <div class="detail-item full-width" style="background: <?php echo $request->status === 'Rejected' ? '#fee2e2' : '#dbeafe'; ?>; padding: 15px; border-radius: 8px; border-left: 4px solid <?php echo $request->status === 'Rejected' ? '#ef4444' : '#3b82f6'; ?>;">
+                            <label style="color: <?php echo $request->status === 'Rejected' ? '#991b1b' : '#1e40af'; ?>; font-weight: 600;">
+                                <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">note</span>
+                                Supervisor Notes:
+                            </label>
+                            <div class="detail-value" style="color: <?php echo $request->status === 'Rejected' ? '#7f1d1d' : '#1e3a8a'; ?>; margin-top: 8px; font-style: italic;">
+                                "<?php echo nl2br(htmlspecialchars($request->supervisor_notes)); ?>"
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
                     <?php if ($request->status != 'Pending'): ?>
                         <div class="detail-item">
                             <label>Decision Date:</label>
                             <div class="detail-value"><?php echo $request->approved_date ? date('F d, Y', strtotime($request->approved_date)) : '-'; ?></div>
                         </div>
-
-                        <?php if ($request->supervisor_notes): ?>
-                            <div class="detail-item full-width">
-                                <label>Client Notes:</label>
-                                <div class="detail-value"><?php echo nl2br(htmlspecialchars($request->supervisor_notes)); ?></div>
-                            </div>
-                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             </div>
         </div>
 
-        <!-- Action Forms (Only for Pending requests) -->
-        <?php if ($request->status == 'Pending'): ?>
+        <!-- Action Forms (Only for Supervisor Approved requests) -->
+        <?php if ($request->status == 'Supervisor Approved'): ?>
             <div class="action-section">
                 <!-- Approve Form -->
                 <div class="action-card approve-card">

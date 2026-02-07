@@ -53,6 +53,12 @@ if (isset($_SESSION['user_id'])) {
                <span class="label">Dashboard</span>
             </a>
 
+            <a class="menu-item <?php echo ($data['title'] === 'Site Information') ? 'is-active' : ''; ?>"
+               href="<?php echo URL_ROOT; ?>/caretaker/siteInfo">
+               <span class="material-symbols-outlined">request_quote</span>
+               <span class="label">Site Information</span>
+            </a>
+
             <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>"
                href="<?php echo URL_ROOT; ?>/caretaker/messages">
                <span class="material-symbols-outlined">mail</span>

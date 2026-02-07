@@ -624,13 +624,17 @@ class Supervisor extends Controller {
         // Get mobile riders for this site
         $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
         
+        // Get caretakers for this site
+        $caretakers = $this->supervisorModel->getSiteCaretakers($supervisorId);
+        
         $data = [
             'title' => 'Sites',
             'pageTitle' => 'Site Information',
             'officers' => $siteData['officers'],
             'supervisors' => $siteData['supervisors'],
             'site' => $siteData['site'],
-            'mobile_riders' => $mobileRiders
+            'mobile_riders' => $mobileRiders,
+            'caretakers' => $caretakers
         ];
         
         $this->view('supervisor/site/v_site_info', $data);
@@ -1303,6 +1307,195 @@ class Supervisor extends Controller {
             
         } catch (Exception $e) {
             error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display equipment approval requests
+     */
+    public function equipmentApprovals() {
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            redirect('users/login');
+        }
+
+        $supervisor_id = $_SESSION['user_id'];
+        
+        // Get pending equipment requests for this supervisor's sites
+        $pending_requests = $this->supervisorModel->getPendingEquipmentRequests($supervisor_id);
+        
+        // Get stats for the dashboard cards
+        $stats = $this->supervisorModel->getEquipmentApprovalStats($supervisor_id);
+        
+        $data = [
+            'title' => 'Equipment Approvals',
+            'pending_requests' => $pending_requests,
+            'stats' => $stats
+        ];
+        
+        $this->view('supervisor/equipmentApprovals/v_equipment_approvals', $data);
+    }
+
+    /**
+     * Get equipment requests for a caretaker (AJAX)
+     */
+    public function getCaretakerEquipmentRequests() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $caretaker_id = $_POST['caretaker_id'] ?? null;
+        
+        if (!$caretaker_id) {
+            echo json_encode(['success' => false, 'message' => 'Caretaker ID required']);
+            return;
+        }
+        
+        $requests = $this->supervisorModel->getCaretakerEquipmentRequests($caretaker_id);
+        echo json_encode(['success' => true, 'requests' => $requests]);
+    }
+
+    /**
+     * Approve an equipment request
+     */
+    public function approveEquipmentRequest() {
+        header('Content-Type: application/json');
+        
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $supervisor_id = $_SESSION['user_id'];
+            $request_id = $_POST['request_id'] ?? null;
+            $supervisor_notes = $_POST['supervisor_notes'] ?? '';
+
+            if (!$request_id) {
+                echo json_encode(['success' => false, 'message' => 'Invalid request ID']);
+                exit;
+            }
+
+            // Get request details before approval
+            $request = $this->supervisorModel->getEquipmentRequestById($request_id);
+            
+            if (!$request) {
+                echo json_encode(['success' => false, 'message' => 'Request not found']);
+                return;
+            }
+
+            // Approve the request
+            $result = $this->supervisorModel->approveEquipmentRequest($request_id, $supervisor_id, $supervisor_notes);
+
+            if ($result) {
+                // Try to send notification to client (if client_id exists)
+                try {
+                    if (isset($request->client_id) && $request->client_id) {
+                        $clientId = $request->client_id;
+                        $caretakerName = $request->caretaker_name;
+                        $equipmentName = $request->equipment_name;
+                        
+                        $notificationTitle = "Equipment Request Approved by Supervisor";
+                        $notificationMessage = "Equipment request for {$equipmentName} from {$caretakerName} has been approved by supervisor and needs your approval.";
+                        $notificationLink = URL_ROOT . '/client/equipmentApprovals';
+                        
+                        $this->notificationModel->insertNotification(
+                            $clientId,
+                            'info',
+                            $notificationTitle,
+                            $notificationMessage,
+                            $notificationLink,
+                            'approval',
+                            $supervisor_id
+                        );
+                    }
+                } catch (Exception $e) {
+                    // Log error but don't fail the approval
+                    error_log("Failed to send notification: " . $e->getMessage());
+                }
+
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Equipment request approved successfully.'
+                ]);
+                exit;
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to approve request. The request may have already been processed.']);
+                exit;
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            exit;
+        }
+    }
+
+    /**
+     * Reject an equipment request
+     */
+    public function rejectEquipmentRequest() {
+        header('Content-Type: application/json');
+        
+        if (!isLoggedIn() || !hasRole('supervisor')) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $supervisor_id = $_SESSION['user_id'];
+            $request_id = $_POST['request_id'] ?? null;
+            $rejection_reason = $_POST['rejection_reason'] ?? '';
+
+            if (!$request_id || empty($rejection_reason)) {
+                echo json_encode(['success' => false, 'message' => 'Request ID and rejection reason are required']);
+                return;
+            }
+
+            // Get request details before rejection
+            $request = $this->supervisorModel->getEquipmentRequestById($request_id);
+            
+            if (!$request) {
+                echo json_encode(['success' => false, 'message' => 'Request not found']);
+                return;
+            }
+
+            // Reject the request
+            $result = $this->supervisorModel->rejectEquipmentRequest($request_id, $supervisor_id, $rejection_reason);
+
+            if ($result) {
+                // Try to send notification to caretaker
+                try {
+                    $caretakerId = $request->caretaker_id;
+                    $equipmentName = $request->equipment_name;
+                    
+                    $notificationTitle = "Equipment Request Rejected";
+                    $notificationMessage = "Your equipment request for {$equipmentName} has been rejected by supervisor. Reason: {$rejection_reason}";
+                    $notificationLink = URL_ROOT . '/caretaker/equipment';
+                    
+                    $this->notificationModel->insertNotification(
+                        $caretakerId,
+                        'warning',
+                        $notificationTitle,
+                        $notificationMessage,
+                        $notificationLink,
+                        'cancel',
+                        $supervisor_id
+                    );
+                } catch (Exception $e) {
+                    // Log error but don't fail the rejection
+                    error_log("Failed to send notification: " . $e->getMessage());
+                }
+
+                echo json_encode([
+                    'success' => true, 
+                    'message' => 'Equipment request rejected successfully.'
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Failed to reject request. The request may have already been processed.']);
+            }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
         }
     }
 

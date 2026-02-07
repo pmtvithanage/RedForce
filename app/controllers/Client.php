@@ -376,7 +376,7 @@ class Client extends Controller {
         }
 
         $data = [
-            'title' => 'Review Equipment Request',
+            'title' => 'Equipment Requests',
             'pageTitle' => 'Review Equipment Request',
             'request' => $request
         ];
