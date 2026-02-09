@@ -151,35 +151,7 @@
   </div>
 
   <!-- Advertisements -->
-  <div class="card section">
-    <h3>Advertisements</h3>
-    
-    <?php if (!empty($data['advertisements'])): ?>
-      <div class="ad-list">
-        <?php foreach ($data['advertisements'] as $ad): ?>
-          <div class="ad-item">
-            <?php if (!empty($ad->image_path)): ?>
-              <div class="ad-image">
-                <img src="<?php echo URL_ROOT; ?>/<?php echo htmlspecialchars($ad->image_path); ?>" alt="Advertisement">
-              </div>
-            <?php endif; ?>
-            <div class="ad-content">
-              <h4><?php echo htmlspecialchars($ad->title); ?></h4>
-              <?php if (!empty($ad->created_at)): ?>
-                <small><?php echo date('M d, Y', strtotime($ad->created_at)); ?></small>
-              <?php endif; ?>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    <?php else: ?>
-      <div class="empty-activity">
-        <span class="material-symbols-outlined">campaign</span>
-        <p>No advertisements available.</p>
-        <small>New updates will appear here.</small>
-      </div>
-    <?php endif; ?>
-  </div>
+  <?php require_once APP_ROOT . '/views/components/advertisements.php'; ?>
 
 </div>
 

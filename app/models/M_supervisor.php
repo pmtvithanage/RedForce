@@ -750,5 +750,21 @@ class M_supervisor {
         return $this->db->execute();
     }
 
+    // Get recent activities for supervisor dashboard
+    // Insert recent activity for supervisor
+    public function insertRecentActivity($userId, $title, $description, $type) {
+        $this->db->query('
+            INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+            VALUES (:user_id, :title, :description, :type)
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':title', $title);
+        $this->db->bind(':description', $description);
+        $this->db->bind(':type', $type);
+        
+        return $this->db->execute();
+    }
+
 }
 ?>

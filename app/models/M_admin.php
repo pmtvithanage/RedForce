@@ -602,10 +602,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     public function createAdvertisement($data) {
         $this->db->query('
             INSERT INTO advertisements 
-            (title, image_path, target_roles, created_by, status) 
-            VALUES (:title, :image_path, :target_roles, :created_by, :status)
+            (title, description, image_path, target_roles, created_by, status) 
+            VALUES (:title, :description, :image_path, :target_roles, :created_by, :status)
         ');
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
         $this->db->bind(':created_by', $data['created_by']);
@@ -622,17 +623,17 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query('
             UPDATE advertisements SET 
                 title = :title,
+                description = :description,
                 image_path = :image_path,
                 target_roles = :target_roles,
-                status = :status,
                 updated_at = NOW()
             WHERE id = :id
         ');
         $this->db->bind(':id', $id);
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
-        $this->db->bind(':status', $data['status']);
         return $this->db->execute();
     }
 
@@ -846,7 +847,40 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
-        //return $this->db->resultSet();
+        return $this->db->resultSet();
+    }
+
+    // Get all leave requests (from all roles)
+    public function getAllLeaveRequests() {
+        $this->db->query("
+            SELECT 
+                lr.*,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.name
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.name
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
+                END as employee_name,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.email
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.email
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
+                END as employee_email,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
+                    WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
+                    WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
+                END as employee_role
+            FROM leave_requests lr
+            LEFT JOIN Users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN Users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN Users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN Users u4 ON lr.premiseofficer_id = u4.id
+            ORDER BY lr.created_at DESC
+        ");
+        return $this->db->resultSet();
     }
 
     // Get leave request by ID (from all roles)

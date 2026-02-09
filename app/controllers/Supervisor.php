@@ -4,6 +4,7 @@ class Supervisor extends Controller {
     private $userModel;
     private $advertisementModel;
     private $notificationModel;
+    private $leaveRequestModel;
 
     public function __construct() {
         // Check if user is logged in and has supervisor role
@@ -12,6 +13,7 @@ class Supervisor extends Controller {
         $this->supervisorModel = $this->model('M_supervisor');
         $this->userModel = $this->model('M_users');
         $this->notificationModel = $this->model('M_notifications');
+        $this->leaveRequestModel = $this->model('M_leaveRequests');
     }
 
     // Default action - redirect to dashboard
@@ -106,236 +108,6 @@ class Supervisor extends Controller {
             'all_users' => $all_users
         ];
         $this->view('supervisor/messages/v_messages', $data);
-    }
-
-    //Leave Requests - Display page with all leave requests
-    public function leaverequests() {
-        // Get supervisor ID from session
-        $supervisor_id = $_SESSION['user_id'] ?? null;
-        
-        // Fetch all leave requests
-        $leaveRequests = [];
-        if ($supervisor_id) {
-            $leaveRequests = $this->supervisorModel->getLeaveRequests($supervisor_id);
-        }
-        
-        $data = [
-            'title' => 'Leave Requests',
-            'leaveRequests' => $leaveRequests
-        ];
-        $this->view('supervisor/v_leaverequests', $data);  
-    }
-
-    //Leave Requests - Alias for backwards compatibility
-    public function leave_requests() {
-        $this->leaverequests();
-    }
-
-    // CREATE - Add new leave request
-    public function addLeave() {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            // Sanitize POST data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
-            // Get supervisor ID from session
-            $supervisor_id = $_SESSION['user_id'] ?? null;
-            
-            if (!$supervisor_id) {
-                flash('leave_error', 'User not authenticated');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Handle file upload
-            $proof_file = null;
-            if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == 0) {
-                $upload_dir = 'uploads/leaverequest/';
-                if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
-                
-                $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
-                $file_name = 'leave_' . $supervisor_id . '_' . time() . '.' . $file_extension;
-                $upload_path = $upload_dir . $file_name;
-                
-                if (move_uploaded_file($_FILES['proof_file']['tmp_name'], $upload_path)) {
-                    // Store full path in database
-                    $proof_file = $upload_dir . $file_name;
-                }
-            }
-            
-            // Convert date format from DD/MM/YYYY to YYYY-MM-DD
-            $start_date = $_POST['start_date'];
-            $end_date = $_POST['end_date'];
-            
-            // Convert if in DD/MM/YYYY format
-            if (strpos($start_date, '/') !== false) {
-                $start_parts = explode('/', $start_date);
-                if (count($start_parts) == 3) {
-                    $start_date = $start_parts[2] . '-' . $start_parts[1] . '-' . $start_parts[0];
-                }
-            }
-            
-            if (strpos($end_date, '/') !== false) {
-                $end_parts = explode('/', $end_date);
-                if (count($end_parts) == 3) {
-                    $end_date = $end_parts[2] . '-' . $end_parts[1] . '-' . $end_parts[0];
-                }
-            }
-            
-            // Prepare data
-            $data = [
-                'supervisor_id' => $supervisor_id,
-                'leave_type' => trim($_POST['leave_type']),
-                'reason' => trim($_POST['reason']),
-                'start_date' => $start_date,
-                'end_date' => $end_date,
-                'proof_file' => $proof_file
-            ];
-            
-            // Validate
-            if (empty($data['leave_type']) || empty($data['reason']) || empty($data['start_date']) || empty($data['end_date'])) {
-                flash('leave_error', 'Please fill all required fields');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Add leave request
-            if ($this->supervisorModel->addLeaveRequest($data)) {
-                flash('leave_success', 'Leave request submitted successfully');
-            } else {
-                flash('leave_error', 'Something went wrong. Please try again');
-            }
-            
-            redirect('supervisor/leaverequests');
-        } else {
-            redirect('supervisor/leaverequests');
-        }
-    }
-
-    // UPDATE - Edit leave request
-    public function editLeave($id) {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
-            $supervisor_id = $_SESSION['user_id'] ?? null;
-            
-            if (!$supervisor_id) {
-                flash('leave_error', 'User not authenticated');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Get existing leave request
-            $existingLeave = $this->supervisorModel->getLeaveRequestById($id);
-            
-            if (!$existingLeave || $existingLeave->caretaker_id != $supervisor_id) {
-                flash('leave_error', 'Unauthorized access');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Handle file upload
-            $proof_file = $existingLeave->proof_file; // Keep existing file
-            if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == 0) {
-                $upload_dir = 'uploads/leaverequest/';
-                if (!file_exists($upload_dir)) {
-                    mkdir($upload_dir, 0777, true);
-                }
-                
-                $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
-                $file_name = 'leave_' . $supervisor_id . '_' . time() . '.' . $file_extension;
-                $upload_path = $upload_dir . $file_name;
-                
-                if (move_uploaded_file($_FILES['proof_file']['tmp_name'], $upload_path)) {
-                    // Delete old file if exists
-                    if ($existingLeave->proof_file && file_exists($existingLeave->proof_file)) {
-                        unlink($existingLeave->proof_file);
-                    }
-                    // Store full path in database
-                    $proof_file = $upload_dir . $file_name;
-                }
-            }
-            
-            // Convert date format from DD/MM/YYYY to YYYY-MM-DD
-            $start_date = $_POST['start_date'];
-            $end_date = $_POST['end_date'];
-            
-            // Convert if in DD/MM/YYYY format
-            if (strpos($start_date, '/') !== false) {
-                $start_parts = explode('/', $start_date);
-                if (count($start_parts) == 3) {
-                    $start_date = $start_parts[2] . '-' . $start_parts[1] . '-' . $start_parts[0];
-                }
-            }
-            
-            if (strpos($end_date, '/') !== false) {
-                $end_parts = explode('/', $end_date);
-                if (count($end_parts) == 3) {
-                    $end_date = $end_parts[2] . '-' . $end_parts[1] . '-' . $end_parts[0];
-                }
-            }
-            
-            $data = [
-                'id' => $id,
-                'supervisor_id' => $supervisor_id,
-                'leave_type' => trim($_POST['leave_type']),
-                'reason' => trim($_POST['reason']),
-                'start_date' => $start_date,
-                'end_date' => $end_date,
-                'proof_file' => $proof_file
-            ];
-            
-            if ($this->supervisorModel->updateLeaveRequest($data)) {
-                flash('leave_success', 'Leave request updated successfully');
-            } else {
-                flash('leave_error', 'Failed to update leave request');
-            }
-            
-            redirect('supervisor/leaverequests');
-        } else {
-            redirect('supervisor/leaverequests');
-        }
-    }
-
-    // DELETE - Remove leave request
-    public function deleteLeave($id) {
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $supervisor_id = $_SESSION['user_id'] ?? null;
-            
-            if (!$supervisor_id) {
-                flash('leave_error', 'User not authenticated');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Get leave request to verify ownership and get file
-            $leave = $this->supervisorModel->getLeaveRequestById($id);
-            
-            if (!$leave || $leave->caretaker_id != $supervisor_id) {
-                flash('leave_error', 'Unauthorized access');
-                redirect('supervisor/leaverequests');
-                return;
-            }
-            
-            // Delete file if exists
-            if ($leave->proof_file) {
-                // proof_file already contains full path
-                if (file_exists($leave->proof_file)) {
-                    unlink($leave->proof_file);
-                }
-            }
-            
-            if ($this->supervisorModel->deleteLeaveRequest($id, $supervisor_id)) {
-                flash('leave_success', 'Leave request deleted successfully');
-            } else {
-                flash('leave_error', 'Failed to delete leave request');
-            }
-            
-            redirect('supervisor/leaverequests');
-        } else {
-            redirect('supervisor/leaverequests');
-        }
     }
 
     //Profile
@@ -1411,6 +1183,14 @@ class Supervisor extends Controller {
                             $supervisor_id
                         );
                     }
+                    
+                    // Log recent activity for supervisor
+                    $this->supervisorModel->insertRecentActivity(
+                        $supervisor_id,
+                        'Equipment Request Approved',
+                        "Approved equipment request for {$request->equipment_name} from {$request->caretaker_name}",
+                        'equipment_approval'
+                    );
                 } catch (Exception $e) {
                     // Log error but don't fail the approval
                     error_log("Failed to send notification: " . $e->getMessage());
@@ -1482,6 +1262,14 @@ class Supervisor extends Controller {
                         'cancel',
                         $supervisor_id
                     );
+                    
+                    // Log recent activity for supervisor
+                    $this->supervisorModel->insertRecentActivity(
+                        $supervisor_id,
+                        'Equipment Request Rejected',
+                        "Rejected equipment request for {$equipmentName} from caretaker. Reason: {$rejection_reason}",
+                        'equipment_rejection'
+                    );
                 } catch (Exception $e) {
                     // Log error but don't fail the rejection
                     error_log("Failed to send notification: " . $e->getMessage());
@@ -1499,4 +1287,323 @@ class Supervisor extends Controller {
         }
     }
 
+
+    // ======================================================================== //
+    // =======================      Leave Requests      ======================= //
+    // ======================================================================== //
+
+    // Leave Requests
+    public function leaverequests() {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        if (!$user_id) {
+            redirect('login');
+        }
+
+        $leaveRequests = $this->leaveRequestModel->getLeaveRequestsByUser($user_id, 'supervisor');
+        $stats = $this->leaveRequestModel->getLeaveStats($user_id, 'supervisor');
+        
+        $data = [
+            'title' => 'Leave Requests',
+            'pageTitle' => 'Leave Requests',
+            'leaveRequests' => $leaveRequests,
+            'stats' => $stats
+        ];
+        $this->view('supervisor/leaverequests/v_leaverequests', $data);
+    }
+
+    // Create Leave Request
+    public function createLeaveRequest() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Process form submission
+            $data = [
+                'title' => 'Leave Requests',
+                'pageTitle' => 'Create Leave Request',
+                'leave_type_value' => trim($_POST['leave_type'] ?? ''),
+                'reason_value' => trim($_POST['reason'] ?? ''),
+                'start_date_value' => trim($_POST['start_date'] ?? ''),
+                'end_date_value' => trim($_POST['end_date'] ?? ''),
+                'leave_type_err' => '',
+                'reason_err' => '',
+                'start_date_err' => '',
+                'end_date_err' => '',
+                'proof_file_err' => ''
+            ];
+            
+            // Validate leave type
+            if (empty($data['leave_type_value'])) {
+                $data['leave_type_err'] = 'Please select a leave type';
+            }
+            
+            // Validate reason
+            if (empty($data['reason_value'])) {
+                $data['reason_err'] = 'Please enter a reason for leave';
+            }
+            
+            // Validate start date
+            if (empty($data['start_date_value'])) {
+                $data['start_date_err'] = 'Please select a start date';
+            }
+            
+            // Validate end date
+            if (empty($data['end_date_value'])) {
+                $data['end_date_err'] = 'Please select an end date';
+            } elseif (!empty($data['start_date_value']) && strtotime($data['end_date_value']) < strtotime($data['start_date_value'])) {
+                $data['end_date_err'] = 'End date must be after start date';
+            }
+            
+            // Handle proof file upload (optional)
+            $proof_file_path = null;
+            if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == UPLOAD_ERR_OK) {
+                // Validate file type
+                $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+                $file_type = $_FILES['proof_file']['type'];
+                
+                if (!in_array($file_type, $allowed_types)) {
+                    $data['proof_file_err'] = 'Only JPG, PNG, GIF, and PDF files are allowed';
+                } else {
+                    // Upload file
+                    $upload_dir = '/uploads/leave_proofs/';
+                    $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
+                    $unique_filename = 'proof_' . time() . '_' . uniqid() . '.' . $file_extension;
+                    
+                    if (uploadImage($_FILES['proof_file']['tmp_name'], $unique_filename, $upload_dir)) {
+                        $proof_file_path = $upload_dir . $unique_filename;
+                    } else {
+                        $data['proof_file_err'] = 'Failed to upload proof file';
+                    }
+                }
+            }
+            
+            // If no errors, create leave request
+            if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
+                $leaveRequestData = [
+                    'supervisor_id' => $_SESSION['user_id'],
+                    'leave_type' => $data['leave_type_value'],
+                    'reason' => $data['reason_value'],
+                    'start_date' => $data['start_date_value'],
+                    'end_date' => $data['end_date_value'],
+                    'proof_file' => $proof_file_path,
+                    'status' => 'Pending'
+                ];
+                
+                if ($this->leaveRequestModel->createLeaveRequest($leaveRequestData)) {
+                    // Send notifications to all admins
+                    try {
+                        $adminModel = $this->model('M_admin');
+                        $admins = $adminModel->getAllAdmins();
+                        $user = $this->userModel->getUserById($_SESSION['user_id']);
+                        $userName = $user->name ?? 'A supervisor';
+                        
+                        if ($admins && is_array($admins)) {
+                            foreach ($admins as $admin) {
+                                $this->notificationModel->addNotification(
+                                    $admin->id,
+                                    'info',
+                                    'New Leave Request',
+                                    "{$userName} (Supervisor) submitted a leave request for {$data['leave_type_value']} from {$data['start_date_value']} to {$data['end_date_value']}",
+                                    URL_ROOT . '/admin/pendings',
+                                    'calendar_today',
+                                    $_SESSION['user_id']
+                                );
+                            }
+                        }
+                        
+                        // Log recent activity
+                        $supervisorModel = $this->model('M_supervisor');
+                        $supervisorModel->insertRecentActivity(
+                            $_SESSION['user_id'],
+                            'Leave Request Submitted',
+                            "Submitted {$data['leave_type_value']} leave request from {$data['start_date_value']} to {$data['end_date_value']}",
+                            'leave_request'
+                        );
+                    } catch (Exception $e) {
+                        error_log("Error sending leave request notifications: " . $e->getMessage());
+                    }
+                    
+                    flash('msg', 'Leave request submitted successfully', 'alert-success');
+                    redirect('supervisor/leaverequests');
+                } else {
+                    flash('msg', 'Failed to submit leave request', 'alert-danger');
+                    $this->view('supervisor/leaverequests/v_create_leaverequest', $data);
+                }
+            } else {
+                // Show form with errors
+                $this->view('supervisor/leaverequests/v_create_leaverequest', $data);
+            }
+        } else {
+            // Show empty form
+            $data = [
+                'title' => 'Leave Requests',
+                'pageTitle' => 'Create Leave Request',
+                'leave_type_value' => '',
+                'reason_value' => '',
+                'start_date_value' => '',
+                'end_date_value' => '',
+                'leave_type_err' => '',
+                'reason_err' => '',
+                'start_date_err' => '',
+                'end_date_err' => '',
+                'proof_file_err' => ''
+            ];
+            $this->view('supervisor/leaverequests/v_create_leaverequest', $data);
+        }
+    }
+
+    // View Leave Request
+    public function viewLeaveRequest($id) {
+        if (!isset($_SESSION['user_id'])) {
+            redirect('login');
+        }
+
+        $leaveRequest = $this->leaveRequestModel->getLeaveRequestById($id, 'supervisor');
+        
+        // Check if leave request exists and belongs to user
+        if (!$leaveRequest || !$this->leaveRequestModel->isOwnedByUser($id, $_SESSION['user_id'], 'supervisor')) {
+            flash('msg', 'Leave request not found', 'alert-danger');
+            redirect('supervisor/leaverequests');
+        }
+        
+        $data = [
+            'title' => 'Leave Requests',
+            'pageTitle' => 'Leave Request Details',
+            'leaveRequest' => $leaveRequest
+        ];
+        $this->view('supervisor/leaverequests/v_view_request', $data);
+    }
+
+    // Edit Leave Request
+    public function editLeaveRequest($id) {
+        if (!isset($_SESSION['user_id'])) {
+            redirect('login');
+        }
+
+        $leaveRequest = $this->leaveRequestModel->getLeaveRequestById($id, 'supervisor');
+        
+        // Check if leave request exists and belongs to user
+        if (!$leaveRequest || !$this->leaveRequestModel->isOwnedByUser($id, $_SESSION['user_id'], 'supervisor')) {
+            flash('msg', 'Leave request not found', 'alert-danger');
+            redirect('supervisor/leaverequests');
+        }
+
+        // Check if request can be edited (only Pending)
+        if ($leaveRequest->status != 'Pending') {
+            flash('msg', 'Cannot edit this leave request', 'alert-danger');
+            redirect('supervisor/leaverequests');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Process form submission (similar to create)
+            $data = [
+                'title' => 'Leave Requests',
+                'pageTitle' => 'Edit Leave Request',
+                'leaveRequest' => $leaveRequest,
+                'leave_type_value' => trim($_POST['leave_type'] ?? ''),
+                'reason_value' => trim($_POST['reason'] ?? ''),
+                'start_date_value' => trim($_POST['start_date'] ?? ''),
+                'end_date_value' => trim($_POST['end_date'] ?? ''),
+                'current_file' => $leaveRequest->proof_file,
+                'leave_type_err' => '',
+                'reason_err' => '',
+                'start_date_err' => '',
+                'end_date_err' => '',
+                'proof_file_err' => ''
+            ];
+            
+            // Validate (same as create)
+            if (empty($data['leave_type_value'])) {
+                $data['leave_type_err'] = 'Please select a leave type';
+            }
+            if (empty($data['reason_value'])) {
+                $data['reason_err'] = 'Please enter a reason for leave';
+            }
+            if (empty($data['start_date_value'])) {
+                $data['start_date_err'] = 'Please select a start date';
+            }
+            if (empty($data['end_date_value'])) {
+                $data['end_date_err'] = 'Please select an end date';
+            } elseif (!empty($data['start_date_value']) && strtotime($data['end_date_value']) < strtotime($data['start_date_value'])) {
+                $data['end_date_err'] = 'End date must be after start date';
+            }
+            
+            // Handle file updates
+            $proof_file_path = $leaveRequest->proof_file;
+            if (isset($_POST['remove_file']) && $_POST['remove_file'] == '1') {
+                $proof_file_path = null;
+            }
+            if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == UPLOAD_ERR_OK) {
+                $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
+                $file_type = $_FILES['proof_file']['type'];
+                if (!in_array($file_type, $allowed_types)) {
+                    $data['proof_file_err'] = 'Only JPG, PNG, GIF, and PDF files are allowed';
+                } else {
+                    $upload_dir = '/uploads/leave_proofs/';
+                    $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
+                    $unique_filename = 'proof_' . time() . '_' . uniqid() . '.' . $file_extension;
+                    if (uploadImage($_FILES['proof_file']['tmp_name'], $unique_filename, $upload_dir)) {
+                        $proof_file_path = $upload_dir . $unique_filename;
+                    } else {
+                        $data['proof_file_err'] = 'Failed to upload proof file';
+                    }
+                }
+            }
+            
+            if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
+                $updateData = [
+                    'leave_type' => $data['leave_type_value'],
+                    'reason' => $data['reason_value'],
+                    'start_date' => $data['start_date_value'],
+                    'end_date' => $data['end_date_value'],
+                    'proof_file' => $proof_file_path
+                ];
+                
+                if ($this->leaveRequestModel->updateLeaveRequest($id, $updateData, $_SESSION['user_id'], 'supervisor')) {
+                    flash('msg', 'Leave request updated successfully', 'alert-success');
+                    redirect('supervisor/leaverequests');
+                } else {
+                    flash('msg', 'Failed to update leave request', 'alert-danger');
+                    $this->view('supervisor/leaverequests/v_edit_request', $data);
+                }
+            } else {
+                $this->view('supervisor/leaverequests/v_edit_request', $data);
+            }
+        } else {
+            $data = [
+                'title' => 'Leave Requests',
+                'pageTitle' => 'Edit Leave Request',
+                'leaveRequest' => $leaveRequest,
+                'leave_type_value' => $leaveRequest->leave_type,
+                'reason_value' => $leaveRequest->reason,
+                'start_date_value' => $leaveRequest->start_date,
+                'end_date_value' => $leaveRequest->end_date,
+                'current_file' => $leaveRequest->proof_file,
+                'leave_type_err' => '',
+                'reason_err' => '',
+                'start_date_err' => '',
+                'end_date_err' => '',
+                'proof_file_err' => ''
+            ];
+            $this->view('supervisor/leaverequests/v_edit_request', $data);
+        }
+    }
+
+    // Delete Leave Request
+    public function deleteLeaveRequest($id) {
+        if (!isset($_SESSION['user_id'])) {
+            redirect('login');
+        }
+
+        if (!$this->leaveRequestModel->isOwnedByUser($id, $_SESSION['user_id'], 'supervisor')) {
+            flash('msg', 'Unauthorized action', 'alert-danger');
+            redirect('supervisor/leaverequests');
+        }
+
+        if ($this->leaveRequestModel->deleteLeaveRequest($id, $_SESSION['user_id'], 'supervisor')) {
+            flash('msg', 'Leave request deleted successfully', 'alert-success');
+        } else {
+            flash('msg', 'Failed to delete leave request or request is not pending', 'alert-danger');
+        }
+        
+        redirect('supervisor/leaverequests');
+    }
 }

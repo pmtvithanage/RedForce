@@ -27,6 +27,25 @@ class Admin extends Controller {
         }
     }
 
+    /**
+     * Get user model based on role
+     * Helper method for leave request processing
+     */
+    private function getUserModel($role) {
+        switch (strtolower($role)) {
+            case 'caretaker':
+                return $this->model('M_caretaker');
+            case 'supervisor':
+                return $this->model('M_supervisor');
+            case 'mobile rider':
+                return $this->model('M_mobilerider');
+            case 'premise officer':
+                return $this->model('M_premiseofficer');
+            default:
+                return null;
+        }
+    }
+
     public function index() {
         redirect('admin/dashboard');
     }
@@ -328,9 +347,14 @@ class Admin extends Controller {
     }
 
     public function pendings(){
+        $leaveRequests = $this->adminModel->getAllLeaveRequests();
+        $leaveStats = $this->adminModel->getLeaveRequestStats();
+        
         $data = [
             'title' => 'Dashboard',
-            'pageTitle' => 'Pending Leave Requests'
+            'pageTitle' => 'Leave Requests',
+            'leaveRequests' => $leaveRequests,
+            'leaveStats' => $leaveStats
         ];
         $this->view('admin/dashboard/v_pendings', $data);
     }
@@ -1709,10 +1733,11 @@ public function editSite($site_id){
     }
     
     $data = [
-        'title' => 'Leave Request Details',
+        'title' => 'Dashboard',
+        'pageTitle' => 'Leave Request Details',
         'leaveRequest' => $leaveRequest
     ];
-    $this->view('admin/v_leave_details', $data);
+    $this->view('admin/dashboard/v_leave_details', $data);
 }
 
 // Approve leave request
@@ -1785,6 +1810,183 @@ public function rejectLeave($id) {
     }
 }
 
+// Approve leave request (GET method for modal)
+public function approveLeaveRequest($id) {
+    if (!isset($_SESSION['user_id'])) {
+        flash('leave_error', 'Unauthorized access');
+        redirect('admin/dashboard');
+        return;
+    }
+    
+    $admin_id = $_SESSION['user_id'];
+    
+    if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
+        // Get leave request details for notification
+        $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+        
+        if ($leaveRequest) {
+            // Determine the correct officer_id and role based on request type
+            $officer_id = null;
+            $role = '';
+            $redirectUrl = '';
+            
+            if (!empty($leaveRequest->caretaker_id)) {
+                $officer_id = $leaveRequest->caretaker_id;
+                $role = 'Caretaker';
+                $redirectUrl = '/caretaker/leaverequests';
+            } elseif (!empty($leaveRequest->supervisor_id)) {
+                $officer_id = $leaveRequest->supervisor_id;
+                $role = 'Supervisor';
+                $redirectUrl = '/supervisor/leaverequests';
+            } elseif (!empty($leaveRequest->mobilerider_id)) {
+                $officer_id = $leaveRequest->mobilerider_id;
+                $role = 'Mobile Rider';
+                $redirectUrl = '/MobileRider/leaverequests';
+            } elseif (!empty($leaveRequest->premiseofficer_id)) {
+                $officer_id = $leaveRequest->premiseofficer_id;
+                $role = 'Premise Officer';
+                $redirectUrl = '/premiseOfficer/leaverequests';
+            }
+            
+            // Send notification to employee
+            if ($officer_id) {
+                try {
+                    $this->notificationModel->insertNotification(
+                        $officer_id,
+                        'success',
+                        'Leave Request Approved',
+                        'Your ' . $leaveRequest->leave_type . ' leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' has been approved.',
+                        URL_ROOT . $redirectUrl,
+                        'check_circle',
+                        $admin_id
+                    );
+                    
+                    // Log recent activity for the user
+                    $userModel = $this->getUserModel($role);
+                    if ($userModel && method_exists($userModel, 'insertRecentActivity')) {
+                        $userModel->insertRecentActivity(
+                            $officer_id,
+                            'Leave Request Approved',
+                            "Your {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date} was approved",
+                            'leave_approved'
+                        );
+                    }
+                    
+                    // Log recent activity for admin
+                    $user = $this->userModel->getUserById($officer_id);
+                    $userName = $user->name ?? 'User';
+                    $this->adminModel->insertRecentActivity(
+                        "Leave Request Approved",
+                        "Approved {$userName}'s ({$role}) {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date}",
+                        'leave_approval',
+                        $admin_id
+                    );
+                } catch (Exception $e) {
+                    error_log("Error in leave approval notifications: " . $e->getMessage());
+                }
+            }
+        }
+        
+        flash('leave_success', 'Leave request approved successfully');
+    } else {
+        flash('leave_error', 'Failed to approve leave request');
+    }
+    
+    redirect('admin/pendings');
+}
+
+// Reject leave request (GET method for modal)
+public function rejectLeaveRequest($id) {
+    if (!isset($_SESSION['user_id'])) {
+        flash('leave_error', 'Unauthorized access');
+        redirect('admin/dashboard');
+        return;
+    }
+    
+    $admin_id = $_SESSION['user_id'];
+    $reason = trim($_GET['reason'] ?? '');
+    
+    if (empty($reason)) {
+        flash('leave_error', 'Please provide a reason for rejection');
+        redirect('admin/pendings');
+        return;
+    }
+    
+    if ($this->adminModel->rejectLeaveRequest($id, $admin_id, $reason)) {
+        // Get leave request details for notification
+        $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+        
+        if ($leaveRequest) {
+            // Determine the correct officer_id and role based on request type
+            $officer_id = null;
+            $role = '';
+            $redirectUrl = '';
+            
+            if (!empty($leaveRequest->caretaker_id)) {
+                $officer_id = $leaveRequest->caretaker_id;
+                $role = 'Caretaker';
+                $redirectUrl = '/caretaker/leaverequests';
+            } elseif (!empty($leaveRequest->supervisor_id)) {
+                $officer_id = $leaveRequest->supervisor_id;
+                $role = 'Supervisor';
+                $redirectUrl = '/supervisor/leaverequests';
+            } elseif (!empty($leaveRequest->mobilerider_id)) {
+                $officer_id = $leaveRequest->mobilerider_id;
+                $role = 'Mobile Rider';
+                $redirectUrl = '/MobileRider/leaverequests';
+            } elseif (!empty($leaveRequest->premiseofficer_id)) {
+                $officer_id = $leaveRequest->premiseofficer_id;
+                $role = 'Premise Officer';
+                $redirectUrl = '/premiseOfficer/leaverequests';
+            }
+            
+            // Send notification to employee
+            if ($officer_id) {
+                try {
+                    $this->notificationModel->insertNotification(
+                        $officer_id,
+                        'warning',
+                        'Leave Request Rejected',
+                        'Your ' . $leaveRequest->leave_type . ' leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' was rejected. Reason: ' . $reason,
+                        URL_ROOT . $redirectUrl,
+                        'cancel',
+                        $admin_id
+                    );
+                    
+                    // Log recent activity for the user
+                    $userModel = $this->getUserModel($role);
+                    if ($userModel && method_exists($userModel, 'insertRecentActivity')) {
+                        $userModel->insertRecentActivity(
+                            $officer_id,
+                            'Leave Request Rejected',
+                            "Your {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date} was rejected",
+                            'leave_rejected'
+                        );
+                    }
+                    
+                    // Log recent activity for admin
+                    $user = $this->userModel->getUserById($officer_id);
+                    $userName = $user->name ?? 'User';
+                    $this->adminModel->insertRecentActivity(
+                        "Leave Request Rejected",
+                        "Rejected {$userName}'s ({$role}) {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date}. Reason: {$reason}",
+                        'leave_rejection',
+                        $admin_id
+                    );
+                } catch (Exception $e) {
+                    error_log("Error in leave rejection notifications: " . $e->getMessage());
+                }
+            }
+        }
+        
+        flash('leave_success', 'Leave request rejected');
+    } else {
+        flash('leave_error', 'Failed to reject leave request');
+    }
+    
+    redirect('admin/pendings');
+}
+
 // ======================================================================== //
 // =======================      Admin Advertisements       ====================== //
 // ======================================================================== //
@@ -1796,254 +1998,312 @@ public function rejectLeave($id) {
             'pageTitle' => 'Manage Advertisements',
             'advertisements' => $advertisements
         ];
-        $this->view('admin/v_advertisements', $data);
+        $this->view('admin/advertisements/v_advertisements', $data);
     }
 
-    public function createAdvertisement() {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Enable detailed error logging
-        error_reporting(E_ALL);
-        ini_set('display_errors', 0);
-        ini_set('log_errors', 1);
-        
-        // Start output buffering
-        ob_start();
-        
-        header('Content-Type: application/json');
-        
-        try {
-            error_log("=== CREATE ADVERTISEMENT START ===");
-            error_log("POST data: " . print_r($_POST, true));
-            error_log("FILES data: " . print_r($_FILES, true));
-            error_log("Session user_id: " . ($_SESSION['user_id'] ?? 'not set'));
-
-            $uploadDir = PUB_ROOT . '/uploads/advertisements/';
-            error_log("Upload directory: " . $uploadDir);
-            
-            // Create directory
-            if (!is_dir($uploadDir)) {
-                error_log("Creating directory...");
-                $oldUmask = umask(0);
-                $result = mkdir($uploadDir, 0755, true);
-                umask($oldUmask);
-                
-                if (!$result) {
-                    throw new Exception('Failed to create upload directory');
-                }
-                error_log("Directory created successfully");
-            }
-
-            // Check if directory is writable
-            if (!is_writable($uploadDir)) {
-                error_log("Directory not writable, attempting to chmod...");
-                if (!chmod($uploadDir, 0755)) {
-                    throw new Exception('Upload directory is not writable');
-                }
-            }
-            error_log("Directory is writable");
-
-            $imagePath = '';
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-                error_log("File upload detected");
-                
-                $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9\._-]/', '_', basename($_FILES['image']['name']));
-                $targetPath = $uploadDir . $fileName;
-                error_log("Target path: " . $targetPath);
-
-                if (!move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                    $error = error_get_last();
-                    throw new Exception('Failed to upload image: ' . ($error['message'] ?? 'Unknown error'));
-                }
-                error_log("File uploaded successfully");
-                $imagePath = 'uploads/advertisements/' . $fileName;
-            } else {
-                $errorMessage = 'No image uploaded';
-                if (isset($_FILES['image']['error'])) {
-                    $errorCodes = [
-                        UPLOAD_ERR_INI_SIZE => 'File too large',
-                        UPLOAD_ERR_FORM_SIZE => 'File too large (form)',
-                        UPLOAD_ERR_PARTIAL => 'File upload incomplete',
-                        UPLOAD_ERR_NO_FILE => 'No file uploaded',
-                        UPLOAD_ERR_NO_TMP_DIR => 'Missing temp folder',
-                        UPLOAD_ERR_CANT_WRITE => 'Cannot write to disk',
-                        UPLOAD_ERR_EXTENSION => 'File upload stopped'
-                    ];
-                    $errorMessage = $errorCodes[$_FILES['image']['error']] ?? 'Unknown upload error';
-                }
-                throw new Exception($errorMessage);
-            }
-
-            $roles = $_POST['roles'] ?? [];
-            if (!is_array($roles)) {
-                $roles = explode(',', $roles);
-            }
-            error_log("Roles: " . print_r($roles, true));
-
-            if (empty($roles)) {
-                throw new Exception('No roles selected');
-            }
-
+        public function createAdvertisement() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Process form submission
             $data = [
-                'title' => $_POST['title'] ?? 'Advertisement',
-                'image_path' => $imagePath,
-                'target_roles' => implode(',', $roles),
-                'created_by' => $_SESSION['user_id'] ?? 0,
-                'status' => 'active'
+                'title' => 'Advertisements',
+                'pageTitle' => 'Create an Advertisement',
+                'title_value' => trim($_POST['title'] ?? ''),
+                'description_value' => trim($_POST['description'] ?? ''),
+                'target_roles' => isset($_POST['target_roles']) ? $_POST['target_roles'] : [],
+                'title_err' => '',
+                'description_err' => '',
+                'image_err' => '',
+                'roles_err' => ''
             ];
-            error_log("Data for insert: " . print_r($data, true));
-
-            // Insert into database
-            error_log("Calling createAdvertisement model method...");
-            if ($this->adminModel->createAdvertisement($data)) {
-                $lastId = $this->adminModel->getLastInsertId();
-                error_log("Insert successful. Last ID: " . $lastId);
+            
+            // Validate title
+            if (empty($data['title_value'])) {
+                $data['title_err'] = 'Please enter an advertisement title';
+            }
+            
+            // Validate description
+            if (empty($data['description_value'])) {
+                $data['description_err'] = 'Please enter a description';
+            }
+            
+            // Validate target roles
+            if (empty($data['target_roles'])) {
+                $data['roles_err'] = 'Please select at least one target role';
+            }
+            
+            // Validate image upload
+            if (!isset($_FILES['image']) || $_FILES['image']['error'] == UPLOAD_ERR_NO_FILE) {
+                $data['image_err'] = 'Please upload an image';
+            } elseif ($_FILES['image']['error'] != UPLOAD_ERR_OK) {
+                $data['image_err'] = 'Error uploading image';
+            } else {
+                // Validate image file type
+                $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                $file_type = $_FILES['image']['type'];
                 
-                $response = [
-                    'status' => 'success',
-                    'ad' => [
-                        'id' => $lastId,
-                        'title' => $data['title'],
-                        'image_path' => URL_ROOT . '/' . $imagePath,
-                        'target_roles' => $data['target_roles'],
-                        'created_at' => date('Y-m-d H:i:s'),
+                if (!in_array($file_type, $allowed_types)) {
+                    $data['image_err'] = 'Only JPG, PNG, and GIF images are allowed';
+                }
+            }
+            
+            // If no errors, process the advertisement
+            if (empty($data['title_err']) && empty($data['description_err']) && empty($data['image_err']) && empty($data['roles_err'])) {
+                // Upload image
+                $upload_dir = '/uploads/advertisements/';
+                
+                // Generate unique filename
+                $file_extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                $unique_filename = 'ad_' . time() . '_' . uniqid() . '.' . $file_extension;
+                
+                // Upload the image
+                if (uploadImage($_FILES['image']['tmp_name'], $unique_filename, $upload_dir)) {
+                    // Image path to store in database
+                    $image_path = $upload_dir . $unique_filename;
+                    
+                    // Convert roles array to comma-separated string
+                    $target_roles = implode(',', $data['target_roles']);
+                    
+                    // Prepare data for model
+                    $advertisementData = [
+                        'title' => $data['title_value'],
+                        'description' => $data['description_value'],
+                        'image_path' => $image_path,
+                        'target_roles' => $target_roles,
+                        'created_by' => $_SESSION['user_id'],
                         'status' => 'active'
-                    ]
-                ];
-                
-                error_log("Sending success response");
-                ob_end_clean();
-                echo json_encode($response);
-                
+                    ];
+                    
+                    // Create advertisement in database
+                    if ($this->adminModel->createAdvertisement($advertisementData)) {
+                        flash('msg', 'Advertisement created successfully', 'alert-success');
+                        redirect('admin/advertisements');
+                    } else {
+                        $data['image_err'] = 'Failed to create advertisement';
+                        $this->view('admin/advertisements/v_create_advertisement', $data);
+                    }
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                    $this->view('admin/advertisements/v_create_advertisement', $data);
+                }
             } else {
-                throw new Exception('Database insert failed');
+                // Show form with errors
+                $this->view('admin/advertisements/v_create_advertisement', $data);
             }
-            
-        } catch (Exception $e) {
-            $error = error_get_last();
-            error_log("Exception caught: " . $e->getMessage());
-            error_log("PHP error: " . ($error['message'] ?? 'No PHP error'));
-            
-            ob_end_clean();
-            http_response_code(500);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Server error: ' . $e->getMessage()
-            ]);
-        }
-        exit;
-    }
-}
-    public function updateAdvertisement($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            header('Content-Type: application/json');
-            
-            // Turn off error reporting
-            error_reporting(0);
-
-            // Get current advertisement to handle image deletion
-            $currentAd = $this->adminModel->getAdvertisementById($id);
-            $currentImagePath = $currentAd->image_path ?? '';
-            
-            $imagePath = $currentImagePath;
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-                $uploadDir = PUB_ROOT . '/uploads/advertisements/';
-                
-                // Create directory with proper permissions - silent mode
-                if (!is_dir($uploadDir)) {
-                    $oldUmask = umask(0);
-                    $result = @mkdir($uploadDir, 0755, true);
-                    umask($oldUmask);
-                    
-                    if (!$result) {
-                        echo json_encode(['status' => 'error', 'message' => 'Failed to create upload directory']);
-                        exit;
-                    }
-                }
-
-                // Sanitize filename
-                $fileName = time() . '_' . preg_replace('/[^a-zA-Z0-9\._-]/', '_', basename($_FILES['image']['name']));
-                $targetPath = $uploadDir . $fileName;
-                
-                if (@move_uploaded_file($_FILES['image']['tmp_name'], $targetPath)) {
-                    $imagePath = 'uploads/advertisements/' . $fileName;
-                    
-                    // Delete old image if it exists and is different from new one
-                    if (!empty($currentImagePath) && $currentImagePath !== $imagePath) {
-                        $oldImageFullPath = PUB_ROOT . '/' . $currentImagePath;
-                        if (file_exists($oldImageFullPath)) {
-                            @unlink($oldImageFullPath);
-                        }
-                    }
-                }
-            }
-
-            $roles = $_POST['roles'] ?? '';
-            if (is_array($roles)) $roles = implode(',', $roles);
-
+        } else {
+            // Show empty form
             $data = [
-                'title' => $_POST['title'] ?? 'Advertisement',
-                'image_path' => $imagePath,
-                'target_roles' => $roles,
-                'status' => $_POST['status'] ?? 'active'
+                'title' => 'Advertisements',
+                'pageTitle' => 'Create an Advertisement',
+                'title_value' => '',
+                'description_value' => '',
+                'title_err' => '',
+                'description_err' => '',
+                'image_err' => '',
+                'roles_err' => ''
             ];
+            $this->view('admin/advertisements/v_create_advertisement', $data);
+        }
+    }
 
-            if ($this->adminModel->updateAdvertisement($id, $data)) {
-                echo json_encode(['status' => 'success', 'message' => 'Advertisement updated']);
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to update advertisement']);
-            }
-            exit;
+    public function viewAdvertisement($id) {
+        // Get advertisement details
+        $advertisement = $this->adminModel->getAdvertisementById($id);
+
+        if (!$advertisement) {
+            flash('msg', 'Advertisement not found', 'alert-danger');
+            redirect('admin/advertisements');
+            return;
+        }
+
+        $data = [
+            'title' => 'Advertisements',
+            'pageTitle' => 'View Advertisement',
+            'advertisement' => $advertisement
+        ];
+
+        $this->view('admin/advertisements/v_view_advertisment', $data);
+    }
+
+    public function toggleAdvertisementStatus($id) {
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/advertisements');
+            return;
+        }
+
+        // Set JSON response header
+        header('Content-Type: application/json');
+
+        // Validate ID
+        if (empty($id) || !is_numeric($id)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid advertisement ID']);
+            return;
+        }
+
+        // Toggle status in database
+        if ($this->adminModel->toggleAdvertisementStatus($id)) {
+            echo json_encode(['success' => true, 'message' => 'Status updated successfully']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to update status']);
         }
     }
 
     public function deleteAdvertisement($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            header('Content-Type: application/json');
-            
-            // Get advertisement first to delete the image file
-            $advertisement = $this->adminModel->getAdvertisementById($id);
-            
-            if ($this->adminModel->deleteAdvertisement($id)) {
-                // Delete the associated image file
-                if ($advertisement && !empty($advertisement->image_path)) {
-                    $imagePath = PUB_ROOT . '/' . $advertisement->image_path;
-                    if (file_exists($imagePath)) {
-                        @unlink($imagePath);
-                    }
-                }
-                echo json_encode(['status' => 'success', 'message' => 'Advertisement deleted successfully']);
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to delete advertisement']);
-            }
-            exit;
+        // Only accept POST requests
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/advertisements');
+            return;
         }
-    }
 
-    public function toggleAdvertisementStatus($id) {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            header('Content-Type: application/json');
-            if ($this->adminModel->toggleAdvertisementStatus($id)) {
-                echo json_encode(['status' => 'success', 'message' => 'Advertisement status updated']);
-            } else {
-                echo json_encode(['status' => 'error', 'message' => 'Failed to update status']);
-            }
-            exit;
-        }
-    }
-
-    public function getAdvertisement($id) {
+        // Set JSON response header
         header('Content-Type: application/json');
-        $advertisement = $this->adminModel->getAdvertisementById($id);
-        if ($advertisement) {
-            echo json_encode([
-                'status' => 'success',
-                'advertisement' => $advertisement
-            ]);
-        } else {
-            echo json_encode(['status' => 'error', 'message' => 'Advertisement not found']);
+
+        // Validate ID
+        if (empty($id) || !is_numeric($id)) {
+            echo json_encode(['success' => false, 'message' => 'Invalid advertisement ID']);
+            return;
         }
-        exit;
+
+        // Get advertisement details to delete image file
+        $ad = $this->adminModel->getAdvertisementById($id);
+
+        // Delete from database
+        if ($this->adminModel->deleteAdvertisement($id)) {
+            // Try to delete the image file if it exists
+            if ($ad && !empty($ad->image_path)) {
+                $file_path = $_SERVER['DOCUMENT_ROOT'] . $ad->image_path;
+                if (file_exists($file_path)) {
+                    @unlink($file_path);
+                }
+            }
+            echo json_encode(['success' => true, 'message' => 'Advertisement deleted successfully']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to delete advertisement']);
+        }
     }
+
+    public function editAdvertisement($id) {
+        // Get advertisement details
+        $advertisement = $this->adminModel->getAdvertisementById($id);
+
+        if (!$advertisement) {
+            flash('msg', 'Advertisement not found', 'alert-danger');
+            redirect('admin/advertisements');
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            // Process form submission
+            $data = [
+                'id' => $id,
+                'title' => 'Advertisements',
+                'pageTitle' => 'Edit Advertisement',
+                'advertisement' => $advertisement,
+                'title_value' => trim($_POST['title'] ?? ''),
+                'description_value' => trim($_POST['description'] ?? ''),
+                'target_roles' => isset($_POST['target_roles']) ? $_POST['target_roles'] : [],
+                'title_err' => '',
+                'description_err' => '',
+                'image_err' => '',
+                'roles_err' => ''
+            ];
+            
+            // Validate title
+            if (empty($data['title_value'])) {
+                $data['title_err'] = 'Please enter an advertisement title';
+            }
+            
+            // Validate description
+            if (empty($data['description_value'])) {
+                $data['description_err'] = 'Please enter a description';
+            }
+            
+            // Validate target roles
+            if (empty($data['target_roles'])) {
+                $data['roles_err'] = 'Please select at least one target role';
+            }
+            
+            // Handle image upload (optional for edit)
+            $image_path = $advertisement->image_path; // Keep existing image by default
+            
+            if (isset($_FILES['image']) && $_FILES['image']['error'] != UPLOAD_ERR_NO_FILE) {
+                // New image uploaded
+                if ($_FILES['image']['error'] == UPLOAD_ERR_OK) {
+                    // Validate image file type
+                    $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                    $file_type = $_FILES['image']['type'];
+                    
+                    if (!in_array($file_type, $allowed_types)) {
+                        $data['image_err'] = 'Only JPG, PNG, and GIF images are allowed';
+                    } else {
+                        // Upload new image
+                        $upload_dir = '/uploads/advertisements/';
+                        $file_extension = pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                        $unique_filename = 'ad_' . time() . '_' . uniqid() . '.' . $file_extension;
+                        
+                        if (uploadImage($_FILES['image']['tmp_name'], $unique_filename, $upload_dir)) {
+                            // Delete old image
+                            if (!empty($advertisement->image_path)) {
+                                $old_file = $_SERVER['DOCUMENT_ROOT'] . $advertisement->image_path;
+                                if (file_exists($old_file)) {
+                                    @unlink($old_file);
+                                }
+                            }
+                            $image_path = $upload_dir . $unique_filename;
+                        } else {
+                            $data['image_err'] = 'Failed to upload image';
+                        }
+                    }
+                } else {
+                    $data['image_err'] = 'Error uploading image';
+                }
+            }
+            
+            // If no errors, update the advertisement
+            if (empty($data['title_err']) && empty($data['description_err']) && empty($data['image_err']) && empty($data['roles_err'])) {
+                // Convert roles array to JSON
+                $target_roles = json_encode($data['target_roles']);
+                
+                // Prepare data for model
+                $updateData = [
+                    'title' => $data['title_value'],
+                    'description' => $data['description_value'],
+                    'image_path' => $image_path,
+                    'target_roles' => $target_roles
+                ];
+                
+                // Update in database
+                if ($this->adminModel->updateAdvertisement($id, $updateData)) {
+                    flash('msg', 'Advertisement updated successfully', 'alert-success');
+                    redirect('admin/advertisements');
+                } else {
+                    $data['image_err'] = 'Failed to update advertisement';
+                    $this->view('admin/advertisements/v_edit_advertisement', $data);
+                }
+            } else {
+                // Show form with errors
+                $this->view('admin/advertisements/v_edit_advertisement', $data);
+            }
+        } else {
+            // Show edit form
+            $data = [
+                'id' => $id,
+                'title' => 'Advertisements',
+                'pageTitle' => 'Edit Advertisement',
+                'advertisement' => $advertisement,
+                'title_value' => $advertisement->title,
+                'description_value' => $advertisement->description,
+                'target_roles' => json_decode($advertisement->target_roles) ?: explode(',', $advertisement->target_roles),
+                'title_err' => '',
+                'description_err' => '',
+                'image_err' => '',
+                'roles_err' => ''
+            ];
+            $this->view('admin/advertisements/v_edit_advertisement', $data);
+        }
+    }
+
+    
 // ======================================================================== //
 // =======================      Admin incidents        ====================== //
 // ======================================================================== //

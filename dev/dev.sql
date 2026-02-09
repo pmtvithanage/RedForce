@@ -110,6 +110,7 @@ CREATE TABLE
     IF NOT EXISTS advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
+        description TEXT NULL,
         image_path VARCHAR(500) NOT NULL,
         target_roles TEXT NOT NULL, -- JSON or comma-separated roles
         created_by INT NOT NULL,

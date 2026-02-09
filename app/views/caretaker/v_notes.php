@@ -23,41 +23,47 @@
         <?php flash('note_error'); ?>
 
         <!-- Statistics Cards -->
-        <section class="stats-section">
-            <div class="stats-row">
-                <div class="stat-card purple">
-                    <div class="stat-icon"><span class="material-icons">description</span></div>
-                    <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->total ?? 0; ?></div>
-                        <div class="stat-label">Total Notes</div>
-                    </div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <span class="material-symbols-outlined">description</span>
                 </div>
-
-                <div class="stat-card red">
-                    <div class="stat-icon"><span class="material-icons">error</span></div>
-                    <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->important ?? 0; ?></div>
-                        <div class="stat-label">Important</div>
-                    </div>
-                </div>
-
-                <div class="stat-card yellow">
-                    <div class="stat-icon"><span class="material-icons">flag</span></div>
-                    <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->highPriority ?? 0; ?></div>
-                        <div class="stat-label">High Priority</div>
-                    </div>
-                </div>
-
-                <div class="stat-card green">
-                    <div class="stat-icon"><span class="material-icons">notifications_active</span></div>
-                    <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->pendingReminders ?? 0; ?></div>
-                        <div class="stat-label">Pending Reminders</div>
-                    </div>
+                <div class="stat-content">
+                    <h3><?php echo $data['stats']->total ?? 0; ?></h3>
+                    <p>Total Notes</p>
                 </div>
             </div>
-        </section>
+
+            <div class="stat-card">
+                <div class="stat-icon important">
+                    <span class="material-symbols-outlined">priority_high</span>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $data['stats']->important ?? 0; ?></h3>
+                    <p>Important</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon priority">
+                    <span class="material-symbols-outlined">flag</span>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $data['stats']->highPriority ?? 0; ?></h3>
+                    <p>High Priority</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon reminder">
+                    <span class="material-symbols-outlined">notifications_active</span>
+                </div>
+                <div class="stat-content">
+                    <h3><?php echo $data['stats']->pendingReminders ?? 0; ?></h3>
+                    <p>Pending Reminders</p>
+                </div>
+            </div>
+        </div>
 
         <!-- Filters -->
         <div class="filters-section">
@@ -156,7 +162,7 @@
                                 </a>
                                 
                                 <form method="POST" action="<?php echo URL_ROOT; ?>/caretaker/deleteNote/<?php echo $note->id; ?>" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this note?\n\nTitle: <?php echo htmlspecialchars($note->title); ?>\n\nThis action cannot be undone.');">
-                                    <button type="submit" class="btn-action delete" title="Delete">
+                                    <button type="submit" class="btn-action" title="Delete">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </form>

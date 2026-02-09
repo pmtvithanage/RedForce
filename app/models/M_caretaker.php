@@ -119,6 +119,44 @@ class M_caretaker {
         return $this->db->single();
     }
 
+    // Get today's reminders
+    public function getTodayReminders($caretaker_id) {
+        $this->db->query('
+            SELECT * FROM caretaker_notes 
+            WHERE caretaker_id = :caretaker_id 
+            AND reminder_date = CURDATE()
+            AND is_completed = 0
+            ORDER BY priority DESC, created_at ASC
+        ');
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->resultSet();
+    }
+
+    // Get overdue reminders (missed)
+    public function getOverdueReminders($caretaker_id) {
+        $this->db->query('
+            SELECT * FROM caretaker_notes 
+            WHERE caretaker_id = :caretaker_id 
+            AND reminder_date < CURDATE()
+            AND is_completed = 0
+            ORDER BY reminder_date DESC, priority DESC
+        ');
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->resultSet();
+    }
+
+    // Mark reminder as completed
+    public function completeReminder($note_id, $caretaker_id) {
+        $this->db->query('
+            UPDATE caretaker_notes 
+            SET is_completed = 1 
+            WHERE id = :id AND caretaker_id = :caretaker_id
+        ');
+        $this->db->bind(':id', $note_id);
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->execute();
+    }
+
     public function addNote($data) {
         $this->db->query('
             INSERT INTO caretaker_notes 
@@ -319,18 +357,37 @@ class M_caretaker {
 
     // Get recent activities for caretaker dashboard
     public function getRecentActivities($caretaker_id = null, $limit = 10) {
-        $this->db->query('
+        $query = '
             SELECT 
-                "attendance" as activity_type,
-                CONCAT("Officer Attendance - ", status) as activity_titel,
-                CONCAT("Officer ID: ", officer_id, " - ", status, " on ", attendance_date) as activity_details,
+                activity_type,
+                activity_titel,
+                activity_details,
                 created_at
-            FROM officer_attendance
+            FROM recent_activities
+            WHERE user_id = :user_id
             ORDER BY created_at DESC
             LIMIT :limit
-        ');
+        ';
+        
+        $this->db->query($query);
+        $this->db->bind(':user_id', $caretaker_id, PDO::PARAM_INT);
         $this->db->bind(':limit', $limit, PDO::PARAM_INT);
         return $this->db->resultSet();
+    }
+
+    // Insert recent activity for caretaker
+    public function insertRecentActivity($userId, $title, $description, $type) {
+        $this->db->query('
+            INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+            VALUES (:user_id, :title, :description, :type)
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':title', $title);
+        $this->db->bind(':description', $description);
+        $this->db->bind(':type', $type);
+        
+        return $this->db->execute();
     }
 
     // ==================== SITE INFORMATION ====================
