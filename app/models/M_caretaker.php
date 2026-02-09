@@ -119,6 +119,44 @@ class M_caretaker {
         return $this->db->single();
     }
 
+    // Get today's reminders
+    public function getTodayReminders($caretaker_id) {
+        $this->db->query('
+            SELECT * FROM caretaker_notes 
+            WHERE caretaker_id = :caretaker_id 
+            AND reminder_date = CURDATE()
+            AND is_completed = 0
+            ORDER BY priority DESC, created_at ASC
+        ');
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->resultSet();
+    }
+
+    // Get overdue reminders (missed)
+    public function getOverdueReminders($caretaker_id) {
+        $this->db->query('
+            SELECT * FROM caretaker_notes 
+            WHERE caretaker_id = :caretaker_id 
+            AND reminder_date < CURDATE()
+            AND is_completed = 0
+            ORDER BY reminder_date DESC, priority DESC
+        ');
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->resultSet();
+    }
+
+    // Mark reminder as completed
+    public function completeReminder($note_id, $caretaker_id) {
+        $this->db->query('
+            UPDATE caretaker_notes 
+            SET is_completed = 1 
+            WHERE id = :id AND caretaker_id = :caretaker_id
+        ');
+        $this->db->bind(':id', $note_id);
+        $this->db->bind(':caretaker_id', $caretaker_id);
+        return $this->db->execute();
+    }
+
     public function addNote($data) {
         $this->db->query('
             INSERT INTO caretaker_notes 

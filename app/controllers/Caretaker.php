@@ -359,7 +359,7 @@ class Caretaker extends Controller {
 
     public function addNotePage() {
         $data = [
-            'title' => 'Add Note',
+            'title' => 'My Notes',
             'pageTitle' => 'Add New Note'
         ];
         $this->view('caretaker/v_add_note', $data);
@@ -428,7 +428,7 @@ class Caretaker extends Controller {
         }
 
         $data = [
-            'title' => 'Edit Note',
+            'title' => 'My Notes',
             'pageTitle' => 'Edit Note',
             'note' => $note
         ];
@@ -1043,5 +1043,62 @@ class Caretaker extends Controller {
         }
         
         redirect('caretaker/leaverequests');
+    }
+
+    /* --------------------------
+       REMINDER AJAX ENDPOINTS
+    ---------------------------*/
+
+    // Get pending and overdue reminders (AJAX)
+    public function getReminders() {
+        header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+            return;
+        }
+
+        $caretaker_id = $_SESSION['user_id'];
+        
+        // Get today's reminders
+        $todayReminders = $this->caretakerModel->getTodayReminders($caretaker_id);
+        
+        // Get overdue reminders
+        $overdueReminders = $this->caretakerModel->getOverdueReminders($caretaker_id);
+        
+        echo json_encode([
+            'success' => true,
+            'today' => $todayReminders ?? [],
+            'overdue' => $overdueReminders ?? []
+        ]);
+    }
+
+    // Mark reminder as completed (AJAX)
+    public function completeReminder() {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Not authenticated']);
+            return;
+        }
+
+        $caretaker_id = $_SESSION['user_id'];
+        $note_id = $_POST['note_id'] ?? null;
+        
+        if (!$note_id) {
+            echo json_encode(['success' => false, 'message' => 'Note ID required']);
+            return;
+        }
+        
+        if ($this->caretakerModel->completeReminder($note_id, $caretaker_id)) {
+            echo json_encode(['success' => true, 'message' => 'Reminder marked as completed']);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Failed to complete reminder']);
+        }
     }
 }

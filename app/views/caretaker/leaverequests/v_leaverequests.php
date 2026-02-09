@@ -335,7 +335,7 @@ tbody tr:hover {
 
 <div class="container">
     <div class="page-header">
-        <h1>Leave Requests</h1>
+        <h1></h1>
         <button class="primary-btn create-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/createLeaveRequest'">
             <span class="material-symbols-outlined">add</span>
             New Leave Request
