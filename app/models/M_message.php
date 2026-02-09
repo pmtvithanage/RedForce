@@ -119,7 +119,55 @@ class M_message {
         $this->db->bind(':recipient_id', $recipient_id);
         $this->db->bind(':message', $message);
         
-        return $this->db->execute();
+        $result = $this->db->execute();
+        
+        // Send notification to recipient
+        if ($result) {
+            $this->sendMessageNotification($sender_id, $recipient_id, $message);
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Send notification to recipient about new message
+     */
+    private function sendMessageNotification($sender_id, $recipient_id, $message) {
+        // Get sender information
+        $this->db->query("SELECT name FROM Users WHERE id = :sender_id");
+        $this->db->bind(':sender_id', $sender_id);
+        $sender = $this->db->single();
+        
+        // Get recipient information for link generation
+        $this->db->query("SELECT role FROM Users WHERE id = :recipient_id");
+        $this->db->bind(':recipient_id', $recipient_id);
+        $recipient = $this->db->single();
+        
+        if ($sender && $recipient) {
+            $senderName = $sender->name;
+            
+            // Convert role to controller name (same logic as in messages.php)
+            $recipientRole = $recipient->role;
+            $role = str_replace(' ', '', ucwords($recipientRole));
+            
+            // Truncate message for preview
+            $messagePreview = strlen($message) > 50 ? substr($message, 0, 50) . '...' : $message;
+            
+            // Load and create notification
+            if (!class_exists('M_notifications')) {
+                require_once '../app/models/M_notifications.php';
+            }
+            $notificationModel = new M_notifications();
+            $notificationModel->addNotification(
+                $recipient_id,
+                'info',
+                'New Message from ' . $senderName,
+                $messagePreview,
+                URL_ROOT . '/' . $role . '/messages',
+                'message',
+                $sender_id
+            );
+        }
     }
 
     /**
@@ -326,6 +374,96 @@ class M_message {
         
         $this->db->bind(':user_id', $mobile_rider_user_id);
         $this->db->bind(':user_id2', $mobile_rider_user_id);
+        
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get all messageable users for a supervisor
+     * Returns: admins + all officers in supervisor's assigned site
+     */
+    public function getAllUsersForSupervisor($supervisor_user_id) {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                CASE 
+                    WHEN u.role = 'premise officer' AND po.rank = 'Supervisor' THEN 'Supervisor'
+                    ELSE u.role
+                END as role
+            FROM Users u
+            LEFT JOIN premise_officers po ON po.userID = u.id
+            WHERE 
+                (u.role = 'admin')
+                OR 
+                (u.role = 'premise officer' AND u.id IN (
+                    SELECT officer_id FROM officer_site_assignments 
+                    WHERE site_id = (
+                        SELECT site_id FROM officer_site_assignments 
+                        WHERE officer_id = :supervisor_id AND shift_type = 'Supervisor' LIMIT 1
+                    )
+                ))
+            AND u.id != :supervisor_id2
+            ORDER BY u.role DESC, u.name ASC
+        ");
+        
+        $this->db->bind(':supervisor_id', $supervisor_user_id);
+        $this->db->bind(':supervisor_id2', $supervisor_user_id);
+        
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get all messageable users for a caretaker
+     * Returns: admins + all supervisors assigned to the caretaker's site
+     */
+    public function getAllUsersForCaretaker($caretaker_user_id) {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                CASE 
+                    WHEN u.role = 'premise officer' AND po.rank = 'Supervisor' THEN 'Supervisor'
+                    ELSE u.role
+                END as role
+            FROM Users u
+            LEFT JOIN premise_officers po ON po.userID = u.id
+            WHERE 
+                -- All admins
+                (u.role = 'admin')
+                OR 
+                -- All supervisors assigned to the caretaker's site
+                (
+                    u.role = 'premise officer' 
+                    AND po.rank = 'Supervisor'
+                    AND u.id IN (
+                        SELECT officer_id 
+                        FROM officer_site_assignments 
+                        WHERE site_id = (
+                            SELECT site_id 
+                            FROM caretaker_site_assignments 
+                            WHERE caretaker_id = :caretaker_id 
+                            AND status = 'Active'
+                            LIMIT 1
+                        )
+                        AND shift_type = 'Supervisor'
+                        AND status = 'Active'
+                    )
+                )
+            AND u.id != :caretaker_id2
+            ORDER BY 
+                CASE WHEN u.role = 'admin' THEN 0 ELSE 1 END,
+                u.name ASC
+        ");
+        
+        $this->db->bind(':caretaker_id', $caretaker_user_id);
+        $this->db->bind(':caretaker_id2', $caretaker_user_id);
         
         return $this->db->resultSet();
     }

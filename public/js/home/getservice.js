@@ -68,3 +68,25 @@ document.addEventListener('DOMContentLoaded', function() {
     imagePlaceholder.style.display = "block";
     imagePlaceholder.setAttribute('src', defaultImagePath);
 });
+
+// CV File Upload - With PDF Icon
+document.addEventListener("DOMContentLoaded", function () {
+  const cvInput = document.getElementById("cv");
+  const cvUploadBtn = document.querySelector('label[for="cv"]');
+
+  if (cvInput && cvUploadBtn) {
+    cvInput.addEventListener("change", function () {
+      if (this.files && this.files.length > 0) {
+        const fileName = this.files[0].name;
+        cvUploadBtn.innerHTML = `
+          <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px; font-size: 18px;">
+            picture_as_pdf
+          </span>
+          ${fileName}
+        `;
+      } else {
+        cvUploadBtn.textContent = "Choose File";
+      }
+    });
+  }
+});

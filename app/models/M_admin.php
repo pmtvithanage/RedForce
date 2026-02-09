@@ -357,6 +357,43 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("SELECT * FROM Users WHERE role = 'client' ORDER BY created_at DESC");
         return $this->db->resultSet();
     }
+
+    // Get staff counts for a specific client
+    public function getClientStaffCounts($clientId) {
+        $this->db->query("
+            SELECT 
+                -- Count premise officers (excluding supervisors)
+                (SELECT COUNT(DISTINCT osa.officer_id) 
+                 FROM officer_site_assignments osa
+                 INNER JOIN sites s ON osa.site_id = s.id
+                 INNER JOIN premise_officers po ON osa.officer_id = po.userID
+                 WHERE s.client_id = :client_id 
+                 AND osa.status = 'Active'
+                 AND (po.rank != 'Supervisor' OR po.rank IS NULL)
+                ) as officers_count,
+                
+                -- Count supervisors
+                (SELECT COUNT(DISTINCT osa.officer_id) 
+                 FROM officer_site_assignments osa
+                 INNER JOIN sites s ON osa.site_id = s.id
+                 INNER JOIN premise_officers po ON osa.officer_id = po.userID
+                 WHERE s.client_id = :client_id 
+                 AND osa.status = 'Active'
+                 AND po.rank = 'Supervisor'
+                ) as supervisors_count,
+                
+                -- Count caretakers
+                (SELECT COUNT(DISTINCT csa.caretaker_id) 
+                 FROM caretaker_site_assignments csa
+                 INNER JOIN sites s ON csa.site_id = s.id
+                 WHERE s.client_id = :client_id 
+                 AND csa.status = 'Active'
+                ) as caretakers_count
+        ");
+        
+        $this->db->bind(':client_id', $clientId);
+        return $this->db->single();
+    }
     
     // Get detailed client statistics by status
     public function getClientStatistics() {
@@ -566,10 +603,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     public function createAdvertisement($data) {
         $this->db->query('
             INSERT INTO advertisements 
-            (title, image_path, target_roles, created_by, status) 
-            VALUES (:title, :image_path, :target_roles, :created_by, :status)
+            (title, description, image_path, target_roles, created_by, status) 
+            VALUES (:title, :description, :image_path, :target_roles, :created_by, :status)
         ');
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
         $this->db->bind(':created_by', $data['created_by']);
@@ -586,17 +624,17 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query('
             UPDATE advertisements SET 
                 title = :title,
+                description = :description,
                 image_path = :image_path,
                 target_roles = :target_roles,
-                status = :status,
                 updated_at = NOW()
             WHERE id = :id
         ');
         $this->db->bind(':id', $id);
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
-        $this->db->bind(':status', $data['status']);
         return $this->db->execute();
     }
 
@@ -810,7 +848,40 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
-        //return $this->db->resultSet();
+        return $this->db->resultSet();
+    }
+
+    // Get all leave requests (from all roles)
+    public function getAllLeaveRequests() {
+        $this->db->query("
+            SELECT 
+                lr.*,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.name
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.name
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
+                END as employee_name,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.email
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.email
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
+                END as employee_email,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
+                    WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
+                    WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
+                END as employee_role
+            FROM leave_requests lr
+            LEFT JOIN Users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN Users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN Users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN Users u4 ON lr.premiseofficer_id = u4.id
+            ORDER BY lr.created_at DESC
+        ");
+        return $this->db->resultSet();
     }
 
     // Get leave request by ID (from all roles)
@@ -1224,6 +1295,19 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return ['success' => false, 'message' => 'Failed to unassign officer'];
     }
 
+    public function unassignCaretakerFromSite($assignmentId) {
+        $this->db->query("UPDATE caretaker_site_assignments 
+                          SET status = 'Completed', assignment_end = CURDATE() 
+                          WHERE id = :id");
+        $this->db->bind(':id', $assignmentId);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Caretaker unassigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to unassign caretaker'];
+    }
+
     // Get assigned officers for a site
     public function getAssignedOfficers($siteId) {
         $this->db->query("SELECT 
@@ -1246,6 +1330,30 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
                           INNER JOIN premise_officers po ON u.id = po.userID
                           WHERE osa.site_id = :site_id AND osa.status = 'Active'
                           ORDER BY osa.assignment_start DESC");
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
+    public function getAssignedCaretakers($siteId) {
+        $this->db->query("SELECT 
+                            csa.id as assignment_id,
+                            csa.assignment_start,
+                            csa.assignment_end,
+                            csa.status,
+                            u.id as user_id,
+                            u.name,
+                            u.email,
+                            u.phone_number,
+                            u.profile_image,
+                            ct.caretakerID,
+                            ct.city,
+                            ct.district,
+                            ct.employment_status
+                          FROM caretaker_site_assignments csa
+                          INNER JOIN Users u ON csa.caretaker_id = u.id
+                          INNER JOIN care_taker ct ON u.id = ct.userID
+                          WHERE csa.site_id = :site_id AND csa.status = 'Active'
+                          ORDER BY csa.assignment_start DESC");
         $this->db->bind(':site_id', $siteId);
         return $this->db->resultSet();
     }
@@ -1377,11 +1485,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $last = $this->db->single();
         
         if ($last) {
-            // Extract number from CLIENT001
-            $number = (int) substr($last->userID, 6); // Remove "CLIENT" (6 characters)
+            // Extract number from ADMIN001
+            $number = (int) substr($last->userID, 5); // Remove "ADMIN" (5 characters)
             $nextNumber = $number + 1;
         } else {
-            $nextNumber = 1; // First client
+            $nextNumber = 1; // First admin
         }
         
         $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
@@ -1399,15 +1507,28 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
     
         if ($this->db->execute()) {
-            return $this->db->lastInsertId(); // Return the new user ID
+            return [
+                'success' => true,
+                'id' => $this->db->lastInsertId(),
+                'userID' => $userID,
+                'tempPassword' => $tempPassword,
+                'email' => $data['email'],
+                'name' => $data['name']
+            ];
         }
-        return false;
+        return ['success' => false];
 
     }
 
     public function getAdmin($userID) {
         $this->db->query("SELECT * FROM Users WHERE userID = :userID");
         $this->db->bind(':userID', $userID);
+        return $this->db->single();
+    }
+
+    public function getAdminById($id) {
+        $this->db->query("SELECT * FROM Users WHERE id = :id AND role = 'admin'");
+        $this->db->bind(':id', $id);
         return $this->db->single();
     }
 
@@ -1606,6 +1727,28 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         ");
         return $this->db->single();
     }
+
+    /**
+     * Get recent incidents with limit
+     */
+    public function getRecentIncidents($limit = 10) {
+        $this->db->query("
+            SELECT 
+                ir.*,
+                s.site_name,
+                u.name as officer_name,
+                u.role as officer_role,
+                COALESCE(ir.status, 'Pending') as status,
+                COALESCE(ir.priority, ir.severity, 'Medium') as priority
+            FROM incident_reports ir
+            LEFT JOIN sites s ON ir.site_id = s.id
+            LEFT JOIN Users u ON ir.user_id = u.id
+            ORDER BY ir.created_at DESC
+            LIMIT :limit
+        ");
+        $this->db->bind(':limit', $limit);
+        return $this->db->resultSet();
+    }
     
     /**
      * Get incident by ID
@@ -1767,6 +1910,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
                     u.name,
                     u.email,
                     u.phone_number as contact,
+                    u.profile_image,
                     po.city,
                     po.district,
                     po.rank,
@@ -1854,5 +1998,161 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         }
 
         return ['success' => false, 'message' => 'Failed to assign supervisor'];
+    }
+
+    // Update Admin
+    public function updateAdmin($data) {
+        $this->db->query("UPDATE Users 
+                         SET name = :name, 
+                             email = :email, 
+                             phone_number = :phone_number
+                         WHERE id = :admin_id AND role = 'admin'");
+        
+        $this->db->bind(':admin_id', $data['admin_id']);
+        $this->db->bind(':name', $data['name']);
+        $this->db->bind(':email', $data['email']);
+        $this->db->bind(':phone_number', $data['phone_number']);
+        
+        return $this->db->execute();
+    }
+
+    // Delete Admin
+    public function deleteAdmin($admin_id) {
+        $this->db->query("DELETE FROM Users WHERE id = :admin_id AND role = 'admin'");
+        $this->db->bind(':admin_id', $admin_id);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Phone
+    public function updateProfilePhone($user_id, $phone_number) {
+        $this->db->query("UPDATE Users SET phone_number = :phone_number WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':phone_number', $phone_number);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Email
+    public function updateProfileEmail($user_id, $email) {
+        $this->db->query("UPDATE Users SET email = :email WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':email', $email);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Password
+    public function updateProfilePassword($user_id, $hashed_password) {
+        $this->db->query("UPDATE Users SET password = :password WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':password', $hashed_password);
+        
+        return $this->db->execute();
+    }
+
+    // Update Profile Image
+    public function updateProfileImage($user_id, $image_name) {
+        $this->db->query("UPDATE Users SET profile_image = :profile_image WHERE id = :user_id");
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':profile_image', $image_name);
+        
+        return $this->db->execute();
+    }
+
+    // Get available caretakers for site assignment
+    public function getAvailableCaretakers($filters) {
+        $sql = "SELECT DISTINCT
+                    u.id,
+                    u.userID,
+                    u.name,
+                    u.email,
+                    u.phone_number as contact,
+                    u.profile_image,
+                    ct.city,
+                    ct.district,
+                    ct.employment_status,
+                    (SELECT COUNT(*) FROM caretaker_site_assignments csa 
+                     WHERE csa.caretaker_id = u.id AND csa.status = 'Active') as current_assignment_count
+                FROM Users u
+                INNER JOIN care_taker ct ON u.id = ct.userID
+                WHERE u.role = 'caretaker'";
+
+        $params = [];
+
+        // District filter
+        if (isset($filters['district_filter'])) {
+            if ($filters['district_filter'] === 'same-district' && !empty($filters['district'])) {
+                $sql .= " AND ct.district = :district";
+                $params[':district'] = $filters['district'];
+            }
+            // 'all' means no district filter
+        }
+
+        // City filter
+        if (isset($filters['city_filter'])) {
+            if ($filters['city_filter'] === 'same-city' && !empty($filters['city'])) {
+                $sql .= " AND ct.city = :city";
+                $params[':city'] = $filters['city'];
+            }
+            // 'all' means no city filter
+        }
+
+        // Availability filter - Available means NOT assigned to any site
+        if (isset($filters['availability']) && $filters['availability'] === 'available') {
+            $sql .= " AND NOT EXISTS (
+                        SELECT 1 FROM caretaker_site_assignments csa 
+                        WHERE csa.caretaker_id = u.id AND csa.status = 'Active'
+                      )";
+        }
+        // 'all' means show everyone regardless of assignment status
+
+        $sql .= " ORDER BY u.name ASC";
+
+        $this->db->query($sql);
+        
+        foreach ($params as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    // Assign caretaker to site
+    public function assignCaretakerToSite($siteId, $caretakerId, $assignedBy) {
+        // Check if caretaker is already assigned to another site
+        $this->db->query("SELECT id FROM caretaker_site_assignments 
+                          WHERE caretaker_id = :caretaker_id AND status = 'Active'");
+        $this->db->bind(':caretaker_id', $caretakerId);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            return ['success' => false, 'message' => 'Caretaker is already assigned to another site'];
+        }
+
+        // Verify the user is actually a caretaker
+        $this->db->query("SELECT ct.id FROM care_taker ct
+                          INNER JOIN Users u ON ct.userID = u.id
+                          WHERE u.id = :user_id AND u.role = 'caretaker'");
+        $this->db->bind(':user_id', $caretakerId);
+        $caretaker = $this->db->single();
+
+        if (!$caretaker) {
+            return ['success' => false, 'message' => 'User is not a valid caretaker'];
+        }
+
+        // Create new assignment
+        $this->db->query("INSERT INTO caretaker_site_assignments 
+                          (site_id, caretaker_id, assignment_start, assigned_by, status) 
+                          VALUES (:site_id, :caretaker_id, CURDATE(), :assigned_by, 'Active')");
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':caretaker_id', $caretakerId);
+        $this->db->bind(':assigned_by', $assignedBy);
+
+        if ($this->db->execute()) {
+            return ['success' => true, 'message' => 'Caretaker assigned successfully'];
+        }
+
+        return ['success' => false, 'message' => 'Failed to assign caretaker'];
     }
 }

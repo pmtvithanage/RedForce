@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <!-- Link to Dashboard CSS -->
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseofficer/dashboard_style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseOfficer/dashboard_style.css">
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/advertisement_view.css">
 
 <!-- Dashboard Content -->

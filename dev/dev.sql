@@ -110,6 +110,7 @@ CREATE TABLE
     IF NOT EXISTS advertisements (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
+        description TEXT NULL,
         image_path VARCHAR(500) NOT NULL,
         target_roles TEXT NOT NULL, -- JSON or comma-separated roles
         created_by INT NOT NULL,
@@ -840,3 +841,17 @@ ALTER TABLE sites
 ADD COLUMN IF NOT EXISTS package_request_id INT NULL;
 
 
+CREATE TABLE `notifications` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL COMMENT 'Recipient user ID from Users table',
+  `type` varchar(50) NOT NULL DEFAULT 'info' COMMENT 'Notification type: info, success, warning, danger',
+  `title` varchar(255) NOT NULL COMMENT 'Notification title/heading',
+  `message` text NOT NULL COMMENT 'Notification message content',
+  `link` varchar(500) DEFAULT NULL COMMENT 'Optional link/URL for the notification',
+  `icon` varchar(100) DEFAULT 'notifications' COMMENT 'Material icon name',
+  `is_read` tinyint(1) DEFAULT 0 COMMENT 'Read status',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `from_user_id` int(11) DEFAULT NULL COMMENT 'Sender user ID',
+  `to_user_id` int(11) DEFAULT NULL COMMENT 'Recipient user ID (alternative to user_id column)'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

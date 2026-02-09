@@ -37,7 +37,7 @@
             <div class="chat-info">
               <p class="name">
                 <?php echo htmlspecialchars($conv->name); ?>
-               
+                <span class="role" style="color: #999; font-size: 12px; font-weight: 400; margin-left: 8px;">(<?php echo htmlspecialchars($conv->role ?? 'User'); ?>)</span>
               </p>
               <p class="preview"><?php echo htmlspecialchars(substr($conv->last_message ?? 'No messages yet', 0, 50)); ?></p>
             </div>
@@ -82,7 +82,7 @@
             <div class="chat-info">
               <p class="name">
                 <?php echo htmlspecialchars($user->name); ?>
-    
+                <span class="role" style="color: #999; font-size: 12px; font-weight: 400; margin-left: 8px;">(<?php echo htmlspecialchars($user->role ?? 'User'); ?>)</span>
               </p>
               <p class="preview">Click to start conversation</p>
             </div>

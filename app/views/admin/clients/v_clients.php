@@ -277,17 +277,17 @@
           </div>
 
             <div class="stat-box">
-                <span class="number">142</span>
+                <span class="number"><?php echo $clients->officers_count ?? 0; ?></span>
                 <span class="officer-label">Premise <br> officers</span>
             </div>
 
             <div class="stat-box">
-                <span class="number">13</span>
+                <span class="number"><?php echo $clients->supervisors_count ?? 0; ?></span>
                 <span class="officer-label">Supervisors</span>
             </div>
 
             <div class="stat-box">
-                <span class="number">3</span>
+                <span class="number"><?php echo $clients->caretakers_count ?? 0; ?></span>
                 <span class="officer-label">Care-Takers</span>
             </div>
 
@@ -313,6 +313,46 @@
 
 <div class="backdrop" id="backdrop" hidden></div>
 
+<script>
+// Search functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('searchInput');
+  const clientCards = document.querySelectorAll('.client-card');
+  const clientsCount = document.getElementById('clientsCount');
+  const totalClients = parseInt(clientsCount.textContent);
+
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    clientCards.forEach(function(card) {
+      const clientName = card.querySelector('.client-title').textContent.toLowerCase();
+      const addresses = card.querySelectorAll('.address');
+      const email = addresses[0] ? addresses[0].textContent.toLowerCase() : '';
+      const phone = addresses[1] ? addresses[1].textContent.toLowerCase() : '';
+
+      // Search in name, email, and phone
+      const isMatch = clientName.includes(searchTerm) || 
+                     email.includes(searchTerm) || 
+                     phone.includes(searchTerm);
+
+      if (isMatch) {
+        card.parentElement.style.display = 'flex';
+        visibleCount++;
+      } else {
+        card.parentElement.style.display = 'none';
+      }
+    });
+
+    // Update count display
+    if (searchTerm === '') {
+      clientsCount.textContent = totalClients;
+    } else {
+      clientsCount.textContent = visibleCount;
+    }
+  });
+});
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 

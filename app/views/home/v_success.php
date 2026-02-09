@@ -37,7 +37,7 @@
     </div>
     <div class="section-body">
       <p>Thank you for choosing Red Force Security Service. We appreciate your interest in our services and will be in touch with you shortly.</p>
-      <h3>Submitted Company Information:</h3> <br>
+      <h3>Submitted Business Registration Information:</h3> <br>
     </div>
 
     <div class="form-and-photo">
@@ -52,22 +52,46 @@
         </div>
 
         <div class="field">
-          <div class="field-label"><strong>Company Name:</strong> <?php echo $data['company_name']; ?></div>
+          <div class="field-label"><strong>Legal/Registered Company Name:</strong> <?php echo $data['legal_company_name'] ?? 'N/A'; ?></div>
         </div>
 
         <div class="field">
-          <div class="field-label"><strong>Email:</strong> <?php echo $data['email']; ?></div>
+          <div class="field-label"><strong>Company Type:</strong> <?php echo $data['company_type'] ?? 'N/A'; ?></div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Business Registration Number:</strong> <?php echo $data['business_registration_number'] ?? 'N/A'; ?></div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Registered Business Address:</strong> <?php echo nl2br($data['registered_address'] ?? 'N/A'); ?></div>
+        </div>
+
+        <div class="field">
+          <div class="field-label"><strong>Primary Business Email:</strong> <?php echo $data['email'] ?? 'N/A'; ?></div>
           
         </div>
 
         <div class="field">
-          <div class="field-label"><strong>Phone Number:</strong><?php echo $data['phone_number']; ?></div>
+          <div class="field-label"><strong>Primary Business Phone:</strong><?php echo $data['phone_number'] ?? 'N/A'; ?></div>
           
         </div>
 
         <div class="field">
-          <div class="field-label"><strong>Contact person's Name:</strong><?php echo $data['contact_person_name']; ?></div>
+          <div class="field-label"><strong>Contact Person's Name:</strong><?php echo $data['contact_person_name'] ?? 'N/A'; ?></div>
           
+        </div>
+
+        <div class="field" style="border-top: 2px solid #f0f0f0; padding-top: 15px; margin-top: 15px;">
+          <div class="field-label"><strong>Business Registration Document:</strong></div>
+          <?php if(!empty($data['business_document'])): ?>
+            <a href="<?php echo URL_ROOT; ?>/uploads/businessDocuments/<?php echo $data['business_document']; ?>" target="_blank" style="color: #a30f0f; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; margin-top: 5px;">
+              <span class="material-symbols-outlined" style="font-size: 18px;">description</span>
+              View Document
+            </a>
+          <?php else: ?>
+            <span style="color: #999;">No document uploaded</span>
+          <?php endif; ?>
         </div>
         
         <input type="hidden" id="logo_path" name="logo_path">

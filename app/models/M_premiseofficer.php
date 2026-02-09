@@ -87,6 +87,40 @@ class M_premiseofficer {
         $this->db->bind(':limit', $limit);
         return $this->db->resultSet();
     }
+
+    // Get recent activities for premise officer dashboard
+    public function getRecentActivities($premiseofficer_id, $limit = 10) {
+        $this->db->query('
+            SELECT 
+                activity_type,
+                activity_titel,
+                activity_details,
+                created_at
+            FROM recent_activities
+            WHERE user_id = :user_id
+            ORDER BY created_at DESC
+            LIMIT :limit
+        ');
+        
+        $this->db->bind(':user_id', $premiseofficer_id, PDO::PARAM_INT);
+        $this->db->bind(':limit', $limit, PDO::PARAM_INT);
+        return $this->db->resultSet();
+    }
+
+    // Insert recent activity for premise officer
+    public function insertRecentActivity($userId, $title, $description, $type) {
+        $this->db->query('
+            INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+            VALUES (:user_id, :title, :description, :type)
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':title', $title);
+        $this->db->bind(':description', $description);
+        $this->db->bind(':type', $type);
+        
+        return $this->db->execute();
+    }
     
     // Get active site assignments for a premise officer
     public function getActiveAssignments($premiseofficer_id) {

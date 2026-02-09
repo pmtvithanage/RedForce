@@ -2,12 +2,14 @@
 class Client extends Controller {
     private $clientModel;
     private $userModel;
+    private $notificationModel;
 
     public function __construct() {
         // Check if user is logged in and has client role
         requireAuth('client');
         $this->clientModel = $this->model('M_client');
         $this->userModel = $this->model('M_users');
+        $this->notificationModel = $this->model('M_notifications');
     }
 
     // Default action - redirect to dashboard
@@ -186,6 +188,19 @@ class Client extends Controller {
         ];
         
         $this->view('Client/dashboard/v_incidents', $data);
+    }
+
+    public function notifications() {
+        // TODO: Fetch notifications from database
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        
+        $data = [
+            'title' => 'Notifications',
+            'pageTitle' => 'Notifications',
+            'role' => 'client',
+            'notifications' => $notifications
+        ];
+        $this->view('components/notifications', $data);
     }
 
     public function rateOfficer($officerId = null) {
@@ -375,7 +390,7 @@ class Client extends Controller {
         }
 
         $data = [
-            'title' => 'Review Equipment Request',
+            'title' => 'Equipment Requests',
             'pageTitle' => 'Review Equipment Request',
             'request' => $request
         ];

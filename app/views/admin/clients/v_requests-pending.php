@@ -159,14 +159,31 @@
                 <div class="logo-container">
                     <img class="imagePlaceholder" src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $clients->logo_path; ?>" id="photoPreview" alt="Uploaded logo preview"  />
                 </div>
-                <h2 class="company-name" id="companyName"><?php echo $clients -> company_name?></h2>
+                <h2 class="company-name" id="companyName"><?php echo $clients -> legal_company_name ?? $clients -> company_name?></h2>
+                <p style="color: #666; font-size: 14px; margin-top: 5px;"><?php echo $clients -> company_type ?? 'N/A'?></p>
             </div>
             
             <div class="card-body">
                 <div class="info-row">
+                    <span class="material-symbols-outlined info-icon">badge</span>
+                    <div class="info-content">
+                        <span class="info-label">Business Registration Number</span>
+                        <span class="info-value" id="registrationNumber"><?php echo $clients -> business_registration_number ?? 'Not provided'?></span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="material-symbols-outlined info-icon">location_on</span>
+                    <div class="info-content">
+                        <span class="info-label">Registered Business Address</span>
+                        <span class="info-value" id="registeredAddress"><?php echo nl2br($clients -> registered_address ?? 'Not provided')?></span>
+                    </div>
+                </div>
+                
+                <div class="info-row">
                     <span class="material-symbols-outlined info-icon">mail</span>
                     <div class="info-content">
-                        <span class="info-label">Email</span>
+                        <span class="info-label">Primary Business Email</span>
                         <span class="info-value" id="companyEmail"><?php echo $clients -> email?></span>
                     </div>
                 </div>
@@ -174,7 +191,7 @@
                 <div class="info-row">
                     <span class="material-symbols-outlined info-icon">call</span>
                     <div class="info-content">
-                        <span class="info-label">Phone</span>
+                        <span class="info-label">Primary Business Phone</span>
                         <span class="info-value" id="companyPhone"><?php echo $clients -> phone_number?></span>
                     </div>
                 </div>
@@ -184,6 +201,21 @@
                     <div class="info-content">
                         <span class="info-label">Contact Person</span>
                         <span class="info-value" id="contactPerson"><?php echo $clients -> contact_person_name?></span>
+                    </div>
+                </div>
+
+                <div class="info-row">
+                    <span class="material-symbols-outlined info-icon">description</span>
+                    <div class="info-content">
+                        <span class="info-label">Business Registration Document</span>
+                        <?php if(!empty($clients -> business_document)): ?>
+                            <a href="<?php echo URL_ROOT; ?>/uploads/businessDocuments/<?php echo $clients -> business_document; ?>" target="_blank" style="color: #a30f0f; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">open_in_new</span>
+                                View Document
+                            </a>
+                        <?php else: ?>
+                            <span class="info-value" style="color: #999;">No document uploaded</span>
+                        <?php endif; ?>
                     </div>
                 </div>
 
