@@ -602,10 +602,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     public function createAdvertisement($data) {
         $this->db->query('
             INSERT INTO advertisements 
-            (title, image_path, target_roles, created_by, status) 
-            VALUES (:title, :image_path, :target_roles, :created_by, :status)
+            (title, description, image_path, target_roles, created_by, status) 
+            VALUES (:title, :description, :image_path, :target_roles, :created_by, :status)
         ');
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
         $this->db->bind(':created_by', $data['created_by']);
@@ -622,17 +623,17 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query('
             UPDATE advertisements SET 
                 title = :title,
+                description = :description,
                 image_path = :image_path,
                 target_roles = :target_roles,
-                status = :status,
                 updated_at = NOW()
             WHERE id = :id
         ');
         $this->db->bind(':id', $id);
         $this->db->bind(':title', $data['title']);
+        $this->db->bind(':description', $data['description']);
         $this->db->bind(':image_path', $data['image_path']);
         $this->db->bind(':target_roles', $data['target_roles']);
-        $this->db->bind(':status', $data['status']);
         return $this->db->execute();
     }
 
