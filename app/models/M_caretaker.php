@@ -319,18 +319,37 @@ class M_caretaker {
 
     // Get recent activities for caretaker dashboard
     public function getRecentActivities($caretaker_id = null, $limit = 10) {
-        $this->db->query('
+        $query = '
             SELECT 
-                "attendance" as activity_type,
-                CONCAT("Officer Attendance - ", status) as activity_titel,
-                CONCAT("Officer ID: ", officer_id, " - ", status, " on ", attendance_date) as activity_details,
+                activity_type,
+                activity_titel,
+                activity_details,
                 created_at
-            FROM officer_attendance
+            FROM recent_activities
+            WHERE user_id = :user_id
             ORDER BY created_at DESC
             LIMIT :limit
-        ');
+        ';
+        
+        $this->db->query($query);
+        $this->db->bind(':user_id', $caretaker_id, PDO::PARAM_INT);
         $this->db->bind(':limit', $limit, PDO::PARAM_INT);
         return $this->db->resultSet();
+    }
+
+    // Insert recent activity for caretaker
+    public function insertRecentActivity($userId, $title, $description, $type) {
+        $this->db->query('
+            INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
+            VALUES (:user_id, :title, :description, :type)
+        ');
+        
+        $this->db->bind(':user_id', $userId);
+        $this->db->bind(':title', $title);
+        $this->db->bind(':description', $description);
+        $this->db->bind(':type', $type);
+        
+        return $this->db->execute();
     }
 
     // ==================== SITE INFORMATION ====================

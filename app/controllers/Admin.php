@@ -27,6 +27,25 @@ class Admin extends Controller {
         }
     }
 
+    /**
+     * Get user model based on role
+     * Helper method for leave request processing
+     */
+    private function getUserModel($role) {
+        switch (strtolower($role)) {
+            case 'caretaker':
+                return $this->model('M_caretaker');
+            case 'supervisor':
+                return $this->model('M_supervisor');
+            case 'mobile rider':
+                return $this->model('M_mobilerider');
+            case 'premise officer':
+                return $this->model('M_premiseofficer');
+            default:
+                return null;
+        }
+    }
+
     public function index() {
         redirect('admin/dashboard');
     }
@@ -328,9 +347,14 @@ class Admin extends Controller {
     }
 
     public function pendings(){
+        $leaveRequests = $this->adminModel->getAllLeaveRequests();
+        $leaveStats = $this->adminModel->getLeaveRequestStats();
+        
         $data = [
             'title' => 'Dashboard',
-            'pageTitle' => 'Pending Leave Requests'
+            'pageTitle' => 'Leave Requests',
+            'leaveRequests' => $leaveRequests,
+            'leaveStats' => $leaveStats
         ];
         $this->view('admin/dashboard/v_pendings', $data);
     }
@@ -1709,10 +1733,11 @@ public function editSite($site_id){
     }
     
     $data = [
-        'title' => 'Leave Request Details',
+        'title' => 'Dashboard',
+        'pageTitle' => 'Leave Request Details',
         'leaveRequest' => $leaveRequest
     ];
-    $this->view('admin/v_leave_details', $data);
+    $this->view('admin/dashboard/v_leave_details', $data);
 }
 
 // Approve leave request
@@ -1783,6 +1808,183 @@ public function rejectLeave($id) {
         
         redirect('admin/dashboard');
     }
+}
+
+// Approve leave request (GET method for modal)
+public function approveLeaveRequest($id) {
+    if (!isset($_SESSION['user_id'])) {
+        flash('leave_error', 'Unauthorized access');
+        redirect('admin/dashboard');
+        return;
+    }
+    
+    $admin_id = $_SESSION['user_id'];
+    
+    if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
+        // Get leave request details for notification
+        $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+        
+        if ($leaveRequest) {
+            // Determine the correct officer_id and role based on request type
+            $officer_id = null;
+            $role = '';
+            $redirectUrl = '';
+            
+            if (!empty($leaveRequest->caretaker_id)) {
+                $officer_id = $leaveRequest->caretaker_id;
+                $role = 'Caretaker';
+                $redirectUrl = '/caretaker/leaverequests';
+            } elseif (!empty($leaveRequest->supervisor_id)) {
+                $officer_id = $leaveRequest->supervisor_id;
+                $role = 'Supervisor';
+                $redirectUrl = '/supervisor/leaverequests';
+            } elseif (!empty($leaveRequest->mobilerider_id)) {
+                $officer_id = $leaveRequest->mobilerider_id;
+                $role = 'Mobile Rider';
+                $redirectUrl = '/MobileRider/leaverequests';
+            } elseif (!empty($leaveRequest->premiseofficer_id)) {
+                $officer_id = $leaveRequest->premiseofficer_id;
+                $role = 'Premise Officer';
+                $redirectUrl = '/premiseOfficer/leaverequests';
+            }
+            
+            // Send notification to employee
+            if ($officer_id) {
+                try {
+                    $this->notificationModel->insertNotification(
+                        $officer_id,
+                        'success',
+                        'Leave Request Approved',
+                        'Your ' . $leaveRequest->leave_type . ' leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' has been approved.',
+                        URL_ROOT . $redirectUrl,
+                        'check_circle',
+                        $admin_id
+                    );
+                    
+                    // Log recent activity for the user
+                    $userModel = $this->getUserModel($role);
+                    if ($userModel && method_exists($userModel, 'insertRecentActivity')) {
+                        $userModel->insertRecentActivity(
+                            $officer_id,
+                            'Leave Request Approved',
+                            "Your {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date} was approved",
+                            'leave_approved'
+                        );
+                    }
+                    
+                    // Log recent activity for admin
+                    $user = $this->userModel->getUserById($officer_id);
+                    $userName = $user->name ?? 'User';
+                    $this->adminModel->insertRecentActivity(
+                        "Leave Request Approved",
+                        "Approved {$userName}'s ({$role}) {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date}",
+                        'leave_approval',
+                        $admin_id
+                    );
+                } catch (Exception $e) {
+                    error_log("Error in leave approval notifications: " . $e->getMessage());
+                }
+            }
+        }
+        
+        flash('leave_success', 'Leave request approved successfully');
+    } else {
+        flash('leave_error', 'Failed to approve leave request');
+    }
+    
+    redirect('admin/pendings');
+}
+
+// Reject leave request (GET method for modal)
+public function rejectLeaveRequest($id) {
+    if (!isset($_SESSION['user_id'])) {
+        flash('leave_error', 'Unauthorized access');
+        redirect('admin/dashboard');
+        return;
+    }
+    
+    $admin_id = $_SESSION['user_id'];
+    $reason = trim($_GET['reason'] ?? '');
+    
+    if (empty($reason)) {
+        flash('leave_error', 'Please provide a reason for rejection');
+        redirect('admin/pendings');
+        return;
+    }
+    
+    if ($this->adminModel->rejectLeaveRequest($id, $admin_id, $reason)) {
+        // Get leave request details for notification
+        $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+        
+        if ($leaveRequest) {
+            // Determine the correct officer_id and role based on request type
+            $officer_id = null;
+            $role = '';
+            $redirectUrl = '';
+            
+            if (!empty($leaveRequest->caretaker_id)) {
+                $officer_id = $leaveRequest->caretaker_id;
+                $role = 'Caretaker';
+                $redirectUrl = '/caretaker/leaverequests';
+            } elseif (!empty($leaveRequest->supervisor_id)) {
+                $officer_id = $leaveRequest->supervisor_id;
+                $role = 'Supervisor';
+                $redirectUrl = '/supervisor/leaverequests';
+            } elseif (!empty($leaveRequest->mobilerider_id)) {
+                $officer_id = $leaveRequest->mobilerider_id;
+                $role = 'Mobile Rider';
+                $redirectUrl = '/MobileRider/leaverequests';
+            } elseif (!empty($leaveRequest->premiseofficer_id)) {
+                $officer_id = $leaveRequest->premiseofficer_id;
+                $role = 'Premise Officer';
+                $redirectUrl = '/premiseOfficer/leaverequests';
+            }
+            
+            // Send notification to employee
+            if ($officer_id) {
+                try {
+                    $this->notificationModel->insertNotification(
+                        $officer_id,
+                        'warning',
+                        'Leave Request Rejected',
+                        'Your ' . $leaveRequest->leave_type . ' leave request from ' . $leaveRequest->start_date . ' to ' . $leaveRequest->end_date . ' was rejected. Reason: ' . $reason,
+                        URL_ROOT . $redirectUrl,
+                        'cancel',
+                        $admin_id
+                    );
+                    
+                    // Log recent activity for the user
+                    $userModel = $this->getUserModel($role);
+                    if ($userModel && method_exists($userModel, 'insertRecentActivity')) {
+                        $userModel->insertRecentActivity(
+                            $officer_id,
+                            'Leave Request Rejected',
+                            "Your {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date} was rejected",
+                            'leave_rejected'
+                        );
+                    }
+                    
+                    // Log recent activity for admin
+                    $user = $this->userModel->getUserById($officer_id);
+                    $userName = $user->name ?? 'User';
+                    $this->adminModel->insertRecentActivity(
+                        "Leave Request Rejected",
+                        "Rejected {$userName}'s ({$role}) {$leaveRequest->leave_type} leave request from {$leaveRequest->start_date} to {$leaveRequest->end_date}. Reason: {$reason}",
+                        'leave_rejection',
+                        $admin_id
+                    );
+                } catch (Exception $e) {
+                    error_log("Error in leave rejection notifications: " . $e->getMessage());
+                }
+            }
+        }
+        
+        flash('leave_success', 'Leave request rejected');
+    } else {
+        flash('leave_error', 'Failed to reject leave request');
+    }
+    
+    redirect('admin/pendings');
 }
 
 // ======================================================================== //

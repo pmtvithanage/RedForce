@@ -3,7 +3,6 @@
 <style>
     .site-info-container {
         padding: 24px;
-        max-width: 1400px;
         margin: 20px;
     }
 

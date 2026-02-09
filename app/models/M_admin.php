@@ -847,7 +847,40 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             WHERE lr.status = 'Pending'
             ORDER BY lr.created_at DESC
         ");
-        //return $this->db->resultSet();
+        return $this->db->resultSet();
+    }
+
+    // Get all leave requests (from all roles)
+    public function getAllLeaveRequests() {
+        $this->db->query("
+            SELECT 
+                lr.*,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.name
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.name
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.name
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.name
+                END as employee_name,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN u1.email
+                    WHEN lr.supervisor_id IS NOT NULL THEN u2.email
+                    WHEN lr.mobilerider_id IS NOT NULL THEN u3.email
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN u4.email
+                END as employee_email,
+                CASE 
+                    WHEN lr.caretaker_id IS NOT NULL THEN 'Caretaker'
+                    WHEN lr.supervisor_id IS NOT NULL THEN 'Supervisor'
+                    WHEN lr.mobilerider_id IS NOT NULL THEN 'Mobile Rider'
+                    WHEN lr.premiseofficer_id IS NOT NULL THEN 'Premise Officer'
+                END as employee_role
+            FROM leave_requests lr
+            LEFT JOIN Users u1 ON lr.caretaker_id = u1.id
+            LEFT JOIN Users u2 ON lr.supervisor_id = u2.id
+            LEFT JOIN Users u3 ON lr.mobilerider_id = u3.id
+            LEFT JOIN Users u4 ON lr.premiseofficer_id = u4.id
+            ORDER BY lr.created_at DESC
+        ");
+        return $this->db->resultSet();
     }
 
     // Get leave request by ID (from all roles)

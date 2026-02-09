@@ -52,7 +52,7 @@ if (isset($_SESSION['user_id'])) {
             <a class="menu-item <?php echo ($data['title'] === 'Sites') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/site_info"><span class="icon"></span><span class="material-symbols-outlined">location_on</span><span class="label">Site Info</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Incidents') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/incidents"><span class="icon"></span><span class="material-symbols-outlined">report</span><span class="label">Incidents</span></a>
-            <a class="menu-item <?php echo ($data['title'] === 'Leave Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/leave_requests"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Request Leaves</span></a>
+            <a class="menu-item <?php echo ($data['title'] === 'Leave Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/leaverequests"><span class="icon"></span><span class="material-symbols-outlined">summarize</span><span class="label">Request Leaves</span></a>
             <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/supervisor/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
 
 

@@ -1,6 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-<?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
@@ -22,10 +22,6 @@
     font-size: 28px;
     font-weight: 700;
     color: #333;
-}
-
-.back-btn-container {
-    margin-bottom: 20px;
 }
 
 /* Stats Cards */
@@ -98,14 +94,7 @@
     overflow-x: auto;
 }
 
-/* Filter Section */
-.filter-section {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
+/* Search Bar */
 .search-box {
     display: flex;
     align-items: center;
@@ -113,8 +102,8 @@
     border: 1px solid #dadada;
     padding: 10px 14px;
     border-radius: 6px;
-    flex: 1;
-    min-width: 250px;
+    margin-bottom: 16px;
+    max-width: 400px;
 }
 
 .search-box:focus-within {
@@ -126,14 +115,6 @@
     outline: none;
     width: 100%;
     font-size: 15px;
-}
-
-.filter-select {
-    padding: 10px 14px;
-    border: 1px solid #dadada;
-    border-radius: 6px;
-    font-size: 15px;
-    min-width: 150px;
 }
 
 /* Table */
@@ -184,21 +165,10 @@ tbody tr:hover {
     background: #e74c3c;
 }
 
-/* Role Badges */
-.role-badge {
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 4px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
-    display: inline-block;
-}
-
 /* Leave Type Tags */
 .leave-type-tag {
-    background: #f3e5f5;
-    color: #7b1fa2;
+    background: #e8f4f8;
+    color: #0066cc;
     padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
@@ -229,19 +199,25 @@ tbody tr:hover {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.approve-btn {
-    background: #4caf50;
+.view-btn {
+    background: #2196F3;
     color: white;
 }
 
-.reject-btn {
+.edit-btn {
+    background: #f39c12;
+    color: white;
+}
+
+.delete-btn {
     background: #e74c3c;
     color: white;
 }
 
-.view-btn {
-    background: #2196F3;
-    color: white;
+.create-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .empty-state {
@@ -278,7 +254,7 @@ tbody tr:hover {
     background: white;
     padding: 30px;
     border-radius: 12px;
-    max-width: 500px;
+    max-width: 450px;
     width: 90%;
     box-shadow: 0 10px 40px rgba(0,0,0,0.3);
     animation: modalSlideIn 0.3s ease-out;
@@ -304,14 +280,7 @@ tbody tr:hover {
 
 .confirm-modal-icon {
     font-size: 32px;
-}
-
-.confirm-modal-icon.approve {
-    color: #4caf50;
-}
-
-.confirm-modal-icon.reject {
-    color: #e74c3c;
+    color: #ff9800;
 }
 
 .confirm-modal-title {
@@ -325,22 +294,7 @@ tbody tr:hover {
     font-size: 16px;
     color: #666;
     line-height: 1.6;
-    margin-bottom: 20px;
-}
-
-.confirm-modal-input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #dadada;
-    border-radius: 6px;
-    font-size: 15px;
-    margin-bottom: 20px;
-    font-family: inherit;
-}
-
-.confirm-modal-input:focus {
-    outline: none;
-    border-color: #a40000;
+    margin-bottom: 25px;
 }
 
 .confirm-modal-actions {
@@ -369,15 +323,8 @@ tbody tr:hover {
 }
 
 .modal-btn-confirm {
-    color: white;
-}
-
-.modal-btn-confirm.approve {
-    background: #4caf50;
-}
-
-.modal-btn-confirm.reject {
     background: #e74c3c;
+    color: white;
 }
 
 .modal-btn-confirm:hover {
@@ -386,27 +333,24 @@ tbody tr:hover {
 }
 </style>
 
-<div class="back-btn-container" style="margin: 20px;">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="history.back()"> 
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
-        Back
-    </button>
-</div>
-
 <div class="container">
     <div class="page-header">
-        <h1>Leave Requests Management</h1>
+        <h1>Leave Requests</h1>
+        <button class="primary-btn create-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/createLeaveRequest'">
+            <span class="material-symbols-outlined">add</span>
+            New Leave Request
+        </button>
     </div>
 
     <!-- Stats Cards -->
-    <?php if (isset($data['leaveStats'])): ?>
+    <?php if (isset($data['stats'])): ?>
     <div class="stats-container">
         <div class="stat-card">
             <div class="stat-icon total">
                 <span class="material-symbols-outlined">list_alt</span>
             </div>
             <div class="stat-content">
-                <h3><?php echo $data['leaveStats']->total ?? 0; ?></h3>
+                <h3><?php echo $data['stats']->total_requests ?? 0; ?></h3>
                 <p>Total Requests</p>
             </div>
         </div>
@@ -415,7 +359,7 @@ tbody tr:hover {
                 <span class="material-symbols-outlined">pending</span>
             </div>
             <div class="stat-content">
-                <h3><?php echo $data['leaveStats']->pending ?? 0; ?></h3>
+                <h3><?php echo $data['stats']->pending_requests ?? 0; ?></h3>
                 <p>Pending</p>
             </div>
         </div>
@@ -424,7 +368,7 @@ tbody tr:hover {
                 <span class="material-symbols-outlined">check_circle</span>
             </div>
             <div class="stat-content">
-                <h3><?php echo $data['leaveStats']->approved ?? 0; ?></h3>
+                <h3><?php echo $data['stats']->approved_requests ?? 0; ?></h3>
                 <p>Approved</p>
             </div>
         </div>
@@ -433,7 +377,7 @@ tbody tr:hover {
                 <span class="material-symbols-outlined">cancel</span>
             </div>
             <div class="stat-content">
-                <h3><?php echo $data['leaveStats']->rejected ?? 0; ?></h3>
+                <h3><?php echo $data['stats']->rejected_requests ?? 0; ?></h3>
                 <p>Rejected</p>
             </div>
         </div>
@@ -441,24 +385,9 @@ tbody tr:hover {
     <?php endif; ?>
 
     <div class="table-card">
-        <div class="filter-section">
-            <div class="search-box">
-                <span class="material-symbols-outlined">search</span>
-                <input type="text" id="searchInput" placeholder="Search by name, role, or leave type...">
-            </div>
-            <select class="filter-select" id="statusFilter">
-                <option value="">All Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-            </select>
-            <select class="filter-select" id="roleFilter">
-                <option value="">All Roles</option>
-                <option value="Premise Officer">Premise Officer</option>
-                <option value="Supervisor">Supervisor</option>
-                <option value="Caretaker">Caretaker</option>
-                <option value="Mobile Rider">Mobile Rider</option>
-            </select>
+        <div class="search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" id="searchInput" placeholder="Search leave requests...">
         </div>
 
         <?php if (empty($data['leaveRequests'])): ?>
@@ -466,38 +395,26 @@ tbody tr:hover {
                 <div>
                     <span class="material-symbols-outlined">event_busy</span>
                 </div>
-                <h3>No Leave Requests</h3>
-                <p>There are no leave requests in the system yet.</p>
+                <h3>No Leave Requests Yet</h3>
+                <p>Create your first leave request to get started.</p>
             </div>
         <?php else: ?>
             <table id="leaveRequestsTable">
                 <thead>
                     <tr>
-                        <th>Employee</th>
-                        <th>Role</th>
                         <th>Leave Type</th>
                         <th>Start Date</th>
                         <th>End Date</th>
                         <th>Duration</th>
+                        <th>Reason</th>
                         <th>Status</th>
-                        <th>Submitted</th>
+                        <th>Created Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($data['leaveRequests'] as $request): ?>
-                        <tr data-status="<?php echo $request->status; ?>" data-role="<?php echo $request->employee_role ?? ''; ?>">
-                            <td>
-                                <div>
-                                    <div style="font-weight: 500;"><?php echo htmlspecialchars($request->employee_name ?? 'Unknown'); ?></div>
-                                    <div style="font-size: 12px; color: #666;"><?php echo htmlspecialchars($request->employee_email ?? ''); ?></div>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="role-badge">
-                                    <?php echo htmlspecialchars($request->employee_role ?? 'Unknown'); ?>
-                                </span>
-                            </td>
+                        <tr data-id="<?php echo $request->id; ?>" onclick="viewRequest(<?php echo $request->id; ?>)" style="cursor: pointer;">
                             <td>
                                 <span class="leave-type-tag">
                                     <?php echo htmlspecialchars($request->leave_type); ?>
@@ -514,6 +431,11 @@ tbody tr:hover {
                                 ?>
                             </td>
                             <td>
+                                <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($request->reason); ?>">
+                                    <?php echo htmlspecialchars($request->reason); ?>
+                                </div>
+                            </td>
+                            <td>
                                 <span class="badge <?php echo $request->status; ?>">
                                     <?php echo ucfirst($request->status); ?>
                                 </span>
@@ -522,20 +444,20 @@ tbody tr:hover {
                             <td>
                                 <div class="actions">
                                     <button class="action-btn view-btn" 
-                                            onclick="viewRequest(<?php echo $request->id; ?>)"
+                                            onclick="event.stopPropagation(); viewRequest(<?php echo $request->id; ?>)"
                                             title="View Details">
                                         <span class="material-symbols-outlined">visibility</span>
                                     </button>
                                     <?php if ($request->status == 'Pending'): ?>
-                                    <button class="action-btn approve-btn" 
-                                            onclick="approveRequest(<?php echo $request->id; ?>)"
-                                            title="Approve">
-                                        <span class="material-symbols-outlined">check</span>
+                                    <button class="action-btn edit-btn" 
+                                            onclick="event.stopPropagation(); editRequest(<?php echo $request->id; ?>)"
+                                            title="Edit">
+                                        <span class="material-symbols-outlined">edit</span>
                                     </button>
-                                    <button class="action-btn reject-btn" 
-                                            onclick="rejectRequest(<?php echo $request->id; ?>)"
-                                            title="Reject">
-                                        <span class="material-symbols-outlined">close</span>
+                                    <button class="action-btn delete-btn" 
+                                            onclick="event.stopPropagation(); deleteRequest(<?php echo $request->id; ?>)"
+                                            title="Delete">
+                                        <span class="material-symbols-outlined">delete</span>
                                     </button>
                                     <?php endif; ?>
                                 </div>
@@ -552,11 +474,10 @@ tbody tr:hover {
 <div id="confirmModal" class="confirm-modal">
     <div class="confirm-modal-content">
         <div class="confirm-modal-header">
-            <span class="material-symbols-outlined confirm-modal-icon" id="modalIcon">help</span>
+            <span class="material-symbols-outlined confirm-modal-icon">warning</span>
             <h3 class="confirm-modal-title" id="modalTitle">Confirm Action</h3>
         </div>
         <p class="confirm-modal-message" id="modalMessage">Are you sure you want to proceed?</p>
-        <textarea class="confirm-modal-input" id="modalInput" placeholder="Enter reason (optional)" style="display: none;" rows="3"></textarea>
         <div class="confirm-modal-actions">
             <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
             <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
@@ -568,37 +489,15 @@ tbody tr:hover {
 
 <script>
 let currentAction = null;
-let currentRequestId = null;
+let actionData = null;
 
-// Show modal for approve
-function showApproveModal(requestId) {
-    document.getElementById('modalTitle').textContent = 'Approve Leave Request';
-    document.getElementById('modalMessage').textContent = 'Are you sure you want to approve this leave request?';
-    document.getElementById('modalIcon').textContent = 'check_circle';
-    document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon approve';
-    document.getElementById('modalInput').style.display = 'none';
-    document.getElementById('modalConfirmBtn').className = 'modal-btn modal-btn-confirm approve';
-    document.getElementById('modalConfirmBtn').textContent = 'Approve';
+// Show modal
+function showModal(title, message, action, data) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalMessage').textContent = message;
     
-    currentAction = 'approve';
-    currentRequestId = requestId;
-    
-    document.getElementById('confirmModal').classList.add('active');
-}
-
-// Show modal for reject
-function showRejectModal(requestId) {
-    document.getElementById('modalTitle').textContent = 'Reject Leave Request';
-    document.getElementById('modalMessage').textContent = 'Please provide a reason for rejecting this leave request:';
-    document.getElementById('modalIcon').textContent = 'cancel';
-    document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon reject';
-    document.getElementById('modalInput').style.display = 'block';
-    document.getElementById('modalInput').value = '';
-    document.getElementById('modalConfirmBtn').className = 'modal-btn modal-btn-confirm reject';
-    document.getElementById('modalConfirmBtn').textContent = 'Reject';
-    
-    currentAction = 'reject';
-    currentRequestId = requestId;
+    currentAction = action;
+    actionData = data;
     
     document.getElementById('confirmModal').classList.add('active');
 }
@@ -607,21 +506,13 @@ function showRejectModal(requestId) {
 function closeModal() {
     document.getElementById('confirmModal').classList.remove('active');
     currentAction = null;
-    currentRequestId = null;
-    document.getElementById('modalInput').value = '';
+    actionData = null;
 }
 
 // Confirm action
 function confirmAction() {
-    if (currentAction === 'approve') {
-        window.location.href = '<?php echo URL_ROOT; ?>/admin/approveLeaveRequest/' + currentRequestId;
-    } else if (currentAction === 'reject') {
-        const reason = document.getElementById('modalInput').value.trim();
-        if (!reason) {
-            alert('Please provide a reason for rejection');
-            return;
-        }
-        window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectLeaveRequest/' + currentRequestId + '?reason=' + encodeURIComponent(reason);
+    if (currentAction) {
+        currentAction(actionData);
     }
     closeModal();
 }
@@ -633,54 +524,49 @@ document.getElementById('confirmModal').addEventListener('click', function(e) {
     }
 });
 
-// Search and filter functionality
-document.getElementById('searchInput')?.addEventListener('input', filterTable);
-document.getElementById('statusFilter')?.addEventListener('change', filterTable);
-document.getElementById('roleFilter')?.addEventListener('change', filterTable);
-
-function filterTable() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value;
-    const roleFilter = document.getElementById('roleFilter').value;
+// Search functionality
+document.getElementById('searchInput')?.addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
     const table = document.getElementById('leaveRequestsTable');
-    
     if (!table) return;
     
     const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
     
     for (let row of rows) {
-        const employeeName = row.cells[0].textContent.toLowerCase();
-        const role = row.getAttribute('data-role');
-        const leaveType = row.cells[2].textContent.toLowerCase();
-        const status = row.getAttribute('data-status');
+        const leaveType = row.cells[0].textContent.toLowerCase();
+        const reason = row.cells[4].textContent.toLowerCase();
+        const status = row.cells[5].textContent.toLowerCase();
         
-        const matchesSearch = employeeName.includes(searchTerm) || 
-                             role.toLowerCase().includes(searchTerm) || 
-                             leaveType.includes(searchTerm);
-        const matchesStatus = !statusFilter || status === statusFilter;
-        const matchesRole = !roleFilter || role === roleFilter;
-        
-        if (matchesSearch && matchesStatus && matchesRole) {
+        if (leaveType.includes(searchTerm) || reason.includes(searchTerm) || status.includes(searchTerm)) {
             row.style.display = '';
         } else {
             row.style.display = 'none';
         }
     }
+});
+
+// View leave request
+function viewRequest(id) {
+    window.location.href = '<?php echo URL_ROOT; ?>/caretaker/viewLeaveRequest/' + id;
 }
 
-// View request details
-function viewRequest(id) {    
-    window.location.href = '<?php echo URL_ROOT; ?>/admin/viewLeaveRequest/' + id;
+// Edit leave request
+function editRequest(id) {
+    window.location.href = '<?php echo URL_ROOT; ?>/caretaker/editLeaveRequest/' + id;
 }
 
-// Approve request
-function approveRequest(id) {
-    showApproveModal(id);
+// Delete leave request
+function deleteRequest(id) {
+    showModal(
+        'Delete Leave Request',
+        'Are you sure you want to delete this leave request? This action cannot be undone.',
+        performDeleteRequest,
+        id
+    );
 }
 
-// Reject request
-function rejectRequest(id) {
-    showRejectModal(id);
+function performDeleteRequest(id) {
+    window.location.href = '<?php echo URL_ROOT; ?>/caretaker/deleteLeaveRequest/' + id;
 }
 
 // Flash message auto-remove
