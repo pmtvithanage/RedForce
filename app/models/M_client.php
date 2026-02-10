@@ -121,6 +121,7 @@ class M_client {
             JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             JOIN sites s ON csa.site_id = s.id
             WHERE s.client_id = :client_id
+            AND s.is_draft = 0
             AND er.status != "Pending"
         ';
         
@@ -193,6 +194,7 @@ class M_client {
             LEFT JOIN sites s ON csa.site_id = s.id
             LEFT JOIN Users supervisor_user ON er.supervisor_approved_by = supervisor_user.id
             WHERE er.id = :id
+            AND (s.is_draft = 0 OR s.is_draft IS NULL)
         ');
         $this->db->bind(':id', $id);
         return $this->db->single();
@@ -246,6 +248,7 @@ class M_client {
             INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             INNER JOIN sites s ON csa.site_id = s.id
             WHERE s.client_id = :client_id
+            AND s.is_draft = 0
             AND er.status != "Pending"
         ');
         $this->db->bind(':client_id', $client_id);
@@ -262,6 +265,7 @@ class M_client {
             INNER JOIN sites s ON csa.site_id = s.id
             WHERE u.role = "Care-Taker"
             AND csa.status = "Active"
+            AND s.is_draft = 0
             AND s.client_id = :client_id
             ORDER BY u.name
         ');

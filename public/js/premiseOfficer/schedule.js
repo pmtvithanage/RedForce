@@ -16,18 +16,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const shiftInfo = {};
     
     if (typeof assignmentData !== 'undefined' && assignmentData) {
+        console.log('Processing assignments:', assignmentData);
         assignmentData.forEach(assignment => {
+            console.log('Processing assignment:', assignment);
             const startDate = new Date(assignment.assignment_start);
-            // Only use assignment_end if it exists, otherwise skip this assignment
-            if (!assignment.assignment_end) {
-                console.warn('Assignment without end date detected:', assignment);
-                return; // Skip assignments without end date
-            }
-            const endDate = new Date(assignment.assignment_end);
+            // If assignment_end is null or undefined, use a far future date (e.g., 2099-12-31)
+            const endDate = assignment.assignment_end 
+                ? new Date(assignment.assignment_end)
+                : new Date('2099-12-31');
+            
+            console.log('Start date:', startDate, 'End date:', endDate);
             
             // Add all days in the service period
             let currentDay = new Date(startDate);
-            while (currentDay <= endDate) {
+            let daysAdded = 0;
+            while (currentDay <= endDate && daysAdded < 365) { // Limit to 1 year to prevent infinite loop
                 const dateStr = formatDateForKey(currentDay);
                 workDays.add(dateStr);
                 
@@ -42,8 +45,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 currentDay.setDate(currentDay.getDate() + 1);
+                daysAdded++;
             }
+            console.log('Added', daysAdded, 'work days for this assignment');
         });
+        console.log('Total work days:', workDays.size);
+        console.log('Work days array:', Array.from(workDays));
     }
     
     // Process leave data to create leave day mappings
@@ -123,6 +130,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Check if there's a work shift on this day
             const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            
+            // Debug logging for the first few days
+            if (day <= 3) {
+                console.log('Checking date:', dateString, 'Is work day?', workDays.has(dateString), 'Is leave day?', leaveDays.has(dateString));
+            }
             
             // Check if it's a leave day (red) - takes priority
             if (leaveDays.has(dateString)) {
@@ -212,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function fetchShiftDetails(dateString) {
         console.log('Fetching shift details for:', dateString);
         console.log('Base URL:', baseURL);
-        console.log('Full URL:', baseURL + '/premiseofficer/getShiftDetails');
+        console.log('Full URL:', baseURL + '/premiseOfficer/getShiftDetails');
         
         // Show loading state
         shiftContent.innerHTML = `
@@ -223,7 +235,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         // Make AJAX request
-        fetch(baseURL + '/premiseofficer/getShiftDetails', {
+        fetch(baseURL + '/premiseOfficer/getShiftDetails', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -233,13 +245,26 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => {
             console.log('Response status:', response.status);
             console.log('Response ok:', response.ok);
-            if (!response.ok) {
-                return response.text().then(text => {
+            console.log('Response headers:', response.headers.get('content-type'));
+            
+            // Get the response text first to see what we're actually getting
+            return response.text().then(text => {
+                console.log('Response text:', text);
+                
+                if (!response.ok) {
                     console.error('Error response body:', text);
-                    throw new Error('Network response was not ok: ' + response.status + ' - ' + text);
-                });
-            }
-            return response.json();
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                
+                // Try to parse as JSON
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Failed to parse JSON:', e);
+                    console.error('Response was:', text.substring(0, 500));
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                }
+            });
         })
         .then(data => {
             console.log('Shift details response:', data);

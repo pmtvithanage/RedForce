@@ -3,6 +3,7 @@ class Client extends Controller {
     private $clientModel;
     private $userModel;
     private $notificationModel;
+    private $messageModel;
 
     public function __construct() {
         // Check if user is logged in and has client role
@@ -10,6 +11,7 @@ class Client extends Controller {
         $this->clientModel = $this->model('M_client');
         $this->userModel = $this->model('M_users');
         $this->notificationModel = $this->model('M_notifications');
+        $this->messageModel = $this->model('M_message');
     }
 
     // Default action - redirect to dashboard
@@ -19,10 +21,24 @@ class Client extends Controller {
 
     // dashboard
     public function dashboard() {
-        // Sample data - replace with actual database queries
+        $client_id = $_SESSION['user_id'];
+        
+        // Load chart data model
+        $chartModel = $this->model('ChartDataModel');
+        
+        // Get all chart data
+        $charts = [
+            'severityChart' => $chartModel->getClientIncidentsBySeverity($client_id),
+            'monthlyTrend' => $chartModel->getClientMonthlyIncidentTrend($client_id),
+            'siteIncidents' => $chartModel->getClientIncidentsBySite($client_id),
+            'typeChart' => $chartModel->getClientIncidentsByType($client_id),
+            'statusChart' => $chartModel->getClientIncidentsByStatus($client_id)
+        ];
+        
         $data = [
             'title' => 'Dashboard',
-            'pageTitle' => 'Dashboard'
+            'pageTitle' => 'Dashboard',
+            'charts' => $charts
         ];
         
         $this->view('client/v_dashboard', $data);
@@ -172,14 +188,202 @@ class Client extends Controller {
     }
 
     public function messages($conversationId = null) {
+        $user_id = $_SESSION['user_id'];
+        
+        // Get conversations
+        $conversations = $this->messageModel->getConversations($user_id);
+        
+        // Get all users the client can message (admins + supervisors of client's sites)
+        $users = $this->messageModel->getAllUsersForClient($user_id);
+        
         $data = [
             'title' => 'Messages',
             'pageTitle' => 'Messages',
-            'conversationId' => $conversationId
+            'conversations' => $conversations,
+            'all_users' => $users,
+            'current_recipient_id' => $conversationId
         ];
         
-        $this->view('Client/dashboard/v_messages', $data);
+        $this->view('client/messages/v_messages', $data);
     }
+
+    // ==================== MESSAGING API METHODS ====================
+
+    public function getConversations() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    public function loadMessages() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    public function sendMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            if ($this->messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    public function markAsSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            // Mark messages as seen
+            $this->messageModel->markAsSeen($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success']);
+        }
+    }
+
+    public function deleteMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
+    public function updateMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            $message = $_POST['message'] ?? null;
+            
+            if (!$user_id || !$message_id || !$message) {
+                echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
+                return;
+            }
+            
+            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
+            }
+        }
+    }
+
+    public function getUserStatus() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_POST['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User ID required']);
+                return;
+            }
+            
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
+            
+            if ($userStatus) {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => $userStatus->is_online ?? false,
+                    'last_seen' => $userStatus->last_seen ?? null
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => false,
+                    'last_seen' => null
+                ]);
+            }
+        }
+    }
+
+    public function updateLastSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
+            }
+        }
+    }
+
+    public function setOffline() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
+            }
+        }
+    }
+
+    // ==================== END MESSAGING API METHODS ====================
 
     public function incidents() {
         $data = [
@@ -215,7 +419,7 @@ class Client extends Controller {
             'officerId' => $officerId
         ];
         
-        $this->view('Client/officers/v_rate', $data);
+        $this->view('client/officers/v_rate', $data);
     }
 
     // Package Pages
@@ -224,7 +428,7 @@ class Client extends Controller {
             'title' => 'Basic Package',
             'pageTitle' => 'Basic Package'
         ];
-        $this->view('Client/requests/v_basic', $data);
+        $this->view('client/requests/v_basic', $data);
     }
 
     public function budgetPackage() {
@@ -232,7 +436,7 @@ class Client extends Controller {
             'title' => 'Budget Package',
             'pageTitle' => 'Budget Package'
         ];
-        $this->view('Client/requests/v_budget', $data);
+        $this->view('client/requests/v_budget', $data);
     }
 
     public function vigilantPackage() {
@@ -240,7 +444,7 @@ class Client extends Controller {
             'title' => 'Vigilant Package',
             'pageTitle' => 'Vigilant Package'
         ];
-        $this->view('Client/requests/v_vigilant', $data);
+        $this->view('client/requests/v_vigilant', $data);
     }
 
     public function proPackage() {
@@ -248,7 +452,7 @@ class Client extends Controller {
             'title' => 'Pro Package',
             'pageTitle' => 'Pro Package'
         ];
-        $this->view('Client/requests/v_pro', $data);
+        $this->view('client/requests/v_pro', $data);
     }
 
     public function ultraPackage() {
@@ -256,7 +460,7 @@ class Client extends Controller {
             'title' => 'Ultra Package',
             'pageTitle' => 'Ultra Package'
         ];
-        $this->view('Client/requests/v_ultra', $data);
+        $this->view('client/requests/v_ultra', $data);
     }
 
     public function customPackage() {
@@ -264,7 +468,7 @@ class Client extends Controller {
             'title' => 'Custom Package',
             'pageTitle' => 'Custom Package'
         ];
-        $this->view('Client/requests/v_custom', $data);
+        $this->view('client/requests/v_custom', $data);
     }
 
     // Handle package request submission
@@ -322,7 +526,7 @@ class Client extends Controller {
     public function packageHistory() {
         $requests = $this->clientModel->getClientPackageRequests($_SESSION['user_id']);
         $data = ['title' => 'Request History', 'pageTitle' => 'Package Request History', 'requests' => $requests];
-        $this->view('Client/requests/v_package_history', $data);
+        $this->view('client/requests/v_package_history', $data);
     }
 
     public function deletePackageRequest($id) {

@@ -10,7 +10,7 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
 <!-- Link to Schedule CSS -->
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseofficer/schedule_style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseOfficer/schedule_style.css">
 
 <!-- Schedule Content -->
 <div class="main-content">
@@ -90,6 +90,11 @@
     
     // Base URL for AJAX requests
     const baseURL = '<?php echo URL_ROOT; ?>';
+    
+    // Debug output
+    console.log('Assignment Data:', assignmentData);
+    console.log('Leave Dates Data:', leaveDatesData);
+    console.log('Base URL:', baseURL);
 </script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>

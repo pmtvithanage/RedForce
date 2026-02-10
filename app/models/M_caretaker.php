@@ -412,6 +412,7 @@ class M_caretaker {
             INNER JOIN Users c ON s.client_id = c.id
             WHERE csa.caretaker_id = :caretaker_id 
             AND csa.status = "Active"
+            AND s.is_draft = 0
             ORDER BY csa.assignment_start DESC
             LIMIT 1
         ');
