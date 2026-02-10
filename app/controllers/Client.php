@@ -44,15 +44,57 @@ class Client extends Controller {
         $this->view('client/v_dashboard', $data);
     }
 
-    //view officers (guards)
-    public function officers() {
-        // Sample data - replace with actual database queries
+    // View all sites for the client
+    public function sites() {
+        $client_id = $_SESSION['user_id'];
+        
+        // Get all sites for this client
+        $sites = $this->clientModel->getClientSites($client_id);
+        
         $data = [
-            'title' => 'View Officers',
-            'pageTitle' => 'View Guards'
+            'title' => 'Sites',
+            'pageTitle' => 'My Sites',
+            'sites' => $sites
         ];
         
-        $this->view('client/v_officers', $data);
+        $this->view('client/sites/v_sites', $data);
+    }
+
+    // View individual site details
+    public function viewSite($site_id = null) {
+        if (!$site_id) {
+            redirect('client/sites');
+        }
+
+        $client_id = $_SESSION['user_id'];
+        
+        // Get site details
+        $site = $this->clientModel->getSiteDetails($site_id, $client_id);
+        
+        if (!$site) {
+            flash('site_error', 'Site not found or access denied', 'alert alert-danger');
+            redirect('client/sites');
+        }
+
+        // Get assigned officers for this site
+        $assignedOfficers = $this->clientModel->getSiteOfficers($site_id);
+        
+        // Get assigned supervisors for this site
+        $assignedSupervisors = $this->clientModel->getSiteSupervisors($site_id);
+        
+        // Get assigned caretakers for this site
+        $assignedCaretakers = $this->clientModel->getSiteCaretakers($site_id);
+
+        $data = [
+            'title' => 'Site Details',
+            'pageTitle' => $site->site_name,
+            'site' => $site,
+            'assigned_officers' => $assignedOfficers,
+            'assigned_supervisors' => $assignedSupervisors,
+            'assigned_caretakers' => $assignedCaretakers
+        ];
+        
+        $this->view('client/sites/v_site_details', $data);
     }
 
     //requests
@@ -405,21 +447,6 @@ class Client extends Controller {
             'notifications' => $notifications
         ];
         $this->view('components/notifications', $data);
-    }
-
-    public function rateOfficer($officerId = null) {
-        // Redirect to officers page if no officer ID provided
-        if (!$officerId) {
-            redirect('client/officers');
-        }
-
-        $data = [
-            'title' => 'Rate Officer',
-            'pageTitle' => 'Rate Officer',
-            'officerId' => $officerId
-        ];
-        
-        $this->view('client/officers/v_rate', $data);
     }
 
     // Package Pages
