@@ -1172,7 +1172,37 @@ class Admin extends Controller {
 
     public function viewsites($site_id){
         $site = $this->adminModel->getSiteById($site_id);
+
+        if (!$site) {
+            flash('msg', 'Site not found', 'alert-danger');
+            redirect('admin/clients');
+            return;
+        }
+
         $clients = $this->adminModel->getClientById($site->client_id);
+        if (!$clients) {
+            // If Clients record not found, the sites.client_id may actually be a Users.id
+            $user = $this->userModel->getUserById($site->client_id);
+            if ($user) {
+                $clients = (object) [
+                    'name' => $user->name,
+                    'id' => $user->id,
+                    'client_profile' => $user->profile_image ?? '',
+                    'phone_number' => $user->phone_number ?? '',
+                    'email' => $user->email ?? '',
+                    'contact_person_name' => $user->contact_person_name ?? ''
+                ];
+            } else {
+                // Generic fallback
+                $clients = (object) ['name' => 'Unknown Client', 'id' => $site->client_id, 'client_profile' => ''];
+            }
+        } else {
+            // Ensure client_profile exists (from Users.profile_image)
+            if (empty($clients->client_profile)) {
+                $user = $this->userModel->getUserById($clients->user_id ?? $clients->id);
+                $clients->client_profile = $user->profile_image ?? '';
+            }
+        }
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);              
         $packageRequest = $this->adminModel->getPackageRequestBySiteId($site_id);
 
