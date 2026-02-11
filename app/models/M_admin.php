@@ -561,7 +561,15 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
     // Get All sites
     public function getSiteByClientId($client_id) {
-        $this->db->query("SELECT * FROM sites WHERE client_id = :client_id");
+        // Sites.client_id has historically stored either Clients.id or Users.id
+        // Make this query resilient: return sites where client_id matches the provided id,
+        // or where client_id matches the Users.id for the Clients record, or where client_id
+        // matches the Clients.id when provided a Users.id.
+        $this->db->query(
+            "SELECT * FROM sites WHERE client_id = :client_id
+             OR client_id = (SELECT user_id FROM Clients WHERE id = :client_id)
+             OR client_id = (SELECT id FROM Clients WHERE user_id = :client_id)"
+        );
         $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }

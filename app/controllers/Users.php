@@ -80,20 +80,9 @@
 
             }else {
                 //Initially show the login form
-                // Ensure any stale session is cleared to allow re-login
+                // If already logged in, redirect to the appropriate dashboard
                 if (isLoggedIn()) {
-                    if (session_status() !== PHP_SESSION_ACTIVE) {
-                        session_start();
-                    }
-                    $_SESSION = [];
-                    if (ini_get('session.use_cookies')) {
-                        $params = session_get_cookie_params();
-                        setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
-                    }
-                    session_destroy();
-                    session_write_close();
-                    // Start a fresh session context for the login form
-                    session_start();
+                    $this->redirectToDashboard();
                 }
                 $data = [
                     'userID' => '',
@@ -141,6 +130,9 @@
         }
 
         private function createUserSession($user) {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
             $_SESSION['user_id'] = $user->id;
             $_SESSION['user_userID'] = $user->userID;
             $_SESSION['user_name'] = $user->name;

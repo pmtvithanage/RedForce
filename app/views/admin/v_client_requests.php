@@ -12,6 +12,9 @@
     <a href="<?php echo URL_ROOT; ?>/admin/clients" class="back-btn">
       <span class="material-symbols-outlined">arrow_back</span> Back to Clients
     </a>
+    <a href="<?php echo URL_ROOT; ?>/admin/viewPackages" class="back-btn" style="background: linear-gradient(135deg, #a40000 0%, #c41e1e 100%); color: white;">
+      <span class="material-symbols-outlined">inventory_2</span> View Packages
+    </a>
   </div>
 
   <!-- Stats Cards -->

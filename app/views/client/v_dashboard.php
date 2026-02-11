@@ -11,6 +11,193 @@
 <!-- Link to Dashboard CSS -->
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/dashboard_style.css">
 
+<style>
+.chart-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 20px;
+}
+
+.chart-section.full-width {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    padding: 10px 0;
+}
+
+.chart-section.full-width .chart-container {
+    height: 350px;
+}
+
+.chart-carousel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.chart-carousel-wrapper {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.chart-slide {
+    min-width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 40px;
+    align-items: center;
+}
+
+.chart-content {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: opacity 0.6s ease-out, transform 1s ease-out;
+}
+
+.chart-description {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: opacity 0.6s ease-out, transform 1s ease-out;
+}
+
+.chart-slide.active .chart-content {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.chart-slide.active .chart-description {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.chart-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-description {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+}
+
+.chart-description h4 {
+    margin: 0 0 15px 0;
+    color: #D32F2F;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-description h4 .material-icons {
+    font-size: 20px;
+}
+
+.chart-description p {
+    margin: 0 0 12px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.chart-description ul {
+    margin: 10px 0;
+    padding-left: 20px;
+    color: #666;
+    font-size: 13px;
+}
+
+.chart-description ul li {
+    margin-bottom: 6px;
+}
+
+.chart-title {
+    text-align: center;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.carousel-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.carousel-nav {
+    background: rgba(211, 47, 47, 0.1);
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.carousel-nav:hover {
+    background: rgba(211, 47, 47, 0.2);
+    transform: scale(1.1);
+}
+
+.carousel-nav .material-icons {
+    font-size: 24px;
+    color: #D32F2F;
+}
+
+.carousel-indicators {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.carousel-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ccc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.carousel-dot.active {
+    background: #D32F2F;
+    width: 28px;
+    border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+    }
+    
+    .chart-section.full-width .chart-container {
+        height: 300px;
+    }
+    
+    .chart-slide {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .chart-description {
+        padding: 15px;
+    }
+}
+</style>
+
 <!-- Dashboard Content -->
 <div class="main-content">
     <!-- Stats Cards -->
@@ -56,97 +243,363 @@
         </div>
     </div>
     
-    <!-- Content Grid -->
-    <div class="content-grid">
-        <!-- Messages Section -->
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Messages</h2>
-                <a href="<?php echo URL_ROOT; ?>/client/messages" class="tertiary-btn">
-                    View All
-                </a>
-            </div>
-            <div class="section-content">
-                <div class="search-container">
-                    <input type="text" placeholder="Search" class="search-input">
-                </div>
-                
-                <a href="<?php echo URL_ROOT; ?>/client/messages" class="message-item">
-                    <div class="message-avatar">A</div>
-                    <div class="message-content">
-                        <div class="message-sender">Admin - Red Force</div>
-                        <div class="message-text">Dear Mr. Fernando, kindly note that we are assigning 2 officers tonight to the Kurune...</div>
-                    </div>
-                </a>
-
-                <a href="<?php echo URL_ROOT; ?>/client/messages" class="message-item">
-                    <div class="message-avatar">J</div>
-                    <div class="message-content">
-                        <div class="message-sender">John Silva</div>
-                        <div class="message-text">Officer Ravindu Fernando was...</div>
-                    </div>
-                </a>
-
-                <a href="<?php echo URL_ROOT; ?>/client/messages" class="message-item">
-                    <div class="message-avatar">N</div>
-                    <div class="message-content">
-                        <div class="message-sender">Nadi Senanayake</div>
-                        <div class="message-text">Officer training certificates...</div>
-                    </div>
-                </a>
-
-                <a href="<?php echo URL_ROOT; ?>/client/messages" class="message-item">
-                    <div class="message-avatar">N</div>
-                    <div class="message-content">
-                        <div class="message-sender">Nishadi Dissanayake</div>
-                        <div class="message-text">Updated shift schedules for all...</div>
-                    </div>
-                </a>
+    <!-- Charts Carousel Section -->
+    <div class="section chart-section full-width">
+        <div class="section-header">
+            <h2 class="section-title">Analytics Overview</h2>
+            <div class="carousel-controls">
+                <button class="carousel-nav prev" onclick="changeChartSlide(-1)">
+                    <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="carousel-nav next" onclick="changeChartSlide(1)">
+                    <span class="material-icons">chevron_right</span>
+                </button>
             </div>
         </div>
         
-        <!-- Incident Reports Section -->
-        <div class="section">
-            <div class="section-header">
-                <h2 class="section-title">Incident Reports</h2>
-                <a href="<?php echo URL_ROOT; ?>/client/incidents" class="tertiary-btn">
-                    View All
-                </a>
-            </div>
-            <div class="section-content">
-                <div class="incident-item">
-                    <div class="incident-icon low">
-                        <span class="material-icons">warning</span>
+        <div class="chart-carousel">
+            <div class="chart-carousel-wrapper" id="chartCarouselWrapper">
+                <!-- Chart 1: Incidents by Severity -->
+                <div class="chart-slide">
+                    <div class="chart-content">
+                        <h3 class="chart-title">Incidents by Severity</h3>
+                        <div class="chart-container">
+                            <canvas id="severityChart"></canvas>
+                        </div>
                     </div>
-                    <div class="incident-content">
-                        <div class="incident-type">Attempted Robbery - Kurunegala Branch</div>
-                        <div class="incident-description">2 men wearing black tried to get into the vault but successfully contained by the guards...</div>
-                    </div>
-                </div>
-                
-                <div class="incident-item">
-                    <div class="incident-icon high">
-                        <span class="material-icons">error</span>
-                    </div>
-                    <div class="incident-content">
-                        <div class="incident-type">Attempted Robbery - Nuwara Eliya Branch</div>
-                        <div class="incident-description">Shots were fired and 1 guard is critically injured...</div>
+                    <div class="chart-description">
+                        <h4><span class="material-icons">bar_chart</span> Severity Distribution</h4>
+                        <p>This chart displays the distribution of incidents across different severity levels at your sites.</p>
+                        <p><strong>Severity Levels:</strong></p>
+                        <ul>
+                            <li><strong>Critical:</strong> Immediate threat requiring urgent action</li>
+                            <li><strong>High:</strong> Significant security concern</li>
+                            <li><strong>Medium:</strong> Notable incident requiring attention</li>
+                            <li><strong>Low:</strong> Minor security event</li>
+                        </ul>
+                        <p>Use this data to prioritize security improvements and resource allocation.</p>
                     </div>
                 </div>
-                
-                <div class="incident-item">
-                    <div class="incident-icon medium">
-                        <span class="material-icons">report_problem</span>
+
+                <!-- Chart 2: Monthly Incident Trend -->
+                <div class="chart-slide">
+                    <div class="chart-content">
+                        <h3 class="chart-title">Monthly Incident Trend</h3>
+                        <div class="chart-container">
+                            <canvas id="trendChart"></canvas>
+                        </div>
                     </div>
-                    <div class="incident-content">
-                        <div class="incident-type">Security Officer Attacked - Colombo 5</div>
-                        <div class="incident-description">During an inspection, an uneasy man got into a fight with one of the guards, both...</div>
+                    <div class="chart-description">
+                        <h4><span class="material-icons">trending_up</span> Trend Analysis</h4>
+                        <p>Track incident patterns over the past 6 months to identify trends and seasonal variations.</p>
+                        <p><strong>Key Insights:</strong></p>
+                        <ul>
+                            <li>Identify peak incident periods</li>
+                            <li>Measure effectiveness of security measures</li>
+                            <li>Plan staffing and resource allocation</li>
+                            <li>Detect emerging security patterns</li>
+                        </ul>
+                        <p>A declining trend indicates improving security conditions.</p>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Incidents by Site -->
+                <div class="chart-slide">
+                    <div class="chart-content">
+                        <h3 class="chart-title">Incidents by Site</h3>
+                        <div class="chart-container">
+                            <canvas id="siteChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-description">
+                        <h4><span class="material-icons">business</span> Site Comparison</h4>
+                        <p>Compare incident rates across all your locations to identify high-risk sites.</p>
+                        <p><strong>Action Items:</strong></p>
+                        <ul>
+                            <li>Focus additional security on high-incident sites</li>
+                            <li>Review security procedures at problem locations</li>
+                            <li>Share best practices from low-incident sites</li>
+                            <li>Adjust staffing levels based on site needs</li>
+                        </ul>
+                        <p>Sites with higher bars may require enhanced security measures.</p>
+                    </div>
+                </div>
+
+                <!-- Chart 4: Incidents by Type -->
+                <div class="chart-slide">
+                    <div class="chart-content">
+                        <h3 class="chart-title">Incidents by Type</h3>
+                        <div class="chart-container">
+                            <canvas id="typeChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-description">
+                        <h4><span class="material-icons">search</span> Incident Categories</h4>
+                        <p>Understand what types of security incidents are most common at your facilities.</p>
+                        <p><strong>Common Types:</strong></p>
+                        <ul>
+                            <li>Theft & Robbery attempts</li>
+                            <li>Unauthorized access</li>
+                            <li>Vandalism</li>
+                            <li>Disturbances</li>
+                            <li>Safety hazards</li>
+                        </ul>
+                        <p>Use this data to develop targeted prevention strategies for each incident type.</p>
+                    </div>
+                </div>
+
+                <!-- Chart 5: Incidents by Status -->
+                <div class="chart-slide">
+                    <div class="chart-content">
+                        <h3 class="chart-title">Incidents by Status</h3>
+                        <div class="chart-container">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="chart-description">
+                        <h4><span class="material-icons">bolt</span> Resolution Status</h4>
+                        <p>Monitor the current status of all reported incidents across your sites.</p>
+                        <p><strong>Status Categories:</strong></p>
+                        <ul>
+                            <li><strong>Pending:</strong> Awaiting investigation or action</li>
+                            <li><strong>In Progress:</strong> Currently being addressed</li>
+                            <li><strong>Resolved:</strong> Successfully handled and closed</li>
+                            <li><strong>Rejected:</strong> Determined not to be valid incidents</li>
+                        </ul>
+                        <p>A high proportion of resolved incidents indicates effective incident management.</p>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Carousel Indicators -->
+        <div class="carousel-indicators" id="chartCarouselIndicators">
+            <span class="carousel-dot active" onclick="goToChartSlide(0)"></span>
+            <span class="carousel-dot" onclick="goToChartSlide(1)"></span>
+            <span class="carousel-dot" onclick="goToChartSlide(2)"></span>
+            <span class="carousel-dot" onclick="goToChartSlide(3)"></span>
+            <span class="carousel-dot" onclick="goToChartSlide(4)"></span>
+        </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const chartData = <?php echo json_encode($data['charts']); ?>;
+
+// Chart 1: Incidents by Severity - Doughnut Chart
+const severityCtx = document.getElementById('severityChart').getContext('2d');
+const severityChart = new Chart(severityCtx, {
+    type: 'doughnut',
+    data: {
+        labels: chartData.severityChart.labels,
+        datasets: [{
+            data: chartData.severityChart.data,
+            backgroundColor: chartData.severityChart.colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 12 } }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.parsed || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                        return label + ': ' + value + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Chart 2: Monthly Trend - Line Chart
+const trendCtx = document.getElementById('trendChart').getContext('2d');
+const trendChart = new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.monthlyTrend.labels,
+        datasets: [{
+            label: 'Incidents',
+            data: chartData.monthlyTrend.data,
+            borderColor: chartData.monthlyTrend.borderColor,
+            backgroundColor: chartData.monthlyTrend.backgroundColor,
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointBackgroundColor: chartData.monthlyTrend.borderColor,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+    }
+});
+
+// Chart 3: Incidents by Site - Bar Chart
+const siteCtx = document.getElementById('siteChart').getContext('2d');
+const siteChart = new Chart(siteCtx, {
+    type: 'bar',
+    data: {
+        labels: chartData.siteIncidents.labels,
+        datasets: [{
+            label: 'Incidents',
+            data: chartData.siteIncidents.data,
+            backgroundColor: chartData.siteIncidents.colors,
+            borderWidth: 0,
+            borderRadius: 6
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Incidents: ' + context.parsed.y;
+                    }
+                }
+            }
+        },
+        scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } },
+            x: { ticks: { maxRotation: 45, minRotation: 45 } }
+        }
+    }
+});
+
+// Chart 4: Incidents by Type - Pie Chart
+const typeCtx = document.getElementById('typeChart').getContext('2d');
+const typeChart = new Chart(typeCtx, {
+    type: 'pie',
+    data: {
+        labels: chartData.typeChart.labels,
+        datasets: [{
+            data: chartData.typeChart.data,
+            backgroundColor: chartData.typeChart.colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 12 } }
+            }
+        }
+    }
+});
+
+// Chart 5: Incidents by Status - Doughnut Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: chartData.statusChart.labels,
+        datasets: [{
+            data: chartData.statusChart.data,
+            backgroundColor: chartData.statusChart.colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 12 } }
+            }
+        }
+    }
+});
+
+// Chart Carousel Functionality
+let currentChartSlide = 0;
+let chartAutoSlideInterval;
+const totalChartSlides = 5;
+
+function updateChartCarousel() {
+    const wrapper = document.getElementById('chartCarouselWrapper');
+    const slides = wrapper.querySelectorAll('.chart-slide');
+    
+    // Remove active class from all slides
+    slides.forEach(slide => slide.classList.remove('active'));
+    
+    // Update transform for slide transition
+    wrapper.style.transform = `translateX(-${currentChartSlide * 100}%)`;
+    
+    // Wait for slide transition to complete, then trigger content animations
+    setTimeout(() => {
+        slides[currentChartSlide].classList.add('active');
+    }, 100);
+    
+    // Update indicators
+    document.querySelectorAll('#chartCarouselIndicators .carousel-dot').forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentChartSlide);
+    });
+}
+
+function changeChartSlide(direction) {
+    currentChartSlide = (currentChartSlide + direction + totalChartSlides) % totalChartSlides;
+    updateChartCarousel();
+    resetChartAutoSlide();
+}
+
+function goToChartSlide(index) {
+    currentChartSlide = index;
+    updateChartCarousel();
+    resetChartAutoSlide();
+}
+
+function autoSlideChart() {
+    currentChartSlide = (currentChartSlide + 1) % totalChartSlides;
+    updateChartCarousel();
+}
+
+function resetChartAutoSlide() {
+    clearInterval(chartAutoSlideInterval);
+    chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
+}
+
+// Start auto-slide
+chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
+
+// Initialize first slide as active
+document.querySelector('.chart-slide').classList.add('active');
+
+// Pause on hover
+const chartCarousel = document.querySelector('.chart-carousel');
+chartCarousel.addEventListener('mouseenter', () => clearInterval(chartAutoSlideInterval));
+chartCarousel.addEventListener('mouseleave', resetChartAutoSlide);
+</script>
 
 
 

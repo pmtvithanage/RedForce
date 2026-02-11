@@ -196,6 +196,7 @@ class ChartDataModel {
                 COUNT(ir.id) as count
             FROM incident_reports ir
             LEFT JOIN sites s ON ir.site_id = s.id
+            WHERE s.is_draft = 0 OR s.is_draft IS NULL
             GROUP BY s.site_name
             ORDER BY count DESC
             LIMIT 10
@@ -247,6 +248,176 @@ class ChartDataModel {
         foreach ($result as $row) {
             $data['labels'][] = ucfirst($row->severity);
             $data['data'][] = round($row->avg_hours, 1);
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get incidents by severity for a specific client's sites
+     */
+    public function getClientIncidentsBySeverity($client_id) {
+        $this->db->query('
+            SELECT 
+                severity,
+                COUNT(*) as count
+            FROM incident_reports ir
+            INNER JOIN sites s ON ir.site_id = s.id
+            WHERE s.client_id = :client_id AND s.is_draft = 0
+            GROUP BY severity
+            ORDER BY FIELD(severity, "critical", "high", "medium", "low")
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'colors' => ['#D32F2F', '#FF6F00', '#FBC02D', '#388E3C']
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = ucfirst($row->severity);
+            $data['data'][] = $row->count;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get monthly incident trend for a specific client's sites (last 6 months)
+     */
+    public function getClientMonthlyIncidentTrend($client_id) {
+        $this->db->query('
+            SELECT 
+                DATE_FORMAT(ir.created_at, "%Y-%m") as month,
+                COUNT(*) as count
+            FROM incident_reports ir
+            INNER JOIN sites s ON ir.site_id = s.id
+            WHERE s.client_id = :client_id 
+            AND s.is_draft = 0
+            AND ir.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            GROUP BY DATE_FORMAT(ir.created_at, "%Y-%m")
+            ORDER BY month ASC
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'borderColor' => '#D32F2F',
+            'backgroundColor' => 'rgba(211, 47, 47, 0.1)'
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = date('M Y', strtotime($row->month . '-01'));
+            $data['data'][] = $row->count;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get incidents by site for a specific client
+     */
+    public function getClientIncidentsBySite($client_id) {
+        $this->db->query('
+            SELECT 
+                s.site_name,
+                COUNT(ir.id) as count
+            FROM sites s
+            LEFT JOIN incident_reports ir ON s.id = ir.site_id
+            WHERE s.client_id = :client_id AND s.is_draft = 0
+            GROUP BY s.id, s.site_name
+            ORDER BY count DESC
+            LIMIT 10
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'colors' => [
+                '#B71C1C', '#D32F2F', '#F44336', '#FF5252', '#FF8A80',
+                '#E65100', '#F57C00', '#FF9800', '#FFB74D', '#FFCC80'
+            ]
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = $row->site_name;
+            $data['data'][] = $row->count;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get incidents by type/category for a specific client
+     */
+    public function getClientIncidentsByType($client_id) {
+        $this->db->query('
+            SELECT 
+                ir.incident_type,
+                COUNT(*) as count
+            FROM incident_reports ir
+            INNER JOIN sites s ON ir.site_id = s.id
+            WHERE s.client_id = :client_id AND s.is_draft = 0
+            GROUP BY ir.incident_type
+            ORDER BY count DESC
+            LIMIT 8
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'colors' => [
+                '#B71C1C', '#D32F2F', '#F44336', '#FF5252',
+                '#FF8A80', '#E65100', '#F57C00', '#FF9800'
+            ]
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = ucfirst($row->incident_type);
+            $data['data'][] = $row->count;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get incidents by status for a specific client
+     */
+    public function getClientIncidentsByStatus($client_id) {
+        $this->db->query('
+            SELECT 
+                ir.status,
+                COUNT(*) as count
+            FROM incident_reports ir
+            INNER JOIN sites s ON ir.site_id = s.id
+            WHERE s.client_id = :client_id AND s.is_draft = 0
+            GROUP BY ir.status
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'colors' => ['#FFC107', '#2196F3', '#4CAF50', '#F44336']
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = ucfirst($row->status);
+            $data['data'][] = $row->count;
         }
         
         return $data;

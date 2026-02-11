@@ -390,6 +390,7 @@ class M_supervisor {
         $this->db->query('
             SELECT id, site_name, address, city, district, latitude, longitude
             FROM sites 
+            WHERE is_draft = 0
             ORDER BY site_name ASC
         ');
         return $this->db->resultSet();
@@ -404,6 +405,7 @@ class M_supervisor {
             WHERE osa.officer_id = :supervisor_id 
             AND osa.status = "Active"
             AND osa.shift_type = "Supervisor"
+            AND s.is_draft = 0
             ORDER BY s.site_name ASC
         ');
         $this->db->bind(':supervisor_id', $supervisorId);
@@ -613,6 +615,7 @@ class M_supervisor {
             WHERE osa.officer_id = :supervisor_id
             AND osa.shift_type = 'Supervisor'
             AND osa.status = 'Active'
+            AND s.is_draft = 0
             AND er.status = 'Pending'
             ORDER BY 
                 CASE er.priority

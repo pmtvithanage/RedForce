@@ -140,6 +140,7 @@ class M_premiseofficer {
                          LEFT JOIN Clients c ON s.client_id = c.id
                          WHERE osa.officer_id = :premiseofficer_id 
                          AND osa.status = 'Active'
+                         AND s.is_draft = 0
                          ORDER BY osa.assignment_start DESC");
         $this->db->bind(':premiseofficer_id', $premiseofficer_id);
         return $this->db->resultSet();
@@ -174,6 +175,7 @@ class M_premiseofficer {
                          LEFT JOIN Clients c ON s.client_id = c.id
                          WHERE osa.officer_id = :premiseofficer_id 
                          AND osa.status = 'Active'
+                         AND s.is_draft = 0
                          AND :date BETWEEN osa.assignment_start 
                          AND IFNULL(osa.assignment_end, '2099-12-31')");
         $this->db->bind(':premiseofficer_id', $premiseofficer_id);

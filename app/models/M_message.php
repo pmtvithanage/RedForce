@@ -467,4 +467,99 @@ class M_message {
         
         return $this->db->resultSet();
     }
+
+    /**
+     * Get all messageable users for a client
+     * Returns: admins + all supervisors assigned to the client's sites
+     */
+    public function getAllUsersForClient($client_user_id) {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                CASE 
+                    WHEN u.role = 'premise officer' AND po.rank = 'Supervisor' THEN 'Supervisor'
+                    ELSE u.role
+                END as role
+            FROM Users u
+            LEFT JOIN premise_officers po ON po.userID = u.id
+            WHERE 
+                -- All admins
+                (u.role = 'admin')
+                OR 
+                -- All supervisors assigned to sites owned by the client
+                (
+                    u.role = 'premise officer' 
+                    AND po.rank = 'Supervisor'
+                    AND u.id IN (
+                        SELECT DISTINCT osa.officer_id 
+                        FROM sites s
+                        INNER JOIN officer_site_assignments osa ON s.id = osa.site_id
+                        WHERE s.client_id = :client_id
+                        AND osa.shift_type = 'Supervisor'
+                        AND osa.status = 'Active'
+                    )
+                )
+            AND u.id != :client_id2
+            ORDER BY 
+                CASE WHEN u.role = 'admin' THEN 0 ELSE 1 END,
+                u.name ASC
+        ");
+        
+        $this->db->bind(':client_id', $client_user_id);
+        $this->db->bind(':client_id2', $client_user_id);
+        
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get all messageable users for a premise officer
+     * Returns: admins + all supervisors of the assigned site
+     */
+    public function getAllUsersForPremiseOfficer($officer_user_id) {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                CASE 
+                    WHEN u.role = 'premise officer' AND po.rank = 'Supervisor' THEN 'Supervisor'
+                    ELSE u.role
+                END as role
+            FROM Users u
+            LEFT JOIN premise_officers po ON po.userID = u.id
+            WHERE 
+                -- All admins
+                (u.role = 'admin')
+                OR 
+                -- All supervisors assigned to the same site as the premise officer
+                (
+                    u.role = 'premise officer' 
+                    AND po.rank = 'Supervisor'
+                    AND u.id IN (
+                        SELECT DISTINCT osa2.officer_id 
+                        FROM officer_site_assignments osa1
+                        INNER JOIN officer_site_assignments osa2 ON osa1.site_id = osa2.site_id
+                        WHERE osa1.officer_id = :officer_id
+                        AND osa1.status = 'Active'
+                        AND osa2.shift_type = 'Supervisor'
+                        AND osa2.status = 'Active'
+                    )
+                )
+            AND u.id != :officer_id2
+            ORDER BY 
+                CASE WHEN u.role = 'admin' THEN 0 ELSE 1 END,
+                u.name ASC
+        ");
+        
+        $this->db->bind(':officer_id', $officer_user_id);
+        $this->db->bind(':officer_id2', $officer_user_id);
+        
+        return $this->db->resultSet();
+    }
 }

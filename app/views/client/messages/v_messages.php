@@ -2,12 +2,8 @@
 
   <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
-
-    <!-- Content will be loaded here -->
-    <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
-        Back
-    </button>
+    <!-- Messages Component -->
+    <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
     
     </main>
     </div>

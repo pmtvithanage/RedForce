@@ -5,6 +5,7 @@ class PremiseOfficer extends Controller {
     private $advertisementModel;
     private $notificationModel;
     private $leaveRequestModel;
+    private $messageModel;
 
     public function __construct() {
         // Check if user is logged in and has premise officer role
@@ -15,6 +16,7 @@ class PremiseOfficer extends Controller {
         $this->userModel = $this->model('M_users');
         $this->notificationModel = $this->model('M_notifications');
         $this->leaveRequestModel = $this->model('M_leaveRequests');
+        $this->messageModel = $this->model('M_message');
     }
 
     // Default action - redirect to dashboard
@@ -24,14 +26,39 @@ class PremiseOfficer extends Controller {
 
     // Dashboard action
     public function dashboard() {
-        // Fetch advertisements based on role dynamically
-        $role = 'premise officer';
-        $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
-
+        $premiseofficer_id = $_SESSION['user_id'];
+        
+        // Get dashboard stats
+        $activeAssignments = $this->premiseOfficerModel->getActiveAssignments($premiseofficer_id);
+        $leaveStats = $this->premiseOfficerModel->getLeaveStats($premiseofficer_id);
+        $unreadNotifications = $this->notificationModel->getUnreadCount($premiseofficer_id);
+        
+        $stats = [
+            'sites' => count($activeAssignments),
+            'leaves' => $leaveStats->pending_requests ?? 0,
+            'shifts' => count($activeAssignments),
+            'notifications' => $unreadNotifications
+        ];
+        
+        // Get recent activities
+        $recent_activities = $this->premiseOfficerModel->getRecentActivities($premiseofficer_id, 5);
+        
+        // Get upcoming shifts (use active assignments, limit to 5)
+        $upcoming_shifts = array_slice($activeAssignments, 0, 5);
+        foreach ($upcoming_shifts as $shift) {
+            $shift->site_address = $shift->address . ', ' . $shift->city;
+        }
+        
+        // Get recent leave requests
+        $leave_requests = $this->premiseOfficerModel->getRecentLeaveRequests($premiseofficer_id, 5);
+        
         $data = [
             'title' => 'Dashboard',
             'pageTitle' => 'Dashboard',
-            'advertisements' => $advertisements
+            'stats' => $stats,
+            'recent_activities' => $recent_activities,
+            'upcoming_shifts' => $upcoming_shifts,
+            'leave_requests' => $leave_requests
         ];
 
         $this->view('premiseofficer/v_dashboard', $data);
@@ -47,6 +74,12 @@ class PremiseOfficer extends Controller {
         if ($premiseofficer_id) {
             $assignments = $this->premiseOfficerModel->getActiveAssignments($premiseofficer_id);
             $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($premiseofficer_id);
+            
+            // Debug logging
+            error_log('Schedule - Officer ID: ' . $premiseofficer_id);
+            error_log('Schedule - Assignments count: ' . count($assignments));
+            error_log('Schedule - Assignments data: ' . json_encode($assignments));
+            error_log('Schedule - Leave dates count: ' . count($leaveDates));
         }
         
         $data = [
@@ -55,11 +88,17 @@ class PremiseOfficer extends Controller {
             'assignments' => $assignments,
             'leaveDates' => $leaveDates
         ];
-        $this->view('premiseofficer/v_schedule', $data);
+        $this->view('premiseofficer/schedule/v_schedule', $data);
     }
     
     // AJAX endpoint to get shift details for a specific date
     public function getShiftDetails() {
+        // Clear any output buffers and start fresh
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+        ob_start();
+        
         header('Content-Type: application/json');
         
         // Log the request for debugging
@@ -69,8 +108,10 @@ class PremiseOfficer extends Controller {
         error_log('SESSION user_id: ' . ($_SESSION['user_id'] ?? 'not set'));
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-            return;
+            $response = json_encode(['success' => false, 'message' => 'Invalid request method']);
+            ob_end_clean();
+            echo $response;
+            exit;
         }
         
         $premiseofficer_id = $_SESSION['user_id'] ?? null;
@@ -78,8 +119,10 @@ class PremiseOfficer extends Controller {
         
         if (!$premiseofficer_id || !$date) {
             error_log('Missing parameters - premiseofficer_id: ' . ($premiseofficer_id ?? 'null') . ', date: ' . ($date ?? 'null'));
-            echo json_encode(['success' => false, 'message' => 'Missing required parameters - ID: ' . ($premiseofficer_id ? 'OK' : 'MISSING') . ', Date: ' . ($date ? 'OK' : 'MISSING')]);
-            return;
+            $response = json_encode(['success' => false, 'message' => 'Missing required parameters - ID: ' . ($premiseofficer_id ? 'OK' : 'MISSING') . ', Date: ' . ($date ? 'OK' : 'MISSING')]);
+            ob_end_clean();
+            echo $response;
+            exit;
         }
         
         error_log('Fetching shift details for officer ' . $premiseofficer_id . ' on date ' . $date);
@@ -96,13 +139,15 @@ class PremiseOfficer extends Controller {
         $leaveInfo = $this->premiseOfficerModel->getLeaveForDate($premiseofficer_id, $date);
         
         if ($leaveInfo) {
-            echo json_encode([
+            $response = json_encode([
                 'success' => true,
                 'type' => 'leave',
                 'leave_type' => $leaveInfo->leave_type,
                 'reason' => $leaveInfo->reason
             ]);
-            return;
+            ob_end_clean();
+            echo $response;
+            exit;
         }
         
         if ($shift) {
@@ -125,7 +170,7 @@ class PremiseOfficer extends Controller {
                     $shiftTime = 'Not Specified';
             }
             
-            echo json_encode([
+            $response = json_encode([
                 'success' => true,
                 'type' => 'shift',
                 'location' => $shift->site_name,
@@ -135,11 +180,17 @@ class PremiseOfficer extends Controller {
                 'client' => $shift->contact_person_name ?? '',
                 'notes' => $shift->notes ?? 'No additional notes'
             ]);
+            ob_end_clean();
+            echo $response;
+            exit;
         } else {
-            echo json_encode([
+            $response = json_encode([
                 'success' => true,
                 'type' => 'no_shift'
             ]);
+            ob_end_clean();
+            echo $response;
+            exit;
         }
     }
 
@@ -492,6 +543,199 @@ class PremiseOfficer extends Controller {
         // Load view
         $this->view('premiseofficer/v_profile', $data);
     }
+
+    public function messages() {
+        $user_id = $_SESSION['user_id'] ?? null;
+        
+        $conversations = $this->messageModel->getConversations($user_id);
+        $all_users = $this->messageModel->getAllUsersForPremiseOfficer($user_id);
+        
+        $data = [
+            'title' => 'Messages',
+            'pageTitle' => 'Messages',
+            'conversations' => $conversations,
+            'all_users' => $all_users
+        ];
+        $this->view('premiseofficer/messages/v_messages', $data);
+    }
+
+    // ==================== MESSAGING API METHODS ====================
+
+    public function getConversations() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            $conversations = $this->messageModel->getConversations($user_id);
+            echo json_encode(['status' => 'success', 'conversations' => $conversations]);
+        }
+    }
+
+    public function loadMessages() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
+                return;
+            }
+            
+            // Mark messages as read
+            $this->messageModel->markAsRead($recipient_id, $sender_id);
+            
+            // Get messages
+            $messages = $this->messageModel->getMessages($sender_id, $recipient_id);
+            echo json_encode(['status' => 'success', 'messages' => $messages]);
+        }
+    }
+
+    public function sendMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            $message = trim($_POST['message'] ?? '');
+            
+            if (!$sender_id || !$recipient_id || empty($message)) {
+                echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
+                return;
+            }
+            
+            // Sanitize message
+            $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+            
+            if ($this->messageModel->sendMessage($sender_id, $recipient_id, $message)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => $message,
+                    'created_at' => date('Y-m-d H:i:s')
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to send message']);
+            }
+        }
+    }
+
+    public function markAsSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $sender_id = $_SESSION['user_id'] ?? null;
+            $recipient_id = $_POST['recipient_id'] ?? null;
+            
+            if (!$sender_id || !$recipient_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            // Mark messages as seen
+            $this->messageModel->markAsSeen($sender_id, $recipient_id);
+            
+            echo json_encode(['status' => 'success']);
+        }
+    }
+
+    public function deleteMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            
+            if (!$user_id || !$message_id) {
+                echo json_encode(['status' => 'error']);
+                return;
+            }
+            
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error']);
+            }
+        }
+    }
+
+    public function updateMessage() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_SESSION['user_id'] ?? null;
+            $message_id = $_POST['message_id'] ?? null;
+            $message = $_POST['message'] ?? null;
+            
+            if (!$user_id || !$message_id || !$message) {
+                echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
+                return;
+            }
+            
+            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
+                echo json_encode(['status' => 'success']);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
+            }
+        }
+    }
+
+    public function getUserStatus() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            $user_id = $_POST['user_id'] ?? null;
+            
+            if (!$user_id) {
+                echo json_encode(['status' => 'error', 'message' => 'User ID required']);
+                return;
+            }
+            
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
+            
+            if ($userStatus) {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => $userStatus->is_online ?? false,
+                    'last_seen' => $userStatus->last_seen ?? null
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'success',
+                    'is_online' => false,
+                    'last_seen' => null
+                ]);
+            }
+        }
+    }
+
+    public function updateLastSeen() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
+            }
+        }
+    }
+
+    public function setOffline() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $user_id = $_SESSION['user_id'] ?? null;
+            
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
+            }
+        }
+    }
+
+    // ==================== END MESSAGING API METHODS ====================
 
     public function notifications() {
         // TODO: Fetch notifications from database

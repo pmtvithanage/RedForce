@@ -121,6 +121,7 @@ class M_client {
             JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             JOIN sites s ON csa.site_id = s.id
             WHERE s.client_id = :client_id
+            AND s.is_draft = 0
             AND er.status != "Pending"
         ';
         
@@ -193,6 +194,7 @@ class M_client {
             LEFT JOIN sites s ON csa.site_id = s.id
             LEFT JOIN Users supervisor_user ON er.supervisor_approved_by = supervisor_user.id
             WHERE er.id = :id
+            AND (s.is_draft = 0 OR s.is_draft IS NULL)
         ');
         $this->db->bind(':id', $id);
         return $this->db->single();
@@ -246,6 +248,7 @@ class M_client {
             INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             INNER JOIN sites s ON csa.site_id = s.id
             WHERE s.client_id = :client_id
+            AND s.is_draft = 0
             AND er.status != "Pending"
         ');
         $this->db->bind(':client_id', $client_id);
@@ -262,10 +265,102 @@ class M_client {
             INNER JOIN sites s ON csa.site_id = s.id
             WHERE u.role = "Care-Taker"
             AND csa.status = "Active"
+            AND s.is_draft = 0
             AND s.client_id = :client_id
             ORDER BY u.name
         ');
         $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
+
+    // Get all sites for a specific client
+    public function getClientSites($client_id) {
+        $this->db->query('
+            SELECT s.*, 
+                   COUNT(DISTINCT CASE WHEN osa.shift_type != "Supervisor" THEN osa.officer_id END) as assigned_officers,
+                   COUNT(DISTINCT CASE WHEN osa.shift_type = "Supervisor" THEN osa.officer_id END) as assigned_supervisors,
+                   COUNT(DISTINCT csa.caretaker_id) as assigned_caretakers,
+                   supervisor.name as supervisor_name
+            FROM sites s
+            LEFT JOIN officer_site_assignments osa ON s.id = osa.site_id AND osa.status = "Active"
+            LEFT JOIN caretaker_site_assignments csa ON s.id = csa.site_id AND csa.status = "Active"
+            LEFT JOIN officer_site_assignments sup_osa ON s.id = sup_osa.site_id AND sup_osa.status = "Active" AND sup_osa.shift_type = "Supervisor"
+            LEFT JOIN Users supervisor ON sup_osa.officer_id = supervisor.id
+            WHERE s.client_id = :client_id
+            AND s.is_draft = 0
+            GROUP BY s.id
+            ORDER BY s.created_at DESC
+        ');
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
+
+    // Get single site details for a client
+    public function getSiteDetails($site_id, $client_id) {
+        $this->db->query('
+            SELECT s.*, 
+                   supervisor.name as supervisor_name,
+                   supervisor.phone_number as supervisor_phone,
+                   supervisor.email as supervisor_email
+            FROM sites s
+            LEFT JOIN officer_site_assignments sup_osa ON s.id = sup_osa.site_id AND sup_osa.status = "Active" AND sup_osa.shift_type = "Supervisor"
+            LEFT JOIN Users supervisor ON sup_osa.officer_id = supervisor.id
+            WHERE s.id = :site_id 
+            AND s.client_id = :client_id
+            AND s.is_draft = 0
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->single();
+    }
+
+    // Get officers assigned to a site (excluding supervisors)
+    public function getSiteOfficers($site_id) {
+        $this->db->query('
+            SELECT u.*, osa.assignment_start, osa.assignment_end, osa.shift_type,
+                   po.officerID
+            FROM Users u
+            JOIN officer_site_assignments osa ON u.id = osa.officer_id
+            LEFT JOIN premise_officers po ON u.id = po.userID
+            WHERE osa.site_id = :site_id
+            AND osa.status = "Active"
+            AND osa.shift_type != "Supervisor"
+            ORDER BY osa.assignment_start DESC
+        ');
+        $this->db->bind(':site_id', $site_id);
+        return $this->db->resultSet();
+    }
+
+    // Get caretakers assigned to a site
+    public function getSiteCaretakers($site_id) {
+        $this->db->query('
+            SELECT u.*, csa.assignment_start, csa.assignment_end,
+                   ct.caretakerID
+            FROM Users u
+            JOIN caretaker_site_assignments csa ON u.id = csa.caretaker_id
+            LEFT JOIN care_taker ct ON u.id = ct.userID
+            WHERE csa.site_id = :site_id
+            AND csa.status = "Active"
+            ORDER BY csa.assignment_start DESC
+        ');
+        $this->db->bind(':site_id', $site_id);
+        return $this->db->resultSet();
+    }
+
+    // Get supervisors assigned to a site
+    public function getSiteSupervisors($site_id) {
+        $this->db->query('
+            SELECT u.*, osa.assignment_start, osa.assignment_end,
+                   po.officerID
+            FROM Users u
+            JOIN officer_site_assignments osa ON u.id = osa.officer_id
+            LEFT JOIN premise_officers po ON u.id = po.userID
+            WHERE osa.site_id = :site_id
+            AND osa.status = "Active"
+            AND osa.shift_type = "Supervisor"
+            ORDER BY osa.assignment_start DESC
+        ');
+        $this->db->bind(':site_id', $site_id);
         return $this->db->resultSet();
     }
 }
