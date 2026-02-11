@@ -6,6 +6,7 @@ class Admin extends Controller {
     private $chartModel;
     private $messageModel;
     private $premiseOfficerModel;
+    private $packageModel;
 
     private $notificationModel;
     private $db;
@@ -18,6 +19,7 @@ class Admin extends Controller {
         $this->homeModel = $this->model('M_home');
         $this->messageModel = $this->model('M_message');
         $this->premiseOfficerModel = $this->model('M_premiseofficer');
+        $this->packageModel = $this->model('M_package');
         $this->notificationModel = $this->model('M_notifications');
         $this->db = new Database();
         // Load route helper
@@ -1606,6 +1608,373 @@ public function editSite($site_id){
             flash('request_error', 'Failed to reject request');
             redirect('admin/clientRequests');
         }
+    }
+
+    // View all available packages
+    public function viewPackages() {
+        // Fetch all packages from database (including inactive ones for admin)
+        $packages = $this->packageModel->getAllPackagesForAdmin();
+        
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Available Security Packages',
+            'packages' => $packages
+        ];
+        
+        $this->view('admin/clients/v_packages', $data);
+    }
+
+    // Create new package
+    public function createPackage() {
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Create New Security Package'
+        ];
+        
+        $this->view('admin/clients/v_create_packages', $data);
+    }
+
+    // Save new package
+    public function savePackage() {
+        // Check if POST request
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/viewPackages');
+        }
+
+        // Load image upload helper
+        require_once APP_ROOT . '/helpers/image_upload_helper.php';
+
+        // Sanitize POST data
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        // Init data
+        $data = [
+            'package_name' => trim($_POST['package_name']),
+            'description' => trim($_POST['description'] ?? ''),
+            'number_of_officers' => intval($_POST['number_of_officers']),
+            'number_of_supervisors' => intval($_POST['number_of_supervisors'] ?? 0),
+            'number_of_caretakers' => intval($_POST['number_of_caretakers'] ?? 0),
+            'package_price' => floatval($_POST['package_price']),
+            'price_per_officer' => floatval($_POST['price_per_officer'] ?? 0),
+            'price_per_supervisor' => floatval($_POST['price_per_supervisor'] ?? 0),
+            'price_per_caretaker' => floatval($_POST['price_per_caretaker'] ?? 0),
+            'background_image' => null,
+            'status' => 'Active',
+            'created_by' => $_SESSION['user_id'],
+            'package_name_err' => '',
+            'number_of_officers_err' => '',
+            'package_price_err' => '',
+            'image_err' => ''
+        ];
+
+        // Validate package name
+        if (empty($data['package_name'])) {
+            $data['package_name_err'] = 'Please enter a package name';
+        } elseif ($this->packageModel->packageNameExists($data['package_name'])) {
+            $data['package_name_err'] = 'Package name already exists. Please choose a different name';
+        }
+
+        // Validate number of officers
+        if ($data['number_of_officers'] < 0) {
+            $data['number_of_officers_err'] = 'Number of officers cannot be negative';
+        }
+
+        // Validate package price
+        if ($data['package_price'] < 0) {
+            $data['package_price_err'] = 'Package price cannot be negative';
+        }
+
+        // Handle image upload
+        if (!empty($_FILES['package_image']['name'])) {
+            $uploadDir = 'uploads/packages/';
+            
+            // Create directory if it doesn't exist
+            if (!file_exists(PUB_ROOT . '/' . $uploadDir)) {
+                mkdir(PUB_ROOT . '/' . $uploadDir, 0777, true);
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+            $fileType = $_FILES['package_image']['type'];
+            $fileSize = $_FILES['package_image']['size'];
+            $tmpName = $_FILES['package_image']['tmp_name'];
+
+            // Validate file type and size
+            if (!in_array($fileType, $allowedTypes)) {
+                $data['image_err'] = 'Invalid file type. Only JPG, PNG, and GIF images are allowed';
+            } elseif ($fileSize > $maxFileSize) {
+                $data['image_err'] = 'File size exceeds 5MB limit';
+            } else {
+                // Generate unique filename
+                $extension = pathinfo($_FILES['package_image']['name'], PATHINFO_EXTENSION);
+                $fileName = 'package_' . uniqid() . '.' . $extension;
+                
+                // Upload image using helper
+                if (uploadImage($tmpName, $fileName, '/' . $uploadDir)) {
+                    $data['background_image'] = $fileName;
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                }
+            }
+        }
+
+        // Make sure no errors
+        if (empty($data['package_name_err']) && empty($data['number_of_officers_err']) && 
+            empty($data['package_price_err']) && empty($data['image_err'])) {
+            
+            // Create package
+            if ($this->packageModel->createPackage($data)) {
+                // Add activity log
+                $title = "Package Created";
+                $description = "New security package '" . $data['package_name'] . "' created with price: LKR " . number_format($data['package_price'], 2);
+                $type = "update";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                flash('msg', 'Package Created Successfully', 'alert-success');
+                redirect('admin/viewPackages');
+            } else {
+                flash('msg', 'Failed to Create Package', 'alert-danger');
+                redirect('admin/viewPackages');
+            }
+        } else {
+            // Load view with errors
+            $viewData = [
+                'title' => 'Clients',
+                'pageTitle' => 'Create New Security Package',
+                'data' => $data
+            ];
+            $this->view('admin/clients/v_create_packages', $viewData);
+        }
+    }
+
+    // Edit package
+    public function editPackage($id) {
+        // Get package by ID
+        $package = $this->packageModel->getPackageById($id);
+        
+        if (!$package) {
+            flash('msg', 'Package Not Found', 'alert-danger');
+            redirect('admin/viewPackages');
+        }
+        
+        $data = [
+            'title' => 'Clients',
+            'pageTitle' => 'Edit Security Package',
+            'package' => $package
+        ];
+        
+        $this->view('admin/clients/v_edit_package', $data);
+    }
+
+    // Update package
+    public function updatePackage() {
+        // Check if POST request
+        if ($_SERVER['REQUEST_METHOD'] != 'POST') {
+            redirect('admin/viewPackages');
+        }
+
+        // Load image upload helper
+        require_once APP_ROOT . '/helpers/image_upload_helper.php';
+
+        // Sanitize POST data
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        // Init data
+        $data = [
+            'id' => intval($_POST['package_id']),
+            'package_name' => trim($_POST['package_name']),
+            'description' => trim($_POST['description'] ?? ''),
+            'number_of_officers' => intval($_POST['number_of_officers']),
+            'number_of_supervisors' => intval($_POST['number_of_supervisors'] ?? 0),
+            'number_of_caretakers' => intval($_POST['number_of_caretakers'] ?? 0),
+            'package_price' => floatval($_POST['package_price']),
+            'price_per_officer' => floatval($_POST['price_per_officer'] ?? 0),
+            'price_per_supervisor' => floatval($_POST['price_per_supervisor'] ?? 0),
+            'price_per_caretaker' => floatval($_POST['price_per_caretaker'] ?? 0),
+            'background_image' => $_POST['current_image'] ?? null,
+            'status' => 'Active',
+            'package_name_err' => '',
+            'number_of_officers_err' => '',
+            'package_price_err' => '',
+            'image_err' => ''
+        ];
+
+        // Validate package name
+        if (empty($data['package_name'])) {
+            $data['package_name_err'] = 'Please enter a package name';
+        } elseif ($this->packageModel->packageNameExists($data['package_name'], $data['id'])) {
+            $data['package_name_err'] = 'Package name already exists. Please choose a different name';
+        }
+
+        // Validate number of officers
+        if ($data['number_of_officers'] < 0) {
+            $data['number_of_officers_err'] = 'Number of officers cannot be negative';
+        }
+
+        // Validate package price
+        if ($data['package_price'] < 0) {
+            $data['package_price_err'] = 'Package price cannot be negative';
+        }
+
+        // Handle image upload
+        if (!empty($_FILES['package_image']['name'])) {
+            $uploadDir = 'uploads/packages/';
+            
+            // Create directory if it doesn't exist
+            if (!file_exists(PUB_ROOT . '/' . $uploadDir)) {
+                mkdir(PUB_ROOT . '/' . $uploadDir, 0777, true);
+            }
+
+            $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            $maxFileSize = 5 * 1024 * 1024; // 5MB
+
+            $fileType = $_FILES['package_image']['type'];
+            $fileSize = $_FILES['package_image']['size'];
+            $tmpName = $_FILES['package_image']['tmp_name'];
+
+            // Validate file type and size
+            if (!in_array($fileType, $allowedTypes)) {
+                $data['image_err'] = 'Invalid file type. Only JPG, PNG, and GIF images are allowed';
+            } elseif ($fileSize > $maxFileSize) {
+                $data['image_err'] = 'File size exceeds 5MB limit';
+            } else {
+                // Generate unique filename
+                $extension = pathinfo($_FILES['package_image']['name'], PATHINFO_EXTENSION);
+                $fileName = 'package_' . uniqid() . '.' . $extension;
+                
+                // Delete old image if exists
+                if (!empty($data['background_image'])) {
+                    $oldImagePath = PUB_ROOT . '/' . $uploadDir . $data['background_image'];
+                    if (file_exists($oldImagePath)) {
+                        @unlink($oldImagePath);
+                    }
+                }
+                
+                // Upload new image using helper
+                if (uploadImage($tmpName, $fileName, '/' . $uploadDir)) {
+                    $data['background_image'] = $fileName;
+                } else {
+                    $data['image_err'] = 'Failed to upload image';
+                }
+            }
+        }
+
+        // Make sure no errors
+        if (empty($data['package_name_err']) && empty($data['number_of_officers_err']) && 
+            empty($data['package_price_err']) && empty($data['image_err'])) {
+            
+            // Update package
+            if ($this->packageModel->updatePackage($data)) {
+                // Add activity log
+                $title = "Package Updated";
+                $description = "Security package '" . $data['package_name'] . "' (ID: " . $data['id'] . ") was updated";
+                $type = "update";
+                $this->adminModel->insertRecentActivity($title, $description, $type);
+                
+                flash('msg', 'Package Updated Successfully', 'alert-success');
+                redirect('admin/viewPackages');
+            } else {
+                flash('msg', 'Failed to Update Package', 'alert-danger');
+                redirect('admin/viewPackages');
+            }
+        } else {
+            // Get package data for the view
+            $package = $this->packageModel->getPackageById($data['id']);
+            
+            // Load view with errors
+            $viewData = [
+                'title' => 'Clients',
+                'pageTitle' => 'Edit Security Package',
+                'package' => $package,
+                'data' => $data
+            ];
+            $this->view('admin/clients/v_edit_package', $viewData);
+        }
+    }
+
+    // Delete package
+    public function deletePackage($id) {
+        // Load image upload helper
+        require_once APP_ROOT . '/helpers/image_upload_helper.php';
+        
+        // Get package by ID
+        $package = $this->packageModel->getPackageById($id);
+        
+        if (!$package) {
+            flash('msg', 'Package Not Found', 'alert-danger');
+            redirect('admin/viewPackages');
+        }
+        
+        // Check if it's a default package (cannot be deleted)
+        if (isset($package->is_default) && $package->is_default == 1) {
+            flash('msg', 'Cannot Delete Default Package. Default packages are system-protected and can only be edited.', 'alert-danger');
+            redirect('admin/viewPackages');
+            return;
+        }
+        
+        // Delete package image if exists
+        if (!empty($package->background_image)) {
+            $imagePath = PUB_ROOT . '/uploads/packages/' . $package->background_image;
+            if (file_exists($imagePath)) {
+                @unlink($imagePath);
+            }
+        }
+        
+        // Delete package from database
+        if ($this->packageModel->deletePackage($id)) {
+            // Add activity log
+            $title = "Package Deleted";
+            $description = "Security package '" . $package->package_name . "' (ID: " . $id . ") was deleted";
+            $type = "alert";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            flash('msg', 'Package Deleted Successfully', 'alert-success');
+        } else {
+            flash('msg', 'Failed to Delete Package', 'alert-danger');
+        }
+        
+        redirect('admin/viewPackages');
+    }
+
+    /**
+     * Toggle package status (Active/Inactive)
+     */
+    public function togglePackageStatus($id, $newStatus) {
+        // Validate status
+        if (!in_array($newStatus, ['Active', 'Inactive'])) {
+            flash('msg', 'Invalid Status', 'alert-danger');
+            redirect('admin/viewPackages');
+            return;
+        }
+        
+        // Get package by ID
+        $package = $this->packageModel->getPackageById($id);
+        
+        if (!$package) {
+            flash('msg', 'Package Not Found', 'alert-danger');
+            redirect('admin/viewPackages');
+            return;
+        }
+        
+        // Update package status
+        if ($this->packageModel->updatePackageStatus($id, $newStatus)) {
+            // Add activity log
+            $statusText = $newStatus === 'Active' ? 'activated' : 'deactivated';
+            $title = "Package Status Changed";
+            $description = "Security package '" . $package->package_name . "' was " . $statusText;
+            $type = "update";
+            $this->adminModel->insertRecentActivity($title, $description, $type);
+            
+            $message = $newStatus === 'Active' 
+                ? 'Package Activated Successfully. It is now available for clients.' 
+                : 'Package Deactivated Successfully. It is no longer available for clients.';
+            flash('msg', $message, 'alert-success');
+        } else {
+            flash('msg', 'Failed to Update Package Status', 'alert-danger');
+        }
+        
+        redirect('admin/viewPackages');
     }
 
 // ======================================================================== //

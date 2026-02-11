@@ -1,0 +1,206 @@
+<?php
+class M_package {
+    private $db;
+
+    public function __construct() {
+        $this->db = new Database();
+    }
+
+    /**
+     * Get all packages
+     */
+    public function getAllPackages() {
+        $this->db->query('SELECT * FROM packages WHERE status = :status ORDER BY created_at DESC');
+        $this->db->bind(':status', 'Active');
+        
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get all packages including inactive ones (for admin)
+     */
+    public function getAllPackagesForAdmin() {
+        $this->db->query('SELECT * FROM packages ORDER BY created_at DESC');
+        
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get package by ID
+     */
+    public function getPackageById($id) {
+        $this->db->query('SELECT * FROM packages WHERE id = :id');
+        $this->db->bind(':id', $id);
+        
+        return $this->db->single();
+    }
+
+    /**
+     * Get package by name
+     */
+    public function getPackageByName($name) {
+        $this->db->query('SELECT * FROM packages WHERE package_name = :name');
+        $this->db->bind(':name', $name);
+        
+        return $this->db->single();
+    }
+
+    /**
+     * Create new package
+     */
+    public function createPackage($data) {
+        $this->db->query('INSERT INTO packages (
+            package_name, 
+            description, 
+            number_of_officers, 
+            number_of_supervisors, 
+            number_of_caretakers, 
+            package_price, 
+            price_per_officer, 
+            price_per_supervisor, 
+            price_per_caretaker, 
+            background_image, 
+            status, 
+            created_by
+        ) VALUES (
+            :package_name, 
+            :description, 
+            :number_of_officers, 
+            :number_of_supervisors, 
+            :number_of_caretakers, 
+            :package_price, 
+            :price_per_officer, 
+            :price_per_supervisor, 
+            :price_per_caretaker, 
+            :background_image, 
+            :status, 
+            :created_by
+        )');
+
+        // Bind values
+        $this->db->bind(':package_name', $data['package_name']);
+        $this->db->bind(':description', $data['description']);
+        $this->db->bind(':number_of_officers', $data['number_of_officers']);
+        $this->db->bind(':number_of_supervisors', $data['number_of_supervisors']);
+        $this->db->bind(':number_of_caretakers', $data['number_of_caretakers']);
+        $this->db->bind(':package_price', $data['package_price']);
+        $this->db->bind(':price_per_officer', $data['price_per_officer']);
+        $this->db->bind(':price_per_supervisor', $data['price_per_supervisor']);
+        $this->db->bind(':price_per_caretaker', $data['price_per_caretaker']);
+        $this->db->bind(':background_image', $data['background_image']);
+        $this->db->bind(':status', $data['status']);
+        $this->db->bind(':created_by', $data['created_by']);
+
+        // Execute
+        if ($this->db->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Update package
+     */
+    public function updatePackage($data) {
+        $this->db->query('UPDATE packages SET 
+            package_name = :package_name,
+            description = :description,
+            number_of_officers = :number_of_officers,
+            number_of_supervisors = :number_of_supervisors,
+            number_of_caretakers = :number_of_caretakers,
+            package_price = :package_price,
+            price_per_officer = :price_per_officer,
+            price_per_supervisor = :price_per_supervisor,
+            price_per_caretaker = :price_per_caretaker,
+            background_image = :background_image,
+            status = :status
+            WHERE id = :id
+        ');
+
+        // Bind values
+        $this->db->bind(':id', $data['id']);
+        $this->db->bind(':package_name', $data['package_name']);
+        $this->db->bind(':description', $data['description']);
+        $this->db->bind(':number_of_officers', $data['number_of_officers']);
+        $this->db->bind(':number_of_supervisors', $data['number_of_supervisors']);
+        $this->db->bind(':number_of_caretakers', $data['number_of_caretakers']);
+        $this->db->bind(':package_price', $data['package_price']);
+        $this->db->bind(':price_per_officer', $data['price_per_officer']);
+        $this->db->bind(':price_per_supervisor', $data['price_per_supervisor']);
+        $this->db->bind(':price_per_caretaker', $data['price_per_caretaker']);
+        $this->db->bind(':background_image', $data['background_image']);
+        $this->db->bind(':status', $data['status']);
+
+        // Execute
+        if ($this->db->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Delete package
+     */
+    public function deletePackage($id) {
+        $this->db->query('DELETE FROM packages WHERE id = :id');
+        $this->db->bind(':id', $id);
+
+        if ($this->db->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Update package status (Active/Inactive)
+     */
+    public function updatePackageStatus($id, $status) {
+        $this->db->query('UPDATE packages SET status = :status WHERE id = :id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':status', $status);
+
+        if ($this->db->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Toggle package status
+     */
+    public function toggleStatus($id, $status) {
+        $this->db->query('UPDATE packages SET status = :status WHERE id = :id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':status', $status);
+
+        if ($this->db->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Check if package name exists (excluding specific ID for updates)
+     */
+    public function packageNameExists($name, $excludeId = null) {
+        if ($excludeId) {
+            $this->db->query('SELECT id FROM packages WHERE package_name = :name AND id != :id');
+            $this->db->bind(':id', $excludeId);
+        } else {
+            $this->db->query('SELECT id FROM packages WHERE package_name = :name');
+        }
+        
+        $this->db->bind(':name', $name);
+        
+        if ($this->db->single()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+}

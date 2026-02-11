@@ -60,6 +60,17 @@ class Client extends Controller {
         $this->view('client/sites/v_sites', $data);
     }
 
+    // Get sites for AJAX request
+    public function getSites() {
+        header('Content-Type: application/json');
+        $client_id = $_SESSION['user_id'];
+        
+        // Get all sites for this client
+        $sites = $this->clientModel->getClientSites($client_id);
+        
+        echo json_encode(['sites' => $sites]);
+    }
+
     // View individual site details
     public function viewSite($site_id = null) {
         if (!$site_id) {
