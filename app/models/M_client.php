@@ -70,8 +70,13 @@ class M_client {
 
     // Package request methods
     public function createPackageRequest($data) {
-        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments) 
-            VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments)');
+        // Map new personnel fields to existing database columns
+        // number_of_officers -> number_of_guards
+        // number_of_supervisors -> day_guards
+        // number_of_caretakers -> night_guards
+        
+        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments, status) 
+            VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments, :status)');
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':package_name', $data['package_name']);
         $this->db->bind(':site_name', $data['site_name']);
@@ -84,11 +89,13 @@ class M_client {
         $this->db->bind(':image_name', $data['image_name'] ?? null);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
-        $this->db->bind(':number_of_guards', $data['number_of_guards']);
-        $this->db->bind(':day_guards', $data['day_guards'] ?? null);
-        $this->db->bind(':night_guards', $data['night_guards'] ?? null);
+        // Map new fields to old columns
+        $this->db->bind(':number_of_guards', $data['number_of_officers'] ?? 0);
+        $this->db->bind(':day_guards', $data['number_of_supervisors'] ?? 0);
+        $this->db->bind(':night_guards', $data['number_of_caretakers'] ?? 0);
         $this->db->bind(':package_price', $data['package_price']);
         $this->db->bind(':comments', $data['comments'] ?? null);
+        $this->db->bind(':status', $data['status'] ?? 'Pending');
         return $this->db->execute();
     }
 
@@ -97,11 +104,62 @@ class M_client {
         $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }
+    
+    public function getPendingPackageRequests($client_id) {
+        // Get pending package requests with mapped personnel fields
+        // Note: Detailed pricing (officer_price, supervisor_price, caretaker_price) requires 
+        // running the migration: dev/add_custom_package_pricing.sql
+        $this->db->query("SELECT pr.id, pr.package_name, pr.site_name, pr.site_address, pr.district, 
+                         pr.number_of_guards as number_of_officers, 
+                         pr.day_guards as number_of_supervisors, 
+                         pr.night_guards as number_of_caretakers, 
+                         pr.package_price, pr.status, pr.submitted_date, pr.start_date, pr.comments,
+                         p.price_per_officer as officer_price,
+                         p.price_per_supervisor as supervisor_price,
+                         p.price_per_caretaker as caretaker_price
+                         FROM package_requests pr
+                         LEFT JOIN packages p ON pr.package_name = p.package_name
+                         WHERE pr.client_id = :client_id AND pr.status = 'Pending' 
+                         ORDER BY pr.submitted_date DESC");
+        $this->db->bind(':client_id', $client_id);
+        return $this->db->resultSet();
+    }
 
     public function deletePackageRequest($id, $client_id) {
-        $this->db->query('DELETE FROM package_requests WHERE id = :id AND client_id = :client_id');
+        // Only allow deletion of pending requests
+        $this->db->query('DELETE FROM package_requests WHERE id = :id AND client_id = :client_id AND status = :status');
         $this->db->bind(':id', $id);
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':status', 'pending');
+        return $this->db->execute();
+    }
+
+    public function getPendingRequestsForSite($siteName, $client_id) {
+        // Get all pending package requests for a specific site by site name
+        $this->db->query('
+            SELECT * FROM package_requests 
+            WHERE site_name = :site_name 
+            AND client_id = :client_id 
+            AND status = :status
+        ');
+        $this->db->bind(':site_name', $siteName);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':status', 'pending');
+        return $this->db->resultSet();
+    }
+
+    public function deletePendingRequestsForSite($siteName, $client_id) {
+        // Delete all pending package requests for a specific site by site name
+        $this->db->query('
+            DELETE FROM package_requests 
+            WHERE site_name = :site_name 
+            AND client_id = :client_id 
+            AND status = :status
+        ');
+        $this->db->bind(':site_name', $siteName);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':status', 'pending');
+        
         return $this->db->execute();
     }
 
@@ -361,6 +419,40 @@ class M_client {
             ORDER BY osa.assignment_start DESC
         ');
         $this->db->bind(':site_id', $site_id);
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get active sites with package information for next payment
+     */
+    public function getActiveSitesWithPackages($client_id) {
+        $this->db->query('
+            SELECT s.id, s.site_name, s.address, s.district,
+                   pr.package_name, pr.package_price,
+                   -- Count actual assigned personnel
+                   (SELECT COUNT(*) FROM officer_site_assignments osa 
+                    WHERE osa.site_id = s.id 
+                    AND osa.status = "Active" 
+                    AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)) as number_of_officers,
+                   (SELECT COUNT(*) FROM officer_site_assignments osa 
+                    WHERE osa.site_id = s.id 
+                    AND osa.status = "Active" 
+                    AND osa.shift_type = "Supervisor") as number_of_supervisors,
+                   (SELECT COUNT(*) FROM caretaker_site_assignments csa 
+                    WHERE csa.site_id = s.id 
+                    AND csa.status = "Active") as number_of_caretakers,
+                   -- Get pricing from packages table, fallback to Custom Package if null
+                   COALESCE(p.price_per_officer, (SELECT price_per_officer FROM packages WHERE package_name = "Custom Package" LIMIT 1), 0) as officer_price,
+                   COALESCE(p.price_per_supervisor, (SELECT price_per_supervisor FROM packages WHERE package_name = "Custom Package" LIMIT 1), 0) as supervisor_price,
+                   COALESCE(p.price_per_caretaker, (SELECT price_per_caretaker FROM packages WHERE package_name = "Custom Package" LIMIT 1), 0) as caretaker_price
+            FROM sites s
+            LEFT JOIN package_requests pr ON s.package_request_id = pr.id
+            LEFT JOIN packages p ON pr.package_name = p.package_name
+            WHERE s.client_id = :client_id
+            AND s.is_draft = 0
+            ORDER BY s.site_name ASC
+        ');
+        $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }
 }

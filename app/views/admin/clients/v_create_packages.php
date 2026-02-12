@@ -509,8 +509,11 @@
                         Monthly Price (LKR)
                         <span class="required">*</span>
                     </label>
-                    <input type="number" id="package_price_input" name="package_price" min="0" step="0.01" placeholder="e.g., 75000" value="<?php echo isset($data['data']['package_price']) ? $data['data']['package_price'] : ''; ?>">
-                    <small>Total monthly price for this package in LKR</small>
+                    <input type="number" id="package_price_input" name="package_price" min="0" step="0.01" placeholder="e.g., 75000" value="<?php echo isset($data['data']['package_price']) ? $data['data']['package_price'] : ''; ?>" readonly>
+                    <small id="price-calc-message" style="color: #2196F3;">
+                        <i class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">info</i>
+                        Price is automatically calculated based on Custom Package unit prices
+                    </small>
                     <?php if (isset($data['data']['package_price_err']) && !empty($data['data']['package_price_err'])): ?>
                         <span style="color: red; font-size: 13px; display: block; margin-top: 4px;"><?php echo $data['data']['package_price_err']; ?></span>
                     <?php endif; ?>
@@ -751,6 +754,8 @@ function togglePackageFields() {
     const pricingFields = document.getElementById('pricing-fields');
     const quantityFields = document.getElementById('quantity-fields');
     const packagePriceSection = document.getElementById('package-price-section');
+    const packagePriceInput = document.getElementById('package_price_input');
+    const priceCalcMessage = document.getElementById('price-calc-message');
     
     if (isCustomPackage) {
         // Show pricing fields, hide quantity fields and package price
@@ -767,6 +772,9 @@ function togglePackageFields() {
         const qtyPrice = document.getElementById('package_price_input');
         if (qtyOfficers) qtyOfficers.required = false;
         if (qtyPrice) qtyPrice.required = false;
+        
+        // Enable price inputs for Custom Package
+        if (packagePriceInput) packagePriceInput.removeAttribute('readonly');
     } else {
         // Show quantity fields and package price, hide pricing fields
         pricingFields.style.display = 'none';
@@ -781,8 +789,53 @@ function togglePackageFields() {
         const qtyOfficers = document.getElementById('number_of_officers_input');
         const qtyPrice = document.getElementById('package_price_input');
         if (qtyOfficers) qtyOfficers.required = true;
-        if (qtyPrice) qtyPrice.required = true;
+        if (qtyPrice) qtyPrice.required = false; // Not required since it's auto-calculated
+        
+        // Make price field readonly for non-custom packages
+        if (packagePriceInput) {
+            packagePriceInput.setAttribute('readonly', 'readonly');
+            packagePriceInput.style.backgroundColor = '#f5f5f5';
+            packagePriceInput.style.cursor = 'not-allowed';
+        }
+        
+        // Show calculation message
+        if (priceCalcMessage) priceCalcMessage.style.display = 'block';
+        
+        // Calculate price immediately
+        calculatePackagePrice();
     }
+}
+
+// Custom Package pricing from PHP
+const customPackagePricing = {
+    pricePerOfficer: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_officer'] : 20000; ?>,
+    pricePerSupervisor: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_supervisor'] : 20000; ?>,
+    pricePerCaretaker: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_caretaker'] : 12000; ?>
+};
+
+// Calculate package price based on quantities and Custom Package unit prices
+function calculatePackagePrice() {
+    const packageName = document.getElementById('package_name').value.trim();
+    const isCustomPackage = (packageName === 'Custom Package');
+    
+    // Only calculate for non-custom packages
+    if (isCustomPackage) return;
+    
+    const numOfficers = parseInt(document.getElementById('number_of_officers_input')?.value || 0);
+    const numSupervisors = parseInt(document.getElementById('number_of_supervisors_input')?.value || 0);
+    const numCaretakers = parseInt(document.getElementById('number_of_caretakers_input')?.value || 0);
+    
+    const totalPrice = (numOfficers * customPackagePricing.pricePerOfficer) +
+                      (numSupervisors * customPackagePricing.pricePerSupervisor) +
+                      (numCaretakers * customPackagePricing.pricePerCaretaker);
+    
+    const priceInput = document.getElementById('package_price_input');
+    if (priceInput) {
+        priceInput.value = totalPrice.toFixed(2);
+    }
+    
+    // Update preview as well
+    updatePreview();
 }
 
 // Add event listeners for real-time preview
@@ -799,9 +852,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const numberCaretakersInput = document.getElementById('number_of_caretakers_input');
     const packagePriceInput = document.getElementById('package_price_input');
     
-    if (numberOfficersInput) numberOfficersInput.addEventListener('input', updatePreview);
-    if (numberSupervisorsInput) numberSupervisorsInput.addEventListener('input', updatePreview);
-    if (numberCaretakersInput) numberCaretakersInput.addEventListener('input', updatePreview);
+    // Add calculation triggers for quantity changes
+    if (numberOfficersInput) {
+        numberOfficersInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
+    if (numberSupervisorsInput) {
+        numberSupervisorsInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
+    if (numberCaretakersInput) {
+        numberCaretakersInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
     if (packagePriceInput) packagePriceInput.addEventListener('input', updatePreview);
     
     // Preview updates - pricing fields
