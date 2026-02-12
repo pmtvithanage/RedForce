@@ -50,7 +50,7 @@ if (isset($_SESSION['user_id'])) {
           <a class="menu-item <?php echo ($data['title'] === 'Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/requests"><span class="icon"></span><span class="material-symbols-outlined">badge</span><span class="label">Requests</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Messages') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/messages"><span class="icon"></span><span class="material-symbols-outlined">mail</span><span class="label">Messages</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Equipment Requests') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/equipmentRequests"><span class="icon"></span><span class="material-symbols-outlined">inventory</span><span class="label">Equipment Requests</span></a>
-          <a class="menu-item <?php echo ($data['title'] === 'View History') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/history"><span class="icon"></span><span class="material-symbols-outlined">history</span><span class="label">View History</span>
+          <a class="menu-item <?php echo ($data['title'] === 'Payments') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/payments"><span class="icon"></span><span class="material-symbols-outlined">payment</span><span class="label">Payments</span></a>
           <a class="menu-item <?php echo ($data['title'] === 'Profile') ? 'is-active' : ''; ?>" href="<?php echo URL_ROOT; ?>/client/profile"><span class="icon"></span><span class="material-symbols-outlined">person</span><span class="label">Profile</span></a>
           
         </nav>
