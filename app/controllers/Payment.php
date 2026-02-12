@@ -1,6 +1,6 @@
 <?php
-// app/controllers/PaymentController.php
-class PaymentController extends Controller {
+// app/controllers/Payment.php
+class Payment extends Controller {
     private $payHereModel;
 
     public function __construct() {
