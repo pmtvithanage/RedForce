@@ -113,7 +113,7 @@ class M_client {
                          pr.number_of_guards as number_of_officers, 
                          pr.day_guards as number_of_supervisors, 
                          pr.night_guards as number_of_caretakers, 
-                         pr.package_price, pr.status, pr.submitted_date, pr.start_date,
+                         pr.package_price, pr.status, pr.submitted_date, pr.start_date, pr.comments,
                          p.price_per_officer as officer_price,
                          p.price_per_supervisor as supervisor_price,
                          p.price_per_caretaker as caretaker_price
@@ -131,6 +131,35 @@ class M_client {
         $this->db->bind(':id', $id);
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':status', 'pending');
+        return $this->db->execute();
+    }
+
+    public function getPendingRequestsForSite($siteName, $client_id) {
+        // Get all pending package requests for a specific site by site name
+        $this->db->query('
+            SELECT * FROM package_requests 
+            WHERE site_name = :site_name 
+            AND client_id = :client_id 
+            AND status = :status
+        ');
+        $this->db->bind(':site_name', $siteName);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':status', 'pending');
+        return $this->db->resultSet();
+    }
+
+    public function deletePendingRequestsForSite($siteName, $client_id) {
+        // Delete all pending package requests for a specific site by site name
+        $this->db->query('
+            DELETE FROM package_requests 
+            WHERE site_name = :site_name 
+            AND client_id = :client_id 
+            AND status = :status
+        ');
+        $this->db->bind(':site_name', $siteName);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':status', 'pending');
+        
         return $this->db->execute();
     }
 

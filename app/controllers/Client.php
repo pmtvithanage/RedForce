@@ -548,8 +548,17 @@ class Client extends Controller {
                     'number_of_caretakers' => (int)($_POST['number_of_caretakers'] ?? 0),
                     'package_price' => (float)($_POST['package_price'] ?? 0),
                     'site_id' => ($mode === 'existing') ? (int)$_POST['site_id'] : null,
+                    'comments' => ($mode === 'new') ? 'Newly added site' : null,
                     'status' => 'Pending'
                 ];
+
+                // If this is for an existing site, delete any existing pending requests for that site first
+                if ($mode === 'existing' && isset($_POST['site_name'])) {
+                    $siteName = trim($_POST['site_name']);
+                    $clientId = $_SESSION['user_id'];
+                    // Delete existing pending requests for this site by site name
+                    $this->clientModel->deletePendingRequestsForSite($siteName, $clientId);
+                }
 
                 if ($this->clientModel->createPackageRequest($requestData)) {
                     echo json_encode(['success' => true, 'message' => 'Package request submitted successfully!']);
@@ -599,6 +608,26 @@ class Client extends Controller {
             }
         }
         redirect('client/packageHistory');
+    }
+
+    public function getPendingRequestsForSite($siteName) {
+        header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+            exit;
+        }
+        
+        $client_id = $_SESSION['user_id'];
+        
+        // Get pending requests for this specific site by site name
+        $requests = $this->clientModel->getPendingRequestsForSite($siteName, $client_id);
+        
+        echo json_encode([
+            'success' => true,
+            'requests' => $requests
+        ]);
+        exit;
     }
 
     // ==================== EQUIPMENT REQUESTS METHODS ====================
@@ -722,6 +751,11 @@ class Client extends Controller {
 
     // View payments history
     public function payments() {
+        // Prevent caching to ensure fresh data
+        header("Cache-Control: no-cache, no-store, must-revalidate");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+        
         $client_id = $_SESSION['user_id'];
         
         // Load payment model

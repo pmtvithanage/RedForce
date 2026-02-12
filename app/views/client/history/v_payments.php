@@ -893,7 +893,7 @@
                             <span class="material-symbols-outlined">inventory_2</span>
                             <?php echo htmlspecialchars($request->package_name ?? ''); ?>
                         </h4>
-                        <p><strong><?php echo htmlspecialchars($request->site_name ?? ''); ?></strong></p>
+                        <p><strong><?php echo htmlspecialchars($request->site_name ?? ''); ?><?php if (!empty($request->comments)): ?> <span style="color: #4caf50;">(<?php echo htmlspecialchars($request->comments); ?>)</span><?php endif; ?></strong></p>
                         <p><?php echo htmlspecialchars($request->site_address ?? ''); ?></p>
                     </div>
                     <div class="request-status-badge">
@@ -903,37 +903,39 @@
                 </div>
 
                 <div class="request-details">
+                    <?php if ($request->number_of_officers != 0): ?>
                     <div class="request-details-row">
                         <span class="request-details-label">
-                            <span class="material-symbols-outlined">shield_person</span>
+                            <span class="material-symbols-outlined" style="color: <?php echo $request->number_of_officers > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_officers > 0 ? 'add_circle' : 'remove_circle'; ?></span>
                             Security Officers
                         </span>
-                        <span class="request-details-value"><?php echo $request->number_of_officers; ?></span>
-                    </div>
-                    <?php if ($request->number_of_supervisors > 0): ?>
-                    <div class="request-details-row">
-                        <span class="request-details-label">
-                            <span class="material-symbols-outlined">supervisor_account</span>
-                            Supervisors
-                        </span>
-                        <span class="request-details-value"><?php echo $request->number_of_supervisors; ?></span>
+                        <span class="request-details-value" style="color: <?php echo $request->number_of_officers > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_officers > 0 ? '+' : ''; ?><?php echo $request->number_of_officers; ?></span>
                     </div>
                     <?php endif; ?>
-                    <?php if ($request->number_of_caretakers > 0): ?>
+                    <?php if ($request->number_of_supervisors != 0): ?>
                     <div class="request-details-row">
                         <span class="request-details-label">
-                            <span class="material-symbols-outlined">person</span>
+                            <span class="material-symbols-outlined" style="color: <?php echo $request->number_of_supervisors > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_supervisors > 0 ? 'add_circle' : 'remove_circle'; ?></span>
+                            Supervisors
+                        </span>
+                        <span class="request-details-value" style="color: <?php echo $request->number_of_supervisors > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_supervisors > 0 ? '+' : ''; ?><?php echo $request->number_of_supervisors; ?></span>
+                    </div>
+                    <?php endif; ?>
+                    <?php if ($request->number_of_caretakers != 0): ?>
+                    <div class="request-details-row">
+                        <span class="request-details-label">
+                            <span class="material-symbols-outlined" style="color: <?php echo $request->number_of_caretakers > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_caretakers > 0 ? 'add_circle' : 'remove_circle'; ?></span>
                             Caretakers
                         </span>
-                        <span class="request-details-value"><?php echo $request->number_of_caretakers; ?></span>
+                        <span class="request-details-value" style="color: <?php echo $request->number_of_caretakers > 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->number_of_caretakers > 0 ? '+' : ''; ?><?php echo $request->number_of_caretakers; ?></span>
                     </div>
                     <?php endif; ?>
                     <div class="request-details-row">
                         <span class="request-details-label">
                             <span class="material-symbols-outlined">payments</span>
-                            Monthly Package Price
+                            Monthly Cost Change
                         </span>
-                        <span class="request-details-value request-price">LKR <?php echo number_format($request->package_price, 2); ?></span>
+                        <span class="request-details-value request-price" style="color: <?php echo $request->package_price >= 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->package_price > 0 ? '+' : ''; ?>LKR <?php echo number_format($request->package_price, 2); ?></span>
                     </div>
                 </div>
 
@@ -1126,12 +1128,12 @@
                             <div class="invoice-value" style="color: #4caf50;">LKR <?php echo number_format($existingCost, 2); ?></div>
                         </div>
 
-                        <!-- Pending Additions if any -->
+                        <!-- Pending Changes if any -->
                         <?php if (!empty($sitePendingRequests)): ?>
                             <!-- Pending Section Header -->
                             <div style="font-size: 12px; font-weight: 700; color: #ff9800; margin: 16px 0 8px 0; display: flex; align-items: center; gap: 6px;">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span>
-                                Pending Additions
+                                Pending Changes
                             </div>
                             
                             <?php 
@@ -1141,58 +1143,58 @@
                             ?>
                                 <?php if ($hasPendingDetailedPricing): ?>
                                     <!-- Detailed breakdown for pending request -->
-                                    <?php if ($pending->number_of_officers > 0): ?>
+                                    <?php if ($pending->number_of_officers != 0): ?>
                                     <div class="invoice-row">
                                         <div class="invoice-label" style="padding-left: 22px;">
-                                            <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">badge</span>
-                                            +<?php echo $pending->number_of_officers; ?> Officer<?php echo $pending->number_of_officers > 1 ? 's' : ''; ?>
+                                            <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_officers > 0 ? 'badge' : 'remove_circle'; ?></span>
+                                            <?php echo $pending->number_of_officers > 0 ? '+' : ''; ?><?php echo $pending->number_of_officers; ?> Officer<?php echo abs($pending->number_of_officers) > 1 ? 's' : ''; ?>
                                             <?php if (isset($pending->officer_price) && $pending->officer_price > 0): ?>
                                                 × LKR <?php echo number_format($pending->officer_price, 0); ?>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="invoice-value" style="color: #ff9800;">
-                                            LKR <?php 
+                                        <div class="invoice-value" style="color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                            <?php 
                                                 $cost = isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0;
                                                 $pendingItemsTotal += $cost;
-                                                echo number_format($cost, 2); 
+                                                echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                             ?>
                                         </div>
                                     </div>
                                     <?php endif; ?>
                                     
-                                    <?php if ($pending->number_of_supervisors > 0): ?>
+                                    <?php if ($pending->number_of_supervisors != 0): ?>
                                     <div class="invoice-row">
                                         <div class="invoice-label" style="padding-left: 22px;">
-                                            <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">shield_person</span>
-                                            +<?php echo $pending->number_of_supervisors; ?> Supervisor<?php echo $pending->number_of_supervisors > 1 ? 's' : ''; ?>
+                                            <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_supervisors > 0 ? 'shield_person' : 'remove_circle'; ?></span>
+                                            <?php echo $pending->number_of_supervisors > 0 ? '+' : ''; ?><?php echo $pending->number_of_supervisors; ?> Supervisor<?php echo abs($pending->number_of_supervisors) > 1 ? 's' : ''; ?>
                                             <?php if (isset($pending->supervisor_price) && $pending->supervisor_price > 0): ?>
                                                 × LKR <?php echo number_format($pending->supervisor_price, 0); ?>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="invoice-value" style="color: #ff9800;">
-                                            LKR <?php 
+                                        <div class="invoice-value" style="color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                            <?php 
                                                 $cost = isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0;
                                                 $pendingItemsTotal += $cost;
-                                                echo number_format($cost, 2); 
+                                                echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                             ?>
                                         </div>
                                     </div>
                                     <?php endif; ?>
                                     
-                                    <?php if ($pending->number_of_caretakers > 0): ?>
+                                    <?php if ($pending->number_of_caretakers != 0): ?>
                                     <div class="invoice-row">
                                         <div class="invoice-label" style="padding-left: 22px;">
-                                            <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">supervised_user_circle</span>
-                                            +<?php echo $pending->number_of_caretakers; ?> Caretaker<?php echo $pending->number_of_caretakers > 1 ? 's' : ''; ?>
+                                            <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_caretakers > 0 ? 'supervised_user_circle' : 'remove_circle'; ?></span>
+                                            <?php echo $pending->number_of_caretakers > 0 ? '+' : ''; ?><?php echo $pending->number_of_caretakers; ?> Caretaker<?php echo abs($pending->number_of_caretakers) > 1 ? 's' : ''; ?>
                                             <?php if (isset($pending->caretaker_price) && $pending->caretaker_price > 0): ?>
                                                 × LKR <?php echo number_format($pending->caretaker_price, 0); ?>
                                             <?php endif; ?>
                                         </div>
-                                        <div class="invoice-value" style="color: #ff9800;">
-                                            LKR <?php 
+                                        <div class="invoice-value" style="color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                            <?php 
                                                 $cost = isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0;
                                                 $pendingItemsTotal += $cost;
-                                                echo number_format($cost, 2); 
+                                                echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                             ?>
                                         </div>
                                     </div>
@@ -1207,36 +1209,36 @@
                                                 <div style="font-size: 11px; color: #999;">
                                                     <?php 
                                                     $parts = [];
-                                                    if ($pending->number_of_officers > 0) $parts[] = '+' . $pending->number_of_officers . ' Officer' . ($pending->number_of_officers > 1 ? 's' : '');
-                                                    if ($pending->number_of_supervisors > 0) $parts[] = '+' . $pending->number_of_supervisors . ' Supervisor' . ($pending->number_of_supervisors > 1 ? 's' : '');
-                                                    if ($pending->number_of_caretakers > 0) $parts[] = '+' . $pending->number_of_caretakers . ' Caretaker' . ($pending->number_of_caretakers > 1 ? 's' : '');
+                                                    if ($pending->number_of_officers != 0) $parts[] = ($pending->number_of_officers > 0 ? '+' : '') . $pending->number_of_officers . ' Officer' . (abs($pending->number_of_officers) > 1 ? 's' : '');
+                                                    if ($pending->number_of_supervisors != 0) $parts[] = ($pending->number_of_supervisors > 0 ? '+' : '') . $pending->number_of_supervisors . ' Supervisor' . (abs($pending->number_of_supervisors) > 1 ? 's' : '');
+                                                    if ($pending->number_of_caretakers != 0) $parts[] = ($pending->number_of_caretakers > 0 ? '+' : '') . $pending->number_of_caretakers . ' Caretaker' . (abs($pending->number_of_caretakers) > 1 ? 's' : '');
                                                     echo implode(', ', $parts);
                                                     ?>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="invoice-value" style="color: #ff9800;">
-                                            LKR <?php 
+                                        <div class="invoice-value" style="color: <?php echo ($pending->package_price ?? 0) >= 0 ? '#ff9800' : '#c62828'; ?>;">
+                                            <?php 
                                                 $cost = $pending->package_price ?? 0;
                                                 $pendingItemsTotal += $cost;
-                                                echo number_format($cost, 2); 
+                                                echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                             ?>
                                         </div>
                                     </div>
                                 <?php endif; ?>
                             <?php endforeach; ?>
                             
-                            <!-- Pending Additions Total -->
-                            <div class="invoice-row" style="background: #fff3e0; margin: 8px -16px 8px; padding: 10px 16px; font-weight: 600;">
-                                <div class="invoice-label">Pending Additions Total</div>
-                                <div class="invoice-value" style="color: #ff9800;">LKR <?php echo number_format($pendingItemsTotal, 2); ?></div>
+                            <!-- Pending Changes Total -->
+                            <div class="invoice-row" style="background: <?php echo $pendingItemsTotal >= 0 ? '#fff3e0' : '#ffebee'; ?>; margin: 8px -16px 8px; padding: 10px 16px; font-weight: 600;">
+                                <div class="invoice-label">Pending Changes Total</div>
+                                <div class="invoice-value" style="color: <?php echo $pendingItemsTotal >= 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo ($pendingItemsTotal > 0 ? '+' : ''); ?>LKR <?php echo number_format($pendingItemsTotal, 2); ?></div>
                             </div>
                         <?php endif; ?>
 
                         <!-- Subtotal -->
-                        <div class="invoice-subtotal">
+                        <div class="invoice-subtotal" style="background: <?php echo $siteSubtotal >= 0 ? '#f8f9fa' : '#ffebee'; ?>;">
                             <span class="invoice-subtotal-label">Site Subtotal:</span>
-                            <span class="invoice-subtotal-value">LKR <?php echo number_format($siteSubtotal, 2); ?></span>
+                            <span class="invoice-subtotal-value" style="color: <?php echo $siteSubtotal >= 0 ? 'var(--accent)' : '#c62828'; ?>;"><?php echo ($siteSubtotal > 0 ? '+' : ''); ?>LKR <?php echo number_format($siteSubtotal, 2); ?></span>
                         </div>
                     </div>
                 </div>
@@ -1260,7 +1262,7 @@
                             <span class="material-symbols-outlined">add_location</span>
                         </div>
                         <div class="site-details">
-                            <h4><?php echo htmlspecialchars($firstRequest->site_name ?? ''); ?> <span style="font-size: 12px; color: #ff9800; font-weight: 600;">(New)</span></h4>
+                            <h4><?php echo htmlspecialchars($firstRequest->site_name ?? ''); ?> <?php if (!empty($firstRequest->comments)): ?><span style="font-size: 12px; color: #4caf50; font-weight: 600;">(<?php echo htmlspecialchars($firstRequest->comments); ?>)</span><?php else: ?><span style="font-size: 12px; color: #ff9800; font-weight: 600;">(New)</span><?php endif; ?></h4>
                             <p><?php echo htmlspecialchars($firstRequest->site_address ?? ''); ?></p>
                         </div>
                     </div>
@@ -1276,58 +1278,58 @@
                         ?>
                             <?php if ($hasPendingDetailedPricing): ?>
                                 <!-- Detailed breakdown for pending request -->
-                                <?php if ($pending->number_of_officers > 0): ?>
+                                <?php if ($pending->number_of_officers != 0): ?>
                                 <div class="invoice-row">
                                     <div class="invoice-label" style="padding-left: 22px;">
-                                        <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">badge</span>
-                                        <?php echo $pending->number_of_officers; ?> Officer<?php echo $pending->number_of_officers > 1 ? 's' : ''; ?>
+                                        <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_officers > 0 ? 'badge' : 'remove_circle'; ?></span>
+                                        <?php echo $pending->number_of_officers > 0 ? '+' : ''; ?><?php echo $pending->number_of_officers; ?> Officer<?php echo abs($pending->number_of_officers) > 1 ? 's' : ''; ?>
                                         <?php if (isset($pending->officer_price) && $pending->officer_price > 0): ?>
                                             × LKR <?php echo number_format($pending->officer_price, 0); ?>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="invoice-value" style="color: #ff9800;">
-                                        LKR <?php 
+                                    <div class="invoice-value" style="color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                        <?php 
                                             $cost = isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0;
                                             $siteSubtotal += $cost;
-                                            echo number_format($cost, 2); 
+                                            echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                         ?>
                                     </div>
                                 </div>
                                 <?php endif; ?>
                                 
-                                <?php if ($pending->number_of_supervisors > 0): ?>
+                                <?php if ($pending->number_of_supervisors != 0): ?>
                                 <div class="invoice-row">
                                     <div class="invoice-label" style="padding-left: 22px;">
-                                        <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">shield_person</span>
-                                        <?php echo $pending->number_of_supervisors; ?> Supervisor<?php echo $pending->number_of_supervisors > 1 ? 's' : ''; ?>
+                                        <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_supervisors > 0 ? 'shield_person' : 'remove_circle'; ?></span>
+                                        <?php echo $pending->number_of_supervisors > 0 ? '+' : ''; ?><?php echo $pending->number_of_supervisors; ?> Supervisor<?php echo abs($pending->number_of_supervisors) > 1 ? 's' : ''; ?>
                                         <?php if (isset($pending->supervisor_price) && $pending->supervisor_price > 0): ?>
                                             × LKR <?php echo number_format($pending->supervisor_price, 0); ?>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="invoice-value" style="color: #ff9800;">
-                                        LKR <?php 
+                                    <div class="invoice-value" style="color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                        <?php 
                                             $cost = isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0;
                                             $siteSubtotal += $cost;
-                                            echo number_format($cost, 2); 
+                                            echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                         ?>
                                     </div>
                                 </div>
                                 <?php endif; ?>
                                 
-                                <?php if ($pending->number_of_caretakers > 0): ?>
+                                <?php if ($pending->number_of_caretakers != 0): ?>
                                 <div class="invoice-row">
                                     <div class="invoice-label" style="padding-left: 22px;">
-                                        <span class="material-symbols-outlined" style="font-size: 16px; color: #ff9800;">supervised_user_circle</span>
-                                        <?php echo $pending->number_of_caretakers; ?> Caretaker<?php echo $pending->number_of_caretakers > 1 ? 's' : ''; ?>
+                                        <span class="material-symbols-outlined" style="font-size: 16px; color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo $pending->number_of_caretakers > 0 ? 'supervised_user_circle' : 'remove_circle'; ?></span>
+                                        <?php echo $pending->number_of_caretakers > 0 ? '+' : ''; ?><?php echo $pending->number_of_caretakers; ?> Caretaker<?php echo abs($pending->number_of_caretakers) > 1 ? 's' : ''; ?>
                                         <?php if (isset($pending->caretaker_price) && $pending->caretaker_price > 0): ?>
                                             × LKR <?php echo number_format($pending->caretaker_price, 0); ?>
                                         <?php endif; ?>
                                     </div>
-                                    <div class="invoice-value" style="color: #ff9800;">
-                                        LKR <?php 
+                                    <div class="invoice-value" style="color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;">
+                                        <?php 
                                             $cost = isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0;
                                             $siteSubtotal += $cost;
-                                            echo number_format($cost, 2); 
+                                            echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                         ?>
                                     </div>
                                 </div>
@@ -1342,19 +1344,19 @@
                                             <div style="font-size: 11px; color: #999;">
                                                 <?php 
                                                 $parts = [];
-                                                if ($pending->number_of_officers > 0) $parts[] = $pending->number_of_officers . ' Officer' . ($pending->number_of_officers > 1 ? 's' : '');
-                                                if ($pending->number_of_supervisors > 0) $parts[] = $pending->number_of_supervisors . ' Supervisor' . ($pending->number_of_supervisors > 1 ? 's' : '');
-                                                if ($pending->number_of_caretakers > 0) $parts[] = $pending->number_of_caretakers . ' Caretaker' . ($pending->number_of_caretakers > 1 ? 's' : '');
+                                                if ($pending->number_of_officers != 0) $parts[] = ($pending->number_of_officers > 0 ? '+' : '') . $pending->number_of_officers . ' Officer' . (abs($pending->number_of_officers) > 1 ? 's' : '');
+                                                if ($pending->number_of_supervisors != 0) $parts[] = ($pending->number_of_supervisors > 0 ? '+' : '') . $pending->number_of_supervisors . ' Supervisor' . (abs($pending->number_of_supervisors) > 1 ? 's' : '');
+                                                if ($pending->number_of_caretakers != 0) $parts[] = ($pending->number_of_caretakers > 0 ? '+' : '') . $pending->number_of_caretakers . ' Caretaker' . (abs($pending->number_of_caretakers) > 1 ? 's' : '');
                                                 echo implode(', ', $parts);
                                                 ?>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="invoice-value" style="color: #ff9800;">
-                                        LKR <?php 
+                                    <div class="invoice-value" style="color: <?php echo ($pending->package_price ?? 0) >= 0 ? '#ff9800' : '#c62828'; ?>;">
+                                        <?php 
                                             $cost = $pending->package_price ?? 0;
                                             $siteSubtotal += $cost;
-                                            echo number_format($cost, 2); 
+                                            echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2); 
                                         ?>
                                     </div>
                                 </div>
@@ -1363,9 +1365,9 @@
                         <?php $grandTotal += $siteSubtotal; ?>
 
                         <!-- Subtotal -->
-                        <div class="invoice-subtotal" style="background: #fff9e6;">
+                        <div class="invoice-subtotal" style="background: <?php echo $siteSubtotal >= 0 ? '#fff9e6' : '#ffebee'; ?>;">
                             <span class="invoice-subtotal-label">Site Subtotal:</span>
-                            <span class="invoice-subtotal-value" style="color: #ff9800;">LKR <?php echo number_format($siteSubtotal, 2); ?></span>
+                            <span class="invoice-subtotal-value" style="color: <?php echo $siteSubtotal >= 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo ($siteSubtotal > 0 ? '+' : ''); ?>LKR <?php echo number_format($siteSubtotal, 2); ?></span>
                         </div>
                     </div>
                 </div>
@@ -1373,7 +1375,7 @@
             </div>
 
             <!-- Grand Total -->
-            <div class="total-next-payment">
+            <div class="total-next-payment" style="background: linear-gradient(135deg, <?php echo $grandTotal >= 0 ? 'var(--accent) 0%, var(--accent-light) 100%' : '#c62828 0%, #d32f2f 100%'; ?>);">
                 <div class="total-next-payment-label">
                     <span class="material-symbols-outlined">payment</span>
                     Total Amount Due
@@ -1564,67 +1566,102 @@ function downloadReceipt(paymentId) {
     window.location.href = `<?php echo URL_ROOT; ?>/client/downloadReceipt/${paymentId}`;
 }
 
+function showErrorMessage(message) {
+    // Create error message container if it doesn't exist
+    let errorContainer = document.getElementById('deleteErrorMessage');
+    if (!errorContainer) {
+        errorContainer = document.createElement('div');
+        errorContainer.id = 'deleteErrorMessage';
+        errorContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 400px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+        `;
+        document.body.appendChild(errorContainer);
+    }
+    
+    errorContainer.innerHTML = `
+        <span class="material-symbols-outlined" style="font-size: 24px;">error</span>
+        <span>${message}</span>
+    `;
+    errorContainer.style.display = 'flex';
+    
+    setTimeout(() => {
+        errorContainer.style.display = 'none';
+    }, 5000);
+}
+
 function deletePackageRequest(requestId, siteName) {
-    if (confirm(`Are you sure you want to delete the package request for "${siteName}"?\n\nThis action cannot be undone.`)) {
-        // Show loading state
-        const btn = event.target.closest('.btn-delete-request');
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Deleting...';
-        btn.disabled = true;
-        
-        fetch(`<?php echo URL_ROOT; ?>/client/deletePackageRequest/${requestId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.success) {
-                // Remove the card with animation
-                const card = btn.closest('.request-card');
-                card.style.transition = 'all 0.3s ease';
-                card.style.opacity = '0';
-                card.style.transform = 'scale(0.9)';
+    // Show loading state
+    const btn = event.target.closest('.btn-delete-request');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Deleting...';
+    btn.disabled = true;
+    
+    fetch(`<?php echo URL_ROOT; ?>/client/deletePackageRequest/${requestId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Remove the card with animation
+            const card = btn.closest('.request-card');
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            
+            setTimeout(() => {
+                card.remove();
                 
-                setTimeout(() => {
-                    card.remove();
-                    
-                    // Check if there are any remaining requests
-                    const remainingCards = document.querySelectorAll('.request-card');
-                    if (remainingCards.length === 0) {
-                        // Reload page to hide the section
-                        window.location.reload();
-                    } else {
-                        // Update the badge count
-                        const badge = document.querySelector('.pending-badge');
-                        if (badge) {
-                            const countText = badge.textContent.match(/\d+/);
-                            const newCount = remainingCards.length;
-                            badge.innerHTML = `<span class="material-symbols-outlined">schedule</span>${newCount} Request${newCount > 1 ? 's' : ''}`;
-                        }
+                // Check if there are any remaining requests
+                const remainingCards = document.querySelectorAll('.request-card');
+                if (remainingCards.length === 0) {
+                    // Reload page to hide the section
+                    window.location.reload();
+                } else {
+                    // Update the badge count
+                    const badge = document.querySelector('.pending-badge');
+                    if (badge) {
+                        const countText = badge.textContent.match(/\d+/);
+                        const newCount = remainingCards.length;
+                        badge.innerHTML = `<span class="material-symbols-outlined">schedule</span>${newCount} Request${newCount > 1 ? 's' : ''}`;
                     }
-                }, 300);
-            } else {
-                alert('Error: ' + (data.message || 'Failed to delete request'));
-                btn.innerHTML = originalContent;
-                btn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Failed to delete request: ' + error.message);
+                }
+            }, 300);
+        } else {
+            showErrorMessage('Error: ' + (data.message || 'Failed to delete request'));
             btn.innerHTML = originalContent;
             btn.disabled = false;
-        });
-    }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorMessage('Failed to delete request: ' + error.message);
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    });
 }
 </script>
 
