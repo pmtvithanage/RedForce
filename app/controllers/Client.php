@@ -696,4 +696,95 @@ class Client extends Controller {
             redirect('client/equipmentRequests');
         }
     }
+
+    // View payments history
+    public function payments() {
+        $client_id = $_SESSION['user_id'];
+        
+        // Load payment model
+        $paymentModel = $this->model('M_payment');
+        
+        // Get all payments for this client
+        $payments = $paymentModel->getClientPayments($client_id);
+        
+        // Calculate statistics
+        $totalPaid = 0;
+        $paidCount = 0;
+        $pendingCount = 0;
+        $overdueCount = 0;
+        
+        foreach ($payments as $payment) {
+            $status = strtolower($payment->status ?? 'pending');
+            
+            if ($status === 'paid') {
+                $totalPaid += $payment->amount;
+                $paidCount++;
+            } elseif ($status === 'pending') {
+                $pendingCount++;
+            } elseif ($status === 'overdue') {
+                $overdueCount++;
+            }
+        }
+        
+        $data = [
+            'title' => 'Payments',
+            'pageTitle' => 'Payment History',
+            'payments' => $payments,
+            'total_paid' => $totalPaid,
+            'paid_count' => $paidCount,
+            'pending_count' => $pendingCount,
+            'overdue_count' => $overdueCount
+        ];
+        
+        $this->view('client/history/v_payments', $data);
+    }
+
+    // View individual payment details
+    public function viewPayment($payment_id = null) {
+        if (!$payment_id) {
+            redirect('client/payments');
+        }
+
+        $client_id = $_SESSION['user_id'];
+        $paymentModel = $this->model('M_payment');
+        
+        // Get payment details
+        $payment = $paymentModel->getPaymentDetails($payment_id, $client_id);
+        
+        if (!$payment) {
+            flash('payment_error', 'Payment not found or access denied', 'alert alert-danger');
+            redirect('client/payments');
+        }
+
+        $data = [
+            'title' => 'Payment Details',
+            'pageTitle' => 'Payment Details',
+            'payment' => $payment
+        ];
+        
+        $this->view('client/history/v_payment_details', $data);
+    }
+
+    // Download receipt
+    public function downloadReceipt($payment_id = null) {
+        if (!$payment_id) {
+            redirect('client/payments');
+        }
+
+        $client_id = $_SESSION['user_id'];
+        $paymentModel = $this->model('M_payment');
+        
+        // Get payment details
+        $payment = $paymentModel->getPaymentDetails($payment_id, $client_id);
+        
+        if (!$payment || $payment->status !== 'paid') {
+            flash('payment_error', 'Receipt not available', 'alert alert-danger');
+            redirect('client/payments');
+        }
+
+        // Generate and download receipt (PDF)
+        // This is a placeholder - implement actual PDF generation
+        flash('payment_success', 'Receipt download initiated', 'alert alert-success');
+        redirect('client/payments');
+    }
 }

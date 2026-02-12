@@ -672,6 +672,257 @@ $packages = $packageModel->getAllPackages();
         font-size: 20px;
     }
 
+    /* New Site Form */
+    .new-site-form-container {
+        display: none;
+    }
+
+    .form-step {
+        display: none;
+    }
+
+    .form-step.active {
+        display: block;
+    }
+
+    .site-form-field {
+        margin-bottom: 20px;
+    }
+
+    .site-form-label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #1a1a1a;
+        font-size: 14px;
+    }
+
+    .site-form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+
+    .site-form-input:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(164, 0, 0, 0.1);
+    }
+
+    .site-photo-upload {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .site-photo-frame {
+        width: 180px;
+        height: 180px;
+        border: 2px dashed #e0e0e0;
+        border-radius: 12px;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .site-photo-frame:hover {
+        border-color: var(--accent);
+        background-color: #fff;
+    }
+
+    .site-photo-frame img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .btn-add-photo {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .btn-add-photo:hover {
+        background: var(--accent-light);
+        transform: translateY(-1px);
+    }
+
+    .btn-remove-photo {
+        background: #666;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-remove-photo:hover {
+        background: #555;
+    }
+
+    .form-navigation {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+    }
+
+    .btn-form-nav {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-form-next,
+    .btn-form-submit {
+        background: var(--accent);
+        color: white;
+        margin-left: auto;
+    }
+
+    .btn-form-next:hover,
+    .btn-form-submit:hover {
+        background: var(--accent-light);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(164, 0, 0, 0.3);
+    }
+
+    .btn-form-prev {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    .btn-form-prev:hover {
+        background: #e0e0e0;
+    }
+
+    .site-map-container {
+        margin-top: 20px;
+    }
+
+    .site-map-instructions {
+        color: #666;
+        font-size: 13px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        border-left: 3px solid var(--accent);
+    }
+
+    #siteMap {
+        width: 100%;
+        height: 350px;
+        border-radius: 8px;
+        border: 2px solid #e0e0e0;
+        margin-top: 10px;
+    }
+
+    .step-indicator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .step-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #999;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .step-number {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e0e0e0;
+        color: #666;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        transition: all 0.3s ease;
+    }
+
+    .step-item.active {
+        color: var(--accent);
+    }
+
+    .step-item.active .step-number {
+        background: var(--accent);
+        color: white;
+    }
+
+    .step-item.completed .step-number {
+        background: #4caf50;
+        color: white;
+    }
+
+    .step-divider {
+        width: 40px;
+        height: 2px;
+        background: #e0e0e0;
+    }
+
+    .error-message {
+        display: none;
+        background: #fff5f5;
+        border-left: 3px solid #ff5252;
+        padding: 12px 16px;
+        margin: 16px 0;
+        border-radius: 6px;
+        color: #c41e1e;
+        font-size: 14px;
+        font-weight: 500;
+        animation: slideDown 0.3s ease;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
     @media (max-width: 1024px) {
         .requests-container {
             grid-template-columns: 1fr;
@@ -796,8 +1047,14 @@ $packages = $packageModel->getAllPackages();
                         <div class="package-item" 
                              data-package="<?php echo htmlspecialchars($packageSlug); ?>" 
                              data-package-id="<?php echo $package->id; ?>"
+                             data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
                              data-price="<?php echo $package->package_price; ?>" 
                              data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
+                             <?php if ($isCustomPackage): ?>
+                             data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
+                             data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
+                             data-price-caretaker="<?php echo $package->price_per_caretaker ?? 0; ?>"
+                             <?php endif; ?>
                              <?php if (!empty($package->background_image)): ?>
                                 style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?php echo URL_ROOT; ?>/uploads/packages/<?php echo $package->background_image; ?>'); background-size: cover; background-position: center;"
                              <?php endif; ?>>
@@ -942,6 +1199,28 @@ $packages = $packageModel->getAllPackages();
                         </div>
                     </div>
 
+                    <!-- Supervisors Counter -->
+                    <div class="assignment-counter">
+                        <div class="counter-header">
+                            <div class="counter-icon">
+                                <span class="material-symbols-outlined">shield_person</span>
+                            </div>
+                            <div class="counter-info">
+                                <h4>Supervisors</h4>
+                                <p id="supervisorRequirement">Required: 1 supervisor per 5 officers</p>
+                            </div>
+                        </div>
+                        <div class="counter-controls">
+                            <button class="counter-btn" onclick="decrementSupervisors()" id="decrementSupervisorsBtn">
+                                <span class="material-symbols-outlined">remove</span>
+                            </button>
+                            <div class="counter-value" id="supervisorsCount">0</div>
+                            <button class="counter-btn" onclick="incrementSupervisors()">
+                                <span class="material-symbols-outlined">add</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Caretakers Counter -->
                     <div class="assignment-counter">
                         <div class="counter-header">
@@ -964,9 +1243,249 @@ $packages = $packageModel->getAllPackages();
                         </div>
                     </div>
 
+                    <!-- Pricing Summary -->
+                    <div class="assignment-counter" id="pricingSummary" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); border-color: var(--accent);">
+                        <div class="counter-header">
+                            <div class="counter-icon">
+                                <span class="material-symbols-outlined">receipt_long</span>
+                            </div>
+                            <div class="counter-info">
+                                <h4>Monthly Cost Summary</h4>
+                                <p>Total amount to be paid</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; padding: 12px; background: white; border-radius: 8px;">
+                            <div id="priceBreakdown" style="font-size: 14px; color: #666; line-height: 1.8;"></div>
+                            <div style="margin-top: 12px; padding-top: 12px; border-top: 2px solid var(--accent); display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 700; font-size: 16px; color: #1a1a1a;">Total Amount:</span>
+                                <span id="totalAmount" style="font-weight: 700; font-size: 24px; color: var(--accent);">LKR 0</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <button class="btn-submit-assignment" onclick="submitAssignment()">
                         <span class="material-symbols-outlined">check_circle</span>
                         Proceed
+                    </button>
+                </div>
+
+                <!-- New Site Form -->
+                <div id="newSiteFormContainer" class="new-site-form-container">
+                    <div class="sites-list-header">
+                        <h3>Create New Site</h3>
+                        <button class="btn-back" onclick="backToOptionsFromNewSite()">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back
+                        </button>
+                    </div>
+
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step-item active" id="step1Indicator">
+                            <div class="step-number">1</div>
+                            <span>Site Details</span>
+                        </div>
+                        <div class="step-divider"></div>
+                        <div class="step-item" id="step2Indicator">
+                            <div class="step-number">2</div>
+                            <span>Location</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Site Details -->
+                    <div class="form-step active" id="step1">
+                        <!-- Error Message Container -->
+                        <span class="error-message" id="step1ErrorMessage"></span>
+                        
+                        <!-- Photo Upload -->
+                        <div class="site-photo-upload">
+                            <label class="site-form-label" style="text-align: center; margin-bottom: 10px;">Site Photo *</label>
+                            <div class="site-photo-frame" id="sitePhotoFrame">
+                                <img src="<?php echo URL_ROOT; ?>/img/photo.png" 
+                                     alt="Site image" 
+                                     id="siteImagePreview" />
+                            </div>
+                            <button type="button" class="btn-add-photo" id="addSitePhotoBtn" onclick="document.getElementById('siteImageInput').click()">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">add_photo_alternate</span>
+                                Add Image
+                            </button>
+                            <button type="button" class="btn-remove-photo" id="removeSitePhotoBtn" style="display: none;" onclick="removeSiteImage()">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">delete</span>
+                                Remove
+                            </button>
+                            <input type="file" id="siteImageInput" accept="image/*" style="display: none;" />
+                            <small style="color: #666; font-size: 12px; margin-top: 10px; display: block; text-align: center;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">photo_camera</span>
+                                Upload a clear photo of the site (JPG, JPEG, or PNG)
+                            </small>
+                        </div>
+
+                        <!-- Site Name -->
+                        <div class="site-form-field">
+                            <label class="site-form-label">Site Name *</label>
+                            <input type="text" 
+                                   class="site-form-input" 
+                                   id="newSiteName" 
+                                   placeholder="Enter site name" 
+                                   required />
+                        </div>
+
+                        <!-- District -->
+                        <div class="site-form-field">
+                            <label class="site-form-label">District *</label>
+                            <input type="text" 
+                                   class="site-form-input" 
+                                   id="district" 
+                                   name="district"
+                                   placeholder="Enter district" 
+                                   required />
+                        </div>
+
+                        <!-- City -->
+                        <div class="site-form-field" id="city-field" style="display: none;">
+                            <label class="site-form-label">City</label>
+                            <input type="text" 
+                                   class="site-form-input" 
+                                   id="city" 
+                                   name="city"
+                                   placeholder="Enter city" />
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="site-form-field">
+                            <label class="site-form-label">Phone Number *</label>
+                            <input type="tel" 
+                                   class="site-form-input" 
+                                   id="newSitePhone" 
+                                   placeholder="Enter 10 digit phone number" 
+                                   maxlength="10"
+                                   pattern="[0-9]{10}"
+                                   required />
+                            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">phone</span>
+                                Enter 10 digits only (e.g., 0771234567)
+                            </small>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="form-navigation">
+                            <button type="button" class="btn-form-nav btn-form-next" onclick="goToStep2()">
+                                Next
+                                <span class="material-symbols-outlined">arrow_forward</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Location -->
+                    <div class="form-step" id="step2">
+                        <!-- Error Message Container -->
+                        <span class="error-message" id="step2ErrorMessage"></span>
+                        
+                        <div class="site-map-container">
+                            <div class="site-map-instructions">
+                                <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">location_on</span>
+                                Search for a location below or click on the map to pin the exact site location. The address will be automatically detected.
+                            </div>
+                            
+                            <!-- Location Search Box -->
+                            <div class="location-search-box" style="margin-bottom: 15px; position: relative;">
+                                <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 20px; pointer-events: none;">search</span>
+                                <input type="text" 
+                                       id="newSiteLocationSearch" 
+                                       placeholder="Search for places, addresses, or landmarks..." 
+                                       autocomplete="off"
+                                       style="width: 100%; padding: 12px 45px 12px 40px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease;">
+                            </div>
+                            
+                            <div id="siteMap"></div>
+                            <input type="hidden" id="newSiteLatitude" />
+                            <input type="hidden" id="newSiteLongitude" />
+                        </div>
+
+                        <!-- Location Address -->
+                        <div class="site-form-field" style="margin-top: 20px;">
+                            <label class="site-form-label">Location Address *</label>
+                            <input type="text" 
+                                   class="site-form-input" 
+                                   id="newSiteAddress" 
+                                   placeholder="Search location above or click on map - address will auto-fill" 
+                                   required />
+                            <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">location_on</span>
+                                The address is automatically detected from the map location. You can edit it if needed.
+                            </small>
+                        </div>
+
+                        <!-- Navigation -->
+                        <div class="form-navigation">
+                            <button type="button" class="btn-form-nav btn-form-prev" onclick="goToStep1()">
+                                <span class="material-symbols-outlined">arrow_back</span>
+                                Back
+                            </button>
+                            <button type="button" class="btn-form-nav btn-form-submit" onclick="submitNewSiteWithPackage()">
+                                <span class="material-symbols-outlined">check_circle</span>
+                                Create Site & Continue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Confirmation (for non-custom packages) -->
+                <div id="packageConfirmationContainer" class="assignment-form-container" style="display: none;">
+                    <div class="sites-list-header">
+                        <h3>Confirm Your Request</h3>
+                        <button class="btn-back" onclick="backFromConfirmation()">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            Back
+                        </button>
+                    </div>
+
+                    <!-- Package Summary -->
+                    <div class="assignment-counter" style="background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%); border-color: var(--accent);">
+                        <div class="counter-header">
+                            <div class="counter-icon">
+                                <span class="material-symbols-outlined">inventory_2</span>
+                            </div>
+                            <div class="counter-info">
+                                <h4 id="confirmPackageName">Package Name</h4>
+                                <p id="confirmPackageDetails">Package details</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Site Information -->
+                    <div class="assignment-counter">
+                        <div class="counter-header">
+                            <div class="counter-icon">
+                                <span class="material-symbols-outlined">location_on</span>
+                            </div>
+                            <div class="counter-info">
+                                <h4 id="confirmSiteName">Site Name</h4>
+                                <p id="confirmSiteAddress">Site address</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div class="assignment-counter" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%); border-color: var(--accent);">
+                        <div class="counter-header">
+                            <div class="counter-icon">
+                                <span class="material-symbols-outlined">payments</span>
+                            </div>
+                            <div class="counter-info">
+                                <h4>Monthly Cost</h4>
+                                <p>Total amount to be paid</p>
+                            </div>
+                        </div>
+                        <div style="margin-top: 16px; padding: 20px; background: white; border-radius: 8px; text-align: center;">
+                            <div id="confirmPrice" style="font-weight: 700; font-size: 32px; color: var(--accent);">LKR 0</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 8px;">per month</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-submit-assignment" onclick="proceedWithPackage()">
+                        <span class="material-symbols-outlined">check_circle</span>
+                        Proceed with Request
                     </button>
                 </div>
             </div>
@@ -1145,6 +1664,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             selectedPackage = {
                 name: this.dataset.package,
+                fullName: this.dataset.packageName,
                 price: this.dataset.price,
                 officers: this.dataset.officers
             };
@@ -1164,6 +1684,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const optionCards = document.getElementById('optionCards');
             const headerTitle = document.getElementById('formHeaderTitle');
             const headerDesc = document.getElementById('formHeaderDesc');
+            const createNewSiteCard = document.getElementById('createNewSite');
             
             if (emptyState && optionCards) {
                 emptyState.style.display = 'none';
@@ -1173,6 +1694,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 const packageName = this.querySelector('.package-name').textContent;
                 headerTitle.textContent = packageName;
                 headerDesc.textContent = 'Choose your deployment option';
+                
+                // Hide "Create New Site" button for packages with "extra" in the name
+                if (createNewSiteCard) {
+                    const packageFullName = selectedPackage.fullName || '';
+                    if (packageFullName.toLowerCase().includes('extra')) {
+                        createNewSiteCard.style.display = 'none';
+                    } else {
+                        createNewSiteCard.style.display = 'block';
+                    }
+                }
             }
         });
     });
@@ -1216,10 +1747,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const optionCards = document.getElementById('optionCards');
         const sitesListContainer = document.getElementById('sitesListContainer');
         const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+        const createNewSiteCard = document.getElementById('createNewSite');
         
         optionCards.style.display = 'grid';
         sitesListContainer.style.display = 'none';
         assignmentFormContainer.style.display = 'none';
+        packageConfirmationContainer.style.display = 'none';
         
         // Update header
         const headerDesc = document.getElementById('formHeaderDesc');
@@ -1236,30 +1770,115 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
         document.getElementById('packageCarouselIndicators').classList.remove('hidden');
         
+        // Restore Create New Site button visibility based on package type
+        if (createNewSiteCard && selectedPackage) {
+            const packageFullName = selectedPackage.fullName || '';
+            if (packageFullName.toLowerCase().includes('extra')) {
+                createNewSiteCard.style.display = 'none';
+            } else {
+                createNewSiteCard.style.display = 'block';
+            }
+        }
+        
         // Clear selection
         selectedSiteId = null;
+        newSiteData = null;
         document.getElementById('confirmSiteBtn').disabled = true;
     };
 
     // Fetch client sites
     let selectedSiteId = null;
+    let selectedSiteData = null;
     
     // Counter management
     let officersCount = 0;
+    let supervisorsCount = 0;
     let caretakersCount = 0;
+    let pricePerOfficer = 0;
+    let pricePerSupervisor = 0;
+    let pricePerCaretaker = 0;
 
     // Initialize counter displays
     function updateCounterDisplays() {
         document.getElementById('officersCount').textContent = officersCount;
         document.getElementById('caretakersCount').textContent = caretakersCount;
+        document.getElementById('supervisorsCount').textContent = supervisorsCount;
+        
+        // Calculate minimum required supervisors (1 per 5 officers, round up)
+        const minRequiredSupervisors = Math.ceil(officersCount / 5);
+        
+        // Ensure we have at least the minimum required supervisors
+        if (supervisorsCount < minRequiredSupervisors) {
+            supervisorsCount = minRequiredSupervisors;
+            document.getElementById('supervisorsCount').textContent = supervisorsCount;
+        }
+        
+        // Update supervisor requirement text
+        const supervisorReq = document.getElementById('supervisorRequirement');
+        if (supervisorReq) {
+            if (supervisorsCount > minRequiredSupervisors) {
+                supervisorReq.textContent = `Minimum: ${minRequiredSupervisors} (You have ${supervisorsCount - minRequiredSupervisors} extra)`;
+            } else {
+                supervisorReq.textContent = `Required: 1 supervisor per 5 officers (Minimum: ${minRequiredSupervisors})`;
+            }
+        }
         
         // Enable/disable decrement buttons
         document.getElementById('decrementOfficersBtn').disabled = officersCount === 0;
+        document.getElementById('decrementSupervisorsBtn').disabled = supervisorsCount <= minRequiredSupervisors;
         document.getElementById('decrementCaretakersBtn').disabled = caretakersCount === 0;
+        
+        // Update pricing summary
+        updatePricingSummary();
+    }
+    
+    function updatePricingSummary() {
+        const officersCost = officersCount * pricePerOfficer;
+        const supervisorsCost = supervisorsCount * pricePerSupervisor;
+        const caretakersCost = caretakersCount * pricePerCaretaker;
+        const totalCost = officersCost + supervisorsCost + caretakersCost;
+        
+        let breakdownHTML = '';
+        if (officersCount > 0) {
+            breakdownHTML += `<div>${officersCount} Officer${officersCount !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>LKR ${officersCost.toLocaleString()}</strong></div>`;
+        }
+        if (supervisorsCount > 0) {
+            breakdownHTML += `<div>${supervisorsCount} Supervisor${supervisorsCount !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
+        }
+        if (caretakersCount > 0) {
+            breakdownHTML += `<div>${caretakersCount} Caretaker${caretakersCount !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>LKR ${caretakersCost.toLocaleString()}</strong></div>`;
+        }
+        
+        if (breakdownHTML === '') {
+            breakdownHTML = '<div style="color: #999; font-style: italic;">Add personnel to see pricing</div>';
+        }
+        
+        document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
+        document.getElementById('totalAmount').textContent = totalCost > 0 ? `LKR ${totalCost.toLocaleString()}` : 'LKR 0';
     }
 
     // Initialize on page load
     updateCounterDisplays();
+    
+    // Error message helper functions
+    function showErrorMessage(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">warning</span>' + message;
+            errorElement.classList.add('show');
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideErrorMessage(elementId);
+            }, 5000);
+        }
+    }
+    
+    function hideErrorMessage(elementId) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.classList.remove('show');
+        }
+    }
     
     function fetchClientSites() {
         fetch('<?php echo URL_ROOT; ?>/client/getSites')
@@ -1278,8 +1897,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
+    // Store sites data globally
+    let allSites = [];
+    
     function displaySites(sites) {
         const sitesGrid = document.getElementById('sitesGrid');
+        allSites = sites; // Store for later use
         
         if (sites.length === 0) {
             sitesGrid.innerHTML = `
@@ -1323,6 +1946,9 @@ document.addEventListener('DOMContentLoaded', function() {
     window.selectSite = function(siteId) {
         selectedSiteId = siteId;
         
+        // Find and store the selected site's data
+        selectedSiteData = allSites.find(site => site.id == siteId);
+        
         // Update UI
         document.querySelectorAll('.site-card').forEach(card => {
             card.classList.remove('selected');
@@ -1336,7 +1962,22 @@ document.addEventListener('DOMContentLoaded', function() {
     window.confirmSiteSelection = function() {
         if (selectedPackage && selectedSiteId) {
             // Only custom package can add personnel via assignment form
-            if (selectedPackage.name === 'custom') {
+            if (selectedPackage.officers === 'custom') {
+                // Load pricing data for custom package
+                const customPackageItem = document.querySelector('.package-item[data-officers="custom"]');
+                if (customPackageItem) {
+                    pricePerOfficer = parseFloat(customPackageItem.dataset.priceOfficer) || 0;
+                    pricePerSupervisor = parseFloat(customPackageItem.dataset.priceSupervisor) || 0;
+                    pricePerCaretaker = parseFloat(customPackageItem.dataset.priceCaretaker) || 0;
+                }
+                
+                // Initialize counters with existing site personnel
+                if (selectedSiteData) {
+                    officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
+                    supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
+                    caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
+                }
+                
                 // Hide sites list, show assignment form
                 const sitesListContainer = document.getElementById('sitesListContainer');
                 const assignmentFormContainer = document.getElementById('assignmentFormContainer');
@@ -1352,22 +1993,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 headerTitle.textContent = siteName;
                 headerDesc.textContent = 'Choose the number of personnel to assign';
-            } else {
-                // For predefined packages, submit directly with package's officer count
-                const params = new URLSearchParams({
-                    mode: 'existing',
-                    site_id: selectedSiteId,
-                    officers: selectedPackage.officers,
-                    caretakers: 0
-                });
                 
-                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+                // Update display with current values
+                updateCounterDisplays();
+            } else {
+                // For predefined packages, show confirmation page with price
+                showPackageConfirmation(false);
             }
         }
     };
 
     // Back to sites list
     window.backToSitesList = function() {
+        // Check if we came from new site form
+        if (newSiteData) {
+            backToNewSiteForm();
+            return;
+        }
+        
         const sitesListContainer = document.getElementById('sitesListContainer');
         const assignmentFormContainer = document.getElementById('assignmentFormContainer');
         const optionCards = document.getElementById('optionCards');
@@ -1380,6 +2023,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Reset counters
         officersCount = 0;
+        supervisorsCount = 0;
         caretakersCount = 0;
         updateCounterDisplays();
         
@@ -1391,6 +2035,31 @@ document.addEventListener('DOMContentLoaded', function() {
         headerTitle.textContent = packageName;
         headerDesc.textContent = 'Select a site to add personnel';
     };
+    
+    function backToNewSiteForm() {
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+        
+        assignmentFormContainer.style.display = 'none';
+        newSiteFormContainer.style.display = 'block';
+        
+        // Make sure we're on step 2 (where we were)
+        goToStep2();
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+        
+        headerTitle.textContent = packageName;
+        headerDesc.textContent = 'Complete your new site details';
+        
+        // Reset counters
+        officersCount = 0;
+        supervisorsCount = 0;
+        caretakersCount = 0;
+        updateCounterDisplays();
+    }
 
     window.incrementOfficers = function() {
         officersCount++;
@@ -1400,6 +2069,19 @@ document.addEventListener('DOMContentLoaded', function() {
     window.decrementOfficers = function() {
         if (officersCount > 0) {
             officersCount--;
+            updateCounterDisplays();
+        }
+    };
+
+    window.incrementSupervisors = function() {
+        supervisorsCount++;
+        updateCounterDisplays();
+    };
+
+    window.decrementSupervisors = function() {
+        const minRequired = Math.ceil(officersCount / 5);
+        if (supervisorsCount > minRequired) {
+            supervisorsCount--;
             updateCounterDisplays();
         }
     };
@@ -1417,37 +2099,627 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.submitAssignment = function() {
-        if (selectedPackage && selectedSiteId) {
-            // Redirect with all parameters
-            const params = new URLSearchParams({
-                mode: 'existing',
-                site_id: selectedSiteId,
-                officers: officersCount,
-                caretakers: caretakersCount
-            });
-            
-            window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+        // Validate at least some personnel is selected
+        if (officersCount === 0 && caretakersCount === 0) {
+            alert('Please add at least one security officer or caretaker.');
+            return;
+        }
+        
+        if (selectedPackage) {
+            // Check if this is for a new site or existing site
+            if (newSiteData) {
+                // Submit with new site data
+                const formData = new FormData();
+                formData.append('mode', 'new');
+                formData.append('site_name', newSiteData.site_name);
+                formData.append('site_address', newSiteData.site_address);
+                formData.append('district', newSiteData.district);
+                formData.append('city', newSiteData.city);
+                formData.append('phone_number', newSiteData.phone_number);
+                formData.append('latitude', newSiteData.latitude);
+                formData.append('longitude', newSiteData.longitude);
+                formData.append('officers', officersCount);
+                formData.append('supervisors', supervisorsCount);
+                formData.append('caretakers', caretakersCount);
+                
+                if (newSiteData.image) {
+                    formData.append('image', newSiteData.image);
+                }
+                
+                // For now, redirect with URL params (in production, use FormData POST)
+                const params = new URLSearchParams({
+                    mode: 'new',
+                    site_name: newSiteData.site_name,
+                    site_address: newSiteData.site_address,
+                    district: newSiteData.district,
+                    phone_number: newSiteData.phone_number,
+                    latitude: newSiteData.latitude,
+                    longitude: newSiteData.longitude,
+                    officers: officersCount,
+                    supervisors: supervisorsCount,
+                    caretakers: caretakersCount
+                });
+                
+                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+            } else if (selectedSiteId) {
+                // Submit with existing site
+                const params = new URLSearchParams({
+                    mode: 'existing',
+                    site_id: selectedSiteId,
+                    officers: officersCount,
+                    supervisors: supervisorsCount,
+                    caretakers: caretakersCount
+                });
+                
+                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+            }
         }
     };
 
     // Create new site
     createNewSiteBtn.addEventListener('click', function() {
         if (selectedPackage) {
-            // Disable package container before redirect
-            isDeploymentOptionSelected = true;
-            const packagesContainer = document.querySelector('.packages-container');
-            if (packagesContainer) {
-                packagesContainer.classList.add('disabled');
+            // Check if package name contains "extra" - these can only be added to existing sites
+            const packageFullName = selectedPackage.fullName || '';
+            if (packageFullName.toLowerCase().includes('extra')) {
+                alert('This package can only be added to existing sites. Please select "Add to Existing Site".');
+                return;
             }
             
-            // Hide arrow buttons and indicators
-            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
-            document.getElementById('packageCarouselIndicators').classList.add('hidden');
-            
-            // Redirect to new site creation page
-            window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?mode=new`;
+            // For other packages, show new site form
+            showNewSiteForm();
         }
     });
+
+    // New Site Form Functions
+    let siteImageFile = null;
+    let siteMap = null;
+    let siteMarker = null;
+    let newSiteData = null; // Store new site data temporarily
+
+    function showNewSiteForm() {
+        const optionCards = document.getElementById('optionCards');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        
+        // Clear any error messages
+        hideErrorMessage('step1ErrorMessage');
+        hideErrorMessage('step2ErrorMessage');
+        
+        // Clear any previous new site data
+        newSiteData = null;
+        
+        // Disable package container and hide navigation (same as existing site flow)
+        isDeploymentOptionSelected = true;
+        const packagesContainer = document.querySelector('.packages-container');
+        if (packagesContainer) {
+            packagesContainer.classList.add('disabled');
+        }
+        
+        // Hide arrow buttons and indicators
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
+        document.getElementById('packageCarouselIndicators').classList.add('hidden');
+        
+        optionCards.style.display = 'none';
+        newSiteFormContainer.style.display = 'block';
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+        
+        headerTitle.textContent = 'New Site - ' + packageName;
+        headerDesc.textContent = 'Step 1: Enter site details';
+        
+        // Initialize step 1
+        goToStep1();
+    }
+
+    window.backToOptionsFromNewSite = function() {
+        const optionCards = document.getElementById('optionCards');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        const createNewSiteCard = document.getElementById('createNewSite');
+        
+        // Clear any error messages
+        hideErrorMessage('step1ErrorMessage');
+        hideErrorMessage('step2ErrorMessage');
+        
+        newSiteFormContainer.style.display = 'none';
+        optionCards.style.display = 'grid';
+        
+        // Re-enable package container and show navigation (same as backToOptions)
+        isDeploymentOptionSelected = false;
+        const packagesContainer = document.querySelector('.packages-container');
+        if (packagesContainer) {
+            packagesContainer.classList.remove('disabled');
+        }
+        
+        // Show arrow buttons and indicators
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+        document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+        
+        // Restore Create New Site button visibility based on package type
+        if (createNewSiteCard && selectedPackage) {
+            const packageFullName = selectedPackage.fullName || '';
+            if (packageFullName.toLowerCase().includes('extra')) {
+                createNewSiteCard.style.display = 'none';
+            } else {
+                createNewSiteCard.style.display = 'block';
+            }
+        }
+        
+        // Clear new site data
+        newSiteData = null;
+        
+        // Reset form
+        document.getElementById('newSiteName').value = '';
+        document.getElementById('newSiteAddress').value = '';
+        document.getElementById('district').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('newSitePhone').value = '';
+        removeSiteImage();
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+        
+        headerTitle.textContent = packageName;
+        headerDesc.textContent = 'Choose your deployment option';
+    };
+
+    window.goToStep1 = function() {
+        // Hide any error messages when going back
+        hideErrorMessage('step2ErrorMessage');
+        
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step1Indicator').classList.add('active');
+        document.getElementById('step1Indicator').classList.remove('completed');
+        document.getElementById('step2Indicator').classList.remove('active');
+        
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerDesc.textContent = 'Step 1: Enter site details';
+    };
+
+    window.goToStep2 = function() {
+        // Hide any previous error messages
+        hideErrorMessage('step1ErrorMessage');
+        
+        // Validate step 1 fields
+        const siteName = document.getElementById('newSiteName').value.trim();
+        const siteDistrict = document.getElementById('district').value.trim();
+        const siteCity = document.getElementById('city').value.trim();
+        const sitePhone = document.getElementById('newSitePhone').value.trim();
+        const photoFrame = document.getElementById('sitePhotoFrame');
+        
+        // Check if image is uploaded
+        if (!siteImageFile) {
+            showErrorMessage('step1ErrorMessage', 'Please upload a site image');
+            // Highlight the photo frame
+            photoFrame.style.borderColor = '#ff9800';
+            photoFrame.style.borderWidth = '3px';
+            setTimeout(() => {
+                photoFrame.style.borderColor = '#e0e0e0';
+                photoFrame.style.borderWidth = '2px';
+            }, 3000);
+            return;
+        }
+        
+        if (!siteName || !siteDistrict || !sitePhone) {
+            showErrorMessage('step1ErrorMessage', 'Please fill in all required fields (Site Name, District, and Phone Number)');
+            return;
+        }
+        
+        // Validate phone number format
+        if (!/^[0-9]{10}$/.test(sitePhone)) {
+            showErrorMessage('step1ErrorMessage', 'Phone number must be exactly 10 digits (numbers only)');
+            return;
+        }
+        
+        // Validate city if city field is visible
+        const cityField = document.getElementById('city-field');
+        if (cityField && cityField.style.display !== 'none' && !siteCity) {
+            showErrorMessage('step1ErrorMessage', 'Please enter the city');
+            return;
+        }
+        
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('step1Indicator').classList.remove('active');
+        document.getElementById('step1Indicator').classList.add('completed');
+        document.getElementById('step2Indicator').classList.add('active');
+        
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerDesc.textContent = 'Step 2: Select location on map';
+        
+        // Initialize map if not already done
+        if (!siteMap) {
+            initSiteMap();
+        }
+    };
+
+    // Package Confirmation Functions (for non-custom packages)
+    function showPackageConfirmation(isNewSite) {
+        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+        const sitesListContainer = document.getElementById('sitesListContainer');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        
+        // Hide previous containers
+        sitesListContainer.style.display = 'none';
+        newSiteFormContainer.style.display = 'none';
+        
+        // Show confirmation
+        packageConfirmationContainer.style.display = 'block';
+        
+        // Get package details
+        const selectedItem = document.querySelector('.package-item.selected');
+        const packageName = selectedItem ? selectedItem.querySelector('.package-name').textContent : 'Package';
+        const packageOfficers = selectedItem ? selectedItem.querySelector('.package-officers').textContent : '';
+        const packagePrice = selectedPackage.price;
+        
+        // Update package info
+        document.getElementById('confirmPackageName').textContent = packageName;
+        document.getElementById('confirmPackageDetails').textContent = packageOfficers;
+        document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
+        
+        // Update site info
+        if (isNewSite && newSiteData) {
+            document.getElementById('confirmSiteName').textContent = newSiteData.site_name;
+            document.getElementById('confirmSiteAddress').textContent = newSiteData.site_address;
+        } else if (selectedSiteData) {
+            document.getElementById('confirmSiteName').textContent = selectedSiteData.site_name;
+            document.getElementById('confirmSiteAddress').textContent = selectedSiteData.site_address;
+        }
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerTitle.textContent = 'Review Your Request';
+        headerDesc.textContent = 'Please confirm the details before proceeding';
+    }
+    
+    window.backFromConfirmation = function() {
+        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+        
+        // Check if we came from new site or existing site
+        if (newSiteData) {
+            // Go back to new site form (Step 2)
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+            packageConfirmationContainer.style.display = 'none';
+            newSiteFormContainer.style.display = 'block';
+            goToStep2();
+            
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Package';
+            headerTitle.textContent = 'New Site - ' + packageName;
+            headerDesc.textContent = 'Step 2: Location details';
+        } else {
+            // Go back to sites list
+            const sitesListContainer = document.getElementById('sitesListContainer');
+            packageConfirmationContainer.style.display = 'none';
+            sitesListContainer.style.display = 'block';
+            
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+            headerTitle.textContent = packageName;
+            headerDesc.textContent = 'Select a site to add personnel';
+        }
+    };
+    
+    window.proceedWithPackage = function() {
+        if (selectedPackage) {
+            if (newSiteData) {
+                // Proceed with new site
+                const params = new URLSearchParams({
+                    mode: 'new',
+                    site_name: newSiteData.site_name,
+                    site_address: newSiteData.site_address,
+                    district: newSiteData.district,
+                    phone_number: newSiteData.phone_number,
+                    latitude: newSiteData.latitude,
+                    longitude: newSiteData.longitude,
+                    officers: selectedPackage.officers,
+                    caretakers: 0
+                });
+                
+                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+            } else if (selectedSiteId) {
+                // Proceed with existing site
+                const params = new URLSearchParams({
+                    mode: 'existing',
+                    site_id: selectedSiteId,
+                    officers: selectedPackage.officers,
+                    caretakers: 0
+                });
+                
+                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+            }
+        }
+    };
+
+    function initSiteMap() {
+        const mapElement = document.getElementById('siteMap');
+        if (!mapElement) return;
+        
+        // Default to Colombo, Sri Lanka
+        const defaultLocation = { lat: 6.9271, lng: 79.8612 };
+        
+        siteMap = new google.maps.Map(mapElement, {
+            center: defaultLocation,
+            zoom: 12,
+            mapTypeControl: true,
+            streetViewControl: true,
+            fullscreenControl: true
+        });
+        
+        // Add click listener to place marker
+        siteMap.addListener('click', function(event) {
+            placeMarker(event.latLng);
+        });
+        
+        // Initialize location search box
+        initNewSiteLocationSearch();
+        
+        // Try to get user's current location
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                    siteMap.setCenter(pos);
+                },
+                function() {
+                    console.log('Geolocation service failed or denied');
+                }
+            );
+        }
+    }
+
+    function initNewSiteLocationSearch() {
+        const searchInput = document.getElementById('newSiteLocationSearch');
+        if (!searchInput) return;
+        
+        // Create SearchBox
+        const searchBox = new google.maps.places.SearchBox(searchInput);
+        
+        // Bias the SearchBox results towards current map's viewport
+        siteMap.addListener('bounds_changed', function() {
+            searchBox.setBounds(siteMap.getBounds());
+        });
+        
+        // Listen for when user selects a prediction
+        searchBox.addListener('places_changed', function() {
+            const places = searchBox.getPlaces();
+            
+            if (places.length === 0) {
+                return;
+            }
+            
+            // Get the first place
+            const place = places[0];
+            
+            if (!place.geometry || !place.geometry.location) {
+                console.log('Place has no geometry');
+                return;
+            }
+            
+            // Add marker at the selected location
+            placeMarker(place.geometry.location);
+            
+            // Update address field with the place's formatted address
+            const addressInput = document.getElementById('newSiteAddress');
+            if (place.formatted_address && addressInput) {
+                addressInput.value = place.formatted_address;
+            }
+            
+            // Update site name if empty
+            const siteNameInput = document.getElementById('newSiteName');
+            if (siteNameInput && !siteNameInput.value && place.name) {
+                siteNameInput.value = place.name;
+            }
+            
+            // Adjust map to show the place
+            if (place.geometry.viewport) {
+                siteMap.fitBounds(place.geometry.viewport);
+            } else {
+                siteMap.setCenter(place.geometry.location);
+                siteMap.setZoom(17);
+            }
+            
+            // Clear the search box
+            searchInput.value = '';
+        });
+    }
+
+    function placeMarker(location) {
+        if (siteMarker) {
+            siteMarker.setMap(null);
+        }
+        
+        siteMarker = new google.maps.Marker({
+            position: location,
+            map: siteMap,
+            animation: google.maps.Animation.DROP,
+            draggable: true
+        });
+        
+        document.getElementById('newSiteLatitude').value = location.lat();
+        document.getElementById('newSiteLongitude').value = location.lng();
+        
+        // Reverse geocode to get address
+        getAddressFromLocation(location);
+        
+        siteMarker.addListener('dragend', function(event) {
+            document.getElementById('newSiteLatitude').value = event.latLng.lat();
+            document.getElementById('newSiteLongitude').value = event.latLng.lng();
+            // Update address when marker is dragged
+            getAddressFromLocation(event.latLng);
+        });
+    }
+
+    function getAddressFromLocation(location) {
+        const geocoder = new google.maps.Geocoder();
+        
+        geocoder.geocode({ location: location }, function(results, status) {
+            if (status === 'OK') {
+                if (results[0]) {
+                    // Set the formatted address
+                    document.getElementById('newSiteAddress').value = results[0].formatted_address;
+                } else {
+                    console.log('No address found for this location');
+                    document.getElementById('newSiteAddress').value = 'Address not found';
+                }
+            } else {
+                console.log('Geocoder failed: ' + status);
+                document.getElementById('newSiteAddress').value = 'Unable to retrieve address';
+            }
+        });
+    }
+
+    // Phone number validation - only allow numbers
+    const phoneInput = document.getElementById('newSitePhone');
+    if (phoneInput) {
+        phoneInput.addEventListener('input', function(e) {
+            // Remove any non-digit characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Update visual feedback
+            if (this.value.length === 10) {
+                this.style.borderColor = '#4caf50';
+            } else if (this.value.length > 0) {
+                this.style.borderColor = '#ff9800';
+            } else {
+                this.style.borderColor = '#e0e0e0';
+            }
+        });
+        
+        phoneInput.addEventListener('keypress', function(e) {
+            // Prevent non-numeric input
+            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                e.preventDefault();
+            }
+        });
+    }
+
+    // Site image handling
+    document.getElementById('siteImageInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert('Please select a valid image file (JPG, JPEG, or PNG)');
+                return;
+            }
+            
+            siteImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const photoFrame = document.getElementById('sitePhotoFrame');
+                document.getElementById('siteImagePreview').src = event.target.result;
+                document.getElementById('addSitePhotoBtn').style.display = 'none';
+                document.getElementById('removeSitePhotoBtn').style.display = 'inline-block';
+                
+                // Add green border to indicate image is uploaded
+                photoFrame.style.borderColor = '#4caf50';
+                photoFrame.style.borderStyle = 'solid';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    window.removeSiteImage = function() {
+        siteImageFile = null;
+        const photoFrame = document.getElementById('sitePhotoFrame');
+        document.getElementById('siteImageInput').value = '';
+        document.getElementById('siteImagePreview').src = '<?php echo URL_ROOT; ?>/img/photo.png';
+        document.getElementById('addSitePhotoBtn').style.display = 'inline-block';
+        document.getElementById('removeSitePhotoBtn').style.display = 'none';
+        
+        // Reset border color to default
+        photoFrame.style.borderColor = '#e0e0e0';
+        photoFrame.style.borderStyle = 'dashed';
+    };
+
+    window.submitNewSiteWithPackage = function() {
+        // Hide any previous error messages
+        hideErrorMessage('step2ErrorMessage');
+        
+        const latitude = document.getElementById('newSiteLatitude').value;
+        const longitude = document.getElementById('newSiteLongitude').value;
+        const address = document.getElementById('newSiteAddress').value.trim();
+        
+        // Validate image is uploaded
+        if (!siteImageFile) {
+            showErrorMessage('step2ErrorMessage', 'Site photo is required. Please go back to Step 1 and upload an image.');
+            return;
+        }
+        
+        if (!latitude || !longitude) {
+            showErrorMessage('step2ErrorMessage', 'Please select a location on the map');
+            return;
+        }
+        
+        if (!address) {
+            showErrorMessage('step2ErrorMessage', 'Address is required. Please select a location on the map or enter address manually.');
+            return;
+        }
+        
+        // Store new site data temporarily
+        newSiteData = {
+            site_name: document.getElementById('newSiteName').value,
+            site_address: address,
+            district: document.getElementById('district').value,
+            city: document.getElementById('city').value,
+            phone_number: document.getElementById('newSitePhone').value,
+            latitude: latitude,
+            longitude: longitude,
+            image: siteImageFile
+        };
+        
+        // Check if custom package or regular package
+        if (selectedPackage.officers === 'custom') {
+            // Show assignment form (Add Security Personnel) for custom package
+            showAssignmentFormForNewSite();
+        } else {
+            // Show confirmation page for predefined packages
+            showPackageConfirmation(true);
+        }
+    };
+    
+    function showAssignmentFormForNewSite() {
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+        
+        newSiteFormContainer.style.display = 'none';
+        assignmentFormContainer.style.display = 'block';
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+        
+        headerTitle.textContent = packageName;
+        headerDesc.textContent = 'Add security personnel for new site';
+        
+        // Reset counters to 0
+        officersCount = 0;
+        supervisorsCount = 0;
+        caretakersCount = 0;
+        
+        // Set pricing from selected package
+        const selectedItem = document.querySelector('.package-item.selected');
+        if (selectedItem) {
+            pricePerOfficer = parseFloat(selectedItem.dataset.priceOfficer || 0);
+            pricePerSupervisor = parseFloat(selectedItem.dataset.priceSupervisor || 0);
+            pricePerCaretaker = parseFloat(selectedItem.dataset.priceCaretaker || 0);
+        }
+        
+        updateCounterDisplays();
+    }
 
     // Custom package button
     window.selectCustomPackage = function() {
@@ -1468,12 +2740,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             selectedPackage = {
                 name: customPackageItem.dataset.package,
+                fullName: customPackageItem.dataset.packageName,
                 price: customPackageItem.dataset.price,
                 officers: customPackageItem.dataset.officers
             };
         } else {
             selectedPackage = {
                 name: 'custom',
+                fullName: 'Custom Package',
                 price: '0',
                 officers: 'custom'
             };
@@ -1494,6 +2768,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const optionCards = document.getElementById('optionCards');
         const headerTitle = document.getElementById('formHeaderTitle');
         const headerDesc = document.getElementById('formHeaderDesc');
+        const createNewSiteCard = document.getElementById('createNewSite');
         
         if (emptyState && optionCards && customPackageItem) {
             emptyState.style.display = 'none';
@@ -1503,9 +2778,25 @@ document.addEventListener('DOMContentLoaded', function() {
             const packageName = customPackageItem.querySelector('.package-name') ? customPackageItem.querySelector('.package-name').textContent : 'Custom Package';
             headerTitle.textContent = packageName;
             headerDesc.textContent = 'Choose your deployment option';
+            
+            // Hide "Create New Site" button if package name contains "extra"
+            if (createNewSiteCard) {
+                const packageFullName = selectedPackage.fullName || '';
+                if (packageFullName.toLowerCase().includes('extra')) {
+                    createNewSiteCard.style.display = 'none';
+                } else {
+                    createNewSiteCard.style.display = 'block';
+                }
+            }
         }
     };
 });
 </script>
+
+<!-- Google Maps API for Site Location -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog&libraries=places" async defer></script>
+
+<!-- District and City Selection Script -->
+<script src="<?php echo URL_ROOT; ?>/js/components/select_district_city.js"></script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
