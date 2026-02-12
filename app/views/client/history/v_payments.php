@@ -764,6 +764,42 @@
         font-size: 18px;
     }
 
+    .btn-pay-now {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 20px;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-pay-now:hover {
+        background: linear-gradient(135deg, #45a049 0%, #388e3c 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+    }
+
+    .btn-pay-now:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .btn-pay-now .material-symbols-outlined {
+        font-size: 24px;
+    }
+
     .section-content {
         overflow: hidden;
         max-height: 0;
@@ -1384,6 +1420,14 @@
                     LKR <?php echo number_format($grandTotal, 2); ?>
                 </div>
             </div>
+            
+            <!-- Pay Now Button -->
+            <?php if ($grandTotal > 0): ?>
+            <button class="btn-pay-now" onclick="initiatePayment()" id="payNowBtn">
+                <span class="material-symbols-outlined">credit_card</span>
+                Pay Now - LKR <?php echo number_format($grandTotal, 2); ?>
+            </button>
+            <?php endif; ?>
             <?php else: ?>
             <div class="empty-state">
                 <span class="material-symbols-outlined">info</span>
@@ -1663,7 +1707,93 @@ function deletePackageRequest(requestId, siteName) {
         btn.disabled = false;
     });
 }
+
+// PayHere Payment Integration
+function initiatePayment() {
+    const btn = document.getElementById('payNowBtn');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Processing...';
+    btn.disabled = true;
+    
+    const totalAmount = <?php echo $grandTotal; ?>;
+    
+    // Prepare data
+    const formData = new FormData();
+    formData.append('amount', totalAmount);
+    formData.append('item_name', 'Monthly Security Service Payment');
+    
+    // Fetch payment hash from backend
+    fetch('<?php echo URL_ROOT; ?>/payment/generatePaymentHash', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        // Check for error in response
+        if (data.error) {
+            throw new Error(data.message || 'Failed to generate payment hash');
+        }
+        
+        // Define PayHere event handlers
+        payhere.onCompleted = function onCompleted(orderId) {
+            console.log("Payment completed. OrderID:" + orderId);
+            alert('Payment successful! Your payment has been processed.');
+            window.location.reload();
+        };
+
+        payhere.onDismissed = function onDismissed() {
+            console.log("Payment dismissed");
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        };
+
+        payhere.onError = function onError(error) {
+            console.log("Error:" + error);
+            alert('Payment error occurred: ' + error);
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+        };
+
+        // Payment Object
+        var payment = {
+            sandbox: <?php echo PAYMENT_SANDBOX ? 'true' : 'false'; ?>,
+            merchant_id: data.merchant_id,
+            return_url: undefined,
+            cancel_url: undefined,
+            notify_url: '<?php echo URL_ROOT; ?>/payment/notify',
+            order_id: data.order_id,
+            items: data.item_name,
+            amount: data.amount,
+            currency: data.currency,
+            hash: data.hash,
+            first_name: "<?php echo isset($_SESSION['user_name']) ? explode(' ', $_SESSION['user_name'])[0] : 'Client'; ?>",
+            last_name: "<?php echo isset($_SESSION['user_name']) && count(explode(' ', $_SESSION['user_name'])) > 1 ? explode(' ', $_SESSION['user_name'])[1] : 'User'; ?>",
+            email: "<?php echo $_SESSION['user_email'] ?? 'client@redforce.com'; ?>",
+            phone: "0771234567",
+            address: "Colombo",
+            city: "Colombo",
+            country: "Sri Lanka"
+        };
+
+        // Launch PayHere Popup
+        payhere.startPayment(payment);
+    })
+    .catch(error => {
+        console.error('Error fetching payment hash:', error);
+        alert('Failed to initiate payment. Please try again.');
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+    });
+}
 </script>
+
+<!-- PayHere SDK -->
+<script type="text/javascript" src="https://www.payhere.lk/lib/payhere.js"></script>
 
 </main>
 </div>

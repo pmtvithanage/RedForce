@@ -29,6 +29,12 @@
     define('SMTP_FROM', 'no-reply@redforce.com');
     define('SMTP_FROM_NAME', 'Red Force');
 
+    // Payment Gateway settings
+    define('MERCHANT_ID', '1233889'); // Your Sandbox Merchant ID
+    define('MERCHANT_SECRET', 'MTU5OTAxODE4MTE4NDM2NjgwMzExOTQxODIzMzYzNjUxMDkyOTA4'); // Your Secret
+    define('PAYMENT_SANDBOX', true); // Set to false for production
+    define('PAYMENT_CURRENCY', 'LKR');
+
     // tail -f /Applications/XAMPP/xamppfiles/logs/php_error_log
 
 ?>
