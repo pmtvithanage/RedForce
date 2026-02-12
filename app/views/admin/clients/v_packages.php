@@ -74,9 +74,9 @@
 
     .packages-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        grid-template-columns: repeat(4, 1fr);
         gap: 24px;
-        max-width: 1400px;
+        max-width: 100%;
     }
 
     .package-card {
@@ -214,6 +214,29 @@
     .package-status-badge.inactive {
         background: rgba(220, 53, 69, 0.9);
         color: white;
+    }
+
+    .package-pinned-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        z-index: 2;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 193, 7, 0.9);
+        color: #000;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .package-pinned-badge .material-symbols-outlined {
+        font-size: 14px;
     }
 
     .package-card:hover .package-actions {
@@ -513,9 +536,18 @@
                     </style>
                 <?php endif; ?>
                 
-                <div class="package-card package-card-<?php echo $package->id; ?> <?php echo strtolower($package->package_name) === 'custom package' ? 'custom-package' : ''; ?> <?php echo $package->status !== 'Active' ? 'inactive' : ''; ?>">                    <div class="package-status-badge <?php echo $package->status === 'Active' ? 'active' : 'inactive'; ?>">
+                <div class="package-card package-card-<?php echo $package->id; ?> <?php echo strtolower($package->package_name) === 'custom package' ? 'custom-package' : ''; ?> <?php echo $package->status !== 'Active' ? 'inactive' : ''; ?>">
+                    <?php if (isset($package->is_default) && $package->is_default == 1): ?>
+                    <div class="package-pinned-badge">
+                        <span class="material-symbols-outlined">push_pin</span>
+                        PINNED
+                    </div>
+                    <?php else: ?>
+                    <div class="package-status-badge <?php echo $package->status === 'Active' ? 'active' : 'inactive'; ?>">
                         <?php echo $package->status; ?>
-                    </div>                    <div class="package-actions">
+                    </div>
+                    <?php endif; ?>
+                    <div class="package-actions">
                         <button type="button" 
                                 class="btn-toggle-status <?php echo $package->status === 'Active' ? 'active' : 'inactive'; ?>" 
                                 onclick="togglePackageStatus(<?php echo $package->id; ?>, '<?php echo htmlspecialchars($package->package_name, ENT_QUOTES); ?>', '<?php echo $package->status; ?>')" 

@@ -18,9 +18,14 @@ class M_package {
 
     /**
      * Get all packages including inactive ones (for admin)
+     * Custom Package first, then default packages, then others
      */
     public function getAllPackagesForAdmin() {
-        $this->db->query('SELECT * FROM packages ORDER BY created_at DESC');
+        $this->db->query("SELECT * FROM packages 
+                         ORDER BY 
+                         CASE WHEN package_name = 'Custom Package' THEN 0 ELSE 1 END,
+                         is_default DESC, 
+                         created_at DESC");
         
         return $this->db->resultSet();
     }
@@ -199,6 +204,80 @@ class M_package {
         
         if ($this->db->single()) {
             return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get Custom Package pricing (unit prices for officers, supervisors, caretakers)
+     */
+    public function getCustomPackagePricing() {
+        $this->db->query('SELECT price_per_officer, price_per_supervisor, price_per_caretaker 
+                         FROM packages 
+                         WHERE package_name = :name');
+        $this->db->bind(':name', 'Custom Package');
+        
+        $result = $this->db->single();
+        
+        if ($result) {
+            return [
+                'price_per_officer' => floatval($result->price_per_officer),
+                'price_per_supervisor' => floatval($result->price_per_supervisor),
+                'price_per_caretaker' => floatval($result->price_per_caretaker)
+            ];
+        }
+        
+        // Return default values if Custom Package not found
+        return [
+            'price_per_officer' => 0.00,
+            'price_per_supervisor' => 0.00,
+            'price_per_caretaker' => 0.00
+        ];
+    }
+
+    /**
+     * Calculate package price based on Custom Package unit prices
+     */
+    public function calculatePackagePrice($numOfficers, $numSupervisors, $numCaretakers) {
+        $customPricing = $this->getCustomPackagePricing();
+        
+        $totalPrice = ($numOfficers * $customPricing['price_per_officer']) +
+                     ($numSupervisors * $customPricing['price_per_supervisor']) +
+                     ($numCaretakers * $customPricing['price_per_caretaker']);
+        
+        return round($totalPrice, 2);
+    }
+
+    /**
+     * Update all package prices based on Custom Package unit prices
+     * Called when Custom Package pricing is updated to recalculate all existing packages
+     */
+    public function updateAllPackagePrices() {
+        // Get Custom Package pricing
+        $customPricing = $this->getCustomPackagePricing();
+        
+        // Update all non-custom packages with calculated prices
+        $this->db->query('
+            UPDATE packages 
+            SET package_price = (
+                number_of_officers * :price_per_officer +
+                number_of_supervisors * :price_per_supervisor +
+                number_of_caretakers * :price_per_caretaker
+            ),
+            price_per_officer = :price_per_officer,
+            price_per_supervisor = :price_per_supervisor,
+            price_per_caretaker = :price_per_caretaker
+            WHERE package_name != :custom_package_name
+        ');
+        
+        $this->db->bind(':price_per_officer', $customPricing['price_per_officer']);
+        $this->db->bind(':price_per_supervisor', $customPricing['price_per_supervisor']);
+        $this->db->bind(':price_per_caretaker', $customPricing['price_per_caretaker']);
+        $this->db->bind(':custom_package_name', 'Custom Package');
+        
+        if ($this->db->execute()) {
+            return $this->db->rowCount();
         } else {
             return false;
         }

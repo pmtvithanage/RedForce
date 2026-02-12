@@ -533,7 +533,6 @@
                     <input type="hidden" name="price_per_caretaker" value="0">
                 <?php endif; ?>
             </div>
-            </div>
 
             <!-- Pricing -->
             <?php if (!$isCustomPackage): ?>
@@ -548,8 +547,11 @@
                         Monthly Price (LKR)
                         <span class="required">*</span>
                     </label>
-                    <input type="number" id="package_price" name="package_price" min="0" step="0.01" required placeholder="e.g., 75000" value="<?php echo isset($data['data']['package_price']) ? $data['data']['package_price'] : $data['package']->package_price; ?>">
-                    <small>Total monthly price for this package in LKR</small>
+                    <input type="number" id="package_price" name="package_price" min="0" step="0.01" required placeholder="e.g., 75000" value="<?php echo isset($data['data']['package_price']) ? $data['data']['package_price'] : $data['package']->package_price; ?>" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                    <small id="price-calc-message" style="color: #2196F3;">
+                        <i class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">info</i>
+                        Price is automatically calculated based on Custom Package unit prices
+                    </small>
                     <?php if (isset($data['data']['package_price_err']) && !empty($data['data']['package_price_err'])): ?>
                         <span style="color: red; font-size: 13px; display: block; margin-top: 4px;"><?php echo $data['data']['package_price_err']; ?></span>
                     <?php endif; ?>
@@ -809,6 +811,38 @@ function updatePreview() {
     }
 }
 
+// Custom Package pricing from PHP
+const customPackagePricing = {
+    pricePerOfficer: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_officer'] : 20000; ?>,
+    pricePerSupervisor: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_supervisor'] : 20000; ?>,
+    pricePerCaretaker: <?php echo isset($data['customPricing']) ? $data['customPricing']['price_per_caretaker'] : 12000; ?>
+};
+
+// Calculate package price based on quantities and Custom Package unit prices
+function calculatePackagePrice() {
+    const packageName = document.getElementById('package_name').value.trim();
+    const isCustomPackage = (packageName === 'Custom Package');
+    
+    // Only calculate for non-custom packages
+    if (isCustomPackage) return;
+    
+    const numOfficers = parseInt(document.getElementById('number_of_officers')?.value || 0);
+    const numSupervisors = parseInt(document.getElementById('number_of_supervisors')?.value || 0);
+    const numCaretakers = parseInt(document.getElementById('number_of_caretakers')?.value || 0);
+    
+    const totalPrice = (numOfficers * customPackagePricing.pricePerOfficer) +
+                      (numSupervisors * customPackagePricing.pricePerSupervisor) +
+                      (numCaretakers * customPackagePricing.pricePerCaretaker);
+    
+    const priceInput = document.getElementById('package_price');
+    if (priceInput) {
+        priceInput.value = totalPrice.toFixed(2);
+    }
+    
+    // Update preview as well
+    updatePreview();
+}
+
 // Add event listeners for real-time preview
 document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('package_name').addEventListener('input', updatePreview);
@@ -818,10 +852,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const caretakersInput = document.getElementById('number_of_caretakers');
     const priceInput = document.getElementById('package_price');
     
-    // Quantity field listeners
-    if (officersInput) officersInput.addEventListener('input', updatePreview);
-    if (supervisorsInput) supervisorsInput.addEventListener('input', updatePreview);
-    if (caretakersInput) caretakersInput.addEventListener('input', updatePreview);
+    // Quantity field listeners with calculation
+    if (officersInput) {
+        officersInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
+    if (supervisorsInput) {
+        supervisorsInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
+    if (caretakersInput) {
+        caretakersInput.addEventListener('input', function() {
+            calculatePackagePrice();
+            updatePreview();
+        });
+    }
     if (priceInput) priceInput.addEventListener('input', updatePreview);
     
     // Pricing field listeners
@@ -834,6 +883,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (pricePerCaretaker) pricePerCaretaker.addEventListener('input', updatePreview);
     
     document.getElementById('description').addEventListener('input', updatePreview);
+    
+    // Calculate price on page load for non-custom packages
+    const packageName = document.getElementById('package_name').value.trim();
+    if (packageName !== 'Custom Package') {
+        calculatePackagePrice();
+    }
 });
 </script>
 

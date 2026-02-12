@@ -1626,9 +1626,13 @@ public function editSite($site_id){
 
     // Create new package
     public function createPackage() {
+        // Get Custom Package pricing to pass to the view
+        $customPricing = $this->packageModel->getCustomPackagePricing();
+        
         $data = [
             'title' => 'Clients',
-            'pageTitle' => 'Create New Security Package'
+            'pageTitle' => 'Create New Security Package',
+            'customPricing' => $customPricing
         ];
         
         $this->view('admin/clients/v_create_packages', $data);
@@ -1666,6 +1670,23 @@ public function editSite($site_id){
             'package_price_err' => '',
             'image_err' => ''
         ];
+
+        // Auto-calculate price for non-custom packages
+        if (strcasecmp($data['package_name'], 'Custom Package') !== 0) {
+            // Get Custom Package pricing and calculate total
+            $calculatedPrice = $this->packageModel->calculatePackagePrice(
+                $data['number_of_officers'],
+                $data['number_of_supervisors'],
+                $data['number_of_caretakers']
+            );
+            $data['package_price'] = $calculatedPrice;
+            
+            // Get Custom Package unit prices for storing
+            $customPricing = $this->packageModel->getCustomPackagePricing();
+            $data['price_per_officer'] = $customPricing['price_per_officer'];
+            $data['price_per_supervisor'] = $customPricing['price_per_supervisor'];
+            $data['price_per_caretaker'] = $customPricing['price_per_caretaker'];
+        }
 
         // Validate package name
         if (empty($data['package_name'])) {
@@ -1758,10 +1779,14 @@ public function editSite($site_id){
             redirect('admin/viewPackages');
         }
         
+        // Get Custom Package pricing to pass to the view
+        $customPricing = $this->packageModel->getCustomPackagePricing();
+        
         $data = [
             'title' => 'Clients',
             'pageTitle' => 'Edit Security Package',
-            'package' => $package
+            'package' => $package,
+            'customPricing' => $customPricing
         ];
         
         $this->view('admin/clients/v_edit_package', $data);
@@ -1799,6 +1824,23 @@ public function editSite($site_id){
             'package_price_err' => '',
             'image_err' => ''
         ];
+
+        // Auto-calculate price for non-custom packages
+        if (strcasecmp($data['package_name'], 'Custom Package') !== 0) {
+            // Get Custom Package pricing and calculate total
+            $calculatedPrice = $this->packageModel->calculatePackagePrice(
+                $data['number_of_officers'],
+                $data['number_of_supervisors'],
+                $data['number_of_caretakers']
+            );
+            $data['package_price'] = $calculatedPrice;
+            
+            // Get Custom Package unit prices for storing
+            $customPricing = $this->packageModel->getCustomPackagePricing();
+            $data['price_per_officer'] = $customPricing['price_per_officer'];
+            $data['price_per_supervisor'] = $customPricing['price_per_supervisor'];
+            $data['price_per_caretaker'] = $customPricing['price_per_caretaker'];
+        }
 
         // Validate package name
         if (empty($data['package_name'])) {
@@ -1866,13 +1908,27 @@ public function editSite($site_id){
             
             // Update package
             if ($this->packageModel->updatePackage($data)) {
-                // Add activity log
-                $title = "Package Updated";
-                $description = "Security package '" . $data['package_name'] . "' (ID: " . $data['id'] . ") was updated";
-                $type = "update";
-                $this->adminModel->insertRecentActivity($title, $description, $type);
+                // If Custom Package was updated, recalculate all other package prices
+                if (strcasecmp($data['package_name'], 'Custom Package') === 0) {
+                    $updatedCount = $this->packageModel->updateAllPackagePrices();
+                    
+                    // Add activity log for Custom Package update
+                    $title = "Custom Package Updated";
+                    $description = "Custom Package unit prices updated. " . $updatedCount . " package(s) automatically recalculated.";
+                    $type = "update";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
+                    flash('msg', 'Custom Package Updated Successfully! ' . $updatedCount . ' package(s) automatically recalculated.', 'alert-success');
+                } else {
+                    // Add activity log for regular package
+                    $title = "Package Updated";
+                    $description = "Security package '" . $data['package_name'] . "' (ID: " . $data['id'] . ") was updated";
+                    $type = "update";
+                    $this->adminModel->insertRecentActivity($title, $description, $type);
+                    
+                    flash('msg', 'Package Updated Successfully', 'alert-success');
+                }
                 
-                flash('msg', 'Package Updated Successfully', 'alert-success');
                 redirect('admin/viewPackages');
             } else {
                 flash('msg', 'Failed to Update Package', 'alert-danger');

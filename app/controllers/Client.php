@@ -511,54 +511,58 @@ class Client extends Controller {
 
     // Handle package request submission
     public function submitPackageRequest() {
+        header('Content-Type: application/json');
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Calculate end date and total price based on number of months
-            $startDate = $_POST['start_date'];
-            $numMonths = isset($_POST['num_months']) ? (int)$_POST['num_months'] : 1;
-            $monthlyPrice = isset($_POST['monthly_price']) ? (int)$_POST['monthly_price'] : (int)$_POST['package_price'];
-            
-            // Calculate end date (start date + num_months)
-            $endDate = date('Y-m-d', strtotime($startDate . ' + ' . $numMonths . ' months'));
-            
-            // Calculate total price
-            $totalPrice = $monthlyPrice * $numMonths;
-            
-            // Handle image upload if present
-            $imageName = null;
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
-                $imageName = time() . '_' . $_FILES['image']['name'];
-                if (!uploadImage($_FILES['image']['tmp_name'], $imageName, '/uploads/siteImages/')) {
-                    $imageName = null; // Reset if upload failed
+            try {
+                $mode = $_POST['mode'] ?? 'new';
+                
+                // Handle image upload if present
+                $imageName = null;
+                if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
+                    $imageName = time() . '_' . $_FILES['image']['name'];
+                    if (!uploadImage($_FILES['image']['tmp_name'], $imageName, '/uploads/siteImages/')) {
+                        $imageName = null; // Reset if upload failed
+                    }
                 }
-            }
-            
-            $requestData = [
-                'client_id' => $_SESSION['user_id'],
-                'package_name' => $_POST['package_name'],
-                'site_name' => trim($_POST['site_name']),
-                'district' => trim($_POST['district'] ?? ''),
-                'city' => trim($_POST['city']),
-                'site_address' => trim($_POST['site_address']),
-                'latitude' => $_POST['latitude'] ?? null,
-                'longitude' => $_POST['longitude'] ?? null,
-                'phone_number' => trim($_POST['phone_number'] ?? ''),
-                'image_name' => $imageName,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'number_of_guards' => $_POST['number_of_guards'],
-                'day_guards' => $_POST['day_guards'] ?? null,
-                'night_guards' => $_POST['night_guards'] ?? null,
-                'package_price' => $totalPrice,
-                'comments' => trim($_POST['comments'] ?? '')
-            ];
+                
+                // Set default dates - request starts from next month
+                $startDate = date('Y-m-d', strtotime('first day of next month'));
+                $endDate = date('Y-m-d', strtotime('last day of next month'));
+                
+                $requestData = [
+                    'client_id' => $_SESSION['user_id'],
+                    'package_name' => $_POST['package_name'],
+                    'site_name' => trim($_POST['site_name']),
+                    'district' => trim($_POST['district'] ?? ''),
+                    'city' => trim($_POST['city'] ?? ''),
+                    'site_address' => trim($_POST['site_address'] ?? ''),
+                    'latitude' => $_POST['latitude'] ?? null,
+                    'longitude' => $_POST['longitude'] ?? null,
+                    'phone_number' => trim($_POST['phone_number'] ?? ''),
+                    'image_name' => $imageName,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'number_of_officers' => (int)($_POST['number_of_officers'] ?? 0),
+                    'number_of_supervisors' => (int)($_POST['number_of_supervisors'] ?? 0),
+                    'number_of_caretakers' => (int)($_POST['number_of_caretakers'] ?? 0),
+                    'package_price' => (float)($_POST['package_price'] ?? 0),
+                    'site_id' => ($mode === 'existing') ? (int)$_POST['site_id'] : null,
+                    'status' => 'Pending'
+                ];
 
-            if ($this->clientModel->createPackageRequest($requestData)) {
-                flash('package_success', 'Package request submitted successfully!', 'alert-success');
-            } else {
-                flash('package_error', 'Failed to submit request. Please try again.', 'alert-danger');
+                if ($this->clientModel->createPackageRequest($requestData)) {
+                    echo json_encode(['success' => true, 'message' => 'Package request submitted successfully!']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to submit request. Please try again.']);
+                }
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
             }
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
         }
-        redirect('client/requests');
+        exit;
     }
 
     public function packageHistory() {
@@ -569,7 +573,26 @@ class Client extends Controller {
 
     public function deletePackageRequest($id) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            if ($this->clientModel->deletePackageRequest($id, $_SESSION['user_id'])) {
+            $client_id = $_SESSION['user_id'];
+            $success = $this->clientModel->deletePackageRequest($id, $client_id);
+            
+            // Check if this is an AJAX request (expects JSON response)
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                      strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+            $expectsJson = strpos($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json') !== false;
+            
+            if ($isAjax || $expectsJson) {
+                header('Content-Type: application/json');
+                if ($success) {
+                    echo json_encode(['success' => true, 'message' => 'Package request deleted successfully']);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Failed to delete request. It may have already been approved or does not exist.']);
+                }
+                exit;
+            }
+            
+            // Regular form submission - use flash messages and redirect
+            if ($success) {
                 flash('package_success', 'Request deleted successfully', 'alert-success');
             } else {
                 flash('package_error', 'Failed to delete request', 'alert-danger');
@@ -704,8 +727,17 @@ class Client extends Controller {
         // Load payment model
         $paymentModel = $this->model('M_payment');
         
+        // Load client model for active sites and pending requests
+        $clientModel = $this->model('M_client');
+        
         // Get all payments for this client
         $payments = $paymentModel->getClientPayments($client_id);
+        
+        // Get active sites with package information
+        $activeSites = $clientModel->getActiveSitesWithPackages($client_id);
+        
+        // Get pending package requests
+        $pendingRequests = $clientModel->getPendingPackageRequests($client_id);
         
         // Calculate statistics
         $totalPaid = 0;
@@ -730,6 +762,8 @@ class Client extends Controller {
             'title' => 'Payments',
             'pageTitle' => 'Payment History',
             'payments' => $payments,
+            'active_sites' => $activeSites,
+            'pending_requests' => $pendingRequests,
             'total_paid' => $totalPaid,
             'paid_count' => $paidCount,
             'pending_count' => $pendingCount,

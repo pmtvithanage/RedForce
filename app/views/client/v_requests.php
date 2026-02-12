@@ -1177,6 +1177,9 @@ $packages = $packageModel->getAllPackages();
                         </button>
                     </div>
 
+                    <!-- Error Message Container -->
+                    <span class="error-message" id="assignmentErrorMessage"></span>
+
                     <!-- Officers Counter -->
                     <div class="assignment-counter">
                         <div class="counter-header">
@@ -1797,6 +1800,11 @@ document.addEventListener('DOMContentLoaded', function() {
     let pricePerOfficer = 0;
     let pricePerSupervisor = 0;
     let pricePerCaretaker = 0;
+    
+    // Track initial/existing counts for sites
+    let initialOfficersCount = 0;
+    let initialSupervisorsCount = 0;
+    let initialCaretakersCount = 0;
 
     // Initialize counter displays
     function updateCounterDisplays() {
@@ -1833,24 +1841,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function updatePricingSummary() {
-        const officersCost = officersCount * pricePerOfficer;
-        const supervisorsCost = supervisorsCount * pricePerSupervisor;
-        const caretakersCost = caretakersCount * pricePerCaretaker;
+        // Calculate only NEWLY ADDED personnel (difference from initial counts)
+        const newOfficersCount = Math.max(0, officersCount - initialOfficersCount);
+        const newSupervisorsCount = Math.max(0, supervisorsCount - initialSupervisorsCount);
+        const newCaretakersCount = Math.max(0, caretakersCount - initialCaretakersCount);
+        
+        const officersCost = newOfficersCount * pricePerOfficer;
+        const supervisorsCost = newSupervisorsCount * pricePerSupervisor;
+        const caretakersCost = newCaretakersCount * pricePerCaretaker;
         const totalCost = officersCost + supervisorsCost + caretakersCost;
         
         let breakdownHTML = '';
-        if (officersCount > 0) {
-            breakdownHTML += `<div>${officersCount} Officer${officersCount !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>LKR ${officersCost.toLocaleString()}</strong></div>`;
+        if (newOfficersCount > 0) {
+            breakdownHTML += `<div>${newOfficersCount} New Officer${newOfficersCount !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>LKR ${officersCost.toLocaleString()}</strong></div>`;
         }
-        if (supervisorsCount > 0) {
-            breakdownHTML += `<div>${supervisorsCount} Supervisor${supervisorsCount !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
+        if (newSupervisorsCount > 0) {
+            breakdownHTML += `<div>${newSupervisorsCount} New Supervisor${newSupervisorsCount !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
         }
-        if (caretakersCount > 0) {
-            breakdownHTML += `<div>${caretakersCount} Caretaker${caretakersCount !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>LKR ${caretakersCost.toLocaleString()}</strong></div>`;
+        if (newCaretakersCount > 0) {
+            breakdownHTML += `<div>${newCaretakersCount} New Caretaker${newCaretakersCount !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>LKR ${caretakersCost.toLocaleString()}</strong></div>`;
         }
         
         if (breakdownHTML === '') {
-            breakdownHTML = '<div style="color: #999; font-style: italic;">Add personnel to see pricing</div>';
+            breakdownHTML = '<div style="color: #999; font-style: italic;">Add new personnel to see pricing</div>';
         }
         
         document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
@@ -1976,6 +1989,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
                     supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
                     caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
+                    
+                    // Store initial counts to track only new additions
+                    initialOfficersCount = officersCount;
+                    initialSupervisorsCount = supervisorsCount;
+                    initialCaretakersCount = caretakersCount;
+                } else {
+                    // Reset initial counts for new sites
+                    initialOfficersCount = 0;
+                    initialSupervisorsCount = 0;
+                    initialCaretakersCount = 0;
                 }
                 
                 // Hide sites list, show assignment form
@@ -2019,12 +2042,18 @@ document.addEventListener('DOMContentLoaded', function() {
         assignmentFormContainer.style.display = 'none';
         optionCards.style.display = 'none';
         
+        // Hide any error messages
+        hideErrorMessage('assignmentErrorMessage');
+        
         // Package container remains disabled - we're still in deployment flow
         
         // Reset counters
         officersCount = 0;
         supervisorsCount = 0;
         caretakersCount = 0;
+        initialOfficersCount = 0;
+        initialSupervisorsCount = 0;
+        initialCaretakersCount = 0;
         updateCounterDisplays();
         
         // Update header back to site selection
@@ -2058,6 +2087,9 @@ document.addEventListener('DOMContentLoaded', function() {
         officersCount = 0;
         supervisorsCount = 0;
         caretakersCount = 0;
+        initialOfficersCount = 0;
+        initialSupervisorsCount = 0;
+        initialCaretakersCount = 0;
         updateCounterDisplays();
     }
 
@@ -2099,10 +2131,17 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     window.submitAssignment = function() {
-        // Validate at least some personnel is selected
-        if (officersCount === 0 && caretakersCount === 0) {
-            alert('Please add at least one security officer or caretaker.');
+        // Calculate only NEWLY ADDED personnel
+        const newOfficersCount = Math.max(0, officersCount - initialOfficersCount);
+        const newSupervisorsCount = Math.max(0, supervisorsCount - initialSupervisorsCount);
+        const newCaretakersCount = Math.max(0, caretakersCount - initialCaretakersCount);
+        
+        // Validate at least some NEW personnel is added
+        if (newOfficersCount === 0 && newCaretakersCount === 0) {
+            showErrorMessage('assignmentErrorMessage', 'Please add at least one new security officer or caretaker.');
             return;
+        } else {
+            hideErrorMessage('assignmentErrorMessage');
         }
         
         if (selectedPackage) {
@@ -2111,47 +2150,52 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Submit with new site data
                 const formData = new FormData();
                 formData.append('mode', 'new');
+                formData.append('package_name', 'Custom Package');
                 formData.append('site_name', newSiteData.site_name);
                 formData.append('site_address', newSiteData.site_address);
                 formData.append('district', newSiteData.district);
-                formData.append('city', newSiteData.city);
+                formData.append('city', newSiteData.city || newSiteData.district);
                 formData.append('phone_number', newSiteData.phone_number);
                 formData.append('latitude', newSiteData.latitude);
                 formData.append('longitude', newSiteData.longitude);
-                formData.append('officers', officersCount);
-                formData.append('supervisors', supervisorsCount);
-                formData.append('caretakers', caretakersCount);
+                formData.append('number_of_officers', newOfficersCount);
+                formData.append('number_of_supervisors', newSupervisorsCount);
+                formData.append('number_of_caretakers', newCaretakersCount);
+                
+                // Calculate package price for NEWLY ADDED personnel only
+                const totalPrice = (newOfficersCount * pricePerOfficer) + 
+                                  (newSupervisorsCount * pricePerSupervisor) + 
+                                  (newCaretakersCount * pricePerCaretaker);
+                formData.append('package_price', totalPrice);
                 
                 if (newSiteData.image) {
                     formData.append('image', newSiteData.image);
                 }
                 
-                // For now, redirect with URL params (in production, use FormData POST)
-                const params = new URLSearchParams({
-                    mode: 'new',
-                    site_name: newSiteData.site_name,
-                    site_address: newSiteData.site_address,
-                    district: newSiteData.district,
-                    phone_number: newSiteData.phone_number,
-                    latitude: newSiteData.latitude,
-                    longitude: newSiteData.longitude,
-                    officers: officersCount,
-                    supervisors: supervisorsCount,
-                    caretakers: caretakersCount
-                });
-                
-                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             } else if (selectedSiteId) {
                 // Submit with existing site
-                const params = new URLSearchParams({
-                    mode: 'existing',
-                    site_id: selectedSiteId,
-                    officers: officersCount,
-                    supervisors: supervisorsCount,
-                    caretakers: caretakersCount
-                });
+                const formData = new FormData();
+                formData.append('mode', 'existing');
+                formData.append('site_id', selectedSiteId);
+                formData.append('package_name', 'Custom Package');
+                formData.append('site_name', selectedSiteData.site_name);
+                formData.append('site_address', selectedSiteData.address);
+                formData.append('district', selectedSiteData.district || '');
+                formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                formData.append('number_of_officers', newOfficersCount);
+                formData.append('number_of_supervisors', newSupervisorsCount);
+                formData.append('number_of_caretakers', newCaretakersCount);
                 
-                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+                // Calculate package price for NEWLY ADDED personnel only
+                const totalPrice = (newOfficersCount * pricePerOfficer) + 
+                                  (newSupervisorsCount * pricePerSupervisor) + 
+                                  (newCaretakersCount * pricePerCaretaker);
+                formData.append('package_price', totalPrice);
+                
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             }
         }
     };
@@ -2162,7 +2206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check if package name contains "extra" - these can only be added to existing sites
             const packageFullName = selectedPackage.fullName || '';
             if (packageFullName.toLowerCase().includes('extra')) {
-                alert('This package can only be added to existing sites. Please select "Add to Existing Site".');
+                // Silently prevent - extra packages are for existing sites only
                 return;
             }
             
@@ -2412,29 +2456,44 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedPackage) {
             if (newSiteData) {
                 // Proceed with new site
-                const params = new URLSearchParams({
-                    mode: 'new',
-                    site_name: newSiteData.site_name,
-                    site_address: newSiteData.site_address,
-                    district: newSiteData.district,
-                    phone_number: newSiteData.phone_number,
-                    latitude: newSiteData.latitude,
-                    longitude: newSiteData.longitude,
-                    officers: selectedPackage.officers,
-                    caretakers: 0
-                });
+                const formData = new FormData();
+                formData.append('mode', 'new');
+                formData.append('package_name', selectedPackage.name);
+                formData.append('site_name', newSiteData.site_name);
+                formData.append('site_address', newSiteData.site_address);
+                formData.append('district', newSiteData.district);
+                formData.append('city', newSiteData.city || newSiteData.district);
+                formData.append('phone_number', newSiteData.phone_number);
+                formData.append('latitude', newSiteData.latitude);
+                formData.append('longitude', newSiteData.longitude);
+                formData.append('number_of_officers', selectedPackage.officers || 0);
+                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                formData.append('package_price', selectedPackage.price);
                 
-                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+                if (newSiteData.image) {
+                    formData.append('image', newSiteData.image);
+                }
+                
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             } else if (selectedSiteId) {
                 // Proceed with existing site
-                const params = new URLSearchParams({
-                    mode: 'existing',
-                    site_id: selectedSiteId,
-                    officers: selectedPackage.officers,
-                    caretakers: 0
-                });
+                const formData = new FormData();
+                formData.append('mode', 'existing');
+                formData.append('site_id', selectedSiteId);
+                formData.append('package_name', selectedPackage.name);
+                formData.append('site_name', selectedSiteData.site_name);
+                formData.append('site_address', selectedSiteData.address);
+                formData.append('district', selectedSiteData.district || '');
+                formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                formData.append('number_of_officers', selectedPackage.officers || 0);
+                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                formData.append('package_price', selectedPackage.price);
                 
-                window.location.href = `<?php echo URL_ROOT; ?>/client/${selectedPackage.name}Package?${params.toString()}`;
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             }
         }
     };
@@ -2611,7 +2670,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (file) {
             const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             if (!validTypes.includes(file.type)) {
-                alert('Please select a valid image file (JPG, JPEG, or PNG)');
+                showErrorMessage('step1ErrorMessage', 'Please select a valid image file (JPG, JPEG, or PNG)');
+                e.target.value = '';
                 return;
             }
             
@@ -2709,6 +2769,9 @@ document.addEventListener('DOMContentLoaded', function() {
         officersCount = 0;
         supervisorsCount = 0;
         caretakersCount = 0;
+        initialOfficersCount = 0;
+        initialSupervisorsCount = 0;
+        initialCaretakersCount = 0;
         
         // Set pricing from selected package
         const selectedItem = document.querySelector('.package-item.selected');
@@ -2719,6 +2782,45 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         updateCounterDisplays();
+    }
+
+    // Helper function to submit package request via AJAX
+    function submitPackageRequestAjax(formData) {
+        // Disable submit button to prevent double submission
+        const submitBtns = document.querySelectorAll('.btn-submit-assignment, .btn-proceed-package');
+        submitBtns.forEach(btn => btn.disabled = true);
+        
+        fetch('<?php echo URL_ROOT; ?>/client/submitPackageRequest', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Redirect to payment page without alert
+                window.location.href = '<?php echo URL_ROOT; ?>/client/payments';
+            } else {
+                // Show error message in the appropriate container
+                const errorMsg = data.message || 'Failed to submit request. Please try again.';
+                if (document.getElementById('assignmentErrorMessage')) {
+                    showErrorMessage('assignmentErrorMessage', errorMsg);
+                } else if (document.getElementById('step2ErrorMessage')) {
+                    showErrorMessage('step2ErrorMessage', errorMsg);
+                }
+                submitBtns.forEach(btn => btn.disabled = false);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Show error message in the appropriate container
+            const errorMsg = 'Failed to submit request. Please try again.';
+            if (document.getElementById('assignmentErrorMessage')) {
+                showErrorMessage('assignmentErrorMessage', errorMsg);
+            } else if (document.getElementById('step2ErrorMessage')) {
+                showErrorMessage('step2ErrorMessage', errorMsg);
+            }
+            submitBtns.forEach(btn => btn.disabled = false);
+        });
     }
 
     // Custom package button
