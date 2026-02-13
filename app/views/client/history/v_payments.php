@@ -44,55 +44,54 @@
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
-        margin-bottom: 32px;
+        margin-bottom: 30px;
     }
 
     .stat-card {
         background: white;
-        border-radius: var(--radius);
-        padding: 24px;
-        box-shadow: var(--shadow);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.08);
         display: flex;
         align-items: center;
-        gap: 16px;
-        transition: transform 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-2px);
+        gap: 15px;
     }
 
     .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 12px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        flex-shrink: 0;
+        font-size: 24px;
     }
 
     .stat-icon.total {
-        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        background: #e3f2fd;
+        color: #1976d2;
     }
 
     .stat-icon.paid {
-        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+        background: #e8f5e9;
+        color: #388e3c;
     }
 
     .stat-icon.pending {
-        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        background: #fff3e0;
+        color: #f57c00;
     }
 
     .stat-icon.overdue {
-        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        background: #ffebee;
+        color: #d32f2f;
     }
 
     .stat-icon .material-symbols-outlined {
-        color: white;
-        font-size: 32px;
+        color: inherit;
+        font-size: 24px;
     }
 
     .stat-info h3 {
@@ -100,14 +99,25 @@
         font-size: 14px;
         font-weight: 600;
         color: #666;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
 
     .stat-value {
-        font-size: 26px;
+        font-size: 28px;
         font-weight: 700;
-        color: #1a1a1a;
+        color: #333;
+    }
+
+    .stat-content h3 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+    }
+
+    .stat-content p {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        color: #666;
     }
 
     .payments-content {
@@ -870,7 +880,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>Total Paid</h3>
-                    <div class="stat-value">LKR <?php echo isset($data['total_paid']) ? number_format($data['total_paid'], 2) : '0.00'; ?></div>
+                    <div class="stat-value">LKR <?php echo number_format($data['total_paid'] ?? 0, 2); ?></div>
                 </div>
             </div>
 
@@ -880,7 +890,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>Paid Bills</h3>
-                    <div class="stat-value"><?php echo isset($data['paid_count']) ? $data['paid_count'] : '0'; ?></div>
+                    <div class="stat-value"><?php echo $data['paid_count'] ?? 0; ?></div>
                 </div>
             </div>
 
@@ -890,7 +900,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>Pending</h3>
-                    <div class="stat-value"><?php echo isset($data['pending_count']) ? $data['pending_count'] : '0'; ?></div>
+                    <div class="stat-value"><?php echo $data['pending_count'] ?? 0; ?></div>
                 </div>
             </div>
 
@@ -900,7 +910,7 @@
                 </div>
                 <div class="stat-info">
                     <h3>Overdue</h3>
-                    <div class="stat-value"><?php echo isset($data['overdue_count']) ? $data['overdue_count'] : '0'; ?></div>
+                    <div class="stat-value"><?php echo $data['overdue_count'] ?? 0; ?></div>
                 </div>
             </div>
         </div>
