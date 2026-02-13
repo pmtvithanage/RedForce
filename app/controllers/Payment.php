@@ -91,3 +91,6 @@ class Payment extends Controller {
         exit;
     }
 }
+/*in hear the totale payment valive should divide by 1000 and should do the payment 
+dont but show the exact toatal value in every UI(it should pass the paymen value to payhere by dividing the amount y 1000)
+*/

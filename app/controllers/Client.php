@@ -773,24 +773,8 @@ class Client extends Controller {
         // Get pending package requests
         $pendingRequests = $clientModel->getPendingPackageRequests($client_id);
         
-        // Calculate statistics
-        $totalPaid = 0;
-        $paidCount = 0;
-        $pendingCount = 0;
-        $overdueCount = 0;
-        
-        foreach ($payments as $payment) {
-            $status = strtolower($payment->status ?? 'pending');
-            
-            if ($status === 'paid') {
-                $totalPaid += $payment->amount;
-                $paidCount++;
-            } elseif ($status === 'pending') {
-                $pendingCount++;
-            } elseif ($status === 'overdue') {
-                $overdueCount++;
-            }
-        }
+        // Get comprehensive payment statistics from database
+        $paymentStats = $paymentModel->getPaymentStats($client_id);
         
         $data = [
             'title' => 'Payments',
@@ -798,10 +782,13 @@ class Client extends Controller {
             'payments' => $payments,
             'active_sites' => $activeSites,
             'pending_requests' => $pendingRequests,
-            'total_paid' => $totalPaid,
-            'paid_count' => $paidCount,
-            'pending_count' => $pendingCount,
-            'overdue_count' => $overdueCount
+            'total_paid' => $paymentStats->total_paid ?? 0,
+            'paid_count' => $paymentStats->paid_count ?? 0,
+            'pending_count' => $paymentStats->pending_count ?? 0,
+            'overdue_count' => $paymentStats->overdue_count ?? 0,
+            'pending_amount' => $paymentStats->pending_amount ?? 0,
+            'overdue_amount' => $paymentStats->overdue_amount ?? 0,
+            'total_payments' => $paymentStats->total_payments ?? 0
         ];
         
         $this->view('client/history/v_payments', $data);
