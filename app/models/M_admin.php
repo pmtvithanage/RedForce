@@ -2163,4 +2163,134 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         return ['success' => false, 'message' => 'Failed to assign caretaker'];
     }
+
+    /**
+     * Get all clients' payments with client and site information
+     * @return array
+     */
+    public function getAllClientsPayments() {
+        $this->db->query('
+            SELECT 
+                p.*,
+                u.name as client_name,
+                u.email as client_email,
+                s.site_name,
+                s.address as site_address,
+                s.city,
+                s.district,
+                pr.site_name as package_request_site_name,
+                pr.package_name as package_request_package_name
+            FROM payments p
+            LEFT JOIN Users u ON p.client_id = u.id
+            LEFT JOIN sites s ON p.site_id = s.id
+            LEFT JOIN package_requests pr ON p.package_request_id = pr.id
+            ORDER BY p.created_at DESC, p.payment_date DESC
+        ');
+        
+        $results = $this->db->resultSet();
+        return $results ? $results : [];
+    }
+
+    /**
+     * Get overall payment statistics for all clients
+     * @return object
+     */
+    public function getAllPaymentsStats() {
+        $this->db->query('
+            SELECT 
+                COUNT(*) as total_payments,
+                SUM(CASE WHEN status = "paid" THEN amount ELSE 0 END) as total_paid,
+                SUM(CASE WHEN status = "paid" THEN 1 ELSE 0 END) as paid_count,
+                SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
+                SUM(CASE WHEN status = "overdue" THEN 1 ELSE 0 END) as overdue_count,
+                SUM(CASE WHEN status = "pending" THEN amount ELSE 0 END) as pending_amount,
+                SUM(CASE WHEN status = "overdue" THEN amount ELSE 0 END) as overdue_amount,
+                MAX(CASE WHEN status = "paid" THEN payment_date END) as last_payment_date,
+                AVG(CASE WHEN status = "paid" THEN amount END) as average_payment,
+                SUM(CASE WHEN status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN amount ELSE 0 END) as this_month_paid,
+                COUNT(CASE WHEN status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN 1 END) as this_month_count
+            FROM payments
+        ');
+        
+        $result = $this->db->single();
+        
+        // Ensure all numeric values are properly formatted
+        if ($result) {
+            $result->total_paid = floatval($result->total_paid ?? 0);
+            $result->pending_amount = floatval($result->pending_amount ?? 0);
+            $result->overdue_amount = floatval($result->overdue_amount ?? 0);
+            $result->average_payment = floatval($result->average_payment ?? 0);
+            $result->this_month_paid = floatval($result->this_month_paid ?? 0);
+            $result->paid_count = intval($result->paid_count ?? 0);
+            $result->pending_count = intval($result->pending_count ?? 0);
+            $result->overdue_count = intval($result->overdue_count ?? 0);
+            $result->total_payments = intval($result->total_payments ?? 0);
+            $result->this_month_count = intval($result->this_month_count ?? 0);
+        }
+        
+        return $result;
+    }
+
+    /**
+     * Get payment details by ID (admin view)
+     * @param int $payment_id
+     * @return object|false
+     */
+    public function getPaymentDetailsById($payment_id) {
+        $this->db->query('
+            SELECT 
+                p.*,
+                u.name as client_name,
+                u.email as client_email,
+                s.site_name,
+                s.address as site_address,
+                s.city,
+                s.district,
+                pr.site_name as package_request_site_name,
+                pr.package_name as package_request_package_name,
+                pr.package_price as package_request_price
+            FROM payments p
+            LEFT JOIN Users u ON p.client_id = u.id
+            LEFT JOIN sites s ON p.site_id = s.id
+            LEFT JOIN package_requests pr ON p.package_request_id = pr.id
+            WHERE p.id = :payment_id
+        ');
+        
+        $this->db->bind(':payment_id', $payment_id);
+        
+        return $this->db->single();
+    }
+
+    /**
+     * Update payment information (admin)
+     * @param int $payment_id
+     * @param array $data
+     * @return bool
+     */
+    public function updatePayment($payment_id, $data) {
+        $this->db->query('
+            UPDATE payments 
+            SET 
+                amount = :amount,
+                status = :status,
+                payment_date = :payment_date,
+                due_date = :due_date,
+                payment_method = :payment_method,
+                transaction_reference = :transaction_reference,
+                description = :description,
+                updated_at = NOW()
+            WHERE id = :payment_id
+        ');
+
+        $this->db->bind(':payment_id', $payment_id);
+        $this->db->bind(':amount', $data['amount']);
+        $this->db->bind(':status', $data['status']);
+        $this->db->bind(':payment_date', $data['payment_date']);
+        $this->db->bind(':due_date', $data['due_date']);
+        $this->db->bind(':payment_method', $data['payment_method'] ?? null);
+        $this->db->bind(':transaction_reference', $data['transaction_reference'] ?? null);
+        $this->db->bind(':description', $data['description'] ?? '');
+
+        return $this->db->execute();
+    }
 }

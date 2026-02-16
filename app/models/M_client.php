@@ -107,13 +107,16 @@ class M_client {
     
     public function getPendingPackageRequests($client_id) {
         // Get pending package requests with mapped personnel fields
-        // Note: Detailed pricing (officer_price, supervisor_price, caretaker_price) requires 
-        // running the migration: dev/add_custom_package_pricing.sql
+        // Uses pr.payment_status and pr.payment_id directly from package_requests table
+        // (these columns are updated by Payment::notify() when PayHere confirms payment)
         $this->db->query("SELECT pr.id, pr.package_name, pr.site_name, pr.site_address, pr.district, 
                          pr.number_of_guards as number_of_officers, 
                          pr.day_guards as number_of_supervisors, 
                          pr.night_guards as number_of_caretakers, 
                          pr.package_price, pr.status, pr.submitted_date, pr.start_date, pr.comments,
+                         pr.draft_site_id,
+                         pr.payment_status,
+                         pr.payment_id,
                          p.price_per_officer as officer_price,
                          p.price_per_supervisor as supervisor_price,
                          p.price_per_caretaker as caretaker_price
@@ -126,7 +129,30 @@ class M_client {
     }
 
     public function deletePackageRequest($id, $client_id) {
-        // Only allow deletion of pending requests
+        // Only allow deletion of pending requests that haven't been paid
+        // Check both the package_requests.payment_status column AND payments table
+        $this->db->query('SELECT payment_status FROM package_requests WHERE id = :id AND client_id = :client_id');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':client_id', $client_id);
+        $pkgResult = $this->db->single();
+        
+        if ($pkgResult && $pkgResult->payment_status === 'paid') {
+            // Request is marked as paid in package_requests table
+            return false;
+        }
+        
+        // Also check payments table as a fallback
+        $this->db->query('SELECT COUNT(*) as count FROM payments WHERE package_request_id = :id AND status = :paid_status');
+        $this->db->bind(':id', $id);
+        $this->db->bind(':paid_status', 'paid');
+        $result = $this->db->single();
+        
+        if ($result->count > 0) {
+            // Request has been paid, don't allow deletion
+            return false;
+        }
+        
+        // Delete only pending requests without paid payments
         $this->db->query('DELETE FROM package_requests WHERE id = :id AND client_id = :client_id AND status = :status');
         $this->db->bind(':id', $id);
         $this->db->bind(':client_id', $client_id);
@@ -454,5 +480,21 @@ class M_client {
         ');
         $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
+    }
+    
+    /**
+     * Approve a package request
+     * @param int $request_id
+     * @return bool
+     */
+    public function approvePackageRequest($request_id) {
+        $this->db->query('
+            UPDATE package_requests 
+            SET status = "approved",
+                updated_at = NOW()
+            WHERE id = :request_id
+        ');
+        $this->db->bind(':request_id', $request_id);
+        return $this->db->execute();
     }
 }

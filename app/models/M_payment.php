@@ -164,6 +164,7 @@ class M_payment {
             INSERT INTO payments (
                 client_id,
                 site_id,
+                package_request_id,
                 invoice_number,
                 amount,
                 description,
@@ -176,6 +177,7 @@ class M_payment {
             ) VALUES (
                 :client_id,
                 :site_id,
+                :package_request_id,
                 :invoice_number,
                 :amount,
                 :description,
@@ -191,6 +193,7 @@ class M_payment {
         // Bind values
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':site_id', $data['site_id'] ?? null);
+        $this->db->bind(':package_request_id', $data['package_request_id'] ?? null);
         $this->db->bind(':invoice_number', $data['invoice_number']);
         $this->db->bind(':amount', $data['amount']);
         $this->db->bind(':description', $data['description'] ?? 'Monthly Payment');
@@ -200,7 +203,10 @@ class M_payment {
         $this->db->bind(':payment_method', $data['payment_method'] ?? null);
         $this->db->bind(':transaction_reference', $data['transaction_reference'] ?? null);
 
-        return $this->db->execute();
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId();
+        }
+        return false;
     }
 
     /**

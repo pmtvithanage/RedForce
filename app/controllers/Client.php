@@ -595,7 +595,7 @@ class Client extends Controller {
                 if ($success) {
                     echo json_encode(['success' => true, 'message' => 'Package request deleted successfully']);
                 } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to delete request. It may have already been approved or does not exist.']);
+                    echo json_encode(['success' => false, 'message' => 'Cannot delete this request. It has already been paid for or approved.']);
                 }
                 exit;
             }
@@ -755,6 +755,20 @@ class Client extends Controller {
         header("Cache-Control: no-cache, no-store, must-revalidate");
         header("Pragma: no-cache");
         header("Expires: 0");
+        
+        // Handle error parameters from payment redirects
+        if (isset($_GET['error'])) {
+            switch ($_GET['error']) {
+                case 'payment_failed':
+                    flash('payment_error', 'Payment was unsuccessful. Please try again.');
+                    break;
+                case 'payment_init_failed':
+                    flash('payment_error', 'Failed to initiate payment. Please try again.');
+                    break;
+            }
+            // Redirect to remove query parameter
+            redirect('client/payments');
+        }
         
         $client_id = $_SESSION['user_id'];
         

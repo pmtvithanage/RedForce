@@ -932,7 +932,7 @@
 
             <div class="section-content" id="pendingRequestsContent">
             <?php foreach ($data['pending_requests'] as $request): ?>
-            <div class="request-card">
+            <div class="request-card" style="<?php echo !empty($request->payment_status) && $request->payment_status == 'paid' ? 'background: #e8f5e9; border-color: #4caf50;' : ''; ?>">
                 <div class="request-card-header">
                     <div class="request-info">
                         <h4>
@@ -942,9 +942,9 @@
                         <p><strong><?php echo htmlspecialchars($request->site_name ?? ''); ?><?php if (!empty($request->comments)): ?> <span style="color: #4caf50;">(<?php echo htmlspecialchars($request->comments); ?>)</span><?php endif; ?></strong></p>
                         <p><?php echo htmlspecialchars($request->site_address ?? ''); ?></p>
                     </div>
-                    <div class="request-status-badge">
-                        <span class="material-symbols-outlined">hourglass_empty</span>
-                        Pending Approval
+                    <div class="request-status-badge" style="background: <?php echo !empty($request->payment_status) && $request->payment_status == 'paid' ? '#4caf50' : '#ff9800'; ?>;">
+                        <span class="material-symbols-outlined"><?php echo !empty($request->payment_status) && $request->payment_status == 'paid' ? 'lock' : 'hourglass_empty'; ?></span>
+                        <?php echo !empty($request->payment_status) && $request->payment_status == 'paid' ? 'Payment Completed' : 'Pending Approval'; ?>
                     </div>
                 </div>
 
@@ -996,10 +996,17 @@
                             Start Date: <?php echo date('M d, Y', strtotime($request->start_date)); ?>
                         </div>
                     </div>
+                    <?php if (empty($request->payment_status) || $request->payment_status != 'paid'): ?>
                     <button class="btn-delete-request" onclick="deletePackageRequest(<?php echo $request->id; ?>, '<?php echo htmlspecialchars($request->site_name ?? '', ENT_QUOTES); ?>')">
                         <span class="material-symbols-outlined">delete</span>
                         Delete Request
                     </button>
+                    <?php else: ?>
+                    <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; font-size: 13px; font-weight: 600;">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">lock</span>
+                        Payment Completed - Locked
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
             <?php endforeach; ?>
@@ -1063,7 +1070,10 @@
                     $sitePendingRequests = $pendingBySite[$siteKey] ?? [];
                     $pendingTotal = 0;
                     foreach ($sitePendingRequests as $pending) {
-                        $pendingTotal += $pending->package_price ?? 0;
+                        // Only include unpaid requests in the payment calculation
+                        if (empty($pending->payment_status) || $pending->payment_status != 'paid') {
+                            $pendingTotal += $pending->package_price ?? 0;
+                        }
                     }
                     $siteSubtotal += $pendingTotal;
                     $grandTotal += $siteSubtotal;
@@ -1176,6 +1186,20 @@
 
                         <!-- Pending Changes if any -->
                         <?php if (!empty($sitePendingRequests)): ?>
+                            <!-- Separate paid and unpaid requests -->
+                            <?php 
+                            $unpaidRequests = [];
+                            $paidRequests = [];
+                            foreach ($sitePendingRequests as $req) {
+                                if (!empty($req->payment_status) && $req->payment_status == 'paid') {
+                                    $paidRequests[] = $req;
+                                } else {
+                                    $unpaidRequests[] = $req;
+                                }
+                            }
+                            ?>
+                            
+                            <?php if (!empty($unpaidRequests)): ?>
                             <!-- Pending Section Header -->
                             <div style="font-size: 12px; font-weight: 700; color: #ff9800; margin: 16px 0 8px 0; display: flex; align-items: center; gap: 6px;">
                                 <span class="material-symbols-outlined" style="font-size: 16px;">hourglass_empty</span>
@@ -1184,7 +1208,7 @@
                             
                             <?php 
                             $pendingItemsTotal = 0;
-                            foreach ($sitePendingRequests as $pending): 
+                            foreach ($unpaidRequests as $pending): 
                                 $hasPendingDetailedPricing = isset($pending->officer_price) || isset($pending->supervisor_price) || isset($pending->caretaker_price);
                             ?>
                                 <?php if ($hasPendingDetailedPricing): ?>
@@ -1279,6 +1303,38 @@
                                 <div class="invoice-label">Pending Changes Total</div>
                                 <div class="invoice-value" style="color: <?php echo $pendingItemsTotal >= 0 ? '#ff9800' : '#c62828'; ?>;"><?php echo ($pendingItemsTotal > 0 ? '+' : ''); ?>LKR <?php echo number_format($pendingItemsTotal, 2); ?></div>
                             </div>
+                            <?php endif; ?>
+                            
+                            <?php if (!empty($paidRequests)): ?>
+                            <!-- Paid Changes Section Header -->
+                            <div style="font-size: 12px; font-weight: 700; color: #4caf50; margin: 16px 0 8px 0; display: flex; align-items: center; gap: 6px;">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">check_circle</span>
+                                Paid Changes (Awaiting Admin Approval)
+                            </div>
+                            
+                            <?php foreach ($paidRequests as $paidReq): ?>
+                            <div class="invoice-row" style="background: #e8f5e9; margin: 0 -16px; padding: 10px 16px; opacity: 0.85;">
+                                <div class="invoice-label">
+                                    <span class="material-symbols-outlined" style="font-size: 16px; color: #4caf50;">lock</span>
+                                    <div>
+                                        <div><?php echo htmlspecialchars($paidReq->package_name ?? ''); ?> <span style="color: #4caf50; font-weight: 700;">(Paid)</span></div>
+                                        <div style="font-size: 11px; color: #666;">
+                                            <?php 
+                                            $parts = [];
+                                            if ($paidReq->number_of_officers != 0) $parts[] = ($paidReq->number_of_officers > 0 ? '+' : '') . $paidReq->number_of_officers . ' Officer' . (abs($paidReq->number_of_officers) > 1 ? 's' : '');
+                                            if ($paidReq->number_of_supervisors != 0) $parts[] = ($paidReq->number_of_supervisors > 0 ? '+' : '') . $paidReq->number_of_supervisors . ' Supervisor' . (abs($paidReq->number_of_supervisors) > 1 ? 's' : '');
+                                            if ($paidReq->number_of_caretakers != 0) $parts[] = ($paidReq->number_of_caretakers > 0 ? '+' : '') . $paidReq->number_of_caretakers . ' Caretaker' . (abs($paidReq->number_of_caretakers) > 1 ? 's' : '');
+                                            echo implode(', ', $parts);
+                                            ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="invoice-value" style="color: #4caf50; text-decoration: line-through;">
+                                    LKR <?php echo number_format($paidReq->package_price ?? 0, 2); ?>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
                         <?php endif; ?>
 
                         <!-- Subtotal -->
@@ -1298,6 +1354,18 @@
                 // Process any remaining pending requests for new sites
                 foreach ($pendingBySite as $siteKey => $pendingRequests):
                     if (empty($pendingRequests)) continue;
+                    
+                    // Check if all requests for this site are paid
+                    $hasUnpaidRequests = false;
+                    foreach ($pendingRequests as $req) {
+                        if (empty($req->payment_status) || $req->payment_status != 'paid') {
+                            $hasUnpaidRequests = true;
+                            break;
+                        }
+                    }
+                    
+                    // Skip this site if all requests are paid (no payment due for this new site)
+                    if (!$hasUnpaidRequests) continue;
                     
                     $firstRequest = $pendingRequests[0];
                     $siteSubtotal = 0;
@@ -1319,7 +1387,10 @@
                         </h5>
                         
                         <?php 
-                        foreach ($pendingRequests as $pending): 
+                        foreach ($pendingRequests as $pending):
+                            // Skip paid requests in payment calculation for new sites
+                            if (!empty($pending->payment_status) && $pending->payment_status == 'paid') continue;
+                            
                             $hasPendingDetailedPricing = isset($pending->officer_price) || isset($pending->supervisor_price) || isset($pending->caretaker_price);
                         ?>
                             <?php if ($hasPendingDetailedPricing): ?>
@@ -1727,10 +1798,49 @@ function initiatePayment() {
     
     const totalAmount = <?php echo $grandTotal; ?>;
     
+    // Collect site data
+    const siteData = [];
+    <?php if (!empty($data['active_sites'])): ?>
+    <?php foreach ($data['active_sites'] as $site): 
+        $siteSubtotal = 0;
+        if (isset($site->officer_price) && isset($site->number_of_officers)) {
+            $siteSubtotal += ($site->number_of_officers * $site->officer_price);
+            $siteSubtotal += (($site->number_of_supervisors ?? 0) * ($site->supervisor_price ?? 0));
+            $siteSubtotal += (($site->number_of_caretakers ?? 0) * ($site->caretaker_price ?? 0));
+        } else {
+            $siteSubtotal = $site->package_price ?? 0;
+        }
+    ?>
+    siteData.push({
+        site_id: <?php echo $site->id ?? 0; ?>,
+        site_name: "<?php echo addslashes($site->site_name ?? ''); ?>",
+        amount: <?php echo $siteSubtotal; ?>
+    });
+    <?php endforeach; ?>
+    <?php endif; ?>
+    
+    // Collect pending request data (only unpaid requests)
+    const requestData = [];
+    <?php if (!empty($data['pending_requests'])): ?>
+    <?php foreach ($data['pending_requests'] as $request): ?>
+    <?php if (empty($request->payment_status) || $request->payment_status != 'paid'): ?>
+    requestData.push({
+        request_id: <?php echo $request->id; ?>,
+        package_name: "<?php echo addslashes($request->package_name ?? ''); ?>",
+        site_name: "<?php echo addslashes($request->site_name ?? ''); ?>",
+        site_id: <?php echo $request->draft_site_id ?? 'null'; ?>,
+        amount: <?php echo $request->package_price ?? 0; ?>
+    });
+    <?php endif; ?>
+    <?php endforeach; ?>
+    <?php endif; ?>
+    
     // Prepare data
     const formData = new FormData();
     formData.append('amount', totalAmount);
     formData.append('item_name', 'Monthly Security Service Payment');
+    formData.append('site_data', JSON.stringify(siteData));
+    formData.append('request_data', JSON.stringify(requestData));
     
     // Fetch payment hash from backend
     fetch('<?php echo URL_ROOT; ?>/payment/generatePaymentHash', {
@@ -1752,8 +1862,8 @@ function initiatePayment() {
         // Define PayHere event handlers
         payhere.onCompleted = function onCompleted(orderId) {
             console.log("Payment completed. OrderID:" + orderId);
-            alert('Payment successful! Your payment has been processed.');
-            window.location.reload();
+            // Redirect to payment complete page with flash message
+            window.location.href = '<?php echo URL_ROOT; ?>/payment/complete?order_id=' + orderId;
         };
 
         payhere.onDismissed = function onDismissed() {
@@ -1764,9 +1874,8 @@ function initiatePayment() {
 
         payhere.onError = function onError(error) {
             console.log("Error:" + error);
-            alert('Payment error occurred: ' + error);
-            btn.innerHTML = originalContent;
-            btn.disabled = false;
+            // Redirect with error flash message
+            window.location.href = '<?php echo URL_ROOT; ?>/client/payments?error=payment_failed';
         };
 
         // Payment Object
@@ -1795,9 +1904,8 @@ function initiatePayment() {
     })
     .catch(error => {
         console.error('Error fetching payment hash:', error);
-        alert('Failed to initiate payment. Please try again.');
-        btn.innerHTML = originalContent;
-        btn.disabled = false;
+        // Redirect with error message
+        window.location.href = '<?php echo URL_ROOT; ?>/client/payments?error=payment_init_failed';
     });
 }
 </script>
