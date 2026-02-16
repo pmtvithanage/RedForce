@@ -1,0 +1,15 @@
+13:00:52.153 INFO [LoggingOptions.configureLogEncoding] - Using the system default encoding
+13:00:52.160 INFO [OpenTelemetryTracer.createTracer] - Using OpenTelemetry for tracing
+13:00:52.875 INFO [NodeOptions.getSessionFactories] - Detected 8 available processors
+13:00:52.877 INFO [NodeOptions.discoverDrivers] - Looking for existing drivers on the PATH.
+13:00:52.877 INFO [NodeOptions.discoverDrivers] - Add '--selenium-manager true' to the startup command to setup drivers automatically.
+13:00:53.033 WARN [SeleniumManager.lambda$runCommand$1] - Unable to discover proper chromedriver version in offline mode
+13:00:53.046 WARN [SeleniumManager.lambda$runCommand$1] - Unable to discover proper msedgedriver version in offline mode
+13:00:54.018 WARN [SeleniumManager.lambda$runCommand$1] - Exception managing firefox: Unable to discover proper geckodriver version in offline mode
+13:00:54.036 INFO [NodeOptions.report] - Adding Firefox for {"browserName": "firefox","platformName": "linux"} 8 times
+13:00:54.049 INFO [Node.<init>] - Binding additional locator mechanisms: relative
+13:00:54.064 INFO [GridModel.setAvailability] - Switching Node ee119a07-0349-4cb8-b20c-8c9104e82d78 (uri: http://10.23.10.115:4444) from DOWN to UP
+13:00:54.064 INFO [LocalDistributor.add] - Added node ee119a07-0349-4cb8-b20c-8c9104e82d78 at http://10.23.10.115:4444. Health check every 120s
+13:00:54.168 INFO [Standalone.execute] - Started Selenium Standalone 4.16.1 (revision 9b4c83354e): http://10.23.10.115:4444
+13:07:12.324 WARN [SeleniumSpanExporter$1.lambda$export$3] - {"traceId": "04f4bb04ce5d6c45fea1b833864107a0","eventTime": 1770968232319711742,"eventName": "HTTP request execution complete","attributes": {"http.flavor": 1,"http.handler_class": "org.openqa.selenium.grid.sessionqueue.local.LocalNewSessionQueue","http.host": "localhost:4444","http.method": "POST","http.request_content_length": "486","http.scheme": "HTTP","http.status_code": 500,"http.target": "\u002fsession"}}
+

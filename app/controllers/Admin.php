@@ -2352,10 +2352,151 @@ public function editSite($site_id){
 // ======================================================================== //
 
     public function clients_payments() {
+        // Load payment model
+        $paymentModel = $this->model('M_payment');
+        
+        // Get all payments with client and site information
+        $payments = $this->adminModel->getAllClientsPayments();
+        
+        // Calculate statistics
+        $stats = $this->adminModel->getAllPaymentsStats();
+        
         $data = [
             'title' => 'Salary',
-            'pageTitle' => 'Clients Payments'];
+            'pageTitle' => 'Clients Payments',
+            'payments' => $payments,
+            'stats' => $stats
+        ];
+        
         $this->view('admin/clients_payments/v_clients_payments', $data);
+    }
+
+    /**
+     * View payment details
+     */
+    public function viewPaymentDetails($payment_id) {
+        $payment = $this->adminModel->getPaymentDetailsById($payment_id);
+        
+        if (!$payment) {
+            flash('payment_error', 'Payment not found');
+            redirect('admin/clients_payments');
+        }
+        
+        $data = [
+            'title' => 'Payment Details',
+            'pageTitle' => 'Payment Details',
+            'payment' => $payment
+        ];
+        
+        $this->view('admin/clients_payments/v_payment_details', $data);
+    }
+
+    /**
+     * Edit payment
+     */
+    public function editPayment($payment_id) {
+        $payment = $this->adminModel->getPaymentDetailsById($payment_id);
+        
+        if (!$payment) {
+            flash('payment_error', 'Payment not found');
+            redirect('admin/clients_payments');
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Sanitize POST data
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            
+            $data = [
+                'amount' => trim($_POST['amount']),
+                'status' => trim($_POST['status']),
+                'payment_date' => trim($_POST['payment_date']),
+                'due_date' => trim($_POST['due_date']),
+                'payment_method' => trim($_POST['payment_method'] ?? ''),
+                'transaction_reference' => trim($_POST['transaction_reference'] ?? ''),
+                'description' => trim($_POST['description'] ?? '')
+            ];
+            
+            if ($this->adminModel->updatePayment($payment_id, $data)) {
+                flash('payment_success', 'Payment updated successfully');
+                redirect('admin/clients_payments');
+            } else {
+                flash('payment_error', 'Failed to update payment');
+            }
+        }
+        
+        $data = [
+            'title' => 'Edit Payment',
+            'pageTitle' => 'Edit Payment',
+            'payment' => $payment
+        ];
+        
+        $this->view('admin/clients_payments/v_edit_payment', $data);
+    }
+
+    /**
+     * Download payment receipt
+     */
+    public function downloadPaymentReceipt($payment_id) {
+        $payment = $this->adminModel->getPaymentDetailsById($payment_id);
+        
+        if (!$payment || $payment->status !== 'paid') {
+            flash('payment_error', 'Receipt not available');
+            redirect('admin/clients_payments');
+        }
+        
+        // Generate PDF receipt (you'll need to implement PDF generation)
+        // For now, redirect back with a message
+        flash('payment_error', 'PDF generation not yet implemented');
+        redirect('admin/clients_payments');
+    }
+
+    /**
+     * Export payments to CSV
+     */
+    public function exportPayments() {
+        $payments = $this->adminModel->getAllClientsPayments();
+        
+        // Set headers for CSV download
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="client_payments_' . date('Y-m-d') . '.csv"');
+        
+        // Open output stream
+        $output = fopen('php://output', 'w');
+        
+        // Add CSV headers
+        fputcsv($output, [
+            'Invoice Number',
+            'Client Name',
+            'Client Email',
+            'Site Name',
+            'Amount',
+            'Payment Date',
+            'Due Date',
+            'Status',
+            'Payment Method',
+            'Transaction Reference',
+            'Description'
+        ]);
+        
+        // Add data rows
+        foreach ($payments as $payment) {
+            fputcsv($output, [
+                $payment->invoice_number,
+                $payment->client_name ?? 'N/A',
+                $payment->client_email ?? 'N/A',
+                $payment->site_name ?? 'N/A',
+                number_format($payment->amount, 2),
+                $payment->payment_date ? date('Y-m-d', strtotime($payment->payment_date)) : '',
+                $payment->due_date ? date('Y-m-d', strtotime($payment->due_date)) : '',
+                $payment->status,
+                $payment->payment_method ?? '',
+                $payment->transaction_reference ?? '',
+                $payment->description ?? ''
+            ]);
+        }
+        
+        fclose($output);
+        exit;
     }
 
 

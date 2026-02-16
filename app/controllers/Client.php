@@ -595,7 +595,7 @@ class Client extends Controller {
                 if ($success) {
                     echo json_encode(['success' => true, 'message' => 'Package request deleted successfully']);
                 } else {
-                    echo json_encode(['success' => false, 'message' => 'Failed to delete request. It may have already been approved or does not exist.']);
+                    echo json_encode(['success' => false, 'message' => 'Cannot delete this request. It has already been paid for or approved.']);
                 }
                 exit;
             }
@@ -756,6 +756,20 @@ class Client extends Controller {
         header("Pragma: no-cache");
         header("Expires: 0");
         
+        // Handle error parameters from payment redirects
+        if (isset($_GET['error'])) {
+            switch ($_GET['error']) {
+                case 'payment_failed':
+                    flash('payment_error', 'Payment was unsuccessful. Please try again.');
+                    break;
+                case 'payment_init_failed':
+                    flash('payment_error', 'Failed to initiate payment. Please try again.');
+                    break;
+            }
+            // Redirect to remove query parameter
+            redirect('client/payments');
+        }
+        
         $client_id = $_SESSION['user_id'];
         
         // Load payment model
@@ -773,24 +787,8 @@ class Client extends Controller {
         // Get pending package requests
         $pendingRequests = $clientModel->getPendingPackageRequests($client_id);
         
-        // Calculate statistics
-        $totalPaid = 0;
-        $paidCount = 0;
-        $pendingCount = 0;
-        $overdueCount = 0;
-        
-        foreach ($payments as $payment) {
-            $status = strtolower($payment->status ?? 'pending');
-            
-            if ($status === 'paid') {
-                $totalPaid += $payment->amount;
-                $paidCount++;
-            } elseif ($status === 'pending') {
-                $pendingCount++;
-            } elseif ($status === 'overdue') {
-                $overdueCount++;
-            }
-        }
+        // Get comprehensive payment statistics from database
+        $paymentStats = $paymentModel->getPaymentStats($client_id);
         
         $data = [
             'title' => 'Payments',
@@ -798,10 +796,13 @@ class Client extends Controller {
             'payments' => $payments,
             'active_sites' => $activeSites,
             'pending_requests' => $pendingRequests,
-            'total_paid' => $totalPaid,
-            'paid_count' => $paidCount,
-            'pending_count' => $pendingCount,
-            'overdue_count' => $overdueCount
+            'total_paid' => $paymentStats->total_paid ?? 0,
+            'paid_count' => $paymentStats->paid_count ?? 0,
+            'pending_count' => $paymentStats->pending_count ?? 0,
+            'overdue_count' => $paymentStats->overdue_count ?? 0,
+            'pending_amount' => $paymentStats->pending_amount ?? 0,
+            'overdue_amount' => $paymentStats->overdue_amount ?? 0,
+            'total_payments' => $paymentStats->total_payments ?? 0
         ];
         
         $this->view('client/history/v_payments', $data);

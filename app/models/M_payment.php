@@ -72,14 +72,34 @@ class M_payment {
                 SUM(CASE WHEN status = "pending" THEN 1 ELSE 0 END) as pending_count,
                 SUM(CASE WHEN status = "overdue" THEN 1 ELSE 0 END) as overdue_count,
                 SUM(CASE WHEN status = "pending" THEN amount ELSE 0 END) as pending_amount,
-                SUM(CASE WHEN status = "overdue" THEN amount ELSE 0 END) as overdue_amount
+                SUM(CASE WHEN status = "overdue" THEN amount ELSE 0 END) as overdue_amount,
+                MAX(CASE WHEN status = "paid" THEN payment_date END) as last_payment_date,
+                AVG(CASE WHEN status = "paid" THEN amount END) as average_payment,
+                SUM(CASE WHEN status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN amount ELSE 0 END) as this_month_paid,
+                COUNT(CASE WHEN status = "paid" AND MONTH(payment_date) = MONTH(CURRENT_DATE()) AND YEAR(payment_date) = YEAR(CURRENT_DATE()) THEN 1 END) as this_month_count
             FROM payments
             WHERE client_id = :client_id
         ');
         
         $this->db->bind(':client_id', $client_id);
         
-        return $this->db->single();
+        $result = $this->db->single();
+        
+        // Ensure all numeric values are properly formatted
+        if ($result) {
+            $result->total_paid = floatval($result->total_paid ?? 0);
+            $result->pending_amount = floatval($result->pending_amount ?? 0);
+            $result->overdue_amount = floatval($result->overdue_amount ?? 0);
+            $result->average_payment = floatval($result->average_payment ?? 0);
+            $result->this_month_paid = floatval($result->this_month_paid ?? 0);
+            $result->paid_count = intval($result->paid_count ?? 0);
+            $result->pending_count = intval($result->pending_count ?? 0);
+            $result->overdue_count = intval($result->overdue_count ?? 0);
+            $result->total_payments = intval($result->total_payments ?? 0);
+            $result->this_month_count = intval($result->this_month_count ?? 0);
+        }
+        
+        return $result;
     }
 
     /**
@@ -144,6 +164,7 @@ class M_payment {
             INSERT INTO payments (
                 client_id,
                 site_id,
+                package_request_id,
                 invoice_number,
                 amount,
                 description,
@@ -156,6 +177,7 @@ class M_payment {
             ) VALUES (
                 :client_id,
                 :site_id,
+                :package_request_id,
                 :invoice_number,
                 :amount,
                 :description,
@@ -171,6 +193,7 @@ class M_payment {
         // Bind values
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':site_id', $data['site_id'] ?? null);
+        $this->db->bind(':package_request_id', $data['package_request_id'] ?? null);
         $this->db->bind(':invoice_number', $data['invoice_number']);
         $this->db->bind(':amount', $data['amount']);
         $this->db->bind(':description', $data['description'] ?? 'Monthly Payment');
@@ -180,7 +203,10 @@ class M_payment {
         $this->db->bind(':payment_method', $data['payment_method'] ?? null);
         $this->db->bind(':transaction_reference', $data['transaction_reference'] ?? null);
 
-        return $this->db->execute();
+        if ($this->db->execute()) {
+            return $this->db->lastInsertId();
+        }
+        return false;
     }
 
     /**

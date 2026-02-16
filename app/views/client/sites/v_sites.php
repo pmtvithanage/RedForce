@@ -20,61 +20,58 @@
 
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
         margin-bottom: 32px;
     }
 
     .stat-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-        border-radius: var(--radius);
-        padding: 24px;
-        box-shadow: var(--shadow);
-        border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
-    }
-
-    .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 24px rgba(20,20,40,0.12);
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        gap: 15px;
     }
 
     .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 12px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 16px;
+        font-size: 24px;
+        flex-shrink: 0;
     }
 
     .stat-icon.primary {
-        background: linear-gradient(135deg, #a40000 0%, #c41e1e 100%);
-        color: white;
+        background: #ffebee;
+        color: #d32f2f;
     }
 
     .stat-icon.success {
-        background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-        color: white;
+        background: #e8f5e9;
+        color: #388e3c;
     }
 
     .stat-icon.info {
-        background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%);
-        color: white;
+        background: #e3f2fd;
+        color: #1976d2;
     }
 
     .stat-value {
-        font-size: 32px;
+        margin: 0;
+        font-size: 28px;
         font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 4px;
+        color: #333;
     }
 
     .stat-label {
+        margin: 5px 0 0 0;
         font-size: 14px;
-        color: var(--muted);
-        font-weight: 500;
+        color: #666;
     }
 
     .sites-grid {
@@ -246,58 +243,66 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon primary">
-                <span class="material-symbols-outlined" style="font-size: 28px;">location_city</span>
+                <span class="material-symbols-outlined">location_city</span>
             </div>
-            <div class="stat-value"><?php echo count($data['sites']); ?></div>
-            <div class="stat-label">Total Sites</div>
+            <div>
+                <div class="stat-value"><?php echo count($data['sites']); ?></div>
+                <div class="stat-label">Total Sites</div>
+            </div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon success">
-                <span class="material-symbols-outlined" style="font-size: 28px;">badge</span>
+                <span class="material-symbols-outlined">badge</span>
             </div>
-            <div class="stat-value">
-                <?php 
-                    $totalOfficers = 0;
-                    foreach($data['sites'] as $site) {
-                        $totalOfficers += $site->assigned_officers;
-                    }
-                    echo $totalOfficers;
-                ?>
+            <div>
+                <div class="stat-value">
+                    <?php 
+                        $totalOfficers = 0;
+                        foreach($data['sites'] as $site) {
+                            $totalOfficers += $site->assigned_officers;
+                        }
+                        echo $totalOfficers;
+                    ?>
+                </div>
+                <div class="stat-label">Assigned Officers</div>
             </div>
-            <div class="stat-label">Assigned Officers</div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon info">
-                <span class="material-symbols-outlined" style="font-size: 28px;">supervisor_account</span>
+                <span class="material-symbols-outlined">supervisor_account</span>
             </div>
-            <div class="stat-value">
-                <?php 
-                    $totalSupervisors = 0;
-                    foreach($data['sites'] as $site) {
-                        $totalSupervisors += $site->assigned_supervisors;
-                    }
-                    echo $totalSupervisors;
-                ?>
+            <div>
+                <div class="stat-value">
+                    <?php 
+                        $totalSupervisors = 0;
+                        foreach($data['sites'] as $site) {
+                            $totalSupervisors += $site->assigned_supervisors;
+                        }
+                        echo $totalSupervisors;
+                    ?>
+                </div>
+                <div class="stat-label">Assigned Supervisors</div>
             </div>
-            <div class="stat-label">Assigned Supervisors</div>
         </div>
 
         <div class="stat-card">
             <div class="stat-icon info">
-                <span class="material-symbols-outlined" style="font-size: 28px;">person_check</span>
+                <span class="material-symbols-outlined">person_check</span>
             </div>
-            <div class="stat-value">
-                <?php 
-                    $totalCaretakers = 0;
-                    foreach($data['sites'] as $site) {
-                        $totalCaretakers += $site->assigned_caretakers;
-                    }
-                    echo $totalCaretakers;
-                ?>
+            <div>
+                <div class="stat-value">
+                    <?php 
+                        $totalCaretakers = 0;
+                        foreach($data['sites'] as $site) {
+                            $totalCaretakers += $site->assigned_caretakers;
+                        }
+                        echo $totalCaretakers;
+                    ?>
+                </div>
+                <div class="stat-label">Assigned Caretakers</div>
             </div>
-            <div class="stat-label">Assigned Caretakers</div>
         </div>
     </div>
 

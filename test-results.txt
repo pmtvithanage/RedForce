@@ -1,0 +1,5 @@
+PHPUnit 12.5.11 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.3.6
+Configuration: /opt/lampp/htdocs/RedForce/phpunit.xml
+
