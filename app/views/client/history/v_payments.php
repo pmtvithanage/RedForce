@@ -1862,7 +1862,10 @@ function initiatePayment() {
         // Define PayHere event handlers
         payhere.onCompleted = function onCompleted(orderId) {
             console.log("Payment completed. OrderID:" + orderId);
-            // Redirect to payment complete page with flash message
+            // Update button to show processing
+            btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying Payment...';
+            btn.disabled = true;
+            // Redirect to complete handler which updates DB and notifies admin
             window.location.href = '<?php echo URL_ROOT; ?>/payment/complete?order_id=' + orderId;
         };
 
