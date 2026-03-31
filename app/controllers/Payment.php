@@ -4,6 +4,8 @@ class Payment extends Controller {
     private $payHereModel;
     private $paymentModel;
     private $clientModel;
+    private $notificationModel;
+    private $adminModel;
 
     public function __construct() {
         if (!class_exists('PayHereModel')) {
@@ -12,6 +14,8 @@ class Payment extends Controller {
         $this->payHereModel = new PayHereModel();
         $this->paymentModel = $this->model('M_payment');
         $this->clientModel = $this->model('M_client');
+        $this->notificationModel = $this->model('M_notifications');
+        $this->adminModel = $this->model('M_admin');
     }
 
     /**
@@ -234,6 +238,9 @@ class Payment extends Controller {
                     }
                     
                     error_log("PayHere Notify - Updated $updatedCount payment records, $approvedRequests package requests marked as paid");
+                    
+                    // Send notification to all admins about the payment
+                    $this->notifyAdminsOfPayment($order_id, $payhere_amount, $pendingPayments);
                 } else {
                     error_log("PayHere Notify - No pending payments found for order: $order_id");
                 }
@@ -253,6 +260,7 @@ class Payment extends Controller {
     
     /**
      * Client-side payment completion handler
+     * Called when PayHere onCompleted fires (browser redirect)
      */
     public function complete() {
         if (!isset($_SESSION['user_id'])) {
@@ -260,6 +268,7 @@ class Payment extends Controller {
         }
         
         $order_id = $_GET['order_id'] ?? null;
+        $client_id = $_SESSION['user_id'];
         
         if ($order_id) {
             // Clear pending payment data
@@ -267,11 +276,171 @@ class Payment extends Controller {
                 unset($_SESSION['pending_payment']);
             }
             
-            flash('payment_success', 'Payment completed successfully! Your payment is being processed.');
+            // Update pending payment records for this order to paid
+            // PayHere onCompleted only fires on successful payment
+            $this->markPaymentsAsPaid($order_id, $client_id);
+            
+            flash('payment_success', 'Payment completed successfully! Your payment has been recorded.');
         } else {
             flash('payment_error', 'Payment status could not be verified.');
         }
         
         redirect('client/payments');
+    }
+
+    /**
+     * AJAX endpoint to check payment status for a given order
+     */
+    public function checkPaymentStatus() {
+        header('Content-Type: application/json');
+        
+        if (!isset($_SESSION['user_id'])) {
+            echo json_encode(['error' => true, 'message' => 'Unauthorized']);
+            exit;
+        }
+        
+        $order_id = $_GET['order_id'] ?? $_POST['order_id'] ?? null;
+        $client_id = $_SESSION['user_id'];
+        
+        if (!$order_id) {
+            echo json_encode(['error' => true, 'message' => 'No order ID provided']);
+            exit;
+        }
+        
+        $db = new Database();
+        $db->query('SELECT id, status, amount, description FROM payments 
+                   WHERE transaction_reference = :order_id 
+                   AND client_id = :client_id');
+        $db->bind(':order_id', $order_id);
+        $db->bind(':client_id', $client_id);
+        $payments = $db->resultSet();
+        
+        $allPaid = true;
+        $totalAmount = 0;
+        foreach ($payments as $p) {
+            if ($p->status !== 'paid') {
+                $allPaid = false;
+            }
+            $totalAmount += $p->amount;
+        }
+        
+        echo json_encode([
+            'status' => $allPaid ? 'paid' : 'pending',
+            'total_amount' => $totalAmount,
+            'payment_count' => count($payments)
+        ]);
+        exit;
+    }
+
+    /**
+     * Mark pending payments as paid for a given order and client
+     */
+    private function markPaymentsAsPaid($order_id, $client_id) {
+        try {
+            $db = new Database();
+            
+            // Get all pending payment records for this order AND client
+            $db->query('SELECT * FROM payments 
+                       WHERE transaction_reference = :order_id 
+                       AND client_id = :client_id 
+                       AND status = "pending"');
+            $db->bind(':order_id', $order_id);
+            $db->bind(':client_id', $client_id);
+            $pendingPayments = $db->resultSet();
+            
+            if (!$pendingPayments || empty($pendingPayments)) {
+                error_log("Payment Complete - No pending payments found for order: $order_id, client: $client_id (may already be updated by notify)");
+                return;
+            }
+            
+            $updatedCount = 0;
+            foreach ($pendingPayments as $payment) {
+                // Update payment status to paid
+                $db->query('UPDATE payments 
+                           SET status = "paid", 
+                               payment_method = "PayHere Online",
+                               updated_at = NOW()
+                           WHERE id = :id AND status = "pending"');
+                $db->bind(':id', $payment->id);
+                $db->execute();
+                $updatedCount++;
+                
+                error_log("Payment Complete - Updated payment id={$payment->id} to paid for order: $order_id");
+                
+                // Update package_requests table if applicable
+                if (!empty($payment->package_request_id)) {
+                    $db->query('UPDATE package_requests 
+                               SET payment_status = "paid",
+                                   payment_id = :internal_payment_id,
+                                   updated_at = NOW()
+                               WHERE id = :request_id');
+                    $db->bind(':internal_payment_id', $payment->id);
+                    $db->bind(':request_id', $payment->package_request_id);
+                    $db->execute();
+                    
+                    error_log("Payment Complete - Updated package_request {$payment->package_request_id} payment_status=paid");
+                }
+            }
+            
+            error_log("Payment Complete - Updated $updatedCount payment records for order: $order_id");
+            
+            // Send notification to all admins
+            $this->notifyAdminsOfPayment($order_id, null, $pendingPayments);
+            
+        } catch (Exception $e) {
+            error_log("Payment Complete - Exception: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send notification to all admins about a received payment
+     */
+    private function notifyAdminsOfPayment($order_id, $amount, $payments) {
+        try {
+            // Calculate total amount from payment records if not provided
+            if ($amount === null && $payments) {
+                $amount = 0;
+                foreach ($payments as $p) {
+                    $amount += $p->amount;
+                }
+            }
+            
+            // Get client name from the first payment record
+            $clientName = 'A client';
+            $clientId = null;
+            if ($payments && !empty($payments)) {
+                $clientId = $payments[0]->client_id;
+                $db = new Database();
+                $db->query('SELECT name FROM Users WHERE id = :id');
+                $db->bind(':id', $clientId);
+                $user = $db->single();
+                if ($user) {
+                    $clientName = $user->name;
+                }
+            }
+            
+            $formattedAmount = 'LKR ' . number_format((float)$amount, 2);
+            
+            // Get all admins and send notifications
+            $admins = $this->adminModel->getAllAdmins();
+            if ($admins && is_array($admins)) {
+                foreach ($admins as $admin) {
+                    if (isset($admin->id)) {
+                        $this->notificationModel->insertNotification(
+                            $admin->id,
+                            'success',
+                            'Payment Received',
+                            $clientName . ' has made a payment of ' . $formattedAmount . '. Order: ' . $order_id,
+                            '/admin/clients_payments',
+                            'payments',
+                            $clientId
+                        );
+                    }
+                }
+                error_log("Payment Notification - Sent admin notifications for order: $order_id, amount: $formattedAmount");
+            }
+        } catch (Exception $e) {
+            error_log("Payment Notification Error: " . $e->getMessage());
+        }
     }
 }
