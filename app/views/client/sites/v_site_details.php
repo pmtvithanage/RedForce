@@ -114,146 +114,291 @@
         font-weight: 600;
     }
 
-    .staff-section {
-        margin-top: 24px;
-    }
-
-    .staff-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .staff-title {
-        font-size: 20px;
-        font-weight: 700;
-        color: #1a1a1a;
-    }
-
-    .staff-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 20px;
-    }
-
-    .staff-card {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    .schedule-section {
+        background: #ffffff;
         border-radius: var(--radius);
-        padding: 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        box-shadow: var(--shadow);
         border: 1px solid rgba(0,0,0,0.05);
-        transition: all 0.3s ease;
+        padding: 24px;
     }
 
-    .staff-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
     }
 
-    .staff-header-row {
+    .calendar-panel {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .schedule-title {
+        margin: 0 0 20px 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #a40000;
+    }
+
+    .calendar-toolbar {
         display: flex;
         align-items: center;
-        gap: 12px;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 10px 15px;
+    }
+
+    .month-label {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        text-align: center;
+    }
+
+    .nav-btn {
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 999px;
+        background: var(--accent);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+        background: #b50000;
+        transform: scale(1.05);
+    }
+
+    .nav-btn .material-symbols-outlined {
+        font-size: 20px;
+    }
+
+    .weekdays,
+    .calendar-body {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+
+    .weekdays {
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .weekday {
+        text-align: center;
+        font-weight: 600;
+        font-size: 14px;
+        color: #666;
+        padding: 15px 10px;
+        border-right: 1px solid #e9ecef;
+    }
+
+    .weekday:last-child {
+        border-right: none;
+    }
+
+    .calendar-day {
+        min-height: 80px;
+        background: #ffffff;
+        border: 0;
+        border-right: 1px solid #e9ecef;
+        border-bottom: 1px solid #e9ecef;
+        border-radius: 0;
+        padding: 8px;
+        font-size: 14px;
+        font-weight: 400;
+        color: #2f2f2f;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-start;
+        position: relative;
+    }
+
+    .calendar-day:hover {
+        background: #f8fbff;
+        transform: scale(1.02);
+    }
+
+    .calendar-day.other-month {
+        color: #c3c7cc;
+        background: #f8f9fa;
+        font-weight: 400;
+    }
+
+    .calendar-day.other-month:hover {
+        background: #f8f9fa;
+        transform: scale(1);
+    }
+
+    .calendar-day.today {
+        background: #e8f4ff;
+        box-shadow: inset 0 0 0 2px #2196f3;
+        font-weight: 700;
+    }
+
+    .calendar-day.selected {
+        background: #cfe3f5;
+        box-shadow: inset 0 0 0 2px #2196f3;
+    }
+
+    .day-number {
+        font-weight: 600;
+        font-size: 14px;
+        color: inherit;
+    }
+
+    .schedule-panel {
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+    }
+
+    .schedule-panel h3 {
+        margin: 0;
+        color: #333;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .selected-date {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
         margin-bottom: 16px;
     }
 
-    .staff-avatar {
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
-        object-fit: cover;
-        border: 2px solid #e0e0e0;
+    .schedule-separator {
+        border: 0;
+        border-top: 1px solid #f0f0f0;
+        margin: 0 0 18px;
     }
 
-    .staff-avatar-placeholder {
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+    .schedule-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .schedule-empty .material-symbols-outlined {
+        font-size: 48px;
+        color: #ddd;
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .group-block + .group-block {
+        margin-top: 16px;
+    }
+
+    .group-title {
         display: flex;
         align-items: center;
-        justify-content: center;
-        border: 2px solid #90caf9;
-    }
-
-    .staff-name {
-        font-size: 18px;
+        gap: 8px;
+        font-size: 16px;
         font-weight: 700;
-        color: #1a1a1a;
-        margin-bottom: 4px;
+        color: #1f2937;
+        margin-bottom: 10px;
     }
 
-    .staff-id {
-        font-size: 13px;
-        color: var(--muted);
-    }
-
-    .staff-details {
+    .duty-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid #f0f0f0;
     }
 
-    .detail-row {
+    .duty-item {
         display: flex;
         align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #666;
+        justify-content: space-between;
+        gap: 10px;
+        background: #ffffff;
+        border: 1px solid #eceff3;
+        border-radius: 10px;
+        padding: 10px 12px;
     }
 
-    .detail-row .material-symbols-outlined {
-        font-size: 18px;
-        color: var(--accent);
+    .duty-name {
+        font-weight: 600;
+        color: #111827;
+        font-size: 16px;
     }
 
-    .badge {
+    .duty-meta {
+        font-size: 13px;
+        color: #6b7280;
+    }
+
+    .shift-badge {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
-        padding: 6px 12px;
+        justify-content: center;
+        min-width: 82px;
+        padding: 5px 10px;
         border-radius: 20px;
         font-size: 12px;
-        font-weight: 600;
-        margin-top: 12px;
+        font-weight: 700;
     }
 
-    .badge-day {
+    .shift-day {
         background: #e7f5e7;
         color: #2e7d32;
     }
 
-    .badge-night {
+    .shift-night {
         background: #e3f2fd;
         color: #1565c0;
     }
 
-    .badge-fulltime {
+    .shift-full {
         background: #f3e5f5;
         color: #6a1b9a;
     }
 
-    .badge-caretaker {
-        background: #fff3e0;
-        color: #e65100;
+    @media (max-width: 1400px) {
+        .weekday {
+            font-size: 12px;
+            padding: 10px 5px;
+        }
+
+        .calendar-day {
+            min-height: 60px;
+        }
+
+        .month-label {
+            font-size: 16px;
+        }
+
+        .schedule-panel h3 {
+            font-size: 16px;
+        }
+
+        .selected-date {
+            font-size: 13px;
+        }
+
+        .group-title {
+            font-size: 15px;
+        }
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-        background: #fafafa;
-        border-radius: var(--radius);
-        border: 2px dashed #ddd;
-    }
-
-    .empty-icon {
-        font-size: 64px;
-        color: #ddd;
-        margin-bottom: 16px;
+    @media (max-width: 992px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 
@@ -263,11 +408,10 @@
         Back to Sites
     </a>
 
-    <!-- Site Cover Image -->
     <div class="site-cover">
         <?php if(!empty($data['site']->image)): ?>
-            <img src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $data['site']->image; ?>" 
-                 alt="<?php echo htmlspecialchars($data['site']->site_name); ?>" 
+            <img src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $data['site']->image; ?>"
+                 alt="<?php echo htmlspecialchars($data['site']->site_name); ?>"
                  class="site-cover-img">
         <?php else: ?>
             <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); display: flex; align-items: center; justify-content: center;">
@@ -276,7 +420,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Site Information -->
     <div class="info-card">
         <h2><?php echo htmlspecialchars($data['site']->site_name); ?></h2>
         <div class="info-grid">
@@ -344,207 +487,271 @@
         </div>
     </div>
 
-    <!-- Assigned Officers Section -->
-    <div class="staff-section">
-        <div class="staff-header">
-            <h3 class="staff-title">
-                <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">badge</span>
-                Assigned Officers (<?php echo count($data['assigned_officers']); ?>)
-            </h3>
+    <div class="schedule-section">
+        <h2 class="schedule-title">Site Schedule Calendar</h2>
+        <div class="schedule-grid">
+            <div class="calendar-panel">
+                <div class="calendar-toolbar">
+                    <button class="nav-btn" id="prevMonth" type="button" aria-label="Previous month">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <div class="month-label" id="currentMonthYear">April 2026</div>
+                    <button class="nav-btn" id="nextMonth" type="button" aria-label="Next month">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                </div>
+
+                <div class="weekdays">
+                    <div class="weekday">MON</div>
+                    <div class="weekday">TUE</div>
+                    <div class="weekday">WED</div>
+                    <div class="weekday">THU</div>
+                    <div class="weekday">FRI</div>
+                    <div class="weekday">SAT</div>
+                    <div class="weekday">SUN</div>
+                </div>
+
+                <div class="calendar-body" id="calendarBody"></div>
+            </div>
+
+            <div class="schedule-panel">
+                <h3>Schedule Details</h3>
+                <div class="selected-date" id="selectedDate">Select a date</div>
+                <hr class="schedule-separator">
+
+                <div id="shiftContent" class="schedule-empty">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    <p>Click on a date to view duty staff for that day</p>
+                </div>
+            </div>
         </div>
-
-        <?php if(empty($data['assigned_officers'])): ?>
-            <div class="empty-state">
-                <span class="material-symbols-outlined empty-icon">badge</span>
-                <p style="color: var(--muted); font-size: 16px;">No officers assigned to this site</p>
-            </div>
-        <?php else: ?>
-            <div class="staff-grid">
-                <?php foreach($data['assigned_officers'] as $officer): ?>
-                    <div class="staff-card">
-                        <div class="staff-header-row">
-                            <?php if(!empty($officer->profile_image)): ?>
-                                <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 
-                                     alt="<?php echo htmlspecialchars($officer->name); ?>" 
-                                     class="staff-avatar">
-                            <?php else: ?>
-                                <div class="staff-avatar-placeholder">
-                                    <span style="font-weight: 700; font-size: 20px; color: #1976d2;">
-                                        <?php echo strtoupper(substr($officer->name, 0, 1)); ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
-                            <div style="flex: 1;">
-                                <div class="staff-name"><?php echo htmlspecialchars($officer->name); ?></div>
-                                <div class="staff-id"><?php echo htmlspecialchars($officer->officerID ?? 'N/A'); ?></div>
-                            </div>
-                        </div>
-
-                        <div class="staff-details">
-                            <?php if(!empty($officer->phone_number)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">call</span>
-                                <span><?php echo htmlspecialchars($officer->phone_number); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event</span>
-                                <span>Started: <?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></span>
-                            </div>
-                            <?php if(!empty($officer->assignment_end)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event_busy</span>
-                                <span>Ends: <?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></span>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <?php 
-                            $shiftClass = match($officer->shift_type ?? 'Full Time') {
-                                'Day' => 'badge-day',
-                                'Night' => 'badge-night',
-                                default => 'badge-fulltime'
-                            };
-                        ?>
-                        <span class="badge <?php echo $shiftClass; ?>">
-                            <?php echo htmlspecialchars($officer->shift_type ?? 'Full Time'); ?> Shift
-                        </span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Assigned Supervisors Section -->
-    <div class="staff-section">
-        <div class="staff-header">
-            <h3 class="staff-title">
-                <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">supervisor_account</span>
-                Assigned Supervisors (<?php echo count($data['assigned_supervisors']); ?>)
-            </h3>
-        </div>
-
-        <?php if(empty($data['assigned_supervisors'])): ?>
-            <div class="empty-state">
-                <span class="material-symbols-outlined empty-icon">supervisor_account</span>
-                <p style="color: var(--muted); font-size: 16px;">No supervisors assigned to this site</p>
-            </div>
-        <?php else: ?>
-            <div class="staff-grid">
-                <?php foreach($data['assigned_supervisors'] as $supervisor): ?>
-                    <div class="staff-card">
-                        <div class="staff-header-row">
-                            <?php if(!empty($supervisor->profile_image)): ?>
-                                <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $supervisor->profile_image; ?>" 
-                                     alt="<?php echo htmlspecialchars($supervisor->name); ?>" 
-                                     class="staff-avatar">
-                            <?php else: ?>
-                                <div class="staff-avatar-placeholder" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-color: #ff9800;">
-                                    <span style="font-weight: 700; font-size: 20px; color: #e65100;">
-                                        <?php echo strtoupper(substr($supervisor->name, 0, 1)); ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
-                            <div style="flex: 1;">
-                                <div class="staff-name"><?php echo htmlspecialchars($supervisor->name); ?></div>
-                                <div class="staff-id"><?php echo htmlspecialchars($supervisor->officerID ?? 'N/A'); ?></div>
-                            </div>
-                        </div>
-
-                        <div class="staff-details">
-                            <?php if(!empty($supervisor->phone_number)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">call</span>
-                                <span><?php echo htmlspecialchars($supervisor->phone_number); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <?php if(!empty($supervisor->email)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">email</span>
-                                <span><?php echo htmlspecialchars($supervisor->email); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event</span>
-                                <span>Started: <?php echo date('M d, Y', strtotime($supervisor->assignment_start)); ?></span>
-                            </div>
-                            <?php if(!empty($supervisor->assignment_end)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event_busy</span>
-                                <span>Ends: <?php echo date('M d, Y', strtotime($supervisor->assignment_end)); ?></span>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <span class="badge" style="background: #fff3e0; color: #e65100;">Supervisor</span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-
-    <!-- Assigned Caretakers Section -->
-    <div class="staff-section">
-        <div class="staff-header">
-            <h3 class="staff-title">
-                <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 8px;">person_check</span>
-                Assigned Caretakers (<?php echo count($data['assigned_caretakers']); ?>)
-            </h3>
-        </div>
-
-        <?php if(empty($data['assigned_caretakers'])): ?>
-            <div class="empty-state">
-                <span class="material-symbols-outlined empty-icon">person_check</span>
-                <p style="color: var(--muted); font-size: 16px;">No caretakers assigned to this site</p>
-            </div>
-        <?php else: ?>
-            <div class="staff-grid">
-                <?php foreach($data['assigned_caretakers'] as $caretaker): ?>
-                    <div class="staff-card">
-                        <div class="staff-header-row">
-                            <?php if(!empty($caretaker->profile_image)): ?>
-                                <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $caretaker->profile_image; ?>" 
-                                     alt="<?php echo htmlspecialchars($caretaker->name); ?>" 
-                                     class="staff-avatar">
-                            <?php else: ?>
-                                <div class="staff-avatar-placeholder" style="background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%); border-color: #ffb74d;">
-                                    <span style="font-weight: 700; font-size: 20px; color: #e65100;">
-                                        <?php echo strtoupper(substr($caretaker->name, 0, 1)); ?>
-                                    </span>
-                                </div>
-                            <?php endif; ?>
-                            <div style="flex: 1;">
-                                <div class="staff-name"><?php echo htmlspecialchars($caretaker->name); ?></div>
-                                <div class="staff-id"><?php echo htmlspecialchars($caretaker->caretakerID ?? 'N/A'); ?></div>
-                            </div>
-                        </div>
-
-                        <div class="staff-details">
-                            <?php if(!empty($caretaker->phone_number)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">call</span>
-                                <span><?php echo htmlspecialchars($caretaker->phone_number); ?></span>
-                            </div>
-                            <?php endif; ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event</span>
-                                <span>Started: <?php echo date('M d, Y', strtotime($caretaker->assignment_start)); ?></span>
-                            </div>
-                            <?php if(!empty($caretaker->assignment_end)): ?>
-                            <div class="detail-row">
-                                <span class="material-symbols-outlined">event_busy</span>
-                                <span>Ends: <?php echo date('M d, Y', strtotime($caretaker->assignment_end)); ?></span>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <span class="badge badge-caretaker">Caretaker</span>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
     </div>
 </div>
+
+<script>
+    const assignedOfficers = <?php echo json_encode($data['assigned_officers'] ?? []); ?>;
+    const assignedSupervisors = <?php echo json_encode($data['assigned_supervisors'] ?? []); ?>;
+
+    const todayDateObj = new Date();
+    const todayKey = todayDateObj.getFullYear() + '-' + String(todayDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayDateObj.getDate()).padStart(2, '0');
+    const tomorrowObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth(), todayDateObj.getDate() + 1);
+    const tomorrowKey = tomorrowObj.getFullYear() + '-' + String(tomorrowObj.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrowObj.getDate()).padStart(2, '0');
+
+    const dummyScheduleByDate = {
+        [todayKey]: {
+            officers: [
+                { name: 'Kasun Perera', rank: 'Senior Officer', shift_type: 'Day' },
+                { name: 'Nimal Fernando', rank: 'Officer', shift_type: 'Night' },
+                { name: 'Ruwan De Silva', rank: 'Junior Officer', shift_type: 'Day' }
+            ],
+            supervisors: [
+                { name: 'Saman Jayasinghe', rank: 'Supervisor', shift_type: 'Day' },
+                { name: 'Dinesh Karunaratne', rank: 'Chief Supervisor', shift_type: 'Night' }
+            ]
+        },
+        [tomorrowKey]: {
+            officers: [
+                { name: 'Kavindu Silva', rank: 'Officer', shift_type: 'Day' },
+                { name: 'Pradeep Gunasekara', rank: 'Senior Officer', shift_type: 'Night' }
+            ],
+            supervisors: [
+                { name: 'Tharindu Mendis', rank: 'Supervisor', shift_type: 'Day' }
+            ]
+        }
+    };
+
+    (function initializeSiteScheduleCalendar() {
+        const calendarBody = document.getElementById('calendarBody');
+        const currentMonthYearSpan = document.getElementById('currentMonthYear');
+        const selectedDateSpan = document.getElementById('selectedDate');
+        const shiftContent = document.getElementById('shiftContent');
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+
+        if (!calendarBody || !currentMonthYearSpan || !prevMonthBtn || !nextMonthBtn || !shiftContent) {
+            return;
+        }
+
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        let selectedKey = null;
+
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        function normalizeShift(shiftType) {
+            const shift = String(shiftType || 'Full Time').trim().toLowerCase();
+            if (shift === 'day') {
+                return { label: 'Day Shift', className: 'shift-day' };
+            }
+            if (shift === 'night') {
+                return { label: 'Night Shift', className: 'shift-night' };
+            }
+            return { label: 'Full Time', className: 'shift-full' };
+        }
+
+        function dayCell(day, month, year, isOtherMonth, isToday) {
+            const el = document.createElement('div');
+            el.className = 'calendar-day' + (isOtherMonth ? ' other-month' : '') + (isToday ? ' today' : '');
+            el.innerHTML = '<span class="day-number">' + String(day) + '</span>';
+            el.dataset.day = String(day);
+            el.dataset.month = String(month);
+            el.dataset.year = String(year);
+            return el;
+        }
+
+        function renderCalendar(month, year) {
+            calendarBody.innerHTML = '';
+            currentMonthYearSpan.textContent = monthNames[month] + ' ' + year;
+
+            const firstDay = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const mondayStart = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+            const prevMonth = month === 0 ? 11 : month - 1;
+            const prevYear = month === 0 ? year - 1 : year;
+            const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
+
+            const today = new Date();
+            const todayDay = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+
+            for (let i = mondayStart - 1; i >= 0; i--) {
+                const day = prevMonthDays - i;
+                calendarBody.appendChild(dayCell(day, prevMonth, prevYear, true, false));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const isToday = day === todayDay && month === todayMonth && year === todayYear;
+                const el = dayCell(day, month, year, false, isToday);
+                const dateKey = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+
+                el.addEventListener('click', () => {
+                    selectedKey = dateKey;
+                    renderSelectedState();
+                    renderScheduleDetails(day, month, year, dateKey);
+                });
+
+                calendarBody.appendChild(el);
+            }
+
+            const totalCells = calendarBody.children.length;
+            const remaining = 42 - totalCells;
+            const nextMonth = month === 11 ? 0 : month + 1;
+            const nextYear = month === 11 ? year + 1 : year;
+
+            for (let day = 1; day <= remaining; day++) {
+                calendarBody.appendChild(dayCell(day, nextMonth, nextYear, true, false));
+            }
+
+            renderSelectedState();
+        }
+
+        function renderSelectedState() {
+            const allDays = calendarBody.querySelectorAll('.calendar-day');
+            allDays.forEach((el) => {
+                const key =
+                    el.dataset.year + '-' +
+                    String(Number(el.dataset.month) + 1).padStart(2, '0') + '-' +
+                    String(el.dataset.day).padStart(2, '0');
+                if (selectedKey && key === selectedKey) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+        }
+
+        function renderDutyGroup(title, icon, list) {
+            if (!Array.isArray(list) || list.length === 0) {
+                return '';
+            }
+
+            const items = list.map((person) => {
+                const shift = normalizeShift(person.shift_type);
+                const rankText = person.rank || person.officer_rank || person.role || 'N/A';
+                return `
+                    <div class="duty-item">
+                        <div>
+                            <div class="duty-name">${escapeHtml(person.name || 'Unnamed')}</div>
+                            <div class="duty-meta">Rank: ${escapeHtml(String(rankText))}</div>
+                        </div>
+                        <span class="shift-badge ${shift.className}">${shift.label}</span>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="group-block">
+                    <div class="group-title">
+                        <span class="material-symbols-outlined">${icon}</span>
+                        <span>${title} (${list.length})</span>
+                    </div>
+                    <div class="duty-list">${items}</div>
+                </div>
+            `;
+        }
+
+        function renderScheduleDetails(day, month, year, dateKey) {
+            selectedDateSpan.textContent = monthNames[month] + ' ' + day + ', ' + year;
+
+            const dateSchedule = dummyScheduleByDate[dateKey] || { officers: [], supervisors: [] };
+
+            const officerGroup = renderDutyGroup('Premise Officers On Duty', 'badge', dateSchedule.officers);
+            const supervisorGroup = renderDutyGroup('Supervisors On Duty', 'supervisor_account', dateSchedule.supervisors);
+
+            if (!officerGroup && !supervisorGroup) {
+                shiftContent.className = 'schedule-empty';
+                shiftContent.innerHTML = `
+                    <span class="material-symbols-outlined">event_busy</span>
+                    <p>No duty assignments available for ${escapeHtml(dateKey)}</p>
+                `;
+                return;
+            }
+
+            shiftContent.className = '';
+            shiftContent.innerHTML = officerGroup + supervisorGroup;
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/\"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth -= 1;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear -= 1;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth += 1;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear += 1;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        renderCalendar(currentMonth, currentYear);
+
+        // Show dummy schedule for today by default.
+        selectedKey = todayKey;
+        renderSelectedState();
+        renderScheduleDetails(todayDateObj.getDate(), todayDateObj.getMonth(), todayDateObj.getFullYear(), todayKey);
+    })();
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 
