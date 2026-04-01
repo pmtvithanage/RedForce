@@ -1088,6 +1088,50 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+        // Get latest pending package request linked to an existing site via draft_site_id.
+        public function getPendingPackageRequestByLinkedSite($site_id) {
+                $this->db->query("SELECT pr.*
+                                                    FROM package_requests pr
+                                                    WHERE pr.draft_site_id = :site_id
+                                                        AND pr.status = 'Pending'
+                                                    ORDER BY pr.submitted_date DESC
+                                                    LIMIT 1");
+                $this->db->bind(':site_id', $site_id);
+                return $this->db->single();
+        }
+
+        // Count assignments newly added on/after a request submission date.
+        public function getAddedAssignmentsSince($siteId, $sinceDate) {
+                $this->db->query("SELECT
+                                                        (SELECT COUNT(*)
+                                                         FROM officer_site_assignments osa
+                                                         WHERE osa.site_id = :site_id
+                                                             AND osa.status = 'Active'
+                                                             AND (osa.shift_type IS NULL OR osa.shift_type != 'Supervisor')
+                                                             AND osa.assigned_at >= :since_officers
+                                                        ) AS added_officers,
+                                                        (SELECT COUNT(*)
+                                                         FROM officer_site_assignments osa
+                                                         WHERE osa.site_id = :site_id
+                                                             AND osa.status = 'Active'
+                                                             AND osa.shift_type = 'Supervisor'
+                                                             AND osa.assigned_at >= :since_supervisors
+                                                        ) AS added_supervisors,
+                                                        (SELECT COUNT(*)
+                                                         FROM caretaker_site_assignments csa
+                                                         WHERE csa.site_id = :site_id
+                                                             AND csa.status = 'Active'
+                                                             AND csa.assigned_at >= :since_caretakers
+                                                        ) AS added_caretakers");
+
+                $this->db->bind(':site_id', $siteId);
+                $this->db->bind(':since_officers', $sinceDate);
+                $this->db->bind(':since_supervisors', $sinceDate);
+                $this->db->bind(':since_caretakers', $sinceDate);
+
+                return $this->db->single();
+        }
+
     // Get client's phone number
     public function getClientPhoneNumber($user_id) {
         // client_id in package_requests references Users.id directly
@@ -1110,6 +1154,27 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             error_log("ERROR: No Clients record found for user_id = {$user_id}");
             return null;
         }
+    }
+
+    // Find an official (non-draft) site for this client by site name.
+    public function findOfficialSiteIdByClientAndName($user_id, $site_name) {
+        $clientsTableId = $this->getClientsTableId($user_id);
+        if (!$clientsTableId) {
+            return null;
+        }
+
+        $this->db->query("SELECT id
+                          FROM sites
+                          WHERE client_id = :client_id
+                            AND site_name = :site_name
+                            AND is_draft = 0
+                          ORDER BY id DESC
+                          LIMIT 1");
+        $this->db->bind(':client_id', $clientsTableId);
+        $this->db->bind(':site_name', $site_name);
+        $site = $this->db->single();
+
+        return $site ? (int)$site->id : null;
     }
 
     // Create site from approved package request

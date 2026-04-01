@@ -75,8 +75,8 @@ class M_client {
         // number_of_supervisors -> day_guards
         // number_of_caretakers -> night_guards
         
-        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments, status) 
-            VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments, :status)');
+        $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments, status, draft_site_id) 
+            VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments, :status, :draft_site_id)');
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':package_name', $data['package_name']);
         $this->db->bind(':site_name', $data['site_name']);
@@ -96,6 +96,7 @@ class M_client {
         $this->db->bind(':package_price', $data['package_price']);
         $this->db->bind(':comments', $data['comments'] ?? null);
         $this->db->bind(':status', $data['status'] ?? 'Pending');
+        $this->db->bind(':draft_site_id', $data['site_id'] ?? null);
         return $this->db->execute();
     }
 

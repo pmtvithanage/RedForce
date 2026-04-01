@@ -595,6 +595,18 @@
     </div>
     <?php endif; ?>
 
+    <?php if ($data['site']->is_draft == 0 && !empty($data['review_request'])): ?>
+    <div style="margin: 12px; padding: 16px; background: #e8f4fd; border-left: 4px solid #0d6efd; border-radius: 8px;">
+      <h3 style="margin: 0 0 8px 0; color: #084298; font-size: 18px;">
+        <span class="material-symbols-outlined" style="vertical-align: middle;">assignment</span>
+        Existing Site Update Request In Review
+      </h3>
+      <p style="margin: 0; color: #084298;">
+        Assign requested officers/supervisors/caretakers on this site first, then approve or reject this request.
+      </p>
+    </div>
+    <?php endif; ?>
+
     <!-- COVER -->
     <div class="cover" aria-hidden="true">
       <button class="tertiary-btn" style="display:flex; width:100px; margin:20px;align-items:center;" onClick="window.location.href='<?php echo URL_ROOT; ?>/admin/clientprofile/<?php echo $data['client']->id; ?>'"> 
@@ -1059,8 +1071,8 @@
       </div>
     </div>
 
-    <!-- Draft Site Action Buttons (after officer assignment section) -->
-    <?php if ($data['site']->is_draft == 1): ?>
+    <!-- Review Action Buttons (after officer assignment section) -->
+    <?php if (!empty($data['review_request'])): ?>
     <div style="margin: 24px 12px; padding: 20px; background: white; border-radius: 12px; box-shadow: var(--shadow);">
       <div style="margin-bottom: 16px;">
         <h3 style="margin: 0 0 8px 0; color: #333; font-size: 18px;">
@@ -1068,32 +1080,56 @@
           Review & Approval
         </h3>
         <?php 
-          $requiredOfficers = (int)($data['package_request']->number_of_guards ?? 0);
-          $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
-          $assignedRegularOfficers = 0;
-          $assignedSupervisors = 0;
+          $isDraftReview = ((int)$data['site']->is_draft === 1);
+          if ($isDraftReview) {
+              $requiredOfficers = (int)($data['review_request']->number_of_guards ?? 0);
+              $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
+              $requiredCaretakers = (int)($data['review_request']->night_guards ?? 0);
 
-          foreach (($data['assigned_officers'] ?? []) as $assignedOfficer) {
-              if (($assignedOfficer->shift_type ?? '') === 'Supervisor') {
-                  $assignedSupervisors++;
-              } else {
-                  $assignedRegularOfficers++;
+              $progressOfficers = 0;
+              $progressSupervisors = 0;
+              foreach (($data['assigned_officers'] ?? []) as $assignedOfficer) {
+                  if (($assignedOfficer->shift_type ?? '') === 'Supervisor') {
+                      $progressSupervisors++;
+                  } else {
+                      $progressOfficers++;
+                  }
               }
-          }
+              $progressCaretakers = count($data['assigned_caretakers'] ?? []);
 
-          $officersReady = ($assignedRegularOfficers == $requiredOfficers);
-          $supervisorsReady = ($assignedSupervisors >= $requiredSupervisors);
-          $canApprove = ($officersReady && $supervisorsReady);
+              $officersReady = ($progressOfficers == $requiredOfficers);
+              $supervisorsReady = ($progressSupervisors >= $requiredSupervisors);
+              $caretakersReady = ($progressCaretakers >= $requiredCaretakers);
+              $canApprove = ($officersReady && $supervisorsReady && $caretakersReady);
+              $approveLabel = 'Approve & Create Site';
+          } else {
+              $requiredOfficers = (int)($data['review_progress']['required_officers'] ?? 0);
+              $requiredSupervisors = (int)($data['review_progress']['required_supervisors'] ?? 0);
+              $requiredCaretakers = (int)($data['review_progress']['required_caretakers'] ?? 0);
+
+              $progressOfficers = (int)($data['review_progress']['added_officers'] ?? 0);
+              $progressSupervisors = (int)($data['review_progress']['added_supervisors'] ?? 0);
+              $progressCaretakers = (int)($data['review_progress']['added_caretakers'] ?? 0);
+
+              $officersReady = ($progressOfficers >= $requiredOfficers);
+              $supervisorsReady = ($progressSupervisors >= $requiredSupervisors);
+              $caretakersReady = ($progressCaretakers >= $requiredCaretakers);
+              $canApprove = ($officersReady && $supervisorsReady && $caretakersReady);
+              $approveLabel = 'Approve Request';
+          }
         ?>
         <p style="margin: 0 0 6px 0; color: #666; font-size: 14px;">
-          Officers assigned: <strong style="color: <?php echo $officersReady ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedRegularOfficers; ?>/<?php echo $requiredOfficers; ?></strong>
+          Officers: <strong style="color: <?php echo $officersReady ? '#28a745' : '#dc3545'; ?>"><?php echo $progressOfficers; ?>/<?php echo $requiredOfficers; ?></strong>
+        </p>
+        <p style="margin: 0 0 6px 0; color: #666; font-size: 14px;">
+          Supervisors: <strong style="color: <?php echo $supervisorsReady ? '#28a745' : '#dc3545'; ?>"><?php echo $progressSupervisors; ?>/<?php echo $requiredSupervisors; ?></strong>
         </p>
         <p style="margin: 0; color: #666; font-size: 14px;">
-          Supervisors assigned: <strong style="color: <?php echo $supervisorsReady ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedSupervisors; ?>/<?php echo $requiredSupervisors; ?></strong>
+          Caretakers: <strong style="color: <?php echo $caretakersReady ? '#28a745' : '#dc3545'; ?>"><?php echo $progressCaretakers; ?>/<?php echo $requiredCaretakers; ?></strong>
           <?php if (!$canApprove): ?>
-            - Assign required officers and supervisors to approve this request.
+            - Assign all required personnel to approve this request.
           <?php else: ?>
-            - All required officers and supervisors assigned. You can now approve or reject this request.
+            - All required personnel assigned. You can now approve or reject this request.
           <?php endif; ?>
         </p>
       </div>
@@ -1102,12 +1138,12 @@
           <button class="primary-btn" style="padding: 14px 24px; background: #28a745; flex: 1;" 
                   onclick="openApproveModal()">
             <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
-            Approve & Create Site
+            <?php echo $approveLabel; ?>
           </button>
         <?php else: ?>
-          <button class="secondary-btn" style="padding: 14px 24px; opacity: 0.6; cursor: not-allowed; flex: 1;" disabled title="Requires <?php echo $requiredOfficers; ?> officer(s) and at least <?php echo $requiredSupervisors; ?> supervisor(s)">
+          <button class="secondary-btn" style="padding: 14px 24px; opacity: 0.6; cursor: not-allowed; flex: 1;" disabled title="Requires officers: <?php echo $requiredOfficers; ?>, supervisors: <?php echo $requiredSupervisors; ?>, caretakers: <?php echo $requiredCaretakers; ?>">
             <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
-            Approve (Requires officers + supervisors)
+            Approve (Requirements Not Met)
           </button>
         <?php endif; ?>
         <button class="tertiary-btn" style="padding: 14px 24px; flex: 1;" 
@@ -1352,7 +1388,11 @@ function closeApproveModal() {
 }
 
 function confirmApprove() {
-    window.location.href = '<?php echo URL_ROOT; ?>/admin/approveDraftSite/<?php echo $data['site']->id; ?>';
+  <?php if ((int)$data['site']->is_draft === 1): ?>
+  window.location.href = '<?php echo URL_ROOT; ?>/admin/approveDraftSite/<?php echo $data['site']->id; ?>';
+  <?php else: ?>
+  window.location.href = '<?php echo URL_ROOT; ?>/admin/approveExistingSiteRequest/<?php echo (int)($data['review_request']->id ?? 0); ?>';
+  <?php endif; ?>
 }
 
 function openRejectModal() {
@@ -1366,7 +1406,11 @@ function closeRejectModal() {
 }
 
 function confirmReject() {
-    window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectDraftSite/<?php echo $data['site']->id; ?>';
+  <?php if ((int)$data['site']->is_draft === 1): ?>
+  window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectDraftSite/<?php echo $data['site']->id; ?>';
+  <?php else: ?>
+  window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectExistingSiteRequest/<?php echo (int)($data['review_request']->id ?? 0); ?>';
+  <?php endif; ?>
 }
 
 // Initialize Site Statistics Chart
