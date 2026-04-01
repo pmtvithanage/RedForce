@@ -57,7 +57,7 @@ class Admin extends Controller {
 
     public function notifications() {
         // TODO: Fetch notifications from database
-        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_userID']);
         
         $data = [
             'title' => 'Notifications',
@@ -98,17 +98,17 @@ class Admin extends Controller {
     }
 
     public function messages(){
-        $user_id = $_SESSION['user_id'] ?? null;
+        $user_userID = $_SESSION['user_userID'] ?? null;
         
-        if (!$user_id) {
+        if (!$user_userID) {
             redirect('admin/dashboard');
             return;
         }
         
-        $conversations = $this->messageModel->getConversations($user_id);
+        $conversations = $this->messageModel->getConversations($user_userID);
         // Admin can message all users
-        $all_users = $this->messageModel->getAllUsers($user_id);
-        $unread_count = $this->messageModel->getUnreadCount($user_id);
+        $all_users = $this->messageModel->getAllUsers($user_userID);
+        $unread_count = $this->messageModel->getUnreadCount($user_userID);
         
         $data = [
             'title' => 'Dashboard',
@@ -127,7 +127,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_id'] ?? null;
+            $sender_id = $_SESSION['user_userID'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -151,7 +151,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_id'] ?? null;
+            $sender_id = $_SESSION['user_userID'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -172,7 +172,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_id'] ?? null;
+            $sender_id = $_SESSION['user_userID'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             $message = trim($_POST['message'] ?? '');
             
@@ -202,14 +202,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             
-            if (!$user_id) {
+            if (!$user_userID) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $users = $this->messageModel->getAllUsers($user_id);
+            $users = $this->messageModel->getAllUsers($user_userID);
             echo json_encode(['status' => 'success', 'users' => $users]);
         }
     }
@@ -220,14 +220,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             
-            if (!$user_id) {
+            if (!$user_userID) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $conversations = $this->messageModel->getConversations($user_id);
+            $conversations = $this->messageModel->getConversations($user_userID);
             echo json_encode(['status' => 'success', 'conversations' => $conversations]);
         }
     }
@@ -238,15 +238,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $search_term = trim($_POST['search'] ?? '');
             
-            if (!$user_id || empty($search_term)) {
+            if (!$user_userID || empty($search_term)) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $results = $this->messageModel->searchConversations($user_id, $search_term);
+            $results = $this->messageModel->searchConversations($user_userID, $search_term);
             echo json_encode(['status' => 'success', 'results' => $results]);
         }
     }
@@ -257,15 +257,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             
-            if (!$user_id || !$message_id) {
+            if (!$user_userID || !$message_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
+            if ($this->messageModel->deleteMessage($message_id, $user_userID)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error']);
@@ -279,14 +279,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_POST['user_id'] ?? null;
+            $user_userID = $_POST['user_userID'] ?? null;
             
-            if (!$user_id) {
+            if (!$user_userID) {
                 echo json_encode(['status' => 'error', 'message' => 'User ID required']);
                 return;
             }
             
-            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
+            $userStatus = $this->userModel->getUserOnlineStatus($user_userID);
             
             if ($userStatus) {
                 echo json_encode([
@@ -310,16 +310,16 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             $message = $_POST['message'] ?? null;
             
-            if (!$user_id || !$message_id || !$message) {
+            if (!$user_userID || !$message_id || !$message) {
                 echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
                 return;
             }
             
-            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
+            if ($this->messageModel->updateMessage($message_id, $user_userID, $message)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
@@ -331,10 +331,10 @@ class Admin extends Controller {
     public function updateLastSeen()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             
-            if ($user_id) {
-                $this->userModel->updateLastSeen($user_id);
+            if ($user_userID) {
+                $this->userModel->updateLastSeen($user_userID);
             }
         }
     }
@@ -343,10 +343,10 @@ class Admin extends Controller {
     public function setOffline()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             
-            if ($user_id) {
-                $this->userModel->setUserOffline($user_id);
+            if ($user_userID) {
+                $this->userModel->setUserOffline($user_userID);
             }
         }
     }
@@ -750,7 +750,7 @@ class Admin extends Controller {
         elseif($role == 'ct') $role_name = "Care Taker";
         
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
-        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+        $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
         
         $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
         
@@ -823,7 +823,7 @@ class Admin extends Controller {
             $this->adminModel->insertRecentActivity($title, $description, $type);
             
             // Send notification to officer
-            $adminId = $_SESSION['user_id'] ?? 1;
+            $adminId = $_SESSION['user_userID'] ?? 1;
             $this->notificationModel->insertNotification(
                 $id,
                 'error',
@@ -899,7 +899,7 @@ class Admin extends Controller {
     }
     public function acceptClient($clientId) {
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
-    $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
+    $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
     
     $result = $this->adminModel->acceptClient($clientId, $adminId);
     
@@ -929,11 +929,11 @@ class Admin extends Controller {
         }
         
         // Send welcome email with credentials
-        if ($clientRequest && isset($result['new_user_id']) && isset($result['temp_password'])) {
+        if ($clientRequest && isset($result['new_user_userID']) && isset($result['temp_password'])) {
             $emailVars = [
                 'site_name' => SITE_NAME,
                 'client_name' => $clientRequest->company_name ?? 'Client',
-                'login_id' => $result['new_user_id'],
+                'login_id' => $result['new_user_userID'],
                 'temp_password' => $result['temp_password'],
                 'login_url' => URL_ROOT . '/users/login'
             ];
@@ -966,7 +966,7 @@ class Admin extends Controller {
             $this->adminModel->insertRecentActivity($title, $description, $type);
             
             // Send notification to client
-            $adminId = $_SESSION['user_id'] ?? 1;
+            $adminId = $_SESSION['user_userID'] ?? 1;
             $this->notificationModel->insertNotification(
                 $clientId,
                 'error',
@@ -1124,13 +1124,13 @@ class Admin extends Controller {
                     $notificationMessage = "A new site '" . $data['site_name'] . "' has been added to your account.";
                     $notificationLink = "client/viewsite/" . $siteId;
                     $this->notificationModel->addNotification(
-                        $Id, // client's user_id
+                        $Id, // client's user_userID
                         'info',
                         $notificationTitle,
                         $notificationMessage,
                         $notificationLink,
                         'business',
-                        $_SESSION['user_id'] // admin's user_id as the sender
+                        $_SESSION['user_userID'] // admin's user_userID as the sender
                     );
                     
                     flash('msg', 'Site added successfully', 'alert-success');
@@ -1201,7 +1201,7 @@ class Admin extends Controller {
         } else {
             // Ensure client_profile exists (from Users.profile_image)
             if (empty($clients->client_profile)) {
-                $user = $this->userModel->getUserById($clients->user_id ?? $clients->id);
+                $user = $this->userModel->getUserById($clients->user_userID ?? $clients->id);
                 $clients->client_profile = $user->profile_image ?? '';
             }
         }
@@ -1403,7 +1403,7 @@ public function editSite($site_id){
             // Handle package request approval
             if (isset($_POST['approve_package_request'])) {
                 $requestId = $_POST['request_id'];
-                $adminId = $_SESSION['user_id'];
+                $adminId = $_SESSION['user_userID'];
                 $notes = trim($_POST['admin_notes'] ?? '');
                 
                 // Approve the package request and create site
@@ -1430,7 +1430,7 @@ public function editSite($site_id){
             // Handle package request rejection
             if (isset($_POST['reject_package_request'])) {
                 $requestId = $_POST['request_id'];
-                $adminId = $_SESSION['user_id'];
+                $adminId = $_SESSION['user_userID'];
                 $reason = trim($_POST['rejection_reason'] ?? '');
                 
                 if ($this->adminModel->rejectPackageRequest($requestId, $adminId, $reason)) {
@@ -1568,7 +1568,7 @@ public function editSite($site_id){
         // Finalize the draft site (make it official)
         if ($this->adminModel->finalizeDraftSite($siteId)) {
             // Update package request to Approved
-            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
             
             flash('request_success', 'Package request approved and site created successfully');
             redirect('admin/viewsites/' . $siteId);
@@ -1600,7 +1600,7 @@ public function editSite($site_id){
         // Delete draft site
         if ($this->adminModel->deleteDraftSite($siteId)) {
             // Update package request to Rejected
-            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
             
             flash('request_success', 'Package request rejected and draft site deleted');
             redirect('admin/clientRequests');
@@ -1664,7 +1664,7 @@ public function editSite($site_id){
             'price_per_caretaker' => floatval($_POST['price_per_caretaker'] ?? 0),
             'background_image' => null,
             'status' => 'Active',
-            'created_by' => $_SESSION['user_id'],
+            'created_by' => $_SESSION['user_userID'],
             'package_name_err' => '',
             'number_of_officers_err' => '',
             'package_price_err' => '',
@@ -2101,7 +2101,7 @@ public function editSite($site_id){
 
             if(empty($data['route_name_err'])){
                 $route_id = $this->adminModel->generateRouteId();
-                $created_by = $_SESSION['user_id'];
+                $created_by = $_SESSION['user_userID'];
 
                 $routeData = [
                     'id' => $route_id,
@@ -2523,7 +2523,7 @@ public function editSite($site_id){
 // Approve leave request
 public function approveLeave($id) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $admin_id = $_SESSION['user_id'];
+        $admin_id = $_SESSION['user_userID'];
         
         if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
             // Get leave request details for notification
@@ -2555,7 +2555,7 @@ public function approveLeave($id) {
 // Reject leave request
 public function rejectLeave($id) {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $admin_id = $_SESSION['user_id'];
+        $admin_id = $_SESSION['user_userID'];
         $reason = trim($_POST['reason'] ?? '');
         
         if (empty($reason)) {
@@ -2592,13 +2592,13 @@ public function rejectLeave($id) {
 
 // Approve leave request (GET method for modal)
 public function approveLeaveRequest($id) {
-    if (!isset($_SESSION['user_id'])) {
+    if (!isset($_SESSION['user_userID'])) {
         flash('leave_error', 'Unauthorized access');
         redirect('admin/dashboard');
         return;
     }
     
-    $admin_id = $_SESSION['user_id'];
+    $admin_id = $_SESSION['user_userID'];
     
     if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
         // Get leave request details for notification
@@ -2677,13 +2677,13 @@ public function approveLeaveRequest($id) {
 
 // Reject leave request (GET method for modal)
 public function rejectLeaveRequest($id) {
-    if (!isset($_SESSION['user_id'])) {
+    if (!isset($_SESSION['user_userID'])) {
         flash('leave_error', 'Unauthorized access');
         redirect('admin/dashboard');
         return;
     }
     
-    $admin_id = $_SESSION['user_id'];
+    $admin_id = $_SESSION['user_userID'];
     $reason = trim($_GET['reason'] ?? '');
     
     if (empty($reason)) {
@@ -2849,7 +2849,7 @@ public function rejectLeaveRequest($id) {
                         'description' => $data['description_value'],
                         'image_path' => $image_path,
                         'target_roles' => $target_roles,
-                        'created_by' => $_SESSION['user_id'],
+                        'created_by' => $_SESSION['user_userID'],
                         'status' => 'active'
                     ];
                     
@@ -3158,7 +3158,7 @@ public function rejectLeaveRequest($id) {
         $reviewTitle = trim($_POST['review_title'] ?? '');
         $reviewType = trim($_POST['review_type'] ?? '');
         $reviewDetails = trim($_POST['review_details'] ?? '');
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = $_SESSION['user_userID'] ?? null;
         $userName = $_SESSION['user_name'] ?? 'Admin';
         
         // Validate required fields
@@ -3221,7 +3221,7 @@ public function rejectLeaveRequest($id) {
         $resolutionTitle = trim($_POST['resolution_title'] ?? '');
         $resolutionDetails = trim($_POST['resolution_details'] ?? '');
         $actionsTaken = trim($_POST['actions_taken'] ?? '');
-        $userId = $_SESSION['user_id'] ?? null;
+        $userId = $_SESSION['user_userID'] ?? null;
         $userName = $_SESSION['user_name'] ?? 'Admin';
         
         // Validate required fields
@@ -3492,6 +3492,158 @@ public function rejectLeaveRequest($id) {
         ];
         $this->view('admin/admins/v_profile', $data);
     }
+
+
+
+    public function editProfile() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $admin = $this->adminModel->getAdmin($_SESSION['user_userID']);
+            
+            $data = [
+                'title' => 'Profile',
+                'pageTitle' => 'Edit Profile',
+                'admin' => $admin,
+                'name' => $this->sanitizeInput($_POST['name'] ?? ''),
+                'email' => $this->sanitizeInput($_POST['email'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+                'current_password' => $_POST['current_password'] ?? '',
+                'new_password' => $_POST['new_password'] ?? '',
+                'confirm_password' => $_POST['confirm_password'] ?? '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+                'current_password_err' => '',
+                'new_password_err' => '',
+                'confirm_password_err' => '',
+                'image_err' => ''
+            ];
+
+            // Validate name
+            if (empty($data['name'])) {
+                $data['name_err'] = 'Please enter your name';
+            }
+
+            // Validate email
+            if (empty($data['email'])) {
+                $data['email_err'] = 'Please enter your email';
+            } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $data['email_err'] = 'Please enter a valid email address';
+            }
+
+            // Validate phone number
+            if (empty($data['phone_number'])) {
+                $data['phone_number_err'] = 'Please enter your phone number';
+            } elseif (!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])) {
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Handle password change if fields are filled
+            if (!empty($data['new_password']) || !empty($data['confirm_password'])) {
+                // All password fields must be filled if updating password
+                if (empty($data['current_password'])) {
+                    $data['current_password_err'] = 'Please enter your current password';
+                    flash('msg', 'Please enter your current password', 'alert-danger');
+                } elseif (!password_verify($data['current_password'], $admin->password)) {
+                    $data['current_password_err'] = 'Current password is incorrect';
+                    flash('msg', 'Current password is incorrect', 'alert-danger');
+                }
+
+                if (empty($data['new_password'])) {
+                    $data['new_password_err'] = 'Please enter a new password';
+                    flash('msg', 'Please enter a new password', 'alert-danger');
+                } elseif (strlen($data['new_password']) < 6) {
+                    $data['new_password_err'] = 'Password must be at least 6 characters';
+                    flash('msg', 'Password must be at least 6 characters', 'alert-danger');
+                }
+
+                if (empty($data['confirm_password'])) {
+                    $data['confirm_password_err'] = 'Please confirm your password';
+                    flash('msg', 'Please confirm your password', 'alert-danger');
+                } elseif ($data['new_password'] !== $data['confirm_password']) {
+                    $data['confirm_password_err'] = 'Passwords do not match';
+                    flash('msg', 'Passwords do not match', 'alert-danger');
+                }
+            }
+
+            // Handle profile image upload
+            $profileImageName = $admin->profile_image;
+            if (isset($_FILES['profile_image']) && $_FILES['profile_image']['size'] > 0) {
+                $file = $_FILES['profile_image'];
+                $allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+                
+                if (!in_array($file['type'], $allowed)) {
+                    $data['image_err'] = 'Only JPEG and PNG images are allowed';
+                } elseif ($file['size'] > 5 * 1024 * 1024) { // 5MB limit
+                    $data['image_err'] = 'Image size must be less than 5MB';
+                } else {
+                    // Generate unique filename
+                    $profileImageName = uniqid() . '_' . basename($file['name']);
+                    $uploadPath = PUB_ROOT . '/uploads/image/' . $profileImageName;
+                    
+                    if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                        $data['image_err'] = 'Failed to upload image';
+                        $profileImageName = $admin->profile_image; // Revert to old image
+                    } else {
+                        // Delete old image if it exists
+                        $oldImagePath = PUB_ROOT . '/uploads/image/' . $admin->profile_image;
+                        if (file_exists($oldImagePath) && $admin->profile_image !== 'default.png') {
+                            unlink($oldImagePath);
+                        }
+                    }
+                }
+            }
+
+            // If no errors, update profile
+            if (empty($data['name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) && 
+                empty($data['current_password_err']) && empty($data['new_password_err']) && 
+                empty($data['confirm_password_err']) && empty($data['image_err'])) {
+                
+                $updateData = [
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone_number' => $data['phone_number'],
+                    'profile_image' => $profileImageName
+                ];
+
+                // Add password to update if it's being changed
+                if (!empty($data['new_password'])) {
+                    $updateData['password'] = password_hash($data['new_password'], PASSWORD_DEFAULT);
+                    
+                }
+
+                if ($this->adminModel->updateAdminProfile($_SESSION['user_id'], $updateData)) {
+                    flash('msg', 'Profile updated successfully', 'alert-success');
+                    redirect('admin/profile');
+                } else {
+                    flash('msg', 'Failed to update profile', 'alert-danger');
+                    $data['admin'] = $this->adminModel->getAdmin($_SESSION['user_userID']);
+                    $this->view('admin/admins/v_editProfile', $data);
+                }
+            } else {
+                $data['admin'] = $this->adminModel->getAdmin($_SESSION['user_userID']);
+                flash('msg', 'Please fix the errors in the form', 'alert-danger');
+                $this->view('admin/admins/v_editProfile', $data);
+            }
+        } else {
+            $admin = $this->adminModel->getAdmin($_SESSION['user_userID']);
+            $data = [
+                'title' => 'Profile',
+                'pageTitle' => 'Edit Profile',
+                'admin' => $admin,
+                'name' => $admin->name ?? '',
+                'email' => $admin->email ?? '',
+                'phone_number' => $admin->phone_number ?? '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+                'current_password_err' => '',
+                'new_password_err' => '',
+                'confirm_password_err' => '',
+                'image_err' => ''
+            ];
+            $this->view('admin/admins/v_editProfile', $data);
+        }
+    }
 // ---------------------------------------For all--------------------------------------//
 
     /**
@@ -3547,7 +3699,7 @@ public function rejectLeaveRequest($id) {
         $officerId = $input['officer_id'] ?? null;
         $shiftType = $input['shift_type'] ?? 'Full Time';
         $assignmentEnd = $input['assignment_end'] ?? null;
-        $assignedBy = $_SESSION['user_id'] ?? null;
+        $assignedBy = $_SESSION['user_userID'] ?? null;
 
         if (!$siteId || !$officerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
@@ -3769,7 +3921,7 @@ public function rejectLeaveRequest($id) {
                                 'Your rank has been updated to: ' . $value . '. Please check your profile for more details.',
                                 '/' . $roleName . '/dashboard',
                                 'star',
-                                $_SESSION['user_id'] ?? 1
+                                $_SESSION['user_userID'] ?? 1
                             );
                         }
                     }
@@ -3826,7 +3978,7 @@ public function rejectLeaveRequest($id) {
         
         $siteId = $input['site_id'] ?? null;
         $supervisorId = $input['supervisor_id'] ?? null;
-        $assignedBy = $_SESSION['user_id'] ?? null;
+        $assignedBy = $_SESSION['user_userID'] ?? null;
 
         if (!$siteId || !$supervisorId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
@@ -3892,7 +4044,7 @@ public function rejectLeaveRequest($id) {
         
         $siteId = $input['site_id'] ?? null;
         $caretakerId = $input['caretaker_id'] ?? null;
-        $assignedBy = $_SESSION['user_id'] ?? null;
+        $assignedBy = $_SESSION['user_userID'] ?? null;
 
         if (!$siteId || !$caretakerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
@@ -3985,8 +4137,8 @@ public function rejectLeaveRequest($id) {
             }
             
             // Prevent deleting own account
-            $current_user_id = $_SESSION['user_id'] ?? null;
-            if ($admin_id == $current_user_id) {
+            $current_user_userID = $_SESSION['user_userID'] ?? null;
+            if ($admin_id == $current_user_userID) {
                 echo json_encode(['status' => 'error', 'message' => 'You cannot delete your own account']);
                 return;
             }
@@ -4011,10 +4163,10 @@ public function rejectLeaveRequest($id) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $phone_number = trim($_POST['phone_number'] ?? '');
             
-            if (!$user_id || empty($phone_number)) {
+            if (!$user_userID || empty($phone_number)) {
                 echo json_encode(['status' => 'error', 'message' => 'Phone number is required']);
                 return;
             }
@@ -4025,7 +4177,7 @@ public function rejectLeaveRequest($id) {
                 return;
             }
             
-            if ($this->adminModel->updateProfilePhone($user_id, $phone_number)) {
+            if ($this->adminModel->updateProfilePhone($user_userID, $phone_number)) {
                 echo json_encode(['status' => 'success', 'message' => 'Phone number updated successfully']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update phone number']);
@@ -4038,10 +4190,10 @@ public function rejectLeaveRequest($id) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $email = trim($_POST['email'] ?? '');
             
-            if (!$user_id || empty($email)) {
+            if (!$user_userID || empty($email)) {
                 echo json_encode(['status' => 'error', 'message' => 'Email is required']);
                 return;
             }
@@ -4052,7 +4204,7 @@ public function rejectLeaveRequest($id) {
                 return;
             }
             
-            if ($this->adminModel->updateProfileEmail($user_id, $email)) {
+            if ($this->adminModel->updateProfileEmail($user_userID, $email)) {
                 echo json_encode(['status' => 'success', 'message' => 'Email updated successfully']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update email']);
@@ -4065,11 +4217,11 @@ public function rejectLeaveRequest($id) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             $current_password = $_POST['current_password'] ?? '';
             $new_password = $_POST['new_password'] ?? '';
             
-            if (!$user_id || empty($current_password) || empty($new_password)) {
+            if (!$user_userID || empty($current_password) || empty($new_password)) {
                 echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
                 return;
             }
@@ -4081,7 +4233,7 @@ public function rejectLeaveRequest($id) {
             }
             
             // Verify current password
-            $user = $this->adminModel->getUserByID($user_id);
+            $user = $this->adminModel->getUserByID($user_userID);
             if (!$user || !password_verify($current_password, $user->password)) {
                 echo json_encode(['status' => 'error', 'message' => 'Current password is incorrect']);
                 return;
@@ -4089,7 +4241,7 @@ public function rejectLeaveRequest($id) {
             
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             
-            if ($this->adminModel->updateProfilePassword($user_id, $hashed_password)) {
+            if ($this->adminModel->updateProfilePassword($user_userID, $hashed_password)) {
                 echo json_encode(['status' => 'success', 'message' => 'Password changed successfully']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to change password']);
@@ -4102,9 +4254,9 @@ public function rejectLeaveRequest($id) {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_id = $_SESSION['user_id'] ?? null;
+            $user_userID = $_SESSION['user_userID'] ?? null;
             
-            if (!$user_id) {
+            if (!$user_userID) {
                 echo json_encode(['status' => 'error', 'message' => 'User not authenticated']);
                 return;
             }
@@ -4131,7 +4283,7 @@ public function rejectLeaveRequest($id) {
             
             // Upload image
             if (uploadImage($image['tmp_name'], $image_name, '/uploads/image/')) {
-                if ($this->adminModel->updateProfileImage($user_id, $image_name)) {
+                if ($this->adminModel->updateProfileImage($user_userID, $image_name)) {
                     echo json_encode(['status' => 'success', 'message' => 'Profile picture updated successfully']);
                 } else {
                     echo json_encode(['status' => 'error', 'message' => 'Failed to update profile picture']);
@@ -4189,8 +4341,8 @@ public function rejectLeaveRequest($id) {
             }
             
             // 2. Notify the supervisor who reported the incident (if exists and not the reviewer)
-            if (isset($incident->user_id) && $incident->user_id != $reviewerId) {
-                $usersToNotify[$incident->user_id] = [
+            if (isset($incident->user_userID) && $incident->user_userID != $reviewerId) {
+                $usersToNotify[$incident->user_userID] = [
                     'link' => URL_ROOT . '/supervisor/viewIncident/' . $incidentId
                 ];
                 
@@ -4198,12 +4350,12 @@ public function rejectLeaveRequest($id) {
                 if (isset($incident->site_id)) {
                     try {
                         $supervisorModel = $this->model('M_supervisor');
-                        $mobileRiders = $supervisorModel->getSiteMobileRiders($incident->user_id);
+                        $mobileRiders = $supervisorModel->getSiteMobileRiders($incident->user_userID);
                         
                         if ($mobileRiders && is_array($mobileRiders)) {
                             foreach ($mobileRiders as $rider) {
-                                if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
-                                    $usersToNotify[$rider->user_id] = [
+                                if (isset($rider->user_userID) && $rider->user_userID != $reviewerId) {
+                                    $usersToNotify[$rider->user_userID] = [
                                         'link' => URL_ROOT . '/MobileRider/incidents'
                                     ];
                                 }

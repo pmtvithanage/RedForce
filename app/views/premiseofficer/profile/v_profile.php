@@ -1,157 +1,102 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
-
-
-<?php
-// Handle form submissions
-$showPasswordModal = false;
-$showContactModal = false;
-$showEmailModal = false;
-$message = '';
-
-// Mock client data - replace with actual database query
-$clientData = [
-    'name' => "Nuwan Perera",
-    'contact' => '0112 112 112',
-    'email' => 'nuwanperera@hotmail.com'
-];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['change_password'])) {
-        $currentPassword = $_POST['current_password'];
-        $newPassword = $_POST['new_password'];
-        $confirmPassword = $_POST['confirm_password'];
-        
-        $message = 'Password updated successfully!';
-    }
-    
-    if (isset($_POST['change_contact'])) {
-        $newContact = $_POST['new_contact'];
-        $clientData['contact'] = $newContact;
-        $message = 'Contact number updated successfully!';
-    }
-    
-    if (isset($_POST['change_email'])) {
-        $newEmail = $_POST['new_email'];
-        $clientData['email'] = $newEmail;
-        $message = 'Email updated successfully!';
-    }
-}
-
-if (isset($_GET['change_password'])) {
-    $showPasswordModal = true;
-}
-if (isset($_GET['change_contact'])) {
-    $showContactModal = true;
-}
-if (isset($_GET['change_email'])) {
-    $showEmailModal = true;
-}
-?>
-
-<?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
+  <?php require_once APP_ROOT . '/views/components/v_premiseofficer_sidebar.php'; ?>
 
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-<!-- QR Code Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
 <!-- Link to Profile CSS -->
-<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/premiseOfficer/profile_style.css">
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/components/profile_style.css">
 
-<!-- Password Change Modal -->
-<?php if ($showPasswordModal): ?>
-<div class="modal-overlay">
-    <div class="change-modal">
-        <div class="modal-header">
-            <h3>Change Password</h3>
-            <a href="?" class="close-btn">&times;</a>
-        </div>
-        <div class="modal-content">
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label>Current Password</label>
-                    <input type="password" name="current_password" required placeholder="Enter current password">
-                </div>
-                
-                <div class="form-group">
-                    <label>New Password</label>
-                    <input type="password" name="new_password" required placeholder="Enter new password">
-                </div>
-                
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input type="password" name="confirm_password" required placeholder="Confirm new password">
-                </div>
-                
-                <button type="submit" name="change_password" class="save-btn">Save Changes</button>
-            </form>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
+<style>
+    .avatar-circle-large {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0; /* Fallback color if image fails to load */
+    border: 4px solid #ffffff; /* Optional: white border */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Optional: subtle shadow */
+}
 
-<!-- Contact Change Modal -->
-<?php if ($showContactModal): ?>
-<div class="modal-overlay">
-    <div class="change-modal">
-        <div class="modal-header">
-            <h3>Change Contact Number</h3>
-            <a href="?" class="close-btn">&times;</a>
-        </div>
-        <div class="modal-content">
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label>Contact Number</label>
-                    <input type="tel" name="new_contact" value="<?php echo htmlspecialchars($clientData['contact']); ?>" required placeholder="Enter new contact number">
-                </div>
-                
-                <button type="submit" name="change_contact" class="save-btn">Save Changes</button>
-            </form>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
+.profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image covers the circle without distortion */
+    object-position: center; /* Centers the image focus */
+}
 
-<!-- Email Change Modal -->
-<?php if ($showEmailModal): ?>
-<div class="modal-overlay">
-    <div class="change-modal">
-        <div class="modal-header">
-            <h3>Change Email Address</h3>
-            <a href="?" class="close-btn">&times;</a>
-        </div>
-        <div class="modal-content">
-            <form method="POST" action="">
-                <div class="form-group">
-                    <label>Email Address</label>
-                    <input type="email" name="new_email" value="<?php echo htmlspecialchars($clientData['email']); ?>" required placeholder="Enter new email">
-                </div>
-                
-                <button type="submit" name="change_email" class="save-btn">Save Changes</button>
-            </form>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
+/* Optional: Hover effect */
+.avatar-circle-large:hover .profile-image {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+}
+
+.edit-avatar-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+}
+
+.edit-avatar-btn:hover {
+    transform: scale(1.1);
+}
+
+.profile-avatar-large {
+    position: relative;
+    width: fit-content;
+    margin: 0 auto;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.card-header h3 {
+    flex: 1;
+    margin: 0;
+}
+
+.card-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+}
+
+.card-header button:hover {
+    transform: scale(1.1);
+    transition: transform 0.2s;
+}
+</style>
 
 <div class="main-content">
     <div class="profile-container">
-        <div class="profile-header">
-            <h2>My Profile</h2>
-            <p>Manage your account information and settings</p>
-        </div>
+        
 
-        <?php if ($message): ?>
-        <div class="success-message">
-            <span class="material-icons">check_circle</span>
-            <?php echo htmlspecialchars($message); ?>
-        </div>
-        <?php endif; ?>
 
-        <div class="profile-grid">
+        <div class="profile-grid" style="margin-top:80px;">
             <!-- Profile Card -->
             <div class="profile-card">
                 <div class="card-header">
@@ -161,24 +106,14 @@ if (isset($_GET['change_email'])) {
                 <div class="card-body">
                     <div class="profile-avatar-large">
                         <div class="avatar-circle-large">
-                            <span class="material-icons">person</span>
+                            <img class="profile-image" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $data['premiseofficer']->profile_image; ?>" alt="Profile Image"> 
                         </div>
+
                     </div>
                     <div class="profile-name">
-                        <?php echo htmlspecialchars($clientData['name']); ?>
+                        <?php echo $data['premiseofficer']->name; ?>
                     </div>
                     <div class="profile-role">Premise Officer</div>
-                    
-                    <!-- QR Code Section -->
-                    <div class="qr-code-section">
-                        <div class="qr-code-label">Attendance QR Code</div>
-                        <div class="qr-code-info">Valid for: <span id="qrDate"></span></div>
-                        <div id="qrcode"></div>
-                        <button type="button" class="generate-qr-btn" onclick="generateQRCode()">
-                            <span class="material-icons">refresh</span>
-                            Generate New QR Code
-                        </button>
-                    </div>
                 </div>
             </div>
 
@@ -187,6 +122,9 @@ if (isset($_GET['change_email'])) {
                 <div class="card-header">
                     <span class="material-icons">contact_phone</span>
                     <h3>Contact Information</h3>
+                    <button class="action-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/premiseOfficer/editProfile'">
+                        <span class="material-icons">edit</span>
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="info-row">
@@ -195,11 +133,8 @@ if (isset($_GET['change_email'])) {
                         </div>
                         <div class="info-details">
                             <div class="info-label">Phone Number</div>
-                            <div class="info-value"><?php echo htmlspecialchars($clientData['contact']); ?></div>
+                            <div class="info-value"><?php echo $data['premiseofficer']->phone_number; ?></div>
                         </div>
-                        <a href="?change_contact=1" class="action-btn">
-                            <span class="material-icons">edit</span>
-                        </a>
                     </div>
 
                     <div class="info-row">
@@ -208,11 +143,8 @@ if (isset($_GET['change_email'])) {
                         </div>
                         <div class="info-details">
                             <div class="info-label">Email Address</div>
-                            <div class="info-value"><?php echo htmlspecialchars($clientData['email']); ?></div>
+                            <div class="info-value"><?php echo $data['premiseofficer']->email; ?></div>
                         </div>
-                        <a href="?change_email=1" class="action-btn">
-                            <span class="material-icons">edit</span>
-                        </a>
                     </div>
                 </div>
             </div>
@@ -232,9 +164,9 @@ if (isset($_GET['change_email'])) {
                             <div class="security-title">Password</div>
                             <div class="security-desc">Change your account password</div>
                         </div>
-                        <a href="?change_password=1" class="btn-primary">
+                        <button  class="btn-primary" style="border: none; cursor: pointer;" onclick="window.location.href='<?php echo URL_ROOT; ?>/premiseOfficer/editProfile?show=password'">
                             Change Password
-                        </a>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -242,78 +174,14 @@ if (isset($_GET['change_email'])) {
     </div>
 </div>
 
+
+
 </main>
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
 
+
+
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
-
-<!-- QR Code Generation Script -->
-<script>
-let qrCodeInstance = null;
-
-function generateQRCode() {
-    // Get current date (YYYY-MM-DD format)
-    const today = new Date();
-    const dateString = today.toISOString().split('T')[0];
-    
-    // Clear existing QR code
-    const qrcodeElement = document.getElementById("qrcode");
-    qrcodeElement.innerHTML = '';
-    
-    // Generate unique daily code using date + officer ID
-    const qrcodeData = {
-        type: 'attendance',
-        officer_id: '<?php echo $_SESSION['user_id'] ?? 'PO-' . uniqid(); ?>',
-        name: '<?php echo htmlspecialchars($clientData['name']); ?>',
-        role: 'premiseofficer',
-        date: dateString,
-        dailyToken: btoa(dateString + '-<?php echo $_SESSION['user_id'] ?? 'PO'; ?>'),
-        timestamp: new Date().toISOString()
-    };
-    
-    // Create new QR code
-    qrCodeInstance = new QRCode(qrcodeElement, {
-        text: JSON.stringify(qrcodeData),
-        width: 140,
-        height: 140,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-    
-    // Update date display
-    document.getElementById('qrDate').textContent = today.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-    
-    // Show success message
-    showQRMessage('QR Code generated successfully!');
-}
-
-function showQRMessage(message) {
-    // Create temporary message element
-    const msgDiv = document.createElement('div');
-    msgDiv.className = 'qr-success-message';
-    msgDiv.innerHTML = '<span class="material-icons">check_circle</span>' + message;
-    
-    const qrSection = document.querySelector('.qr-code-section');
-    qrSection.insertBefore(msgDiv, qrSection.firstChild);
-    
-    // Remove message after 3 seconds
-    setTimeout(() => {
-        msgDiv.remove();
-    }, 3000);
-}
-
-// Auto-generate QR code on page load
-document.addEventListener('DOMContentLoaded', function() {
-    generateQRCode();
-});
-</script>
-
-<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>       

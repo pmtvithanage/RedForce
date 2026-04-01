@@ -662,4 +662,56 @@ class M_mobilerider
             return $hours . 'h ' . $minutes . 'm';
         }
     }
+
+    // ======================================================================== //
+// =======================      profile       ====================== //
+// ======================================================================== //
+    public function getMobileRiderById($userID) {
+        $this->db->query("SELECT * FROM Users WHERE userID = :userID");
+        $this->db->bind(':userID', $userID);
+        return $this->db->single();
+    }
+    
+
+     public function updateMobileRiderProfile($user_id, $data) {
+        $fields = [];
+        $bindings = [];
+        
+        // Only update fields that are provided
+        if (isset($data['name'])) {
+            $fields[] = 'name = :name';
+            $bindings[':name'] = $data['name'];
+        }
+        if (isset($data['email'])) {
+            $fields[] = 'email = :email';
+            $bindings[':email'] = $data['email'];
+        }
+        if (isset($data['phone_number'])) {
+            $fields[] = 'phone_number = :phone_number';
+            $bindings[':phone_number'] = $data['phone_number'];
+        }
+        if (isset($data['profile_image'])) {
+            $fields[] = 'profile_image = :profile_image';
+            $bindings[':profile_image'] = $data['profile_image'];
+        }
+        if (isset($data['password'])) {
+            $fields[] = 'password = :password';
+            $bindings[':password'] = $data['password'];
+        }
+        
+        if (empty($fields)) {
+            return false; // Nothing to update
+        }
+        
+        $query = 'UPDATE Users SET ' . implode(', ', $fields) . ' WHERE id = :user_id';
+        $this->db->query($query);
+        
+        $this->db->bind(':user_id', $user_id);
+        foreach ($bindings as $key => $value) {
+            $this->db->bind($key, $value);
+        }
+        
+        return $this->db->execute();
+    }
+
 }
