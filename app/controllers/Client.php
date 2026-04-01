@@ -203,14 +203,6 @@ class Client extends Controller {
         $this->view('client/v_history', $data);
     }
 
-    //profile
-    public function profile() {
-        $data = [
-            'title' => 'Profile',
-            'pageTitle' => 'My Profile'
-        ];
-        $this->view('client/v_profile', $data); 
-    }
 
     public function requestHistory() {
         $clientId = $_SESSION['user_id'];
@@ -855,5 +847,182 @@ class Client extends Controller {
         // This is a placeholder - implement actual PDF generation
         flash('payment_success', 'Receipt download initiated', 'alert alert-success');
         redirect('client/payments');
+    }
+
+  // ======================================================================== //
+// =======================      profile       ====================== //
+// ======================================================================== //
+    public function profile() {
+        $data = [
+            'title' => 'Profile',
+            'pageTitle' => 'My Profile',
+            'client' => $this->clientModel->getclientById($_SESSION['user_userID'])
+        ];
+        $this->view('client/profile/v_profile', $data); 
+    }
+
+
+     public function editProfile() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $client = $this->clientModel->getclientById($_SESSION['user_userID']);
+            
+            $data = [
+                'title' => 'Profile',
+                'pageTitle' => 'Edit Profile',
+                'client' => $client,
+                'name' => $this->sanitizeInput($_POST['name'] ?? ''),
+                'email' => $this->sanitizeInput($_POST['email'] ?? ''),
+                'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+                'current_password' => $_POST['current_password'] ?? '',
+                'new_password' => $_POST['new_password'] ?? '',
+                'confirm_password' => $_POST['confirm_password'] ?? '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+                'current_password_err' => '',
+                'new_password_err' => '',
+                'confirm_password_err' => '',
+                'image_err' => ''
+            ];
+
+            // Validate name
+            if (empty($data['name'])) {
+                $data['name_err'] = 'Please enter your name';
+            }
+
+            // Validate email
+            if (empty($data['email'])) {
+                $data['email_err'] = 'Please enter your email';
+            } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                $data['email_err'] = 'Please enter a valid email address';
+            }
+
+            // Validate phone number
+            if (empty($data['phone_number'])) {
+                $data['phone_number_err'] = 'Please enter your phone number';
+            } elseif (!preg_match('/^[0-9]{10,15}$/', $data['phone_number'])) {
+                $data['phone_number_err'] = 'Please enter a valid phone number (10-15 digits)';
+            }
+
+            // Handle password change if fields are filled
+            if (!empty($data['new_password']) || !empty($data['confirm_password'])) {
+                // All password fields must be filled if updating password
+                if (empty($data['current_password'])) {
+                    $data['current_password_err'] = 'Please enter your current password';
+                    flash('msg', 'Please enter your current password', 'alert-danger');
+                } elseif (!password_verify($data['current_password'], $client->password)) {
+                    $data['current_password_err'] = 'Current password is incorrect';
+                    flash('msg', 'Current password is incorrect', 'alert-danger');
+                }
+
+                if (empty($data['new_password'])) {
+                    $data['new_password_err'] = 'Please enter a new password';
+                    flash('msg', 'Please enter a new password', 'alert-danger');
+                } elseif (strlen($data['new_password']) < 6) {
+                    $data['new_password_err'] = 'Password must be at least 6 characters';
+                    flash('msg', 'Password must be at least 6 characters', 'alert-danger');
+                }
+
+                if (empty($data['confirm_password'])) {
+                    $data['confirm_password_err'] = 'Please confirm your password';
+                    flash('msg', 'Please confirm your password', 'alert-danger');
+                } elseif ($data['new_password'] !== $data['confirm_password']) {
+                    $data['confirm_password_err'] = 'Passwords do not match';
+                    flash('msg', 'Passwords do not match', 'alert-danger');
+                }
+            }
+
+            // Handle profile image upload
+            $profileImageName = $client->profile_image;
+            if (isset($_FILES['profile_image']) && $_FILES['profile_image']['size'] > 0) {
+                $file = $_FILES['profile_image'];
+                $allowed = ['image/jpeg', 'image/jpg', 'image/png'];
+                
+                if (!in_array($file['type'], $allowed)) {
+                    $data['image_err'] = 'Only JPEG and PNG images are allowed';
+                } elseif ($file['size'] > 5 * 1024 * 1024) { // 5MB limit
+                    $data['image_err'] = 'Image size must be less than 5MB';
+                } else {
+                    // Generate unique filename
+                    $profileImageName = uniqid() . '_' . basename($file['name']);
+                    $uploadPath = PUB_ROOT . '/uploads/applicantPhotos/' . $profileImageName;
+                    
+                    if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                        $data['image_err'] = 'Failed to upload image';
+                        $profileImageName = $client->profile_image; // Revert to old image
+                    } else {
+                        // Delete old image if it exists
+                        $oldImagePath = PUB_ROOT . '/uploads/applicantPhotos/' . $client->profile_image;
+                        if (file_exists($oldImagePath) && $client->profile_image !== 'default.png') {
+                            unlink($oldImagePath);
+                        }
+                    }
+                }
+            }
+
+            // If no errors, update profile
+            if (empty($data['name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) && 
+                empty($data['current_password_err']) && empty($data['new_password_err']) && 
+                empty($data['confirm_password_err']) && empty($data['image_err'])) {
+                
+                $updateData = [
+                    'name' => $data['name'],
+                    'email' => $data['email'],
+                    'phone_number' => $data['phone_number'],
+                    'profile_image' => $profileImageName
+                ];
+
+                // Add password to update if it's being changed
+                if (!empty($data['new_password'])) {
+                    $updateData['password'] = password_hash($data['new_password'], PASSWORD_DEFAULT);
+                    
+                }
+
+                if ($this->clientModel->updateClientProfile($_SESSION['user_id'], $updateData)) {
+                    flash('msg', 'Profile updated successfully', 'alert-success');
+                    redirect('Client/profile');
+                } else {
+                    flash('msg', 'Failed to update profile', 'alert-danger');
+                    $data['client'] = $this->clientModel->getClientById($_SESSION['user_userID']);
+                    $this->view('client/profile/v_editProfile', $data);
+                }
+            } else {
+                $data['client'] = $this->clientModel->getClientById($_SESSION['user_userID']);
+                flash('msg', 'Please fix the errors in the form', 'alert-danger');
+                $this->view('client/profile/v_editProfile', $data);
+            }
+        } else {
+            $client = $this->clientModel->getClientById($_SESSION['user_userID']);
+            $data = [
+                'title' => 'Profile',
+                'pageTitle' => 'Edit Profile',
+                'client' => $client,
+                'name' => $client->name ?? '',
+                'email' => $client->email ?? '',
+                'phone_number' => $client->phone_number ?? '',
+                'name_err' => '',
+                'email_err' => '',
+                'phone_number_err' => '',
+                'current_password_err' => '',
+                'new_password_err' => '',
+                'confirm_password_err' => '',
+                'image_err' => ''
+            ];
+            $this->view('client/profile/v_editProfile', $data);
+        }
+    }
+
+    // ---------------------------------------For all--------------------------------------//
+
+    /**
+     * Sanitize input data
+     * Replacement for FILTER_SANITIZE_STRING
+     */
+    private function sanitizeInput($input) {
+        $input = trim($input ?? '');
+        $input = htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Remove or encode potentially dangerous characters
+        $input = strip_tags($input);
+        return $input;
     }
 }
