@@ -1469,6 +1469,28 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $result ? $result->count : 0;
     }
 
+    public function getAssignedRegularOfficerCount($siteId) {
+        $this->db->query("SELECT COUNT(*) as count
+                          FROM officer_site_assignments
+                          WHERE site_id = :site_id
+                            AND status = 'Active'
+                            AND (shift_type IS NULL OR shift_type != 'Supervisor')");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
+    }
+
+    public function getAssignedSupervisorCount($siteId) {
+        $this->db->query("SELECT COUNT(*) as count
+                          FROM officer_site_assignments
+                          WHERE site_id = :site_id
+                            AND status = 'Active'
+                            AND shift_type = 'Supervisor'");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
+    }
+
     // Finalize draft site (convert to official)
     public function finalizeDraftSite($siteId) {
         $this->db->query("UPDATE sites SET is_draft = 0 WHERE id = :id");

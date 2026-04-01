@@ -14,6 +14,55 @@ class Client extends Controller {
         $this->messageModel = $this->model('M_message');
     }
 
+    /**
+     * Policy: minimum 1 supervisor per 5 officers (rounded up), and 0 when no officers.
+     */
+    private function calculateRequiredSupervisors($officerCount) {
+        $officers = max(0, (int)$officerCount);
+        if ($officers === 0) {
+            return 0;
+        }
+        return (int)ceil($officers / 5);
+    }
+
+    /**
+     * Enforce supervisor policy for both new-site and existing-site requests.
+     */
+    private function applySupervisorPolicy(array $requestData, $mode) {
+        $officers = (int)($requestData['number_of_officers'] ?? 0);
+        $supervisors = (int)($requestData['number_of_supervisors'] ?? 0);
+
+        if ($mode === 'existing' && !empty($requestData['site_id'])) {
+            $current = $this->clientModel->getActiveSitePersonnelCounts((int)$requestData['site_id'], (int)$requestData['client_id']);
+            if (!$current) {
+                throw new Exception('Selected site was not found for this client.');
+            }
+            $currentOfficers = (int)($current->number_of_officers ?? 0);
+            $currentSupervisors = (int)($current->number_of_supervisors ?? 0);
+
+            $targetOfficers = max(0, $currentOfficers + $officers);
+            $requiredTargetSupervisors = $this->calculateRequiredSupervisors($targetOfficers);
+            $requiredSupervisorChange = $requiredTargetSupervisors - $currentSupervisors;
+
+            // Auto-adjust to satisfy policy if the submitted change is insufficient.
+            if (($currentSupervisors + $supervisors) < $requiredTargetSupervisors) {
+                $supervisors = $requiredSupervisorChange;
+            }
+
+            $requestData['number_of_supervisors'] = $supervisors;
+            return $requestData;
+        }
+
+        // New site: requested personnel are the target totals.
+        $requiredSupervisors = $this->calculateRequiredSupervisors($officers);
+        if ($supervisors < $requiredSupervisors) {
+            $supervisors = $requiredSupervisors;
+        }
+        $requestData['number_of_supervisors'] = $supervisors;
+
+        return $requestData;
+    }
+
     // Default action - redirect to dashboard
     public function index() {
         redirect('client/dashboard');
@@ -551,6 +600,19 @@ class Client extends Controller {
                     'comments' => ($mode === 'new') ? 'Newly added site' : null,
                     'status' => 'Pending'
                 ];
+
+                // Enforce supervisor-per-officer policy before saving the request.
+                $requestData = $this->applySupervisorPolicy($requestData, $mode);
+
+                // Always calculate server-side price from package unit rates after policy adjustments.
+                $packageModel = $this->model('M_package');
+                $pricing = $packageModel->getPackagePricingByName($requestData['package_name']);
+                $requestData['package_price'] = round(
+                    ((int)$requestData['number_of_officers'] * (float)$pricing['price_per_officer']) +
+                    ((int)$requestData['number_of_supervisors'] * (float)$pricing['price_per_supervisor']) +
+                    ((int)$requestData['number_of_caretakers'] * (float)$pricing['price_per_caretaker']),
+                    2
+                );
 
                 // If this is for an existing site, delete any existing pending requests for that site first
                 if ($mode === 'existing' && isset($_POST['site_name'])) {

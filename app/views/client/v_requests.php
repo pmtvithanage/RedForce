@@ -1064,11 +1064,11 @@ $packages = $packageModel->getAllPackages();
                              data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
                              data-price="<?php echo $package->package_price; ?>" 
                              data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
-                             <?php if ($isCustomPackage): ?>
+                                      data-supervisors="<?php echo $package->number_of_supervisors ?? 0; ?>"
+                                      data-caretakers="<?php echo $package->number_of_caretakers ?? 0; ?>"
                              data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
                              data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
                              data-price-caretaker="<?php echo $package->price_per_caretaker ?? 0; ?>"
-                             <?php endif; ?>
                              <?php if (!empty($package->background_image)): ?>
                                 style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?php echo URL_ROOT; ?>/uploads/packages/<?php echo $package->background_image; ?>'); background-size: cover; background-position: center;"
                              <?php endif; ?>>
@@ -1686,7 +1686,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: this.dataset.package,
                 fullName: this.dataset.packageName,
                 price: this.dataset.price,
-                officers: this.dataset.officers
+                officers: this.dataset.officers,
+                supervisors: this.dataset.supervisors || 0,
+                caretakers: this.dataset.caretakers || 0,
+                priceOfficer: this.dataset.priceOfficer || 0,
+                priceSupervisor: this.dataset.priceSupervisor || 0,
+                priceCaretaker: this.dataset.priceCaretaker || 0
             };
 
             // Stop auto-slide permanently
@@ -2451,6 +2456,56 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     // Package Confirmation Functions (for non-custom packages)
+    function requiredSupervisorsForOfficers(officers) {
+        const count = Math.max(0, parseInt(officers, 10) || 0);
+        return count > 0 ? Math.ceil(count / 5) : 0;
+    }
+
+    function getPolicyAdjustedPackageRequest(isNewSite) {
+        const packageOfficers = parseInt(selectedPackage.officers, 10) || 0;
+        const packageSupervisors = parseInt(selectedPackage.supervisors, 10) || 0;
+        const packageCaretakers = parseInt(selectedPackage.caretakers, 10) || 0;
+
+        const unitOfficer = parseFloat(selectedPackage.priceOfficer) || 0;
+        const unitSupervisor = parseFloat(selectedPackage.priceSupervisor) || 0;
+        const unitCaretaker = parseFloat(selectedPackage.priceCaretaker) || 0;
+
+        let adjustedSupervisors = packageSupervisors;
+        let policyNote = '';
+
+        if (isNewSite) {
+            const requiredForNew = requiredSupervisorsForOfficers(packageOfficers);
+            if (adjustedSupervisors < requiredForNew) {
+                adjustedSupervisors = requiredForNew;
+                policyNote = `Supervisor policy applied: adjusted to ${adjustedSupervisors} supervisor(s).`;
+            }
+        } else {
+            const currentOfficers = parseInt(selectedSiteData?.assigned_officers, 10) || 0;
+            const currentSupervisors = parseInt(selectedSiteData?.assigned_supervisors, 10) || 0;
+            const targetOfficers = Math.max(0, currentOfficers + packageOfficers);
+            const requiredTargetSupervisors = requiredSupervisorsForOfficers(targetOfficers);
+            const minSupervisorChange = Math.max(0, requiredTargetSupervisors - currentSupervisors);
+
+            if (adjustedSupervisors < minSupervisorChange) {
+                adjustedSupervisors = minSupervisorChange;
+                policyNote = `Supervisor policy applied for this site: +${adjustedSupervisors} supervisor(s).`;
+            }
+        }
+
+        const adjustedPrice =
+            (packageOfficers * unitOfficer) +
+            (adjustedSupervisors * unitSupervisor) +
+            (packageCaretakers * unitCaretaker);
+
+        return {
+            officers: packageOfficers,
+            supervisors: adjustedSupervisors,
+            caretakers: packageCaretakers,
+            price: adjustedPrice,
+            policyNote
+        };
+    }
+
     function showPackageConfirmation(isNewSite) {
         const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
         const sitesListContainer = document.getElementById('sitesListContainer');
@@ -2466,13 +2521,22 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get package details
         const selectedItem = document.querySelector('.package-item.selected');
         const packageName = selectedItem ? selectedItem.querySelector('.package-name').textContent : 'Package';
-        const packageOfficers = selectedItem ? selectedItem.querySelector('.package-officers').textContent : '';
-        const packagePrice = selectedPackage.price;
+        const adjustedRequest = getPolicyAdjustedPackageRequest(isNewSite);
         
         // Update package info
         document.getElementById('confirmPackageName').textContent = packageName;
-        document.getElementById('confirmPackageDetails').textContent = packageOfficers;
-        document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
+        let adjustedDetails = `${adjustedRequest.officers} Security Officer${adjustedRequest.officers !== 1 ? 's' : ''}`;
+        if (adjustedRequest.supervisors > 0) {
+            adjustedDetails += `, ${adjustedRequest.supervisors} Supervisor${adjustedRequest.supervisors !== 1 ? 's' : ''}`;
+        }
+        if (adjustedRequest.caretakers > 0) {
+            adjustedDetails += `, ${adjustedRequest.caretakers} Caretaker${adjustedRequest.caretakers !== 1 ? 's' : ''}`;
+        }
+        if (adjustedRequest.policyNote) {
+            adjustedDetails += ` (${adjustedRequest.policyNote})`;
+        }
+        document.getElementById('confirmPackageDetails').textContent = adjustedDetails;
+        document.getElementById('confirmPrice').textContent = `LKR ${adjustedRequest.price.toLocaleString(undefined, {maximumFractionDigits: 2})}`;
         
         // Update site info
         if (isNewSite && newSiteData) {
@@ -2522,6 +2586,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.proceedWithPackage = function() {
         if (selectedPackage) {
+            const adjustedRequest = getPolicyAdjustedPackageRequest(!!newSiteData);
             if (newSiteData) {
                 // Proceed with new site
                 const formData = new FormData();
@@ -2534,10 +2599,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('phone_number', newSiteData.phone_number);
                 formData.append('latitude', newSiteData.latitude);
                 formData.append('longitude', newSiteData.longitude);
-                formData.append('number_of_officers', selectedPackage.officers || 0);
-                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
-                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
-                formData.append('package_price', selectedPackage.price);
+                formData.append('number_of_officers', adjustedRequest.officers || 0);
+                formData.append('number_of_supervisors', adjustedRequest.supervisors || 0);
+                formData.append('number_of_caretakers', adjustedRequest.caretakers || 0);
+                formData.append('package_price', adjustedRequest.price || 0);
                 
                 if (newSiteData.image) {
                     formData.append('image', newSiteData.image);
@@ -2555,10 +2620,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('site_address', selectedSiteData.address);
                 formData.append('district', selectedSiteData.district || '');
                 formData.append('city', selectedSiteData.city || selectedSiteData.district);
-                formData.append('number_of_officers', selectedPackage.officers || 0);
-                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
-                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
-                formData.append('package_price', selectedPackage.price);
+                formData.append('number_of_officers', adjustedRequest.officers || 0);
+                formData.append('number_of_supervisors', adjustedRequest.supervisors || 0);
+                formData.append('number_of_caretakers', adjustedRequest.caretakers || 0);
+                formData.append('package_price', adjustedRequest.price || 0);
                 
                 // Submit via AJAX
                 submitPackageRequestAjax(formData);
@@ -2916,14 +2981,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: customPackageItem.dataset.package,
                 fullName: customPackageItem.dataset.packageName,
                 price: customPackageItem.dataset.price,
-                officers: customPackageItem.dataset.officers
+                officers: customPackageItem.dataset.officers,
+                supervisors: customPackageItem.dataset.supervisors || 0,
+                caretakers: customPackageItem.dataset.caretakers || 0,
+                priceOfficer: customPackageItem.dataset.priceOfficer || 0,
+                priceSupervisor: customPackageItem.dataset.priceSupervisor || 0,
+                priceCaretaker: customPackageItem.dataset.priceCaretaker || 0
             };
         } else {
             selectedPackage = {
                 name: 'custom',
                 fullName: 'Custom Package',
                 price: '0',
-                officers: 'custom'
+                officers: 'custom',
+                supervisors: 0,
+                caretakers: 0,
+                priceOfficer: 0,
+                priceSupervisor: 0,
+                priceCaretaker: 0
             };
         }
         

@@ -1555,12 +1555,22 @@ public function editSite($site_id){
             return;
         }
 
-        // Verify correct number of officers assigned
-        $assignedCount = $this->adminModel->getAssignedOfficerCount($siteId);
-        $requiredCount = $packageRequest->number_of_guards;
+        // Verify correct number of regular officers assigned (excluding supervisors).
+        $assignedOfficers = $this->adminModel->getAssignedRegularOfficerCount($siteId);
+        $requiredOfficers = (int)$packageRequest->number_of_guards;
 
-        if ($assignedCount != $requiredCount) {
-            flash('site_error', 'You must assign exactly ' . $requiredCount . ' officer(s). Currently assigned: ' . $assignedCount);
+        if ($assignedOfficers != $requiredOfficers) {
+            flash('site_error', 'You must assign exactly ' . $requiredOfficers . ' officer(s). Currently assigned: ' . $assignedOfficers);
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        // Policy: minimum 1 supervisor per 5 officers (rounded up).
+        $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
+        $assignedSupervisors = $this->adminModel->getAssignedSupervisorCount($siteId);
+
+        if ($assignedSupervisors < $requiredSupervisors) {
+            flash('site_error', 'Supervisor requirement not met. Required: ' . $requiredSupervisors . ', currently assigned: ' . $assignedSupervisors . '.');
             redirect('admin/viewsites/' . $siteId);
             return;
         }

@@ -1068,16 +1068,32 @@
           Review & Approval
         </h3>
         <?php 
-          $assignedCount = count($data['assigned_officers'] ?? []);
-          $requiredCount = $data['package_request']->number_of_guards ?? 0;
-          $canApprove = ($assignedCount == $requiredCount);
+          $requiredOfficers = (int)($data['package_request']->number_of_guards ?? 0);
+          $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
+          $assignedRegularOfficers = 0;
+          $assignedSupervisors = 0;
+
+          foreach (($data['assigned_officers'] ?? []) as $assignedOfficer) {
+              if (($assignedOfficer->shift_type ?? '') === 'Supervisor') {
+                  $assignedSupervisors++;
+              } else {
+                  $assignedRegularOfficers++;
+              }
+          }
+
+          $officersReady = ($assignedRegularOfficers == $requiredOfficers);
+          $supervisorsReady = ($assignedSupervisors >= $requiredSupervisors);
+          $canApprove = ($officersReady && $supervisorsReady);
         ?>
+        <p style="margin: 0 0 6px 0; color: #666; font-size: 14px;">
+          Officers assigned: <strong style="color: <?php echo $officersReady ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedRegularOfficers; ?>/<?php echo $requiredOfficers; ?></strong>
+        </p>
         <p style="margin: 0; color: #666; font-size: 14px;">
-          Officers assigned: <strong style="color: <?php echo $canApprove ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedCount; ?>/<?php echo $requiredCount; ?></strong>
+          Supervisors assigned: <strong style="color: <?php echo $supervisorsReady ? '#28a745' : '#dc3545'; ?>"><?php echo $assignedSupervisors; ?>/<?php echo $requiredSupervisors; ?></strong>
           <?php if (!$canApprove): ?>
-            - Assign exactly <?php echo $requiredCount; ?> officer(s) to approve this request.
+            - Assign required officers and supervisors to approve this request.
           <?php else: ?>
-            - All required officers assigned. You can now approve or reject this request.
+            - All required officers and supervisors assigned. You can now approve or reject this request.
           <?php endif; ?>
         </p>
       </div>
@@ -1089,9 +1105,9 @@
             Approve & Create Site
           </button>
         <?php else: ?>
-          <button class="secondary-btn" style="padding: 14px 24px; opacity: 0.6; cursor: not-allowed; flex: 1;" disabled title="Assign exactly <?php echo $requiredCount; ?> officer(s) to approve">
+          <button class="secondary-btn" style="padding: 14px 24px; opacity: 0.6; cursor: not-allowed; flex: 1;" disabled title="Requires <?php echo $requiredOfficers; ?> officer(s) and at least <?php echo $requiredSupervisors; ?> supervisor(s)">
             <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">check_circle</span>
-            Approve (Requires <?php echo $requiredCount; ?> officers)
+            Approve (Requires officers + supervisors)
           </button>
         <?php endif; ?>
         <button class="tertiary-btn" style="padding: 14px 24px; flex: 1;" 

@@ -204,7 +204,13 @@ class M_client {
             LEFT JOIN user_details ud ON u.id = ud.user_id
             JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             JOIN sites s ON csa.site_id = s.id
-            WHERE s.client_id = :client_id
+                 WHERE (s.client_id = :client_id
+                     OR EXISTS (
+                      SELECT 1
+                      FROM Clients c
+                      WHERE c.id = s.client_id
+                        AND c.user_id = :client_user_id
+                     ))
             AND s.is_draft = 0
             AND er.status != "Pending"
         ';
@@ -244,6 +250,7 @@ class M_client {
         
         // Bind client_id first
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         
         if (!empty($filters['status'])) {
             $this->db->bind(':status', $filters['status']);
@@ -331,11 +338,18 @@ class M_client {
             FROM equipment_requests er
             INNER JOIN caretaker_site_assignments csa ON er.caretaker_id = csa.caretaker_id AND csa.status = "Active"
             INNER JOIN sites s ON csa.site_id = s.id
-            WHERE s.client_id = :client_id
+                 WHERE (s.client_id = :client_id
+                     OR EXISTS (
+                      SELECT 1
+                      FROM Clients c
+                      WHERE c.id = s.client_id
+                        AND c.user_id = :client_user_id
+                     ))
             AND s.is_draft = 0
             AND er.status != "Pending"
         ');
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         
         return $this->db->single();
     }
@@ -350,10 +364,17 @@ class M_client {
             WHERE u.role = "Care-Taker"
             AND csa.status = "Active"
             AND s.is_draft = 0
-            AND s.client_id = :client_id
+            AND (s.client_id = :client_id
+                 OR EXISTS (
+                     SELECT 1
+                     FROM Clients c
+                     WHERE c.id = s.client_id
+                       AND c.user_id = :client_user_id
+                 ))
             ORDER BY u.name
         ');
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         return $this->db->resultSet();
     }
 
@@ -370,12 +391,19 @@ class M_client {
             LEFT JOIN caretaker_site_assignments csa ON s.id = csa.site_id AND csa.status = "Active"
             LEFT JOIN officer_site_assignments sup_osa ON s.id = sup_osa.site_id AND sup_osa.status = "Active" AND sup_osa.shift_type = "Supervisor"
             LEFT JOIN Users supervisor ON sup_osa.officer_id = supervisor.id
-            WHERE s.client_id = :client_id
+            WHERE (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1
+                       FROM Clients c
+                       WHERE c.id = s.client_id
+                         AND c.user_id = :client_user_id
+                   ))
             AND s.is_draft = 0
             GROUP BY s.id
             ORDER BY s.created_at DESC
         ');
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         return $this->db->resultSet();
     }
 
@@ -390,11 +418,18 @@ class M_client {
             LEFT JOIN officer_site_assignments sup_osa ON s.id = sup_osa.site_id AND sup_osa.status = "Active" AND sup_osa.shift_type = "Supervisor"
             LEFT JOIN Users supervisor ON sup_osa.officer_id = supervisor.id
             WHERE s.id = :site_id 
-            AND s.client_id = :client_id
+            AND (s.client_id = :client_id
+                 OR EXISTS (
+                     SELECT 1
+                     FROM Clients c
+                     WHERE c.id = s.client_id
+                       AND c.user_id = :client_user_id
+                 ))
             AND s.is_draft = 0
         ');
         $this->db->bind(':site_id', $site_id);
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         return $this->db->single();
     }
 
@@ -448,6 +483,47 @@ class M_client {
         return $this->db->resultSet();
     }
 
+        /**
+         * Get active officer/supervisor/caretaker counts for a client site.
+         */
+        public function getActiveSitePersonnelCounts($site_id, $client_id) {
+                $this->db->query('
+                        SELECT
+                                (SELECT COUNT(*)
+                                 FROM officer_site_assignments osa
+                                 WHERE osa.site_id = s.id
+                                     AND osa.status = "Active"
+                                     AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)
+                                ) as number_of_officers,
+                                (SELECT COUNT(*)
+                                 FROM officer_site_assignments osa
+                                 WHERE osa.site_id = s.id
+                                     AND osa.status = "Active"
+                                     AND osa.shift_type = "Supervisor"
+                                ) as number_of_supervisors,
+                                (SELECT COUNT(*)
+                                 FROM caretaker_site_assignments csa
+                                 WHERE csa.site_id = s.id
+                                     AND csa.status = "Active"
+                                ) as number_of_caretakers
+                        FROM sites s
+                        WHERE s.id = :site_id
+                            AND (s.client_id = :client_id
+                                 OR EXISTS (
+                                     SELECT 1
+                                     FROM Clients c
+                                     WHERE c.id = s.client_id
+                                       AND c.user_id = :client_user_id
+                                 ))
+                            AND s.is_draft = 0
+                        LIMIT 1
+                ');
+                $this->db->bind(':site_id', $site_id);
+                $this->db->bind(':client_id', $client_id);
+                $this->db->bind(':client_user_id', $client_id);
+                return $this->db->single();
+        }
+
     /**
      * Get active sites with package information for next payment
      */
@@ -474,11 +550,18 @@ class M_client {
             FROM sites s
             LEFT JOIN package_requests pr ON s.package_request_id = pr.id
             LEFT JOIN packages p ON pr.package_name = p.package_name
-            WHERE s.client_id = :client_id
+            WHERE (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1
+                       FROM Clients c
+                       WHERE c.id = s.client_id
+                         AND c.user_id = :client_user_id
+                   ))
             AND s.is_draft = 0
             ORDER BY s.site_name ASC
         ');
         $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
         return $this->db->resultSet();
     }
     
