@@ -485,9 +485,15 @@
             <?php foreach($data['admins'] as $admin): ?>
                 <div class="admin-card">
                     <div class="admin-header">
-                        <img src="<?php echo URL_ROOT; ?>/uploads/image/<?php echo $admin->profile_image; ?>"
-                             alt="<?php echo htmlspecialchars($admin->name); ?>" 
-                             class="admin-avatar">
+                        <?php if($admin->userID == 'ADMIN001'): ?>
+                            <img src="<?php echo URL_ROOT; ?>/public/img/logo.png"
+                                 alt="<?php echo htmlspecialchars($admin->name); ?>" 
+                                 class="admin-avatar">
+                        <?php else: ?>
+                            <img src="<?php echo URL_ROOT; ?>/uploads/image/<?php echo $admin->profile_image; ?>"
+                                 alt="<?php echo htmlspecialchars($admin->name); ?>" 
+                                 class="admin-avatar">
+                        <?php endif; ?>
                         <div class="admin-info">
                             <h3><?php echo htmlspecialchars($admin->name); ?></h3>
                             <p>Admin ID: <?php echo $admin->userID; ?></p>

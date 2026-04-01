@@ -1,14 +1,23 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php
-// Fetch notifications for current user
+// Fetch notifications and user profile for current user
 $notificationModel = null;
 $notifications = [];
 $unreadCount = 0;
+$userProfileImage = 'default.png';
 
-if (isset($_SESSION['user_id'])) {
+if (isset($_SESSION['user_userID'])) {
     require_once APP_ROOT . '/models/M_notifications.php';
+    require_once APP_ROOT . '/models/M_premiseofficer.php';
     $notificationModel = new M_notifications();
+    $premiseofficerModel = new M_premiseofficer();
     $notifications = $notificationModel->getNotifications($_SESSION['user_id']);
+    
+    // Fetch current user's profile image
+    $currentUser = $premiseofficerModel->getPremiseOfficerById($_SESSION['user_userID']);
+    if ($currentUser && isset($currentUser->profile_image)) {
+        $userProfileImage = $currentUser->profile_image;
+    }
     // Count unread notifications
     $unreadCount = 0;
     foreach ($notifications as $notif) {
@@ -36,7 +45,7 @@ if (isset($_SESSION['user_id'])) {
         </div>
 
         <div class="user-card">
-            <div class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></div>
+            <img class="avatar" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo isset($userProfileImage) ? $userProfileImage : 'default.png'; ?>" alt="Profile" onerror="this.src='<?php echo URL_ROOT; ?>/uploads/applicantPhotos/default.png'" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
                 <div class="user-meta">
                   <div class="user-name"><?php echo getCurrentUserName() ?? 'User'; ?></div>
                   <div class="user-role"><?php echo getCurrentUserRole() ?? 'Premise Officer'; ?></div>
@@ -107,7 +116,7 @@ if (isset($_SESSION['user_id'])) {
 
   <!-- Profile Toggle -->
   <div class="topbar-user" id="profileToggle">
-    <span class="avatar" aria-hidden="true"><span class="material-symbols-outlined">person</span></span>
+    <img class="avatar" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo isset($userProfileImage) ? $userProfileImage : 'default.png'; ?>" alt="Profile" onerror="this.src='<?php echo URL_ROOT; ?>/uploads/applicantPhotos/default.png'" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
     <span class="name"><?php echo getCurrentUserName() ?? 'User'; ?></span>
     <span class="caret" aria-hidden="true"><span class="material-symbols-outlined">arrow_drop_down</span></span>
   </div>
@@ -115,7 +124,7 @@ if (isset($_SESSION['user_id'])) {
   <!-- Dropdown -->
   <div class="profile-dropdown" id="profileDropdown">
     <div class="profile-info">
-      <div class="avatar"><span class="material-symbols-outlined">person</span></div>
+      <img class="avatar" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo isset($userProfileImage) ? $userProfileImage : 'default.png'; ?>" alt="Profile" onerror="this.src='<?php echo URL_ROOT; ?>/uploads/applicantPhotos/default.png'" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
       <div>
         <h4><?php echo getCurrentUserName() ?? 'User'; ?></h4>
         <p><?php echo getCurrentUserRole() ?? 'Premise Officer'; ?></p>
