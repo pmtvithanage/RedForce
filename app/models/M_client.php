@@ -412,6 +412,22 @@ class M_client {
     public function getSiteDetails($site_id, $client_id) {
         $this->db->query('
             SELECT s.*, 
+                                     (
+                                             SELECT pr2.start_date
+                                             FROM package_requests pr2
+                                             WHERE (pr2.id = s.package_request_id OR pr2.draft_site_id = s.id)
+                                                 AND LOWER(COALESCE(pr2.status, "")) = "approved"
+                                             ORDER BY COALESCE(pr2.approved_at, pr2.submitted_date) DESC
+                                             LIMIT 1
+                                     ) as service_start_date,
+                                     (
+                                             SELECT pr2.end_date
+                                             FROM package_requests pr2
+                                             WHERE (pr2.id = s.package_request_id OR pr2.draft_site_id = s.id)
+                                                 AND LOWER(COALESCE(pr2.status, "")) = "approved"
+                                             ORDER BY COALESCE(pr2.approved_at, pr2.submitted_date) DESC
+                                             LIMIT 1
+                                     ) as service_end_date,
                    supervisor.name as supervisor_name,
                    supervisor.phone_number as supervisor_phone,
                    supervisor.email as supervisor_email
@@ -444,7 +460,7 @@ class M_client {
             LEFT JOIN premise_officers po ON u.id = po.userID
             WHERE osa.site_id = :site_id
             AND osa.status = "Active"
-            AND osa.shift_type != "Supervisor"
+            AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)
             ORDER BY osa.assignment_start DESC
         ');
         $this->db->bind(':site_id', $site_id);
@@ -470,7 +486,7 @@ class M_client {
     // Get supervisors assigned to a site
     public function getSiteSupervisors($site_id) {
         $this->db->query('
-            SELECT u.*, osa.assignment_start, osa.assignment_end,
+            SELECT u.*, osa.assignment_start, osa.assignment_end, osa.shift_type,
                    po.officerID
             FROM Users u
             JOIN officer_site_assignments osa ON u.id = osa.officer_id

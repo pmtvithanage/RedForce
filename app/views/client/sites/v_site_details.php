@@ -253,6 +253,25 @@
         box-shadow: inset 0 0 0 2px #2196f3;
     }
 
+    .calendar-day.service-period {
+        background: #e8f5e9 !important;
+        box-shadow: inset 0 0 0 1px #81c784;
+    }
+
+    .calendar-day.service-period:hover {
+        background: #dff1e1 !important;
+    }
+
+    .calendar-day.service-period.selected {
+        background: #c8e6c9 !important;
+        box-shadow: inset 0 0 0 2px #2e7d32;
+    }
+
+    .calendar-day.service-period .day-number {
+        color: #1b5e20;
+        font-weight: 700;
+    }
+
     .day-number {
         font-weight: 600;
         font-size: 14px;
@@ -531,34 +550,8 @@
 <script>
     const assignedOfficers = <?php echo json_encode($data['assigned_officers'] ?? []); ?>;
     const assignedSupervisors = <?php echo json_encode($data['assigned_supervisors'] ?? []); ?>;
-
-    const todayDateObj = new Date();
-    const todayKey = todayDateObj.getFullYear() + '-' + String(todayDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(todayDateObj.getDate()).padStart(2, '0');
-    const tomorrowObj = new Date(todayDateObj.getFullYear(), todayDateObj.getMonth(), todayDateObj.getDate() + 1);
-    const tomorrowKey = tomorrowObj.getFullYear() + '-' + String(tomorrowObj.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrowObj.getDate()).padStart(2, '0');
-
-    const dummyScheduleByDate = {
-        [todayKey]: {
-            officers: [
-                { name: 'Kasun Perera', rank: 'Senior Officer', shift_type: 'Day' },
-                { name: 'Nimal Fernando', rank: 'Officer', shift_type: 'Night' },
-                { name: 'Ruwan De Silva', rank: 'Junior Officer', shift_type: 'Day' }
-            ],
-            supervisors: [
-                { name: 'Saman Jayasinghe', rank: 'Supervisor', shift_type: 'Day' },
-                { name: 'Dinesh Karunaratne', rank: 'Chief Supervisor', shift_type: 'Night' }
-            ]
-        },
-        [tomorrowKey]: {
-            officers: [
-                { name: 'Kavindu Silva', rank: 'Officer', shift_type: 'Day' },
-                { name: 'Pradeep Gunasekara', rank: 'Senior Officer', shift_type: 'Night' }
-            ],
-            supervisors: [
-                { name: 'Tharindu Mendis', rank: 'Supervisor', shift_type: 'Day' }
-            ]
-        }
-    };
+    const serviceStartDate = <?php echo json_encode($data['site']->service_start_date ?? null); ?>;
+    const serviceEndDate = <?php echo json_encode($data['site']->service_end_date ?? null); ?>;
 
     (function initializeSiteScheduleCalendar() {
         const calendarBody = document.getElementById('calendarBody');
@@ -572,7 +565,8 @@
             return;
         }
 
-        let currentDate = new Date();
+        const parsedServiceStart = parseDateOnly(serviceStartDate);
+        let currentDate = parsedServiceStart || new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
         let selectedKey = null;
@@ -603,6 +597,47 @@
             return el;
         }
 
+        function parseDateOnly(dateStr) {
+            if (!dateStr) {
+                return null;
+            }
+            const parts = String(dateStr).split('-');
+            if (parts.length !== 3) {
+                return null;
+            }
+            return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+        }
+
+        function isDateWithinRange(targetKey, startStr, endStr) {
+            const target = parseDateOnly(targetKey);
+            const start = parseDateOnly(startStr);
+            const end = parseDateOnly(endStr);
+
+            if (!target || !start) {
+                return false;
+            }
+
+            if (!end) {
+                return target >= start;
+            }
+
+            return target >= start && target <= end;
+        }
+
+        function isServicePeriodDate(dateKey) {
+            return isDateWithinRange(dateKey, serviceStartDate, serviceEndDate);
+        }
+
+        function filterOnDutyByDate(list, dateKey) {
+            if (!Array.isArray(list) || list.length === 0) {
+                return [];
+            }
+
+            return list.filter((person) => {
+                return isDateWithinRange(dateKey, person.assignment_start, person.assignment_end);
+            });
+        }
+
         function renderCalendar(month, year) {
             calendarBody.innerHTML = '';
             currentMonthYearSpan.textContent = monthNames[month] + ' ' + year;
@@ -629,6 +664,10 @@
                 const isToday = day === todayDay && month === todayMonth && year === todayYear;
                 const el = dayCell(day, month, year, false, isToday);
                 const dateKey = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+
+                if (isServicePeriodDate(dateKey)) {
+                    el.classList.add('service-period');
+                }
 
                 el.addEventListener('click', () => {
                     selectedKey = dateKey;
@@ -699,10 +738,11 @@
         function renderScheduleDetails(day, month, year, dateKey) {
             selectedDateSpan.textContent = monthNames[month] + ' ' + day + ', ' + year;
 
-            const dateSchedule = dummyScheduleByDate[dateKey] || { officers: [], supervisors: [] };
+            const officersOnDuty = filterOnDutyByDate(assignedOfficers, dateKey);
+            const supervisorsOnDuty = filterOnDutyByDate(assignedSupervisors, dateKey);
 
-            const officerGroup = renderDutyGroup('Premise Officers On Duty', 'badge', dateSchedule.officers);
-            const supervisorGroup = renderDutyGroup('Supervisors On Duty', 'supervisor_account', dateSchedule.supervisors);
+            const officerGroup = renderDutyGroup('Premise Officers On Duty', 'badge', officersOnDuty);
+            const supervisorGroup = renderDutyGroup('Supervisors On Duty', 'supervisor_account', supervisorsOnDuty);
 
             if (!officerGroup && !supervisorGroup) {
                 shiftContent.className = 'schedule-empty';
@@ -746,10 +786,12 @@
 
         renderCalendar(currentMonth, currentYear);
 
-        // Show dummy schedule for today by default.
-        selectedKey = todayKey;
+        // Show service start date by default when available, otherwise today.
+        const defaultDateObj = parsedServiceStart || new Date();
+        const defaultKey = defaultDateObj.getFullYear() + '-' + String(defaultDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(defaultDateObj.getDate()).padStart(2, '0');
+        selectedKey = defaultKey;
         renderSelectedState();
-        renderScheduleDetails(todayDateObj.getDate(), todayDateObj.getMonth(), todayDateObj.getFullYear(), todayKey);
+        renderScheduleDetails(defaultDateObj.getDate(), defaultDateObj.getMonth(), defaultDateObj.getFullYear(), defaultKey);
     })();
 </script>
 
