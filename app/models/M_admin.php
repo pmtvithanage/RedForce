@@ -1026,18 +1026,55 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Package request methods
     public function getAllPackageRequests() {
-        $this->db->query("SELECT pr.*, u.name as client_name FROM package_requests pr JOIN Users u ON pr.client_id = u.id ORDER BY pr.submitted_date DESC");
+        $this->db->query("SELECT pr.*, u.name as client_name
+                          FROM package_requests pr
+                          JOIN Users u ON pr.client_id = u.id
+                          WHERE (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )
+                          ORDER BY pr.submitted_date DESC");
         return $this->db->resultSet();
     }
 
     public function getPackageRequestStats() {
-        $this->db->query("SELECT COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending, COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved, COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected, COUNT(*) as total FROM package_requests");
+        $this->db->query("SELECT
+                            COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending,
+                            COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved,
+                            COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected,
+                            COUNT(*) as total
+                          FROM package_requests pr
+                          WHERE (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )");
         return $this->db->single();
     }
 
     // Get package request by ID
     public function getPackageRequestById($id) {
-        $this->db->query("SELECT * FROM package_requests WHERE id = :id");
+        $this->db->query("SELECT *
+                          FROM package_requests pr
+                          WHERE pr.id = :id
+                          AND (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )");
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
@@ -1119,6 +1156,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     public function approvePackageRequest($id, $admin_id, $notes) {
+        // Guard: admin can only process paid requests.
+        $packageRequest = $this->getPackageRequestById($id);
+        if (!$packageRequest) {
+            return false;
+        }
+
         // Step 1: Update the package request status to Approved
         $this->db->query("UPDATE package_requests 
                           SET status = 'Approved', 
@@ -1134,14 +1177,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             return false; // Failed to approve
         }
         
-        // Step 2: Get the package request details
-        $packageRequest = $this->getPackageRequestById($id);
-        
-        if (!$packageRequest) {
-            return true; // Approved but couldn't get details
-        }
-        
-        // Step 3: Create a site from the package request
+        // Step 2: Create a site from the package request
         $siteId = $this->createSiteFromPackageRequest($packageRequest);
         
         // Return the site ID (or true if site creation failed but approval succeeded)
@@ -1367,6 +1403,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     public function rejectPackageRequest($id, $admin_id, $reason) {
+        // Guard: admin can only process paid requests.
+        if (!$this->getPackageRequestById($id)) {
+            return false;
+        }
+
         $this->db->query("UPDATE package_requests SET status = 'Rejected', admin_notes = :reason, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
         $this->db->bind(':id', $id);
         $this->db->bind(':admin_id', $admin_id);

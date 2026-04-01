@@ -358,6 +358,212 @@
       border-bottom-color: var(--accent) !important;
     }
 
+    .schedule-section {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(0,0,0,0.05);
+      padding: 24px;
+    }
+
+    .schedule-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 24px;
+    }
+
+    .calendar-panel {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .schedule-title {
+      margin: 0 0 20px 0;
+      font-size: 40px;
+      font-weight: 700;
+      color: #a40000;
+    }
+
+    .calendar-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 10px 15px;
+    }
+
+    .month-label {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1;
+      color: #1f2937;
+      text-align: center;
+    }
+
+    .nav-btn {
+      width: 38px;
+      height: 38px;
+      border: none;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover {
+      background: #b50000;
+      transform: scale(1.05);
+    }
+
+    .nav-btn .material-symbols-outlined {
+      font-size: 20px;
+    }
+
+    .weekdays,
+    .calendar-body {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .weekdays {
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .weekday {
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      color: #666;
+      padding: 15px 10px;
+      border-right: 1px solid #e9ecef;
+    }
+
+    .weekday:last-child {
+      border-right: none;
+    }
+
+    .calendar-day {
+      min-height: 80px;
+      background: #ffffff;
+      border: 0;
+      border-right: 1px solid #e9ecef;
+      border-bottom: 1px solid #e9ecef;
+      border-radius: 0;
+      padding: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      color: #2f2f2f;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: flex-start;
+      justify-content: flex-start;
+      position: relative;
+    }
+
+    .calendar-day:hover {
+      background: #f8fbff;
+      transform: scale(1.02);
+    }
+
+    .calendar-day.other-month {
+      color: #c3c7cc;
+      background: #f8f9fa;
+      font-weight: 400;
+      cursor: default;
+    }
+
+    .calendar-day.other-month:hover {
+      background: #f8f9fa;
+      transform: scale(1);
+    }
+
+    .calendar-day.today {
+      background: #e8f4ff;
+      box-shadow: inset 0 0 0 2px #2196f3;
+      font-weight: 700;
+    }
+
+    .calendar-day.selected {
+      background: #cfe3f5;
+      box-shadow: inset 0 0 0 2px #2196f3;
+    }
+
+    .calendar-day.service-period {
+      background: #e7f7ef;
+      box-shadow: inset 0 0 0 2px #41a863;
+      color: #166534;
+      font-weight: 700;
+    }
+
+    .calendar-day.service-period.selected {
+      background: #d7f0e1;
+      box-shadow: inset 0 0 0 2px #2f9e56;
+    }
+
+    .day-number {
+      font-weight: 600;
+      font-size: 14px;
+      color: inherit;
+    }
+
+    .schedule-panel {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    .schedule-panel h3 {
+      margin: 0;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .selected-date {
+      font-size: 14px;
+      color: #666;
+      margin: 0;
+      margin-bottom: 16px;
+    }
+
+    .schedule-separator {
+      border: 0;
+      border-top: 1px solid #f0f0f0;
+      margin: 0 0 18px;
+    }
+
+    .schedule-empty {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .schedule-empty .material-symbols-outlined {
+      font-size: 48px;
+      color: #ddd;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 1024px) {
+      .schedule-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
@@ -444,68 +650,45 @@
 
     <!-- Calendar Section -->
     <div style="margin: 24px 12px;">
-        <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); padding: 24px;">
-            <h2 class="section-title" style="margin-bottom: 20px;">Site Schedule Calendar</h2>
-            
-            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
-                <!-- Calendar -->
-                <div>
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-                        <button class="nav-btn" id="prevMonth" style="background: transparent; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;">
-                            <span class="material-symbols-outlined">chevron_left</span>
-                        </button>
-                        <div style="font-size: 20px; font-weight: 700; color: #1a1a1a;">
-                            <span id="currentMonthYear">February 2026</span>
-                        </div>
-                        <button class="nav-btn" id="nextMonth" style="background: transparent; border: 1px solid #ddd; border-radius: 8px; padding: 8px 12px; cursor: pointer; display: flex; align-items: center; transition: all 0.2s;">
-                            <span class="material-symbols-outlined">chevron_right</span>
-                        </button>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px;">
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">MON</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">TUE</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">WED</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">THU</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">FRI</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">SAT</div>
-                        <div style="text-align: center; font-weight: 600; font-size: 12px; color: #666; padding: 8px;">SUN</div>
-                    </div>
-                    
-                    <div id="calendarBody" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
-                        <!-- Calendar dates will be generated by JavaScript -->
-                    </div>
-                    
-                    <div style="display: flex; gap: 16px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #f0f0f0;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: #e3f2fd; border-radius: 4px; border: 2px solid #2196f3;"></div>
-                            <span style="font-size: 13px; color: #666;">Today</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 20px; height: 20px; background: #f0f0f0; border-radius: 4px;"></div>
-                            <span style="font-size: 13px; color: #666;">Available</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Details Panel -->
-                <div>
-                    <div style="background: #f8f9fa; border-radius: 8px; padding: 20px;">
-                        <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">Schedule Details</h3>
-                        <div style="font-size: 14px; color: #666; margin-bottom: 16px;">
-                            <span id="selectedDate">Select a date</span>
-                        </div>
-                        
-                        <div id="shiftContent" style="margin-top: 16px;">
-                            <div style="text-align: center; padding: 40px 20px; color: #999;">
-                                <span class="material-symbols-outlined" style="font-size: 48px; color: #ddd; display: block; margin-bottom: 12px;">event</span>
-                                <p style="margin: 0; font-size: 14px;">Click on a date to view details</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div class="schedule-section">
+        <h2 class="schedule-title">Site Schedule Calendar</h2>
+        <div class="schedule-grid">
+          <div class="calendar-panel">
+            <div class="calendar-toolbar">
+              <button class="nav-btn" id="prevMonth" type="button" aria-label="Previous month">
+                <span class="material-symbols-outlined">chevron_left</span>
+              </button>
+              <div class="month-label" id="currentMonthYear">April 2026</div>
+              <button class="nav-btn" id="nextMonth" type="button" aria-label="Next month">
+                <span class="material-symbols-outlined">chevron_right</span>
+              </button>
             </div>
+
+            <div class="weekdays">
+              <div class="weekday">MON</div>
+              <div class="weekday">TUE</div>
+              <div class="weekday">WED</div>
+              <div class="weekday">THU</div>
+              <div class="weekday">FRI</div>
+              <div class="weekday">SAT</div>
+              <div class="weekday">SUN</div>
+            </div>
+
+            <div class="calendar-body" id="calendarBody"></div>
+          </div>
+
+          <div class="schedule-panel">
+            <h3>Schedule Details</h3>
+            <div class="selected-date" id="selectedDate">Select a date</div>
+            <hr class="schedule-separator">
+
+            <div id="shiftContent" class="schedule-empty">
+              <span class="material-symbols-outlined">calendar_month</span>
+              <p>Click on a date to view details</p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <!-- ASSIGN OFFICERS SECTION -->
@@ -2117,7 +2300,24 @@ function confirmCaretakerAssignment() {
     let currentDate = new Date();
     let currentMonth = currentDate.getMonth();
     let currentYear = currentDate.getFullYear();
-    let selectedDay = null;
+    let selectedDateKey = null;
+    const requestStart = <?php echo (!empty($data['package_request']) && !empty($data['package_request']->start_date)) ? ('new Date("' . date('Y-m-d', strtotime($data['package_request']->start_date)) . 'T00:00:00")') : 'null'; ?>;
+    const requestEnd = <?php echo (!empty($data['package_request']) && !empty($data['package_request']->end_date)) ? ('new Date("' . date('Y-m-d', strtotime($data['package_request']->end_date)) . 'T00:00:00")') : 'null'; ?>;
+
+    function formatDateKey(year, month, day) {
+      return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function isWithinRequestedPeriod(dateObj) {
+      if (!requestStart || !requestEnd) {
+        return false;
+      }
+
+      const compareDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+      const start = new Date(requestStart.getFullYear(), requestStart.getMonth(), requestStart.getDate());
+      const end = new Date(requestEnd.getFullYear(), requestEnd.getMonth(), requestEnd.getDate());
+      return compareDate >= start && compareDate <= end;
+    }
     
     // Generate calendar for a specific month and year
     function generateCalendar(month, year) {
@@ -2145,24 +2345,23 @@ function confirmCaretakerAssignment() {
         const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
         
         for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-            const dayElement = createDayElement(prevMonthDays - i, true, prevMonth, prevYear);
+          const dayValue = prevMonthDays - i;
+          const dayElement = createDayElement(dayValue, true, prevMonth, prevYear);
             calendarBody.appendChild(dayElement);
         }
         
         // Add current month's days
         for (let day = 1; day <= daysInMonth; day++) {
             const dayElement = createDayElement(day, false, month, year);
-            
-            // Check if it's today
+
             if (isCurrentMonth && day === todayDate) {
-                dayElement.style.background = '#e3f2fd';
-                dayElement.style.border = '2px solid #2196f3';
-                dayElement.style.fontWeight = '700';
+              dayElement.classList.add('today');
             }
-            
-            // Add click event to show details
-            const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            dayElement.addEventListener('click', () => selectDate(dateString, day, month, year, dayElement));
+
+            const dateString = formatDateKey(year, month, day);
+            if (dateString === selectedDateKey) {
+              dayElement.classList.add('selected');
+            }
             
             calendarBody.appendChild(dayElement);
         }
@@ -2180,82 +2379,78 @@ function confirmCaretakerAssignment() {
     }
     
     // Create a day element
-    function createDayElement(day, isOtherMonth) {
+        function createDayElement(day, isOtherMonth, month, year) {
         const dayElement = document.createElement('div');
-        dayElement.style.cssText = `
-            padding: 12px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: ${isOtherMonth ? '#fafafa' : '#f0f0f0'};
-            color: ${isOtherMonth ? '#ccc' : '#333'};
-            font-size: 14px;
-            font-weight: ${isOtherMonth ? '400' : '600'};
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
-        
-        dayElement.textContent = day;
-        
-        dayElement.addEventListener('mouseenter', function() {
-            if (!isOtherMonth) {
-                this.style.background = '#e3f2fd';
-                this.style.transform = 'scale(1.05)';
-            }
-        });
-        
-        dayElement.addEventListener('mouseleave', function() {
-            if (!this.classList.contains('selected') && this.style.border !== '2px solid #2196f3') {
-                this.style.background = isOtherMonth ? '#fafafa' : '#f0f0f0';
-                this.style.transform = 'scale(1)';
-            }
-        });
+          dayElement.className = `calendar-day${isOtherMonth ? ' other-month' : ''}`;
+          dayElement.innerHTML = '<span class="day-number">' + String(day) + '</span>';
+          dayElement.dataset.day = String(day);
+          dayElement.dataset.month = String(month);
+          dayElement.dataset.year = String(year);
+
+          const dateObj = new Date(year, month, day);
+          const dateString = formatDateKey(year, month, day);
+
+          if (isWithinRequestedPeriod(dateObj)) {
+            dayElement.classList.add('service-period');
+          }
+
+          if (!isOtherMonth) {
+            dayElement.addEventListener('click', () => selectDate(dateString, day, month, year));
+          }
         
         return dayElement;
     }
     
     // Select a date and show details
-    function selectDate(dateString, day, month, year, clickedElement) {
-        // Remove previous selection styling
-        const allDays = calendarBody.querySelectorAll('div');
-        allDays.forEach(dayEl => {
-            if (dayEl.style.border !== '2px solid #2196f3') { // Don't remove today's styling
-                dayEl.style.background = dayEl.textContent && parseInt(dayEl.textContent) ? '#f0f0f0' : '#fafafa';
-            }
-            dayEl.classList.remove('selected');
-        });
+        function selectDate(dateString, day, month, year) {
+          selectedDateKey = dateString;
+          const allDays = calendarBody.querySelectorAll('.calendar-day');
+          allDays.forEach(dayEl => dayEl.classList.remove('selected'));
+
+          const clickedElement = Array.from(allDays).find(dayEl => {
+            return !dayEl.classList.contains('other-month') && Number(dayEl.dataset.day) === day;
+          });
+
+          if (clickedElement) {
+            clickedElement.classList.add('selected');
+          }
         
-        // Add selection to clicked day
-        clickedElement.classList.add('selected');
-        if (clickedElement.style.border !== '2px solid #2196f3') { // If not today
-            clickedElement.style.background = '#bbdefb';
-        }
-        
-        // Update selected date display
         const monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
         ];
         selectedDateSpan.textContent = `${monthNames[month]} ${day}, ${year}`;
         
-        // Show date details
-        showDateDetails(dateString);
+          showDateDetails(dateString, new Date(year, month, day));
     }
     
     // Show details for the selected date
-    function showDateDetails(dateString) {
+        function showDateDetails(dateString, dateObj) {
+          const isRequestedDate = isWithinRequestedPeriod(dateObj);
+          const requestRangeText = requestStart && requestEnd
+            ? `${requestStart.getFullYear()}-${String(requestStart.getMonth() + 1).padStart(2, '0')}-${String(requestStart.getDate()).padStart(2, '0')} to ${requestEnd.getFullYear()}-${String(requestEnd.getMonth() + 1).padStart(2, '0')}-${String(requestEnd.getDate()).padStart(2, '0')}`
+            : 'Not set';
+
+          const statusBadge = isRequestedDate
+            ? '<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#e7f7ef;color:#166534;font-size:12px;font-weight:700;">Within Requested Period</span>'
+            : '<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#f3f4f6;color:#4b5563;font-size:12px;font-weight:700;">Outside Requested Period</span>';
+
+        shiftContent.className = '';
         shiftContent.innerHTML = `
             <div style="padding: 16px;">
-                <div style="background: white; border-radius: 8px; padding: 16px; border-left: 4px solid var(--accent);">
+              <div style="background: white; border-radius: 8px; padding: 16px; border-left: 4px solid ${isRequestedDate ? '#41a863' : 'var(--accent)'};">
                     <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #333;">Selected Date</h4>
                     <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.6;">
                         <strong>Date:</strong> ${dateString}
                     </p>
-                    <p style="margin: 8px 0 0 0; font-size: 13px; color: #999;">
-                        No specific events scheduled for this date.
+                <p style="margin: 8px 0 0 0; font-size: 13px; color: #666; line-height: 1.6;">
+                  <strong>Requested Period:</strong> ${requestRangeText}
+                </p>
+                <div style="margin-top: 10px;">
+                  ${statusBadge}
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 13px; color: #999;">
+                  Officer scheduling can be planned within the highlighted service period.
                     </p>
                 </div>
             </div>
@@ -2280,16 +2475,6 @@ function confirmCaretakerAssignment() {
             currentYear++;
         }
         generateCalendar(currentMonth, currentYear);
-    });
-    
-    // Add hover effect to navigation buttons
-    [prevMonthBtn, nextMonthBtn].forEach(btn => {
-        btn.addEventListener('mouseenter', function() {
-            this.style.background = '#f0f0f0';
-        });
-        btn.addEventListener('mouseleave', function() {
-            this.style.background = 'transparent';
-        });
     });
     
     // Initialize calendar with current month

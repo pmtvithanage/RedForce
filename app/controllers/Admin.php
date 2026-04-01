@@ -1507,7 +1507,7 @@ public function editSite($site_id){
         $packageRequest = $this->adminModel->getPackageRequestById($requestId);
         
         if (!$packageRequest) {
-            flash('request_error', 'Package request not found');
+            flash('request_error', 'Package request not found or payment is not completed yet');
             redirect('admin/clientRequests');
             return;
         }
