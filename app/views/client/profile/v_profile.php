@@ -94,45 +94,6 @@
         transform: scale(1.1);
         transition: transform 0.2s;
     }
-
-    .main-content {
-        width: 90%;
-        margin: 24px auto;
-        padding: 0;
-        min-height: auto;
-    }
-
-    .profile-container {
-        max-width: none;
-    }
-
-    .profile-grid {
-        margin-top: 0 !important;
-        gap: 20px;
-    }
-
-    .profile-card,
-    .info-card,
-    .security-card {
-        border-radius: 8px;
-        border: 1px solid #ececec;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .card-header {
-        padding: 16px 20px;
-    }
-
-    .card-body {
-        padding: 20px;
-    }
-
-    @media (max-width: 768px) {
-        .main-content {
-            width: 95%;
-            margin: 16px auto;
-        }
-    }
 </style>
 
 <div class="main-content">
@@ -140,7 +101,7 @@
 
 
 
-        <div class="profile-grid">
+        <div class="profile-grid" style="margin-top:80px;">
             <!-- Profile Card -->
             <div class="profile-card">
                 <div class="card-header">
