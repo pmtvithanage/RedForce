@@ -4,6 +4,28 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
+  .maindiv {
+    padding: 30px;
+    max-width: 1600px;
+    margin: 0 40px;
+  }
+
+  .page-header {
+    margin-bottom: 30px;
+  }
+
+  .page-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    color: #666;
+    font-size: 15px;
+  }
+
   /* Stat Cards Container */
   .stats-container {
     display: grid;
@@ -627,9 +649,10 @@
 
   .search-section {
     background: #fff;
-    padding: 14px;
+    padding: 14px 16px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ececec;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-bottom: 20px;
     justify-content: flex-start;
   }
@@ -639,6 +662,7 @@
     border-radius: 8px;
     box-shadow: none;
     font-size: 14px;
+    padding: 12px 42px 12px 14px;
   }
 
   .search-input:focus {
@@ -647,10 +671,16 @@
   }
 
   .add-route-btn {
+    background: #a40000;
     border-radius: 8px;
     padding: 12px 18px;
     font-size: 14px;
     box-shadow: none;
+    font-weight: 600;
+  }
+
+  .add-route-btn:hover {
+    background: #8f0000;
   }
 
   .routes-section {
@@ -658,14 +688,14 @@
     border: 1px solid #ececec;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 14px 42px;
+    padding: 12px 40px;
     overflow: hidden;
     margin-bottom: 24px;
   }
 
   .routes-container {
-    padding: 4px 2px;
-    gap: 14px;
+    padding: 6px 2px;
+    gap: 16px;
   }
 
   .scroll-arrow {
@@ -696,8 +726,9 @@
     border-top: none;
     border: 1px solid #ececec;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    padding: 16px;
-    flex: 0 0 285px;
+    padding: 14px;
+    flex: 0 0 255px;
+    min-height: 210px;
   }
 
   .route-card:hover {
@@ -706,19 +737,42 @@
   }
 
   .route-name {
-    font-size: 26px;
+    font-size: 18px;
     font-weight: 700;
     color: #1f2937;
-    line-height: 1.2;
+    line-height: 1.25;
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-width: 170px;
+  }
+
+  .route-info {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .info-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8a9099;
   }
 
   .info-value {
     font-size: 15px;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.3;
   }
 
   .route-actions {
     border-top: 1px solid #ececec;
     padding-top: 12px;
+    margin-top: auto;
   }
 
   .route-actions button {
@@ -737,6 +791,7 @@
     letter-spacing: 0.3px;
     border-radius: 999px;
     padding: 4px 10px;
+    white-space: nowrap;
   }
 
   .unassigned-sites-section {
@@ -751,7 +806,7 @@
   .unassigned-sites-header {
     padding: 16px 20px;
     border-bottom: 1px solid #ececec;
-    background: #fff;
+    background: #f8f9fa;
   }
 
   .unassigned-sites-title {
@@ -821,194 +876,204 @@
     border-radius: 6px;
     padding: 6px 12px;
     font-size: 12px;
-    background: #16a34a;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
   }
 
   .table-action-btn.assign:hover {
-    background: #15803d;
+    background: #dff1e3;
+    color: #1b5e20;
+    border-color: #b7dfbb;
   }
 </style>
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
 
-<!-- Content will be loaded here -->
-<div class="stats-container">
-  <div class="stat-card">
-    <span class="stat-icon total"><i class="fas fa-motorcycle"></i></span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo $data['totalRiders']; ?></div>
-      <div class="stat-label">Total Riders</div>
-    </div>
+<div class="maindiv">
+  <div class="page-header">
+    <h2>Routings Management</h2>
+    <p>View and manage all routings</p>
   </div>
-
-  <div class="stat-card">
-    <span class="stat-icon paid"><i class="fas fa-route"></i></span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo $data['totalRoutes']; ?></div>
-      <div class="stat-label">Total Routes</div>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <span class="stat-icon pending"><i class="fas fa-location-dot"></i></span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo $data['totalSites']; ?></div>
-      <div class="stat-label">Total Sites</div>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <span class="stat-icon overdue"><i class="fas fa-clipboard-list"></i></span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo $data['unassignedSitesCount']; ?></div>
-      <div class="stat-label">To be assigned</div>
-    </div>
-  </div>
-</div>
-
-<!-- Search Bar -->
-<div class="search-section">
-  <div class="search-container">
-    <input type="text" id="routeSearch" class="search-input" placeholder="Search routes by name, rider, or sites...">
-    <span class="material-symbols-outlined search-icon">search</span>
-    <button class="clear-search" id="clearSearch">×</button>
-  </div>
-  <button class="add-route-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addroute'">
-    <span class="material-symbols-outlined">add</span>
-    Add Route
-  </button>
-</div>
-
-<!-- Route Cards Section -->
-<div class="routes-section">
-  <button class="scroll-arrow left" id="scrollLeft">
-    <span class="material-symbols-outlined">chevron_left</span>
-  </button>
-  <div class="routes-container" id="routesContainer">
-    <?php if (empty($data['routes'])): ?>
-      <div class="empty-state">
-        <span class="material-symbols-outlined">route</span>
-        <p>No routes found. Create your first route!</p>
+  <!-- Content will be loaded here -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <span class="stat-icon total"><i class="fas fa-motorcycle"></i></span>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo $data['totalRiders']; ?></div>
+        <div class="stat-label">Total Riders</div>
       </div>
-    <?php else: ?>
-      <?php foreach ($data['routes'] as $route): ?>
-        <div class="route-card">
-          <div class="route-header">
-            <div class="route-name"><?php echo htmlspecialchars($route->route_name); ?></div>
-            <span class="route-status status-<?php echo strtolower($route->status); ?>"><?php echo $route->status; ?></span>
-          </div>
+    </div>
 
-          <div class="route-info">
-            <div class="info-item">
-              <div class="info-label">Mobile Rider</div>
-              <div class="info-value"><?php echo $route->rider_name ? htmlspecialchars($route->rider_name) : 'Not Assigned'; ?></div>
-            </div>
-            <div class="info-item">
-              <div class="info-label">Number of Sites</div>
-              <div class="info-value"><?php echo $route->site_count ?? 0; ?></div>
-            </div>
+    <div class="stat-card">
+      <span class="stat-icon paid"><i class="fas fa-route"></i></span>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo $data['totalRoutes']; ?></div>
+        <div class="stat-label">Total Routes</div>
+      </div>
+    </div>
 
-          </div>
+    <div class="stat-card">
+      <span class="stat-icon pending"><i class="fas fa-location-dot"></i></span>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo $data['totalSites']; ?></div>
+        <div class="stat-label">Total Sites</div>
+      </div>
+    </div>
 
-          <div class="route-actions">
-            <button class="btn-view" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewroute/<?php echo $route->id; ?>'">View</button>
-          </div>
+    <div class="stat-card">
+      <span class="stat-icon overdue"><i class="fas fa-clipboard-list"></i></span>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo $data['unassignedSitesCount']; ?></div>
+        <div class="stat-label">To be assigned</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-section">
+    <div class="search-container">
+      <input type="text" id="routeSearch" class="search-input" placeholder="Search routes by name, rider, or sites...">
+      <span class="material-symbols-outlined search-icon">search</span>
+      <button class="clear-search" id="clearSearch">×</button>
+    </div>
+    <button class="add-route-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/addroute'">
+      <span class="material-symbols-outlined">add</span>
+      Add Route
+    </button>
+  </div>
+
+  <!-- Route Cards Section -->
+  <div class="routes-section">
+    <button class="scroll-arrow left" id="scrollLeft">
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+    <div class="routes-container" id="routesContainer">
+      <?php if (empty($data['routes'])): ?>
+        <div class="empty-state">
+          <span class="material-symbols-outlined">route</span>
+          <p>No routes found. Create your first route!</p>
         </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
-  <button class="scroll-arrow right" id="scrollRight">
-    <span class="material-symbols-outlined">chevron_right</span>
-  </button>
-</div>
+      <?php else: ?>
+        <?php foreach ($data['routes'] as $route): ?>
+          <div class="route-card">
+            <div class="route-header">
+              <div class="route-name"><?php echo htmlspecialchars($route->route_name); ?></div>
+              <span class="route-status status-<?php echo strtolower($route->status); ?>"><?php echo $route->status; ?></span>
+            </div>
 
-<!-- Unassigned Sites Table -->
-<div class="unassigned-sites-section">
-  <div class="unassigned-sites-header">
-    <h2 class="unassigned-sites-title">Unassigned Sites</h2>
+            <div class="route-info">
+              <div class="info-item">
+                <div class="info-label">Mobile Rider</div>
+                <div class="info-value"><?php echo $route->rider_name ? htmlspecialchars($route->rider_name) : 'Not Assigned'; ?></div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Number of Sites</div>
+                <div class="info-value"><?php echo $route->site_count ?? 0; ?></div>
+              </div>
+
+            </div>
+
+            <div class="route-actions">
+              <button class="btn-view" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewroute/<?php echo $route->id; ?>'">View</button>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
+    </div>
+    <button class="scroll-arrow right" id="scrollRight">
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
   </div>
-  <div class="sites-table-container">
-    <table class="sites-table">
-      <thead>
-        <tr>
-          <th>Site ID</th>
-          <th>Site Name</th>
-          <th>Location</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Available Routes</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($data['sites'])): ?>
+
+  <!-- Unassigned Sites Table -->
+  <div class="unassigned-sites-section">
+    <div class="unassigned-sites-header">
+      <h2 class="unassigned-sites-title">Unassigned Sites</h2>
+    </div>
+    <div class="sites-table-container">
+      <table class="sites-table">
+        <thead>
           <tr>
-            <td colspan="7" style="text-align: center; padding: 20px;">
-              <span class="material-symbols-outlined" style="font-size: 48px; color: #ccc;">location_off</span>
-              <p>No sites found.</p>
-            </td>
+            <th>Site ID</th>
+            <th>Site Name</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Available Routes</th>
+            <th>Actions</th>
           </tr>
-        <?php else: ?>
-          <?php foreach ($data['sites'] as $site): ?>
-            <tr data-site-id="<?php echo $site->id; ?>" data-site-address="<?php echo htmlspecialchars($site->address ?? ''); ?>">
-              <td><?php echo htmlspecialchars($site->id); ?></td>
-              <td><?php echo htmlspecialchars($site->site_name); ?></td>
-              <td><?php echo htmlspecialchars($site->address ?? 'N/A'); ?></td>
-              <td>
-                <span class="status-badge status-unassigned">
-                  Unassigned
-                </span>
-              </td>
-              <td>Medium</td>
-              <td>
-                <select class="route-select" id="routeSelect_<?php echo $site->id; ?>" data-site-id="<?php echo $site->id; ?>">
-                  <option value="">Select a route...</option>
-                  <?php if (!empty($site->matching_routes)): ?>
-                    <?php foreach ($site->matching_routes as $route): ?>
-                      <option value="<?php echo $route->id; ?>">
-                        <?php echo htmlspecialchars($route->route_name); ?>
-                        <?php if ($route->distance_to_site > 0): ?>
-                          (<?php echo number_format($route->distance_to_site, 1); ?> km)
-                        <?php endif; ?>
-                      </option>
-                    <?php endforeach; ?>
-
-                    <?php if (count($site->matching_routes) < count($data['routes'])): ?>
-                      <option disabled>--- Other Routes ---</option>
-                      <?php
-                      $matchingIds = array_column($site->matching_routes, 'id');
-                      foreach ($data['routes'] as $route):
-                        if (!in_array($route->id, $matchingIds)):
-                      ?>
-                          <option value="<?php echo $route->id; ?>" style="color: #9ca3af;">
-                            <?php echo htmlspecialchars($route->route_name); ?> (Outside area)
-                          </option>
-                      <?php
-                        endif;
-                      endforeach;
-                      ?>
-                    <?php endif; ?>
-                  <?php else: ?>
-                    <option value="" disabled>No routes cover this area</option>
-                    <?php foreach ($data['routes'] as $route): ?>
-                      <option value="<?php echo $route->id; ?>" style="color: #9ca3af;">
-                        <?php echo htmlspecialchars($route->route_name); ?> (Outside area)
-                      </option>
-                    <?php endforeach; ?>
-                  <?php endif; ?>
-                </select>
-              </td>
-              <td>
-                <button class="table-action-btn assign" onclick="assignSiteToRoute('<?php echo $site->id; ?>')">Assign</button>
-
+        </thead>
+        <tbody>
+          <?php if (empty($data['sites'])): ?>
+            <tr>
+              <td colspan="7" style="text-align: center; padding: 20px;">
+                <span class="material-symbols-outlined" style="font-size: 48px; color: #ccc;">location_off</span>
+                <p>No sites found.</p>
               </td>
             </tr>
-          <?php endforeach; ?>
-        <?php endif; ?>
-      </tbody>
-    </table>
-  </div>
-</div>
+          <?php else: ?>
+            <?php foreach ($data['sites'] as $site): ?>
+              <tr data-site-id="<?php echo $site->id; ?>" data-site-address="<?php echo htmlspecialchars($site->address ?? ''); ?>">
+                <td><?php echo htmlspecialchars($site->id); ?></td>
+                <td><?php echo htmlspecialchars($site->site_name); ?></td>
+                <td><?php echo htmlspecialchars($site->address ?? 'N/A'); ?></td>
+                <td>
+                  <span class="status-badge status-unassigned">
+                    Unassigned
+                  </span>
+                </td>
+                <td>Medium</td>
+                <td>
+                  <select class="route-select" id="routeSelect_<?php echo $site->id; ?>" data-site-id="<?php echo $site->id; ?>">
+                    <option value="">Select a route...</option>
+                    <?php if (!empty($site->matching_routes)): ?>
+                      <?php foreach ($site->matching_routes as $route): ?>
+                        <option value="<?php echo $route->id; ?>">
+                          <?php echo htmlspecialchars($route->route_name); ?>
+                          <?php if ($route->distance_to_site > 0): ?>
+                            (<?php echo number_format($route->distance_to_site, 1); ?> km)
+                          <?php endif; ?>
+                        </option>
+                      <?php endforeach; ?>
 
+                      <?php if (count($site->matching_routes) < count($data['routes'])): ?>
+                        <option disabled>--- Other Routes ---</option>
+                        <?php
+                        $matchingIds = array_column($site->matching_routes, 'id');
+                        foreach ($data['routes'] as $route):
+                          if (!in_array($route->id, $matchingIds)):
+                        ?>
+                            <option value="<?php echo $route->id; ?>" style="color: #9ca3af;">
+                              <?php echo htmlspecialchars($route->route_name); ?> (Outside area)
+                            </option>
+                        <?php
+                          endif;
+                        endforeach;
+                        ?>
+                      <?php endif; ?>
+                    <?php else: ?>
+                      <option value="" disabled>No routes cover this area</option>
+                      <?php foreach ($data['routes'] as $route): ?>
+                        <option value="<?php echo $route->id; ?>" style="color: #9ca3af;">
+                          <?php echo htmlspecialchars($route->route_name); ?> (Outside area)
+                        </option>
+                      <?php endforeach; ?>
+                    <?php endif; ?>
+                  </select>
+                </td>
+                <td>
+                  <button class="table-action-btn assign" onclick="assignSiteToRoute('<?php echo $site->id; ?>')">Assign</button>
+
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
 </main>
 </div>
 
