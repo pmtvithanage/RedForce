@@ -1128,12 +1128,7 @@ $packages = $packageModel->getAllPackages();
                                 $displayPersonnel = !empty($personnelText) ? implode(', ', $personnelText) : 'Security Package';
                             }
                         ?>
-                            <div class="package-item"
-                                data-package="<?php echo htmlspecialchars($packageSlug); ?>"
-                                data-package-id="<?php echo $package->id; ?>"
-                                data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
-                                data-price="<?php echo $package->package_price; ?>"
-                                data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
+
                                 <?php if ($isCustomPackage): ?>
                                 data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
                                 data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
@@ -1902,8 +1897,6 @@ $packages = $packageModel->getAllPackages();
             document.getElementById('caretakersCount').textContent = caretakersCount;
             document.getElementById('supervisorsCount').textContent = supervisorsCount;
 
-            // Calculate minimum required supervisors (1 per 5 officers, round up)
-            const minRequiredSupervisors = Math.ceil(officersCount / 5);
 
             // For new sites, ensure at least 1 supervisor
             const actualMinSupervisors = Math.max(minRequiredSupervisors, isNewSiteMode ? 1 : 0);
@@ -2351,16 +2344,7 @@ $packages = $packageModel->getAllPackages();
                 // For other packages, show new site form
                 showNewSiteForm();
             }
-        });
 
-        // New Site Form Functions
-        let siteImageFile = null;
-        let siteMap = null;
-        let siteMarker = null;
-        let newSiteData = null; // Store new site data temporarily
-
-        function showNewSiteForm() {
-            const optionCards = document.getElementById('optionCards');
             const newSiteFormContainer = document.getElementById('newSiteFormContainer');
 
             // Clear any error messages
@@ -2446,45 +2430,6 @@ $packages = $packageModel->getAllPackages();
             const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
 
             headerTitle.textContent = packageName;
-            headerDesc.textContent = 'Choose your deployment option';
-        };
-
-        window.goToStep1 = function() {
-            // Hide any error messages when going back
-            hideErrorMessage('step2ErrorMessage');
-
-            document.getElementById('step1').classList.add('active');
-            document.getElementById('step2').classList.remove('active');
-            document.getElementById('step1Indicator').classList.add('active');
-            document.getElementById('step1Indicator').classList.remove('completed');
-            document.getElementById('step2Indicator').classList.remove('active');
-
-            const headerDesc = document.getElementById('formHeaderDesc');
-            headerDesc.textContent = 'Step 1: Enter site details';
-        };
-
-        window.goToStep2 = function() {
-            // Hide any previous error messages
-            hideErrorMessage('step1ErrorMessage');
-
-            // Validate step 1 fields
-            const siteName = document.getElementById('newSiteName').value.trim();
-            const siteDistrict = document.getElementById('district').value.trim();
-            const siteCity = document.getElementById('city').value.trim();
-            const sitePhone = document.getElementById('newSitePhone').value.trim();
-            const photoFrame = document.getElementById('sitePhotoFrame');
-
-            // Check if image is uploaded
-            if (!siteImageFile) {
-                showErrorMessage('step1ErrorMessage', 'Please upload a site image');
-                // Highlight the photo frame
-                photoFrame.style.borderColor = '#ff9800';
-                photoFrame.style.borderWidth = '3px';
-                setTimeout(() => {
-                    photoFrame.style.borderColor = '#e0e0e0';
-                    photoFrame.style.borderWidth = '2px';
-                }, 3000);
-                return;
             }
 
             if (!siteName || !siteDistrict || !sitePhone) {
@@ -3002,40 +2947,7 @@ $packages = $packageModel->getAllPackages();
                 };
             }
 
-            // Stop auto-slide
-            isPackageSelected = true;
-            clearInterval(packageAutoSlideInterval);
 
-            // Hide the custom package button
-            const customPackageBtn = document.querySelector('.btn-custom-package');
-            if (customPackageBtn) {
-                customPackageBtn.style.display = 'none';
-            }
-
-            // Show options in right container
-            const emptyState = document.getElementById('emptyState');
-            const optionCards = document.getElementById('optionCards');
-            const headerTitle = document.getElementById('formHeaderTitle');
-            const headerDesc = document.getElementById('formHeaderDesc');
-            const createNewSiteCard = document.getElementById('createNewSite');
-
-            if (emptyState && optionCards && customPackageItem) {
-                emptyState.style.display = 'none';
-                optionCards.style.display = 'grid';
-
-                // Update header with actual package name
-                const packageName = customPackageItem.querySelector('.package-name') ? customPackageItem.querySelector('.package-name').textContent : 'Custom Package';
-                headerTitle.textContent = packageName;
-                headerDesc.textContent = 'Choose your deployment option';
-
-                // Hide "Create New Site" button if package name contains "extra"
-                if (createNewSiteCard) {
-                    const packageFullName = selectedPackage.fullName || '';
-                    if (packageFullName.toLowerCase().includes('extra')) {
-                        createNewSiteCard.style.display = 'none';
-                    } else {
-                        createNewSiteCard.style.display = 'block';
-                    }
                 }
             }
         };

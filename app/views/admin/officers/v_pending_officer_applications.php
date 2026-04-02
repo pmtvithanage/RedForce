@@ -7,377 +7,407 @@
 
 
 <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
     .content-container {
-    max-width: 60vw;
-    margin-left: 10vw;
-}
-
-.tabs{
-    display:flex; 
-    gap:10px; 
-    margin-bottom:20px; 
-    margin-left:20px;
-}
-
-/* Profile Cards Container */
-.profile-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 25px;
-    padding: 20px;
-}
-
-.profile-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: 1px solid #e0e0e0;
-    margin: 20px;
-}
-
-.profile-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* Role Label */
-.role-label {
-    padding: 10px 20px;
-    background: #f8f9fa;
-    margin: 0;
-    font-size: 14px;
-    color: #555;
-    font-weight: 600;
-    border-bottom: 1px solid #eee;
-}
-
-.card-header {
-    padding: 25px;
-    text-align: center;
-    border-bottom: 2px solid #c11e1eff;
-    color: white;
-}
-
-.logo-container {
-    width: 100px;
-    height: 100px;
-    margin: 0 auto 15px;
-    border-radius: 50%;
-    overflow: hidden;
-    border: 4px solid white;
-    background: white;
-}
-
-.imagePlaceholder {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.company-name {
-    font-size: 22px;
-    font-weight: 600;
-    color: black;
-    margin: 0;
-}
-
-/* Card Body with Two Columns */
-.card-body {
-    padding: 25px;
-    max-height: 510px;
-    overflow-y: auto;
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px 30px;
-}
-
-.info-row {
-    display: flex;
-    align-items: flex-start;
-    min-height: 60px;
-}
-
-.info-icon {
-    margin-right: 12px;
-    color: #a40000;
-    font-size: 20px;
-    min-width: 24px;
-    margin-top: 2px;
-}
-
-.info-content {
-    flex: 1;
-}
-
-.info-label {
-    display: block;
-    font-size: 12px;
-    color: #777;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 6px;
-    font-weight: 500;
-}
-
-.info-value {
-    display: block;
-    font-size: 15px;
-    color: #333;
-    font-weight: 400;
-    line-height: 1.5;
-    word-break: break-word;
-}
-
-/* Full width rows for certain items */
-.info-row.full-width {
-    grid-column: 1 / -1;
-}
-
-/* Updated Card Footer */
-.card-footer {
-    padding: 15px 25px;
-    background-color: #f9f9f9;
-    border-top: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.applied-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.applied-icon {
-    color: #a40000;
-    font-size: 20px;
-}
-
-.applied-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.applied-label {
-    font-size: 12px;
-    color: #777;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-}
-
-.applied-value {
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 12px;
-}
-
-.btn-primary, .btn-secondary {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-
-/* Scrollbar Styling */
-.card-body::-webkit-scrollbar {
-    width: 6px;
-}
-
-.card-body::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.card-body::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 10px;
-}
-
-.card-body::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-@media (max-width: 768px) {
-    .content-container {
-        max-width: 90vw;
-        margin-left: 5vw;
+        max-width: 60vw;
+        margin-left: 10vw;
+        padding: 20px 0;
     }
     
-    .profile-cards-container {
-        grid-template-columns: 1fr;
-        padding: 15px;
-        gap: 20px;
-    }
-    
-    .info-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .info-row {
-        min-height: auto;
-        margin-bottom: 15px;
-    }
-    
-    .info-row:last-child {
-        margin-bottom: 0;
-    }
-    
-    .card-footer {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .applied-info {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .action-buttons {
-        width: 100%;
-        flex-direction: column;
-    }
-    
-    .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .logo-container {
-        width: 80px;
-        height: 80px;
-    }
-    
-    .company-name {
-        font-size: 20px;
-    }
-}
-
-@media (max-width: 480px) {
-    .content-container {
-        max-width: 95vw;
-        margin-left: 2.5vw;
+    .tabs {
+        display: flex; 
+        gap: 10px; 
+        margin-bottom: 30px; 
+        margin-left: 20px;
+        flex-wrap: wrap;
     }
     
     .profile-card {
-        margin: 10px 0;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin: 25px 0;
+        transition: all 0.3s ease;
+        border: 1px solid #f0f0f0;
     }
     
-    .card-body, .card-header, .card-footer {
-        padding: 20px;
+    .profile-card:hover {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
     }
     
-    .info-grid {
+    .card-header {
+        padding: 40px 30px;
+        text-align: center;
+        background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+        border-bottom: 2px solid #f0f0f0;
+    }
+    
+    .logo-container {
+        margin-bottom: 25px;
+    }
+    
+    .imagePlaceholder {
+        height: 200px;
+        width: 200px;
+        border: 3px solid #e0e0e0;
+        border-radius: 50%;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+        object-fit: cover;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .imagePlaceholder:hover {
+        border-color: #a40000;
+        box-shadow: 0 6px 20px rgba(164, 0, 0, 0.15);
+    }
+    
+    .role-label {
+        display: inline-block;
+        background: #a40000;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 15px;
+    }
+    
+    .company-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin: 0;
+        letter-spacing: -0.5px;
+    }
+    
+    .card-body {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        padding: 40px;
+        background: white;
+    }
+    
+    .info-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        transition: all 0.2s ease;
+        padding: 12px;
+        border-radius: 8px;
+    }
+    
+    .info-row:hover {
+        background: #f9f9f9;
+    }
+    
+    .info-row:nth-last-child(-n+2) {
+        grid-column: span 2;
+    }
+    
+    .info-icon {
+        font-size: 24px;
+        color: #a40000;
+        min-width: 28px;
+        flex-shrink: 0;
+    }
+    
+    .info-content {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+    
+    .info-label {
+        font-size: 12px;
+        color: #888;
+        margin-bottom: 6px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .info-value {
+        font-size: 15px;
+        color: #222;
+        font-weight: 500;
+        word-break: break-word;
+    }
+    
+    .info-value a {
+        color: #a40000;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .info-value a:hover {
+        color: #d00000;
+        text-decoration: underline;
+    }
+    
+    .card-footer {
+        padding: 25px 40px;
+        background: linear-gradient(135deg, #f9f9f9 0%, #f5f5f5 100%);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #f0f0f0;
+        gap: 20px;
+    }
+    
+    .applied-info {
+        display: flex;
+        align-items: center;
         gap: 12px;
     }
-}
-
-.filter-container {
-    position: relative;
-    display: inline-block;
-}
-
-.filter-button {
-    background-color: #a40000;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    min-width: 180px;
-    text-align: left;
-    position: relative;
-}
-
-.filter-button::after {
-    content: '▼';
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 12px;
-}
-
-.filter-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    z-index: 1000;
-    display: none;
-    flex-direction: column;
-    min-width: 200px;
-    margin-top: 5px;
-}
-
-.filter-dropdown.show {
-    display: flex;
-    animation: fadeIn 0.2s ease;
-}
-
-.filter-option {
-    background: none;
-    border: none;
-    padding: 12px 20px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 15px;
-    color: #333;
-    transition: background-color 0.2s;
-}
-
-.filter-option:hover {
-    background-color: #f5f5f5;
-}
-
-.filter-option.active {
-    background-color: #ffeeeeff;
-    color: #f95858ff;
-    font-weight: 500;
-}
-
-.filter-selected {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #666;
-    padding: 5px 10px;
-    background-color: #f8f9fa;
-    border-radius: 4px;
-    display: none;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
+    
+    .applied-icon {
+        color: #a40000;
+        font-size: 20px;
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    
+    .applied-text {
+        display: flex;
+        flex-direction: column;
     }
-}
+    
+    .applied-label {
+        font-size: 12px;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .applied-value {
+        font-size: 15px;
+        color: #222;
+        font-weight: 500;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        letter-spacing: 0.3px;
+    }
+    
+    @media (max-width: 1024px) {
+        .content-container {
+            max-width: 80vw;
+            margin-left: 5vw;
+        }
+        
+        .card-body {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-row:nth-last-child(-n+2) {
+            grid-column: span 1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .content-container {
+            max-width: 100%;
+            margin-left: 0;
+            padding: 15px;
+        }
+        
+        .tabs {
+            flex-direction: column;
+            margin-left: 0;
+        }
+        
+        .card-header {
+            padding: 25px 20px;
+        }
+        
+        .imagePlaceholder {
+            height: 150px;
+            width: 150px;
+        }
+        
+        .company-name {
+            font-size: 22px;
+        }
+        
+        .card-body {
+            gap: 20px;
+            padding: 25px;
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            padding: 20px 25px;
+            align-items: stretch;
+        }
+        
+        .applied-info {
+            width: 100%;
+        }
+        
+        .action-buttons {
+            width: 100%;
+            flex-direction: column;
+        }
+        
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+
+    .filter-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .filter-button {
+        background: linear-gradient(135deg, #a40000 0%, #d00000 100%);
+        color: white;
+        padding: 11px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        min-width: 180px;
+        text-align: left;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(164, 0, 0, 0.2);
+    }
+    
+    .filter-button:hover {
+        box-shadow: 0 4px 15px rgba(164, 0, 0, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .filter-button::after {
+        content: '▼';
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        transition: transform 0.3s ease;
+    }
+    
+    .filter-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        display: none;
+        flex-direction: column;
+        min-width: 220px;
+        margin-top: 8px;
+        border: 1px solid #f0f0f0;
+        overflow: hidden;
+    }
+    
+    .filter-dropdown.show {
+        display: flex;
+        animation: slideDown 0.25s ease;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .filter-option {
+        background: none;
+        border: none;
+        padding: 13px 20px;
+        text-align: left;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+    
+    .filter-option:hover {
+        background: #f5f5f5;
+        padding-left: 24px;
+    }
+    
+    .filter-option.active {
+        background: #fff0f0;
+        color: #a40000;
+        font-weight: 700;
+        border-left: 4px solid #a40000;
+        padding-left: 24px;
+    }
+    
+    .filter-selected {
+        margin-top: 10px;
+        font-size: 13px;
+        color: #666;
+        padding: 8px 12px;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffefef 100%);
+        border-radius: 6px;
+        display: none;
+        font-weight: 600;
+        border-left: 3px solid #a40000;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 </style>
 
 <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officers'"> 
@@ -468,11 +498,10 @@
             
 
             <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-row">
-                        <span class="material-symbols-outlined info-icon">badge</span>
-                        <div class="info-content">
-                            <span class="info-label">Role</span>
+                <div class="info-row">
+                    <span class="material-symbols-outlined info-icon">badge</span>
+                    <div class="info-content">
+                        <span class="info-label">Role</span>
                             <span class="info-value">
                                 <?php 
                                 if($officer->role == 'po') {
@@ -601,9 +630,6 @@
                             </a>
                         </div>
                     </div>
-
-                    
-                </div>
             </div>
 
            
