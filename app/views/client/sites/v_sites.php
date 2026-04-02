@@ -6,43 +6,45 @@
         --card: #fff;
         --muted: #606770;
         --accent: #a40000;
-        --shadow: 0 6px 18px rgba(20,20,40,0.06);
+        --shadow: 0 6px 18px rgba(20, 20, 40, 0.06);
         --radius: 12px;
     }
 
     .shell {
-        padding: 24px;
+        width: 90%;
+        margin: 24px auto;
+        padding: 0;
     }
 
     .sites-header {
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
     }
 
     .stat-card {
         background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.08);
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
-        gap: 15px;
+        gap: 16px;
     }
 
     .stat-icon {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 24px;
+        font-size: 28px;
         flex-shrink: 0;
     }
 
@@ -70,8 +72,11 @@
 
     .stat-label {
         margin: 5px 0 0 0;
-        font-size: 14px;
+        font-size: 12px;
         color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
     }
 
     .sites-grid {
@@ -82,18 +87,18 @@
 
     .site-card {
         background: white;
-        border-radius: var(--radius);
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: var(--shadow);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transition: all 0.3s ease;
-        border: 1px solid rgba(0,0,0,0.05);
+        border: 1px solid #ececec;
         display: flex;
         flex-direction: column;
     }
 
     .site-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 32px rgba(20,20,40,0.12);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .site-image {
@@ -143,6 +148,7 @@
         padding: 16px;
         background: #f8f9fa;
         border-radius: 8px;
+        border: 1px solid #ececec;
         margin-bottom: 16px;
         margin-top: auto;
     }
@@ -257,12 +263,12 @@
             </div>
             <div>
                 <div class="stat-value">
-                    <?php 
-                        $totalOfficers = 0;
-                        foreach($data['sites'] as $site) {
-                            $totalOfficers += $site->assigned_officers;
-                        }
-                        echo $totalOfficers;
+                    <?php
+                    $totalOfficers = 0;
+                    foreach ($data['sites'] as $site) {
+                        $totalOfficers += $site->assigned_officers;
+                    }
+                    echo $totalOfficers;
                     ?>
                 </div>
                 <div class="stat-label">Assigned Officers</div>
@@ -275,12 +281,12 @@
             </div>
             <div>
                 <div class="stat-value">
-                    <?php 
-                        $totalSupervisors = 0;
-                        foreach($data['sites'] as $site) {
-                            $totalSupervisors += $site->assigned_supervisors;
-                        }
-                        echo $totalSupervisors;
+                    <?php
+                    $totalSupervisors = 0;
+                    foreach ($data['sites'] as $site) {
+                        $totalSupervisors += $site->assigned_supervisors;
+                    }
+                    echo $totalSupervisors;
                     ?>
                 </div>
                 <div class="stat-label">Assigned Supervisors</div>
@@ -293,12 +299,12 @@
             </div>
             <div>
                 <div class="stat-value">
-                    <?php 
-                        $totalCaretakers = 0;
-                        foreach($data['sites'] as $site) {
-                            $totalCaretakers += $site->assigned_caretakers;
-                        }
-                        echo $totalCaretakers;
+                    <?php
+                    $totalCaretakers = 0;
+                    foreach ($data['sites'] as $site) {
+                        $totalCaretakers += $site->assigned_caretakers;
+                    }
+                    echo $totalCaretakers;
                     ?>
                 </div>
                 <div class="stat-label">Assigned Caretakers</div>
@@ -320,12 +326,12 @@
     <?php else: ?>
         <!-- Sites Grid -->
         <div class="sites-grid">
-            <?php foreach($data['sites'] as $site): ?>
+            <?php foreach ($data['sites'] as $site): ?>
                 <div class="site-card">
-                    <?php if(!empty($site->image)): ?>
-                        <img src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $site->image; ?>" 
-                             alt="<?php echo htmlspecialchars($site->site_name); ?>" 
-                             class="site-image">
+                    <?php if (!empty($site->image)): ?>
+                        <img src="<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo $site->image; ?>"
+                            alt="<?php echo htmlspecialchars($site->site_name); ?>"
+                            class="site-image">
                     <?php else: ?>
                         <div class="site-image" style="display: flex; align-items: center; justify-content: center;">
                             <span class="material-symbols-outlined" style="font-size: 64px; color: #ccc;">location_city</span>
@@ -344,17 +350,17 @@
                                 <span class="material-symbols-outlined">location_city</span>
                                 <span><?php echo htmlspecialchars($site->city); ?><?php echo !empty($site->district) ? ', ' . htmlspecialchars($site->district) : ''; ?></span>
                             </div>
-                            <?php if(!empty($site->phone_number)): ?>
-                            <div class="info-row">
-                                <span class="material-symbols-outlined">call</span>
-                                <span><?php echo htmlspecialchars($site->phone_number); ?></span>
-                            </div>
+                            <?php if (!empty($site->phone_number)): ?>
+                                <div class="info-row">
+                                    <span class="material-symbols-outlined">call</span>
+                                    <span><?php echo htmlspecialchars($site->phone_number); ?></span>
+                                </div>
                             <?php endif; ?>
-                            <?php if(!empty($site->supervisor_name)): ?>
-                            <div class="info-row">
-                                <span class="material-symbols-outlined">supervisor_account</span>
-                                <span>Supervisor: <?php echo htmlspecialchars($site->supervisor_name); ?></span>
-                            </div>
+                            <?php if (!empty($site->supervisor_name)): ?>
+                                <div class="info-row">
+                                    <span class="material-symbols-outlined">supervisor_account</span>
+                                    <span>Supervisor: <?php echo htmlspecialchars($site->supervisor_name); ?></span>
+                                </div>
                             <?php endif; ?>
                         </div>
 

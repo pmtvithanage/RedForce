@@ -1,8 +1,10 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/messages_style.css">
+
 <!-- Messages Page for Client -->
-<div style="padding: 20px;">
+<div class="client-messages-wrap">
     <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
 </div>
 

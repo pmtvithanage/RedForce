@@ -1,8 +1,10 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_caretaker_sidebar.php'; ?>
 
+<link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/message_style.css">
+
 <!-- Messages Page for Caretaker -->
-<div style="padding: 20px;">
+<div class="caretaker-messages-wrap">
     <?php require_once APP_ROOT . '/views/components/messages.php'; ?>
 </div>
 
