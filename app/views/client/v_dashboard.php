@@ -12,190 +12,192 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/dashboard_style.css">
 
 <style>
-.chart-section {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 20px;
-}
+    .chart-section {
+        background: white;
+        border-radius: 8px;
+        border: 1px solid #ececec;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 0;
+    }
 
-.chart-section.full-width {
-    grid-column: 1 / -1;
-    margin-top: 20px;
-}
+    .chart-section.full-width {
+        grid-column: 1 / -1;
+        margin-top: 0;
+    }
 
-.chart-container {
-    position: relative;
-    height: 300px;
-    padding: 10px 0;
-}
-
-.chart-section.full-width .chart-container {
-    height: 350px;
-}
-
-.chart-carousel {
-    position: relative;
-    overflow: hidden;
-    border-radius: 8px;
-}
-
-.chart-carousel-wrapper {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-
-.chart-slide {
-    min-width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
-    display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: 40px;
-    align-items: center;
-}
-
-.chart-content {
-    opacity: 0;
-    transform: translateX(-50px);
-    transition: opacity 0.6s ease-out, transform 1s ease-out;
-}
-
-.chart-description {
-    opacity: 0;
-    transform: translateX(50px);
-    transition: opacity 0.6s ease-out, transform 1s ease-out;
-}
-
-.chart-slide.active .chart-content {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.chart-slide.active .chart-description {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.chart-content {
-    display: flex;
-    flex-direction: column;
-}
-
-.chart-description {
-    background: #f8f9fa;
-    padding: 25px;
-    border-radius: 8px;
-}
-
-.chart-description h4 {
-    margin: 0 0 15px 0;
-    color: #D32F2F;
-    font-size: 16px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.chart-description h4 .material-icons {
-    font-size: 20px;
-}
-
-.chart-description p {
-    margin: 0 0 12px 0;
-    color: #555;
-    font-size: 14px;
-    line-height: 1.6;
-}
-
-.chart-description ul {
-    margin: 10px 0;
-    padding-left: 20px;
-    color: #666;
-    font-size: 13px;
-}
-
-.chart-description ul li {
-    margin-bottom: 6px;
-}
-
-.chart-title {
-    text-align: center;
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.carousel-controls {
-    display: flex;
-    gap: 10px;
-}
-
-.carousel-nav {
-    background: rgba(211, 47, 47, 0.1);
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-}
-
-.carousel-nav:hover {
-    background: rgba(211, 47, 47, 0.2);
-    transform: scale(1.1);
-}
-
-.carousel-nav .material-icons {
-    font-size: 24px;
-    color: #D32F2F;
-}
-
-.carousel-indicators {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 15px;
-}
-
-.carousel-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ccc;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.carousel-dot.active {
-    background: #D32F2F;
-    width: 28px;
-    border-radius: 5px;
-}
-
-@media (max-width: 768px) {
     .chart-container {
-        height: 250px;
-    }
-    
-    .chart-section.full-width .chart-container {
+        position: relative;
         height: 300px;
+        padding: 10px 0;
     }
-    
+
+    .chart-section.full-width .chart-container {
+        height: 350px;
+    }
+
+    .chart-carousel {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+    }
+
+    .chart-carousel-wrapper {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+    }
+
     .chart-slide {
-        grid-template-columns: 1fr;
-        gap: 20px;
+        min-width: 100%;
+        padding: 16px 20px 20px;
+        box-sizing: border-box;
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 28px;
+        align-items: center;
     }
-    
+
+    .chart-content {
+        opacity: 0;
+        transform: translateX(-50px);
+        transition: opacity 0.6s ease-out, transform 1s ease-out;
+    }
+
     .chart-description {
-        padding: 15px;
+        opacity: 0;
+        transform: translateX(50px);
+        transition: opacity 0.6s ease-out, transform 1s ease-out;
     }
-}
+
+    .chart-slide.active .chart-content {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .chart-slide.active .chart-description {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    .chart-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .chart-description {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #ececec;
+    }
+
+    .chart-description h4 {
+        margin: 0 0 15px 0;
+        color: #D32F2F;
+        font-size: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .chart-description h4 .material-icons {
+        font-size: 20px;
+    }
+
+    .chart-description p {
+        margin: 0 0 12px 0;
+        color: #555;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .chart-description ul {
+        margin: 10px 0;
+        padding-left: 20px;
+        color: #666;
+        font-size: 13px;
+    }
+
+    .chart-description ul li {
+        margin-bottom: 6px;
+    }
+
+    .chart-title {
+        text-align: center;
+        margin-bottom: 12px;
+        color: #333;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    .carousel-controls {
+        display: flex;
+        gap: 10px;
+    }
+
+    .carousel-nav {
+        background: #f2f4f7;
+        border: none;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-nav:hover {
+        background: #e4e7ec;
+        transform: translateY(-1px);
+    }
+
+    .carousel-nav .material-icons {
+        font-size: 20px;
+        color: #c41212;
+    }
+
+    .carousel-indicators {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 15px;
+    }
+
+    .carousel-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ccc;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .carousel-dot.active {
+        background: #c41212;
+        width: 28px;
+        border-radius: 5px;
+    }
+
+    @media (max-width: 768px) {
+        .chart-container {
+            height: 250px;
+        }
+
+        .chart-section.full-width .chart-container {
+            height: 300px;
+        }
+
+        .chart-slide {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .chart-description {
+            padding: 15px;
+        }
+    }
 </style>
 
 <!-- Dashboard Content -->
@@ -211,7 +213,7 @@
                 <p>No.of Sites</p>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon officers">
                 <span class="material-icons">group</span>
@@ -221,7 +223,7 @@
                 <p>Total Officers</p>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon incidents">
                 <span class="material-icons">warning</span>
@@ -231,7 +233,7 @@
                 <p>Incidents</p>
             </div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-icon payment">
                 <span class="material-icons">event</span>
@@ -242,7 +244,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Charts Carousel Section -->
     <div class="section chart-section full-width">
         <div class="section-header">
@@ -256,7 +258,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="chart-carousel">
             <div class="chart-carousel-wrapper" id="chartCarouselWrapper">
                 <!-- Chart 1: Incidents by Severity -->
@@ -385,220 +387,257 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const chartData = <?php echo json_encode($data['charts']); ?>;
+    const chartData = <?php echo json_encode($data['charts']); ?>;
 
-// Chart 1: Incidents by Severity - Doughnut Chart
-const severityCtx = document.getElementById('severityChart').getContext('2d');
-const severityChart = new Chart(severityCtx, {
-    type: 'doughnut',
-    data: {
-        labels: chartData.severityChart.labels,
-        datasets: [{
-            data: chartData.severityChart.data,
-            backgroundColor: chartData.severityChart.colors,
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { padding: 15, font: { size: 12 } }
-            },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.parsed || 0;
-                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
-                        return label + ': ' + value + ' (' + percentage + '%)';
+    // Chart 1: Incidents by Severity - Doughnut Chart
+    const severityCtx = document.getElementById('severityChart').getContext('2d');
+    const severityChart = new Chart(severityCtx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.severityChart.labels,
+            datasets: [{
+                data: chartData.severityChart.data,
+                backgroundColor: chartData.severityChart.colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return label + ': ' + value + ' (' + percentage + '%)';
+                        }
                     }
                 }
             }
         }
-    }
-});
-
-// Chart 2: Monthly Trend - Line Chart
-const trendCtx = document.getElementById('trendChart').getContext('2d');
-const trendChart = new Chart(trendCtx, {
-    type: 'line',
-    data: {
-        labels: chartData.monthlyTrend.labels,
-        datasets: [{
-            label: 'Incidents',
-            data: chartData.monthlyTrend.data,
-            borderColor: chartData.monthlyTrend.borderColor,
-            backgroundColor: chartData.monthlyTrend.backgroundColor,
-            borderWidth: 3,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 4,
-            pointHoverRadius: 6,
-            pointBackgroundColor: chartData.monthlyTrend.borderColor,
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: { mode: 'index', intersect: false }
-        },
-        scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } }
-        }
-    }
-});
-
-// Chart 3: Incidents by Site - Bar Chart
-const siteCtx = document.getElementById('siteChart').getContext('2d');
-const siteChart = new Chart(siteCtx, {
-    type: 'bar',
-    data: {
-        labels: chartData.siteIncidents.labels,
-        datasets: [{
-            label: 'Incidents',
-            data: chartData.siteIncidents.data,
-            backgroundColor: chartData.siteIncidents.colors,
-            borderWidth: 0,
-            borderRadius: 6
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        return 'Incidents: ' + context.parsed.y;
-                    }
-                }
-            }
-        },
-        scales: {
-            y: { beginAtZero: true, ticks: { stepSize: 1 } },
-            x: { ticks: { maxRotation: 45, minRotation: 45 } }
-        }
-    }
-});
-
-// Chart 4: Incidents by Type - Pie Chart
-const typeCtx = document.getElementById('typeChart').getContext('2d');
-const typeChart = new Chart(typeCtx, {
-    type: 'pie',
-    data: {
-        labels: chartData.typeChart.labels,
-        datasets: [{
-            data: chartData.typeChart.data,
-            backgroundColor: chartData.typeChart.colors,
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { padding: 15, font: { size: 12 } }
-            }
-        }
-    }
-});
-
-// Chart 5: Incidents by Status - Doughnut Chart
-const statusCtx = document.getElementById('statusChart').getContext('2d');
-const statusChart = new Chart(statusCtx, {
-    type: 'doughnut',
-    data: {
-        labels: chartData.statusChart.labels,
-        datasets: [{
-            data: chartData.statusChart.data,
-            backgroundColor: chartData.statusChart.colors,
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: { padding: 15, font: { size: 12 } }
-            }
-        }
-    }
-});
-
-// Chart Carousel Functionality
-let currentChartSlide = 0;
-let chartAutoSlideInterval;
-const totalChartSlides = 5;
-
-function updateChartCarousel() {
-    const wrapper = document.getElementById('chartCarouselWrapper');
-    const slides = wrapper.querySelectorAll('.chart-slide');
-    
-    // Remove active class from all slides
-    slides.forEach(slide => slide.classList.remove('active'));
-    
-    // Update transform for slide transition
-    wrapper.style.transform = `translateX(-${currentChartSlide * 100}%)`;
-    
-    // Wait for slide transition to complete, then trigger content animations
-    setTimeout(() => {
-        slides[currentChartSlide].classList.add('active');
-    }, 100);
-    
-    // Update indicators
-    document.querySelectorAll('#chartCarouselIndicators .carousel-dot').forEach((dot, index) => {
-        dot.classList.toggle('active', index === currentChartSlide);
     });
-}
 
-function changeChartSlide(direction) {
-    currentChartSlide = (currentChartSlide + direction + totalChartSlides) % totalChartSlides;
-    updateChartCarousel();
-    resetChartAutoSlide();
-}
+    // Chart 2: Monthly Trend - Line Chart
+    const trendCtx = document.getElementById('trendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: chartData.monthlyTrend.labels,
+            datasets: [{
+                label: 'Incidents',
+                data: chartData.monthlyTrend.data,
+                borderColor: chartData.monthlyTrend.borderColor,
+                backgroundColor: chartData.monthlyTrend.backgroundColor,
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: chartData.monthlyTrend.borderColor,
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
 
-function goToChartSlide(index) {
-    currentChartSlide = index;
-    updateChartCarousel();
-    resetChartAutoSlide();
-}
+    // Chart 3: Incidents by Site - Bar Chart
+    const siteCtx = document.getElementById('siteChart').getContext('2d');
+    const siteChart = new Chart(siteCtx, {
+        type: 'bar',
+        data: {
+            labels: chartData.siteIncidents.labels,
+            datasets: [{
+                label: 'Incidents',
+                data: chartData.siteIncidents.data,
+                backgroundColor: chartData.siteIncidents.colors,
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Incidents: ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
 
-function autoSlideChart() {
-    currentChartSlide = (currentChartSlide + 1) % totalChartSlides;
-    updateChartCarousel();
-}
+    // Chart 4: Incidents by Type - Pie Chart
+    const typeCtx = document.getElementById('typeChart').getContext('2d');
+    const typeChart = new Chart(typeCtx, {
+        type: 'pie',
+        data: {
+            labels: chartData.typeChart.labels,
+            datasets: [{
+                data: chartData.typeChart.data,
+                backgroundColor: chartData.typeChart.colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
 
-function resetChartAutoSlide() {
-    clearInterval(chartAutoSlideInterval);
+    // Chart 5: Incidents by Status - Doughnut Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: chartData.statusChart.labels,
+            datasets: [{
+                data: chartData.statusChart.data,
+                backgroundColor: chartData.statusChart.colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart Carousel Functionality
+    let currentChartSlide = 0;
+    let chartAutoSlideInterval;
+    const totalChartSlides = 5;
+
+    function updateChartCarousel() {
+        const wrapper = document.getElementById('chartCarouselWrapper');
+        const slides = wrapper.querySelectorAll('.chart-slide');
+
+        // Remove active class from all slides
+        slides.forEach(slide => slide.classList.remove('active'));
+
+        // Update transform for slide transition
+        wrapper.style.transform = `translateX(-${currentChartSlide * 100}%)`;
+
+        // Wait for slide transition to complete, then trigger content animations
+        setTimeout(() => {
+            slides[currentChartSlide].classList.add('active');
+        }, 100);
+
+        // Update indicators
+        document.querySelectorAll('#chartCarouselIndicators .carousel-dot').forEach((dot, index) => {
+            dot.classList.toggle('active', index === currentChartSlide);
+        });
+    }
+
+    function changeChartSlide(direction) {
+        currentChartSlide = (currentChartSlide + direction + totalChartSlides) % totalChartSlides;
+        updateChartCarousel();
+        resetChartAutoSlide();
+    }
+
+    function goToChartSlide(index) {
+        currentChartSlide = index;
+        updateChartCarousel();
+        resetChartAutoSlide();
+    }
+
+    function autoSlideChart() {
+        currentChartSlide = (currentChartSlide + 1) % totalChartSlides;
+        updateChartCarousel();
+    }
+
+    function resetChartAutoSlide() {
+        clearInterval(chartAutoSlideInterval);
+        chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
+    }
+
+    // Start auto-slide
     chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
-}
 
-// Start auto-slide
-chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
+    // Initialize first slide as active
+    document.querySelector('.chart-slide').classList.add('active');
 
-// Initialize first slide as active
-document.querySelector('.chart-slide').classList.add('active');
-
-// Pause on hover
-const chartCarousel = document.querySelector('.chart-carousel');
-chartCarousel.addEventListener('mouseenter', () => clearInterval(chartAutoSlideInterval));
-chartCarousel.addEventListener('mouseleave', resetChartAutoSlide);
+    // Pause on hover
+    const chartCarousel = document.querySelector('.chart-carousel');
+    chartCarousel.addEventListener('mouseenter', () => clearInterval(chartAutoSlideInterval));
+    chartCarousel.addEventListener('mouseleave', resetChartAutoSlide);
 </script>
 
 

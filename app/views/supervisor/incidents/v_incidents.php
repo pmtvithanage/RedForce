@@ -1,398 +1,408 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_supervisor_sidebar.php'; ?>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-/* Stat Cards Container */
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin: 20px;
-}
+  .incidents-page {
+    width: 90%;
+    margin: 24px auto;
+  }
 
-/* Stat Card */
-.stat-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border-left: 5px solid #ccc;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
 
-.stat-card:nth-child(1) { border-left-color: #9333ea; } /* Purple */
-.stat-card:nth-child(2) { border-left-color: #22c55e; } /* Green */
-.stat-card:nth-child(3) { border-left-color: #f59e0b; } /* Gold */
-.stat-card:nth-child(4) { border-left-color: #ef4444; } /* Red */
+  .stat-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 
-.stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-}
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
 
-/* Icons */
-.stat-icon {
-  font-size: 40px;
-  transition: transform 0.3s ease;
-  color: #555;
-}
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+  }
 
-.stat-card:nth-child(1) .stat-icon { color: #9333ea; }
-.stat-card:nth-child(2) .stat-icon { color: #22c55e; }
-.stat-card:nth-child(3) .stat-icon { color: #f59e0b; }
-.stat-card:nth-child(4) .stat-icon { color: #ef4444; }
+  .stat-icon.total {
+    background: #e3f2fd;
+    color: #1976d2;
+  }
 
-.stat-card:hover .stat-icon {
-  transform: scale(1.15);
-}
+  .stat-icon.pending {
+    background: #fff3e0;
+    color: #f57c00;
+  }
 
-/* Stat text */
-.stat-content {
-  flex: 1;
-}
+  .stat-icon.progress {
+    background: #eef4ff;
+    color: #1d4ed8;
+  }
 
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1f2937;
-  line-height: 1;
-  margin-bottom: 5px;
-}
+  .stat-icon.resolved {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
 
-.stat-label {
-  font-size: 14px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+  }
 
-/* Incidents Table Section */
-.incidents-section {
-  margin: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-}
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
 
-.incidents-header {
-  padding: 20px;
-  background: linear-gradient(135deg, #a40000, #bd0909);
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .stat-label {
+    font-size: 12px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-top: 6px;
+  }
 
-.incidents-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  .incidents-section {
+    background: #fff;
+    border-radius: 8px;
+    border: 1px solid #ececec;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
 
-.add-incident-btn {
-  background: white;
-  color: #a40000;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
+  .incidents-header {
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #ececec;
+    color: #1a1a1a;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-.add-incident-btn:hover {
-  background: #f3f4f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
+  .incidents-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-.incidents-table-container {
-  overflow-x: auto;
-}
+  .incidents-title i {
+    color: #c41212;
+  }
 
-.incidents-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
+  .add-incident-btn {
+    background: #c41212;
+    color: #fff;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
 
-.incidents-table thead {
-  background: #f9fafb;
-}
+  .add-incident-btn:hover {
+    background: #a80f0f;
+    transform: translateY(-1px);
+  }
 
-.incidents-table th {
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 12px;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-}
+  .incidents-table-container {
+    overflow-x: auto;
+  }
 
-.incidents-table td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #374151;
-}
+  .incidents-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
 
-.incidents-table tbody tr {
-  transition: background-color 0.3s ease;
-}
+  .incidents-table thead {
+    background: #f8f9fa;
+  }
 
-.incidents-table tbody tr:hover {
-  background-color: #f8fafc;
-}
+  .incidents-table th {
+    padding: 16px;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 12px;
+    color: #444;
+    border-bottom: 1px solid #ececec;
+  }
 
-.incidents-table tbody tr:last-child td {
-  border-bottom: none;
-}
+  .incidents-table td {
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+  }
 
-/* Status badges */
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  .incidents-table tbody tr:hover {
+    background: #fcfcfc;
+  }
 
-.status-pending {
-  background: #fef3c7;
-  color: #d97706;
-}
+  .incidents-table tbody tr:last-child td {
+    border-bottom: none;
+  }
 
-.status-in-progress {
-  background: #dbeafe;
-  color: #2563eb;
-}
+  .incident-id {
+    background: #f2f4f7;
+    color: #344054;
+    border: 1px solid #e4e7ec;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
 
-.status-resolved {
-  background: #d1fae5;
-  color: #065f46;
-}
+  .status-badge,
+  .priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+  }
 
-.status-closed {
-  background: #e5e7eb;
-  color: #4b5563;
-}
+  .status-pending {
+    background: #fff5e8;
+    color: #b54708;
+    border-color: #ffe2c2;
+  }
 
-/* Priority badges */
-.priority-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+  .status-in-progress {
+    background: #eef4ff;
+    color: #1d4ed8;
+    border-color: #dbe6ff;
+  }
 
-.priority-low {
-  background: #dbeafe;
-  color: #1e40af;
-}
+  .status-resolved,
+  .status-closed {
+    background: #edf7ee;
+    color: #1f6f3f;
+    border-color: #cce9d3;
+  }
 
-.priority-medium {
-  background: #fef3c7;
-  color: #b45309;
-}
+  .priority-low {
+    background: #eef4ff;
+    color: #1d4ed8;
+    border-color: #dbe6ff;
+  }
 
-.priority-high {
-  background: #fee2e2;
-  color: #991b1b;
-}
+  .priority-medium {
+    background: #fff5e8;
+    color: #b54708;
+    border-color: #ffe2c2;
+  }
 
-.priority-critical {
-  background: #fecaca;
-  color: #7f1d1d;
-  animation: pulse 2s infinite;
-}
+  .priority-high,
+  .priority-critical {
+    background: #fdecec;
+    color: #b42318;
+    border-color: #f7cdcd;
+  }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
+  .table-action-btn {
+    background: #fff;
+    color: #344054;
+    border: 1px solid #d0d5dd;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
 
-/* Action buttons */
-.table-action-btn {
-  background: #6b7280;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-right: 6px;
-}
+  .table-action-btn:hover {
+    background: #f2f4f7;
+    border-color: #98a2b3;
+  }
 
-.table-action-btn:hover {
-  background: #4b5563;
-  transform: translateY(-1px);
-}
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6b7280;
+  }
 
-.table-action-btn.view {
-  background: #a40000;
-}
+  .empty-state i {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.45;
+    color: #9ca3af;
+    display: block;
+  }
 
-.table-action-btn.view:hover {
-  background: #bd0909;
-}
+  .empty-state h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #374151;
+  }
 
-.table-action-btn.edit {
-  background: #2563eb;
-}
+  .empty-state p {
+    margin: 0;
+    font-size: 14px;
+  }
 
-.table-action-btn.edit:hover {
-  background: #1d4ed8;
-}
+  @media (max-width: 768px) {
+    .incidents-page {
+      width: 95%;
+      margin: 16px auto;
+    }
 
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #6b7280;
-}
+    .incidents-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
 
-.empty-state .material-symbols-outlined {
-  font-size: 64px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-  color: #9ca3af;
-}
+    .add-incident-btn {
+      width: 100%;
+      justify-content: center;
+    }
 
-.empty-state h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #374151;
-}
-
-.empty-state p {
-  margin: 0 0 20px 0;
-  font-size: 14px;
-}
+    .incidents-table th,
+    .incidents-table td {
+      padding: 12px;
+    }
+  }
 </style>
 
-<div class="stats-container">
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">assessment</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['total_incidents']) ? $data['total_incidents'] : '0'; ?></div>
-      <div class="stat-label">Total Incidents</div>
+<div class="incidents-page">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon total"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['total_incidents']) ? $data['total_incidents'] : '0'; ?></div>
+        <div class="stat-label">Total Incidents</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pending"><i class="fa-regular fa-clock"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['pending_incidents']) ? $data['pending_incidents'] : '0'; ?></div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon progress"><i class="fa-solid fa-rotate"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['inprogress_incidents']) ? $data['inprogress_incidents'] : '0'; ?></div>
+        <div class="stat-label">In Progress</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon resolved"><i class="fa-regular fa-circle-check"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['resolved_incidents']) ? $data['resolved_incidents'] : '0'; ?></div>
+        <div class="stat-label">Resolved</div>
+      </div>
     </div>
   </div>
 
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">schedule</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['pending_incidents']) ? $data['pending_incidents'] : '0'; ?></div>
-      <div class="stat-label">Pending</div>
+  <div class="incidents-section">
+    <div class="incidents-header">
+      <h2 class="incidents-title">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        Incident Reports
+      </h2>
+      <button class="add-incident-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/supervisor/createIncident'">
+        <i class="fa-solid fa-plus"></i>
+        Report Incident
+      </button>
     </div>
-  </div>
 
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">sync</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['inprogress_incidents']) ? $data['inprogress_incidents'] : '0'; ?></div>
-      <div class="stat-label">In Progress</div>
-    </div>
-  </div>
-
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">check_circle</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['resolved_incidents']) ? $data['resolved_incidents'] : '0'; ?></div>
-      <div class="stat-label">Resolved</div>
+    <div class="incidents-table-container">
+      <?php if (empty($data['incidents'])): ?>
+        <div class="empty-state">
+          <i class="fa-regular fa-folder-open"></i>
+          <h3>No Incidents Reported</h3>
+          <p>There are no incident reports to display at this time.</p>
+        </div>
+      <?php else: ?>
+        <table class="incidents-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date & Time</th>
+              <th>Site</th>
+              <th>Type</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($data['incidents'] as $incident): ?>
+              <tr>
+                <td><span class="incident-id">#<?php echo htmlspecialchars($incident->id); ?></span></td>
+                <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at)); ?></td>
+                <td><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></td>
+                <td><?php echo htmlspecialchars($incident->incident_type ?? 'General'); ?></td>
+                <td>
+                  <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? 'medium'); ?>">
+                    <?php echo htmlspecialchars($incident->priority ?? 'Medium'); ?>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $incident->status ?? 'pending')); ?>">
+                    <?php echo htmlspecialchars($incident->status ?? 'Pending'); ?>
+                  </span>
+                </td>
+                <td>
+                  <button class="table-action-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/supervisor/viewIncident/<?php echo $incident->id; ?>'">
+                    View
+                  </button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      <?php endif; ?>
     </div>
   </div>
 </div>
 
-<!-- Incidents Table Section -->
-<div class="incidents-section">
-  <div class="incidents-header">
-    <h2 class="incidents-title">
-      <span class="material-symbols-outlined">report_problem</span>
-      Incident Reports
-    </h2>
-    <button class="add-incident-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/supervisor/createIncident'">
-      <span class="material-symbols-outlined">add</span>
-      Report Incident
-    </button>
-  </div>
 
-  <div class="incidents-table-container">
-    <?php if(empty($data['incidents'])): ?>
-    <div class="empty-state">
-      <span class="material-symbols-outlined">report_off</span>
-      <h3>No Incidents Reported</h3>
-      <p>There are no incident reports to display at this time.</p>
-    </div>
-    <?php else: ?>
-    <table class="incidents-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Date & Time</th>
-          <th>Site</th>
-          <th>Type</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach($data['incidents'] as $incident): ?>
-        <tr>
-          <td><strong>#<?php echo htmlspecialchars($incident->id); ?></strong></td>
-          <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at)); ?></td>
-          <td><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></td>
-          <td><?php echo htmlspecialchars($incident->incident_type ?? 'General'); ?></td>
-          <td>
-            <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? 'medium'); ?>">
-              <?php echo htmlspecialchars($incident->priority ?? 'Medium'); ?>
-            </span>
-          </td>
-          <td>
-            <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $incident->status ?? 'pending')); ?>">
-              <?php echo htmlspecialchars($incident->status ?? 'Pending'); ?>
-            </span>
-          </td>
-          <td>
-            <button class="table-action-btn view" onclick="window.location.href='<?php echo URL_ROOT; ?>/supervisor/viewIncident/<?php echo $incident->id; ?>'">
-              View
-            </button>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-    <?php endif; ?>
-  </div>
+</main>
 </div>
 
-    
-    </main>
-    </div>
+<div class="backdrop" id="backdrop" hidden></div>
 
-    <div class="backdrop" id="backdrop" hidden></div>
-
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
-<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>                       
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

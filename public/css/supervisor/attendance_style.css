@@ -3,9 +3,9 @@
    ========================================== */
 
 .attendance-container {
-    padding: 1.25rem;
-    max-width: 100%;
-    margin: 0;
+    width: 90%;
+    margin: 24px auto;
+    padding: 0;
 }
 
 /* Page Header */
@@ -13,12 +13,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    background: #fff;
-    border: 1px solid #f0d6dc;
-    border-radius: 12px;
-    padding: 1rem 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.25rem;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
 }
 
 .page-header-left {
@@ -28,13 +28,13 @@
 }
 
 .live-datetime {
-    font-size: 14px;
+    font-size: 13px;
     color: #666;
-    font-weight: 500;
+    font-weight: 600;
     padding: 8px 15px;
     background-color: #f8f9fa;
     border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid #e7e7e7;
 }
 
 .page-header h1 {
@@ -56,9 +56,9 @@
     background: #c41212;
     color: #fff;
     border: none;
-    border-radius: 8px;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.95rem;
+    border-radius: 10px;
+    padding: 0.72rem 1.3rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -110,7 +110,7 @@
 /* Flash Messages */
 .flash-message {
     padding: 1rem 1.25rem;
-    border-radius: 8px;
+    border-radius: 10px;
     margin-bottom: 1.5rem;
     display: flex;
     align-items: center;
@@ -136,6 +136,7 @@
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -145,81 +146,82 @@
 /* Statistics Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.25rem;
     margin-bottom: 1.5rem;
 }
 
 .stat-card {
     background: #fff;
-    border-radius: 12px;
-    padding: 1.25rem;
+    border-radius: 8px;
+    padding: 1.2rem;
     display: flex;
     align-items: center;
     gap: 1rem;
-    border: 1px solid #f0f0f0;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #ececec;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .stat-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .stat-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
 }
 
-.stat-icon.blue {
-    background: rgba(155, 89, 182, 0.1);
-    color: #9b59b6;
+.stat-icon.total {
+    background: #e3f2fd;
+    color: #1976d2;
 }
 
-.stat-icon.green {
-    background: rgba(39, 174, 96, 0.1);
-    color: #27ae60;
+.stat-icon.present {
+    background: #e8f5e9;
+    color: #2e7d32;
 }
 
-.stat-icon.red {
-    background: rgba(231, 76, 60, 0.1);
-    color: #e74c3c;
+.stat-icon.absent {
+    background: #ffebee;
+    color: #c62828;
 }
 
-.stat-icon.orange {
-    background: rgba(243, 156, 18, 0.1);
-    color: #f39c12;
+.stat-icon.late {
+    background: #fff3e0;
+    color: #f57c00;
 }
 
 .stat-info h3 {
-    font-size: 2rem;
-    color: #333;
-    margin: 0;
-    font-weight: 700;
-    line-height: 1;
+    margin: 0 0 6px 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
-.stat-info p {
-    color: #666;
-    margin: 0.25rem 0 0 0;
-    font-size: 0.8rem;
-    font-weight: 500;
+.stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1;
 }
 
 /* Filters Section */
 .filters-section {
     background: #fff;
-    border: 1px solid #f0d6dc;
-    border-radius: 12px;
+    border: 1px solid #ececec;
+    border-radius: 8px;
     padding: 1.25rem;
     margin-bottom: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .filters-form {
@@ -234,21 +236,17 @@
     color: #333;
     font-weight: 600;
     margin-bottom: 0.5rem;
-    font-size: 0.85rem;
-}
-
-.filter-group label i {
-    color: #c41212;
-    margin-right: 0.35rem;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
 }
 
 .filter-group input,
 .filter-group select {
     width: 100%;
-    padding: 0.625rem 0.75rem;
-    border: 1px solid #e7c8ce;
-    border-radius: 8px;
+    padding: 0.68rem 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 7px;
     font-size: 0.9rem;
     transition: border-color 0.3s ease;
     background: #fff;
@@ -264,12 +262,14 @@
 .filter-actions {
     display: flex;
     gap: 0.75rem;
+    align-items: flex-end;
 }
 
-.btn-filter, .btn-reset {
-    padding: 0.625rem 1.25rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+.btn-filter,
+.btn-reset {
+    padding: 0.68rem 1.15rem;
+    border-radius: 7px;
+    font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -293,7 +293,7 @@
 .btn-reset {
     background: #fff;
     color: #333;
-    border: 1px solid #ddd;
+    border: 1px solid #d9d9d9;
 }
 
 .btn-reset:hover {
@@ -304,10 +304,10 @@
 /* Table Container */
 .table-container {
     background: #fff;
-    border: 1px solid #f0d6dc;
-    border-radius: 12px;
+    border: 1px solid #ececec;
+    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .attendance-table {
@@ -316,30 +316,32 @@
 }
 
 .attendance-table thead {
-    background: #fff;
+    background: #f8f9fa;
     color: #333;
-    border-bottom: 2px solid #f0d6dc;
+    border-bottom: 1px solid #ececec;
 }
 
 .attendance-table th {
-    padding: 1rem;
+    padding: 16px;
     text-align: left;
     font-weight: 600;
-    font-size: 0.85rem;
-    letter-spacing: 0.3px;
+    font-size: 0.82rem;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: #444;
 }
 
 .attendance-table tbody tr {
-    border-bottom: 1px solid #f7d1d7;
+    border-bottom: 1px solid #f0f0f0;
     transition: background 0.2s ease;
 }
 
 .attendance-table tbody tr:hover {
-    background: #fef9fa;
+    background: #fcfcfc;
 }
 
 .attendance-table td {
-    padding: 0.875rem 1rem;
+    padding: 16px;
     color: #333;
     font-size: 0.9rem;
 }
@@ -350,42 +352,47 @@
 
 /* Badges */
 .officer-id-badge {
-    background: #e3f2fd;
-    color: #1976d2;
-    padding: 0.35rem 0.75rem;
-    border-radius: 16px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    border: 1px solid #bbdefb;
+    background: #f2f4f7;
+    color: #344054;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid #e4e7ec;
 }
 
 /* Status Badges */
 .status-badge {
     display: inline-block;
-    padding: 0.4rem 0.875rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
     font-weight: 600;
+    border: 1px solid transparent;
 }
 
 .status-present {
-    background: #d4edda;
-    color: #155724;
+    background: #edf7ee;
+    color: #1f6f3f;
+    border-color: #cce9d3;
 }
 
 .status-absent {
-    background: #f8d7da;
-    color: #721c24;
+    background: #fdecec;
+    color: #b42318;
+    border-color: #f7cdcd;
 }
 
 .status-late {
-    background: #fff3cd;
-    color: #856404;
+    background: #fff5e8;
+    color: #b54708;
+    border-color: #ffe2c2;
 }
 
 .status-half-day {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: #eef4ff;
+    color: #1d4ed8;
+    border-color: #dbe6ff;
 }
 
 /* Action Buttons */
@@ -395,8 +402,9 @@
     align-items: center;
 }
 
-.btn-edit, .btn-delete {
-    padding: 0.5rem 0.625rem;
+.btn-edit,
+.btn-delete {
+    padding: 0.45rem 0.55rem;
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -412,24 +420,24 @@
 
 .btn-edit {
     background: #fff;
-    color: #333;
-    border: 1px solid #ddd;
+    color: #344054;
+    border: 1px solid #d0d5dd;
 }
 
 .btn-edit:hover {
-    background: #fef9fa;
-    border-color: #c41212;
-    color: #c41212;
+    background: #f2f4f7;
+    border-color: #98a2b3;
+    color: #1d2939;
     transform: translateY(-1px);
 }
 
 .btn-delete {
-    background: #c41212;
+    background: #dc2626;
     color: white;
 }
 
 .btn-delete:hover {
-    background: #a80f0f;
+    background: #b91c1c;
     transform: translateY(-1px);
 }
 
@@ -444,6 +452,7 @@
     font-size: 3rem;
     margin-bottom: 1rem;
     opacity: 0.5;
+    display: block;
 }
 
 .no-data p {
@@ -468,8 +477,13 @@
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-content {
@@ -479,7 +493,7 @@
     width: 90%;
     max-width: 700px;
     max-height: calc(100vh - 40px);
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     animation: slideDown 0.3s ease;
     display: flex;
     flex-direction: column;
@@ -490,6 +504,7 @@
         opacity: 0;
         transform: translateY(-50px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -607,7 +622,8 @@
     padding-bottom: 1.5rem;
 }
 
-.btn-cancel, .btn-submit {
+.btn-cancel,
+.btn-submit {
     padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-size: 0.95rem;
@@ -647,7 +663,7 @@
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .filters-form {
         grid-template-columns: 1fr;
     }
@@ -655,57 +671,58 @@
 
 @media (max-width: 768px) {
     .attendance-container {
-        padding: 1rem;
+        width: 95%;
+        margin: 16px auto;
     }
-    
+
     .page-header {
         flex-direction: column;
         gap: 1rem;
         align-items: flex-start;
         padding: 1rem;
     }
-    
+
     .page-header h1 {
         font-size: 1.25rem;
     }
-    
+
     .btn-add {
         width: 100%;
         justify-content: center;
     }
-    
+
     .stats-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
-    
+
     .stat-card {
         padding: 1rem;
     }
-    
+
     .attendance-table {
         font-size: 0.85rem;
     }
-    
+
     .attendance-table th,
     .attendance-table td {
-        padding: 0.75rem 0.5rem;
+        padding: 12px;
     }
-    
+
     .form-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .modal-content {
         width: 95%;
         margin: 10px auto;
         max-height: calc(100vh - 20px);
     }
-    
+
     .modal form {
         padding: 1.25rem;
     }
-    
+
     .form-actions {
         padding-left: 1.25rem;
         padding-right: 1.25rem;
@@ -718,26 +735,28 @@
     .filter-actions {
         flex-direction: column;
     }
-    
-    .btn-filter, .btn-reset {
+
+    .btn-filter,
+    .btn-reset {
         width: 100%;
         justify-content: center;
     }
-    
+
     .table-container {
         overflow-x: auto;
     }
-    
+
     .attendance-table {
         min-width: 800px;
     }
-    
+
     .action-buttons {
         flex-direction: column;
         gap: 0.35rem;
     }
-    
-    .btn-edit, .btn-delete {
+
+    .btn-edit,
+    .btn-delete {
         width: 100%;
         justify-content: center;
     }
