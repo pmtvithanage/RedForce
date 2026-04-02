@@ -1,5 +1,6 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
     :root {
@@ -93,7 +94,7 @@
         color: #d32f2f;
     }
 
-    .stat-icon .material-symbols-outlined {
+    .stat-icon i {
         color: inherit;
         font-size: 24px;
     }
@@ -890,7 +891,7 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon total">
-                    <span class="material-symbols-outlined">account_balance_wallet</span>
+                    <i class="fas fa-file-invoice-dollar"></i>
                 </div>
                 <div class="stat-info">
                     <h3>Total Paid</h3>
@@ -900,7 +901,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon paid">
-                    <span class="material-symbols-outlined">check_circle</span>
+                    <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
                     <h3>Paid Bills</h3>
@@ -910,7 +911,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon pending">
-                    <span class="material-symbols-outlined">pending</span>
+                    <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
                     <h3>Pending</h3>
@@ -920,7 +921,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon overdue">
-                    <span class="material-symbols-outlined">warning</span>
+                    <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-info">
                     <h3>Overdue</h3>

@@ -7,6 +7,7 @@
 
 <!-- Material Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- Link to Dashboard CSS -->
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/dashboard_style.css">
@@ -206,7 +207,7 @@
     <div class="stats-container">
         <div class="stat-card">
             <div class="stat-icon sites">
-                <span class="material-icons">location_on</span>
+                <i class="fas fa-location-dot"></i>
             </div>
             <div class="stat-info">
                 <h3>5</h3>
@@ -216,7 +217,7 @@
 
         <div class="stat-card">
             <div class="stat-icon officers">
-                <span class="material-icons">group</span>
+                <i class="fas fa-users"></i>
             </div>
             <div class="stat-info">
                 <h3>24</h3>
@@ -226,7 +227,7 @@
 
         <div class="stat-card">
             <div class="stat-icon incidents">
-                <span class="material-icons">warning</span>
+                <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="stat-info">
                 <h3>8</h3>
@@ -236,7 +237,7 @@
 
         <div class="stat-card">
             <div class="stat-icon payment">
-                <span class="material-icons">event</span>
+                <i class="fas fa-calendar-days"></i>
             </div>
             <div class="stat-info">
                 <h3>12/21</h3>
