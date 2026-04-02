@@ -5,13 +5,14 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/equipment_style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <main class="main-content">
     <div class="equipment-container">
         <!-- Page Header -->
         <div class="page-header">
             <div class="page-header-left">
-                <h1><span class="material-symbols-outlined">inventory</span></h1>
+                <h1>Equipment Requests</h1>
                 <div class="live-datetime" id="liveDateTime"></div>
             </div>
             <a href="<?php echo URL_ROOT; ?>/caretaker/addEquipmentPage" class="btn-add">
@@ -26,17 +27,16 @@
         <!-- Statistics Cards -->
         <section class="stats-section">
             <div class="stats-row">
-                <div class="stat-card yellow">
-                    <div class="stat-icon"><span class="material-icons">pending</span></div>
+                <div class="stat-card total">
+                    <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                     <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->pending ?? 0; ?></div>
-                        <div class="stat-label">Pending Requests</div>
-                        <div class="stat-sublabel">Rs. <?php echo number_format($data['stats']->pending_cost ?? 0, 2); ?></div>
+                        <div class="stat-value"><?php echo $data['stats']->total ?? 0; ?></div>
+                        <div class="stat-label">Total Requests</div>
                     </div>
                 </div>
 
-                <div class="stat-card green">
-                    <div class="stat-icon"><span class="material-icons">check_circle</span></div>
+                <div class="stat-card paid">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                     <div class="stat-text">
                         <div class="stat-value"><?php echo $data['stats']->approved ?? 0; ?></div>
                         <div class="stat-label">Approved</div>
@@ -44,19 +44,20 @@
                     </div>
                 </div>
 
-                <div class="stat-card red">
-                    <div class="stat-icon"><span class="material-icons">cancel</span></div>
+                <div class="stat-card pending">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
                     <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->rejected ?? 0; ?></div>
-                        <div class="stat-label">Rejected</div>
+                        <div class="stat-value"><?php echo $data['stats']->pending ?? 0; ?></div>
+                        <div class="stat-label">Pending Requests</div>
+                        <div class="stat-sublabel">Rs. <?php echo number_format($data['stats']->pending_cost ?? 0, 2); ?></div>
                     </div>
                 </div>
 
-                <div class="stat-card purple">
-                    <div class="stat-icon"><span class="material-icons">inventory_2</span></div>
+                <div class="stat-card overdue">
+                    <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                     <div class="stat-text">
-                        <div class="stat-value"><?php echo $data['stats']->total ?? 0; ?></div>
-                        <div class="stat-label">Total Requests</div>
+                        <div class="stat-value"><?php echo $data['stats']->rejected ?? 0; ?></div>
+                        <div class="stat-label">Rejected</div>
                     </div>
                 </div>
             </div>
@@ -85,10 +86,10 @@
                                 <td><?php echo date('M d, Y', strtotime($request->requested_date)); ?></td>
                                 <td><strong><?php echo htmlspecialchars($request->equipment_name); ?></strong></td>
                                 <td><?php echo $request->quantity; ?></td>
-                                
+
                                 <!-- Estimated Cost -->
                                 <td class="cost-cell">Rs. <?php echo number_format($request->estimated_cost, 2); ?></td>
-                                
+
                                 <!-- Actual Cost -->
                                 <td class="cost-cell">
                                     <?php if ($request->status == 'Approved' && $request->actual_cost > 0): ?>
@@ -97,7 +98,7 @@
                                         <span class="pending-text">-</span>
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <!-- Total Cost -->
                                 <td class="cost-cell total-cost">
                                     <?php if ($request->status == 'Approved' && $request->total_cost > 0): ?>
@@ -108,46 +109,52 @@
                                         </span>
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <!-- Priority -->
                                 <td>
                                     <span class="priority-badge priority-<?php echo strtolower($request->priority); ?>">
                                         <?php echo $request->priority; ?>
                                     </span>
                                 </td>
-                                
+
                                 <!-- Status -->
                                 <td>
                                     <span class="status-badge status-<?php echo strtolower($request->status); ?>">
                                         <?php echo $request->status; ?>
                                     </span>
                                 </td>
-                                
+
                                 <!-- Actions -->
                                 <td class="action-buttons">
                                     <?php if ($request->status == 'Pending'): ?>
+                                        <button class="btn-view"
+                                            title="View Details"
+                                            onclick="viewDetails(<?php echo $request->id; ?>)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
                                         <!-- Edit Button -->
-                                        <a href="<?php echo URL_ROOT; ?>/caretaker/editEquipmentPage/<?php echo $request->id; ?>" 
-                                           class="btn-edit" 
-                                           title="Edit">
-                                            <span class="material-symbols-outlined">edit</span>
+                                        <a href="<?php echo URL_ROOT; ?>/caretaker/editEquipmentPage/<?php echo $request->id; ?>"
+                                            class="btn-edit"
+                                            title="Edit">
+                                            <i class="fas fa-pen"></i>
                                         </a>
-                                        
+
                                         <!-- Delete Button -->
-                                        <form method="POST" 
-                                              action="<?php echo URL_ROOT; ?>/caretaker/deleteEquipmentRequest/<?php echo $request->id; ?>" 
-                                              style="display: inline;"
-                                              onsubmit="return confirm('Are you sure you want to delete this equipment request?\n\nEquipment: <?php echo htmlspecialchars($request->equipment_name); ?>\nQuantity: <?php echo $request->quantity; ?>\n\nThis action cannot be undone.')">
+                                        <form method="POST"
+                                            action="<?php echo URL_ROOT; ?>/caretaker/deleteEquipmentRequest/<?php echo $request->id; ?>"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this equipment request?\n\nEquipment: <?php echo htmlspecialchars($request->equipment_name); ?>\nQuantity: <?php echo $request->quantity; ?>\n\nThis action cannot be undone.')">
                                             <button type="submit" class="btn-delete" title="Delete">
-                                                <span class="material-symbols-outlined">delete</span>
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     <?php else: ?>
                                         <!-- View Details (for approved/rejected) -->
-                                        <button class="btn-view" 
-                                                title="View Details"
-                                                onclick="viewDetails(<?php echo $request->id; ?>)">
-                                            <span class="material-symbols-outlined">visibility</span>
+                                        <button class="btn-view"
+                                            title="View Details"
+                                            onclick="viewDetails(<?php echo $request->id; ?>)">
+                                            <i class="fas fa-eye"></i>
                                         </button>
                                     <?php endif; ?>
                                 </td>
@@ -194,25 +201,30 @@
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 
 <script>
-// Live Date and Time
-function updateDateTime() {
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    };
-    const dateTimeString = now.toLocaleDateString('en-US', options);
-    document.getElementById('liveDateTime').textContent = dateTimeString;
-}
+    // Live Date and Time
+    function updateDateTime() {
+        const now = new Date();
+        const dateElement = document.getElementById('liveDateTime');
+        if (!dateElement) {
+            return;
+        }
 
-// Update immediately and then every second
-updateDateTime();
-setInterval(updateDateTime, 1000);
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        const dateTimeString = now.toLocaleDateString('en-US', options);
+        dateElement.textContent = dateTimeString;
+    }
+
+    // Update immediately and then every second
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
 </script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
