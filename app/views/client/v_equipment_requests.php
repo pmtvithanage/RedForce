@@ -5,6 +5,7 @@
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
     /* Equipment Container */
@@ -494,7 +495,7 @@
         <div class="stats-grid">
             <div class="stat-card yellow">
                 <div class="stat-icon">
-                    <span class="material-symbols-outlined">pending_actions</span>
+                    <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->pending_count ?? 0; ?></h3>
@@ -504,7 +505,7 @@
 
             <div class="stat-card green">
                 <div class="stat-icon">
-                    <span class="material-symbols-outlined">task_alt</span>
+                    <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->approved_count ?? 0; ?></h3>
@@ -514,7 +515,7 @@
 
             <div class="stat-card red">
                 <div class="stat-icon">
-                    <span class="material-symbols-outlined">block</span>
+                    <i class="fas fa-times-circle"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->rejected_count ?? 0; ?></h3>
@@ -524,7 +525,7 @@
 
             <div class="stat-card blue">
                 <div class="stat-icon">
-                    <span class="material-symbols-outlined">inventory</span>
+                    <i class="fas fa-boxes-stacked"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->total_requests ?? 0; ?></h3>

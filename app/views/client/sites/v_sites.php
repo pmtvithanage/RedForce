@@ -1,4 +1,5 @@
 <?php require_once APP_ROOT . '/views/components/v_client_sidebar.php'; ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
     :root {
@@ -249,7 +250,7 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon primary">
-                <span class="material-symbols-outlined">location_city</span>
+                <i class="fas fa-location-dot"></i>
             </div>
             <div>
                 <div class="stat-value"><?php echo count($data['sites']); ?></div>
@@ -259,7 +260,7 @@
 
         <div class="stat-card">
             <div class="stat-icon success">
-                <span class="material-symbols-outlined">badge</span>
+                <i class="fas fa-user-shield"></i>
             </div>
             <div>
                 <div class="stat-value">
@@ -277,7 +278,7 @@
 
         <div class="stat-card">
             <div class="stat-icon info">
-                <span class="material-symbols-outlined">supervisor_account</span>
+                <i class="fas fa-user-tie"></i>
             </div>
             <div>
                 <div class="stat-value">
@@ -295,7 +296,7 @@
 
         <div class="stat-card">
             <div class="stat-icon info">
-                <span class="material-symbols-outlined">person_check</span>
+                <i class="fas fa-user-check"></i>
             </div>
             <div>
                 <div class="stat-value">
