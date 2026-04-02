@@ -422,5 +422,165 @@ class ChartDataModel {
         
         return $data;
     }
+
+    /**
+     * Get total officers per site (premise officers + supervisors + caretakers)
+     */
+    public function getClientSitesWithOfficers($client_id) {
+        $this->db->query('
+            SELECT 
+                s.id,
+                s.site_name,
+                COALESCE(pm.premise_officers, 0) +
+                COALESCE(sp.supervisors, 0) +
+                COALESCE(ct.caretakers, 0) as total_officers
+            FROM sites s
+            LEFT JOIN (
+                SELECT site_id, COUNT(*) as premise_officers
+                FROM officer_site_assignments
+                WHERE status = "Active" AND (shift_type != "Supervisor")
+                GROUP BY site_id
+            ) pm ON s.id = pm.site_id
+            LEFT JOIN (
+                SELECT site_id, COUNT(*) as supervisors
+                FROM officer_site_assignments
+                WHERE status = "Active" AND shift_type = "Supervisor"
+                GROUP BY site_id
+            ) sp ON s.id = sp.site_id
+            LEFT JOIN (
+                SELECT site_id, COUNT(*) as caretakers
+                FROM caretaker_site_assignments
+                WHERE status = "Active"
+                GROUP BY site_id
+            ) ct ON s.id = ct.site_id
+            WHERE s.client_id = :client_id AND (s.is_draft = 0 OR s.is_draft IS NULL)
+            ORDER BY s.site_name
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'backgroundColor' => '#FF8A80'
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = $row->site_name;
+            $data['data'][] = (int)$row->total_officers;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get incident status pie chart data (Resolved, Pending, In Progress)
+     */
+    public function getClientIncidentStatusPie($client_id) {
+        $this->db->query('
+            SELECT 
+                ir.status,
+                COUNT(*) as count
+            FROM incident_reports ir
+            INNER JOIN sites s ON ir.site_id = s.id
+            WHERE s.client_id = :client_id AND s.is_draft = 0
+            GROUP BY ir.status
+            ORDER BY ir.status
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $statusColors = [
+            'Resolved' => '#66BB6A',
+            'Pending' => '#FFB74D',
+            'In Progress' => '#42A5F5',
+            'Rejected' => '#FF8A80'
+        ];
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'colors' => []
+        ];
+        
+        foreach ($result as $row) {
+            $status = $row->status;
+            $data['labels'][] = ucfirst($status);
+            $data['data'][] = (int)$row->count;
+            $data['colors'][] = $statusColors[$status] ?? '#999999';
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get payment history (last 12 months)
+     */
+    public function getClientPaymentHistory($client_id) {
+        $this->db->query('
+            SELECT 
+                DATE_FORMAT(payment_date, "%Y-%m") as month,
+                SUM(amount) as total_amount
+            FROM payments
+            WHERE client_id = :client_id
+            AND payment_date >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+            AND payment_date IS NOT NULL
+            GROUP BY DATE_FORMAT(payment_date, "%Y-%m")
+            ORDER BY month ASC
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'borderColor' => '#FF8A80',
+            'backgroundColor' => 'rgba(255, 138, 128, 0.3)'
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = date('M Y', strtotime($row->month . '-01'));
+            $data['data'][] = (float)$row->total_amount;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * Get next payment due for each site (pending payments)
+     */
+    public function getClientNextPaymentBySite($client_id) {
+        $this->db->query('
+            SELECT 
+                s.site_name,
+                COALESCE(SUM(p.amount), 0) as next_payment_amount
+            FROM sites s
+            LEFT JOIN payments p ON s.id = p.site_id 
+            AND p.client_id = :client_id 
+            AND p.status = "pending"
+            WHERE s.client_id = :client_id AND (s.is_draft = 0 OR s.is_draft IS NULL)
+            GROUP BY s.id, s.site_name
+            ORDER BY s.site_name
+        ');
+        
+        $this->db->bind(':client_id', $client_id);
+        $result = $this->db->resultSet();
+        
+        $data = [
+            'labels' => [],
+            'data' => [],
+            'backgroundColor' => '#FFB74D'
+        ];
+        
+        foreach ($result as $row) {
+            $data['labels'][] = $row->site_name;
+            $data['data'][] = (float)$row->next_payment_amount;
+        }
+        
+        return $data;
+    }
 }
 ?>

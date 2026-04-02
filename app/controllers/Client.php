@@ -75,13 +75,12 @@ class Client extends Controller {
         // Load chart data model
         $chartModel = $this->model('ChartDataModel');
         
-        // Get all chart data
+        // Get all chart data for 2x2 grid
         $charts = [
-            'severityChart' => $chartModel->getClientIncidentsBySeverity($client_id),
-            'monthlyTrend' => $chartModel->getClientMonthlyIncidentTrend($client_id),
-            'siteIncidents' => $chartModel->getClientIncidentsBySite($client_id),
-            'typeChart' => $chartModel->getClientIncidentsByType($client_id),
-            'statusChart' => $chartModel->getClientIncidentsByStatus($client_id)
+            'sitesOfficers' => $chartModel->getClientSitesWithOfficers($client_id),
+            'incidentStatus' => $chartModel->getClientIncidentStatusPie($client_id),
+            'paymentHistory' => $chartModel->getClientPaymentHistory($client_id),
+            'nextPaymentBySite' => $chartModel->getClientNextPaymentBySite($client_id)
         ];
         
         $data = [
