@@ -464,6 +464,57 @@
     .toast-close:hover {
         color: #333;
     }
+
+    /* Permissions Section Styles */
+    .permissions-section {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #fafafa;
+        border-radius: 8px;
+        border: 1px solid #eee;
+    }
+
+    .permissions-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .permissions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+    }
+
+    .permission-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .permission-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .permission-label {
+        font-size: 13px;
+        color: #333;
+        cursor: pointer;
+        user-select: none;
+        font-weight: 500;
+    }
+
+    .permission-item:hover {
+        opacity: 0.8;
+    }
 </style>
 
 <div class="admins-container">
@@ -582,6 +633,66 @@
                     <label for="edit_phone">Phone Number</label>
                     <input type="tel" id="edit_phone" name="phone_number" required>
                 </div>
+
+                <!-- Permissions Section -->
+                <div class="permissions-section">
+                    <div class="permissions-title">
+                        <span class="material-symbols-outlined" style="font-size: 16px;">security</span>
+                        Permissions
+                    </div>
+                    
+                    <div class="permissions-grid">
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_add_officers" name="permissions[]" value="add_officers" class="permission-checkbox">
+                            <label for="edit_perm_add_officers" class="permission-label">Add Officers</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_add_clients" name="permissions[]" value="add_clients" class="permission-checkbox">
+                            <label for="edit_perm_add_clients" class="permission-label">Add Clients</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_accept_client_requests" name="permissions[]" value="accept_client_requests" class="permission-checkbox">
+                            <label for="edit_perm_accept_client_requests" class="permission-label">Accept Client Requests</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_assign_officers" name="permissions[]" value="assign_officers" class="permission-checkbox">
+                            <label for="edit_perm_assign_officers" class="permission-label">Assign Officers</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_accept_leave_requests" name="permissions[]" value="accept_leave_requests" class="permission-checkbox">
+                            <label for="edit_perm_accept_leave_requests" class="permission-label">Accept Leave Requests</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_create_advertisements" name="permissions[]" value="create_advertisements" class="permission-checkbox">
+                            <label for="edit_perm_create_advertisements" class="permission-label">Create Advertisements</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_view_payments" name="permissions[]" value="view_payments" class="permission-checkbox">
+                            <label for="edit_perm_view_payments" class="permission-label">View Client Payments</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_handle_incidents" name="permissions[]" value="handle_incidents" class="permission-checkbox">
+                            <label for="edit_perm_handle_incidents" class="permission-label">Handle Incidents</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_create_routes" name="permissions[]" value="create_routes" class="permission-checkbox">
+                            <label for="edit_perm_create_routes" class="permission-label">Create Routes</label>
+                        </div>
+                        
+                        <div class="permission-item">
+                            <input type="checkbox" id="edit_perm_edit_officer_profiles" name="permissions[]" value="edit_officer_profiles" class="permission-checkbox">
+                            <label for="edit_perm_edit_officer_profiles" class="permission-label">Edit Officer Profiles</label>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="modal-btn btn-cancel" onclick="closeEditModal()">
@@ -676,7 +787,41 @@ function openEditModal(button) {
     document.getElementById('edit_email').value = adminEmail;
     document.getElementById('edit_phone').value = adminPhone;
     
+    // Clear all permission checkboxes first
+    document.querySelectorAll('.permission-checkbox').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Fetch admin permissions
+    fetchAdminPermissions(adminId);
+    
     document.getElementById('editModal').classList.add('active');
+}
+
+// Fetch admin permissions via AJAX
+function fetchAdminPermissions(adminId) {
+    fetch('<?php echo URL_ROOT; ?>/admin/getAdminPermissions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'admin_id=' + adminId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' && data.permissions) {
+            // Check the appropriate checkboxes
+            data.permissions.forEach(permission => {
+                const checkbox = document.getElementById('edit_perm_' + permission);
+                if (checkbox) {
+                    checkbox.checked = true;
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching permissions:', error);
+    });
 }
 
 function closeEditModal() {
@@ -693,6 +838,18 @@ document.getElementById('editAdminForm').addEventListener('submit', function(e) 
     saveBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Saving...';
     
     const formData = new FormData(this);
+    
+    // Collect selected permissions
+    const permissions = [];
+    document.querySelectorAll('.permission-checkbox:checked').forEach(checkbox => {
+        permissions.push(checkbox.value);
+    });
+    
+    // Convert permissions array to FormData format
+    formData.delete('permissions[]');
+    permissions.forEach(permission => {
+        formData.append('permissions[]', permission);
+    });
     
     fetch('<?php echo URL_ROOT; ?>/admin/updateAdmin', {
         method: 'POST',
