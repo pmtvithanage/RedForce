@@ -57,7 +57,7 @@ class Admin extends Controller {
 
     public function notifications() {
         // TODO: Fetch notifications from database
-        $notifications = $this->notificationModel->getNotifications($_SESSION['user_userID']);
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
         
         $data = [
             'title' => 'Notifications',
@@ -98,17 +98,17 @@ class Admin extends Controller {
     }
 
     public function messages(){
-        $user_userID = $_SESSION['user_userID'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
         
-        if (!$user_userID) {
+        if (!$user_id) {
             redirect('admin/dashboard');
             return;
         }
         
-        $conversations = $this->messageModel->getConversations($user_userID);
+        $conversations = $this->messageModel->getConversations($user_id);
         // Admin can message all users
-        $all_users = $this->messageModel->getAllUsers($user_userID);
-        $unread_count = $this->messageModel->getUnreadCount($user_userID);
+        $all_users = $this->messageModel->getAllUsers($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
         
         $data = [
             'title' => 'Dashboard',
@@ -127,7 +127,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -151,7 +151,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -172,7 +172,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             $message = trim($_POST['message'] ?? '');
             
@@ -202,14 +202,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $users = $this->messageModel->getAllUsers($user_userID);
+            $users = $this->messageModel->getAllUsers($user_id);
             echo json_encode(['status' => 'success', 'users' => $users]);
         }
     }
@@ -220,14 +220,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $conversations = $this->messageModel->getConversations($user_userID);
+            $conversations = $this->messageModel->getConversations($user_id);
             echo json_encode(['status' => 'success', 'conversations' => $conversations]);
         }
     }
@@ -238,15 +238,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $search_term = trim($_POST['search'] ?? '');
             
-            if (!$user_userID || empty($search_term)) {
+            if (!$user_id || empty($search_term)) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $results = $this->messageModel->searchConversations($user_userID, $search_term);
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
             echo json_encode(['status' => 'success', 'results' => $results]);
         }
     }
@@ -257,15 +257,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             
-            if (!$user_userID || !$message_id) {
+            if (!$user_id || !$message_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            if ($this->messageModel->deleteMessage($message_id, $user_userID)) {
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error']);
@@ -279,14 +279,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_POST['user_userID'] ?? null;
+            $user_id = $_POST['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error', 'message' => 'User ID required']);
                 return;
             }
             
-            $userStatus = $this->userModel->getUserOnlineStatus($user_userID);
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
             
             if ($userStatus) {
                 echo json_encode([
@@ -310,16 +310,16 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             $message = $_POST['message'] ?? null;
             
-            if (!$user_userID || !$message_id || !$message) {
+            if (!$user_id || !$message_id || !$message) {
                 echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
                 return;
             }
             
-            if ($this->messageModel->updateMessage($message_id, $user_userID, $message)) {
+            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
@@ -331,10 +331,10 @@ class Admin extends Controller {
     public function updateLastSeen()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if ($user_userID) {
-                $this->userModel->updateLastSeen($user_userID);
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
             }
         }
     }
@@ -343,10 +343,10 @@ class Admin extends Controller {
     public function setOffline()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if ($user_userID) {
-                $this->userModel->setUserOffline($user_userID);
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
             }
         }
     }
