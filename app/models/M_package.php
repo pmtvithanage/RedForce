@@ -237,6 +237,25 @@ class M_package {
     }
 
     /**
+     * Get unit pricing for a package; fallback to Custom Package pricing when missing.
+     */
+    public function getPackagePricingByName($packageName) {
+        $this->db->query('SELECT price_per_officer, price_per_supervisor, price_per_caretaker FROM packages WHERE package_name = :name LIMIT 1');
+        $this->db->bind(':name', $packageName);
+        $row = $this->db->single();
+
+        if ($row) {
+            return [
+                'price_per_officer' => floatval($row->price_per_officer ?? 0),
+                'price_per_supervisor' => floatval($row->price_per_supervisor ?? 0),
+                'price_per_caretaker' => floatval($row->price_per_caretaker ?? 0)
+            ];
+        }
+
+        return $this->getCustomPackagePricing();
+    }
+
+    /**
      * Calculate package price based on Custom Package unit prices
      */
     public function calculatePackagePrice($numOfficers, $numSupervisors, $numCaretakers) {

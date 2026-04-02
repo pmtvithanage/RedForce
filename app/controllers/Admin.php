@@ -1300,6 +1300,22 @@ class Admin extends Controller {
         }
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);              
         $packageRequest = $this->adminModel->getPackageRequestBySiteId($site_id);
+        $pendingExistingRequest = $this->adminModel->getPendingPackageRequestByLinkedSite($site_id);
+
+        $reviewRequest = ($site->is_draft == 1) ? $packageRequest : $pendingExistingRequest;
+        $reviewProgress = null;
+
+        if ($reviewRequest && $site->is_draft == 0) {
+            $added = $this->adminModel->getAddedAssignmentsSince($site_id, $reviewRequest->submitted_date);
+            $reviewProgress = [
+                'added_officers' => (int)($added->added_officers ?? 0),
+                'added_supervisors' => (int)($added->added_supervisors ?? 0),
+                'added_caretakers' => (int)($added->added_caretakers ?? 0),
+                'required_officers' => (int)($reviewRequest->number_of_guards ?? 0),
+                'required_supervisors' => (int)($reviewRequest->day_guards ?? 0),
+                'required_caretakers' => (int)($reviewRequest->night_guards ?? 0),
+            ];
+        }
 
         $assignedCaretakers = $this->adminModel->getAssignedCaretakers($site_id);
         
@@ -1310,6 +1326,8 @@ class Admin extends Controller {
             'client' => $clients,
             'assigned_officers' => $assignedOfficers,
             'package_request' => $packageRequest,
+            'review_request' => $reviewRequest,
+            'review_progress' => $reviewProgress,
             'assigned_caretakers' => $assignedCaretakers
         ];
         $this->view('admin/clients/v_viewsites', $data);
@@ -1604,15 +1622,32 @@ public function editSite($site_id){
         $packageRequest = $this->adminModel->getPackageRequestById($requestId);
         
         if (!$packageRequest) {
-            flash('request_error', 'Package request not found');
+            flash('request_error', 'Package request not found or payment is not completed yet');
             redirect('admin/clientRequests');
             return;
         }
 
-        // Check if draft site already exists
+        // Check if draft/existing site link already exists
         if ($packageRequest->draft_site_id) {
-            // Draft already exists, redirect to it
+            $linkedSite = $this->adminModel->getSiteById($packageRequest->draft_site_id);
+
+            // Existing-site customize requests should be reviewed on the existing site page,
+            // where admin assigns requested staff before approval/rejection.
+            if ($linkedSite && (int)$linkedSite->is_draft === 0) {
+                flash('site_success', 'Review existing-site request: assign required officers/supervisors/caretakers, then approve or reject this request.');
+            }
+
             redirect('admin/viewsites/' . $packageRequest->draft_site_id);
+            return;
+        }
+
+        // Fallback for older existing-site requests that were saved without a site link.
+        // If a matching official site exists for this client + site name, treat it as existing-site request.
+        $existingSiteId = $this->adminModel->findOfficialSiteIdByClientAndName($packageRequest->client_id, $packageRequest->site_name);
+        if ($existingSiteId) {
+            $this->adminModel->linkDraftSiteToRequest($requestId, $existingSiteId);
+            flash('site_success', 'Existing site matched. Assign requested staff, then approve or reject this request from the site review panel.');
+            redirect('admin/viewsites/' . $existingSiteId);
             return;
         }
 
@@ -1631,6 +1666,69 @@ public function editSite($site_id){
         // Redirect to viewsites page for officer assignment
         flash('site_success', 'Draft site created. Assign exactly ' . $packageRequest->number_of_guards . ' officer(s) to continue.');
         redirect('admin/viewsites/' . $draftSiteId);
+    }
+
+    public function approveExistingSiteRequest($requestId) {
+        $packageRequest = $this->adminModel->getPackageRequestById($requestId);
+        if (!$packageRequest || $packageRequest->status !== 'Pending') {
+            flash('request_error', 'Pending package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $siteId = (int)($packageRequest->draft_site_id ?? 0);
+        $site = $this->adminModel->getSiteById($siteId);
+
+        if (!$site || (int)$site->is_draft !== 0) {
+            flash('request_error', 'This action is only for existing-site requests');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $added = $this->adminModel->getAddedAssignmentsSince($siteId, $packageRequest->submitted_date);
+        $addedOfficers = (int)($added->added_officers ?? 0);
+        $addedSupervisors = (int)($added->added_supervisors ?? 0);
+        $addedCaretakers = (int)($added->added_caretakers ?? 0);
+
+        $requiredOfficers = (int)($packageRequest->number_of_guards ?? 0);
+        $requiredSupervisors = (int)($packageRequest->day_guards ?? 0);
+        $requiredCaretakers = (int)($packageRequest->night_guards ?? 0);
+
+        if ($addedOfficers < $requiredOfficers || $addedSupervisors < $requiredSupervisors || $addedCaretakers < $requiredCaretakers) {
+            flash(
+                'site_error',
+                'Assignment requirements not met yet. Added after request: Officers ' . $addedOfficers . '/' . $requiredOfficers .
+                ', Supervisors ' . $addedSupervisors . '/' . $requiredSupervisors .
+                ', Caretakers ' . $addedCaretakers . '/' . $requiredCaretakers
+            );
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+        flash('request_success', 'Existing-site package request approved successfully');
+        redirect('admin/clientRequests');
+    }
+
+    public function rejectExistingSiteRequest($requestId) {
+        $packageRequest = $this->adminModel->getPackageRequestById($requestId);
+        if (!$packageRequest || $packageRequest->status !== 'Pending') {
+            flash('request_error', 'Pending package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $siteId = (int)($packageRequest->draft_site_id ?? 0);
+        $site = $this->adminModel->getSiteById($siteId);
+        if (!$site || (int)$site->is_draft !== 0) {
+            flash('request_error', 'This action is only for existing-site requests');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+        flash('request_success', 'Existing-site package request rejected');
+        redirect('admin/clientRequests');
     }
 
     // Approve draft site - finalize and approve package request
@@ -1652,12 +1750,22 @@ public function editSite($site_id){
             return;
         }
 
-        // Verify correct number of officers assigned
-        $assignedCount = $this->adminModel->getAssignedOfficerCount($siteId);
-        $requiredCount = $packageRequest->number_of_guards;
+        // Verify correct number of regular officers assigned (excluding supervisors).
+        $assignedOfficers = $this->adminModel->getAssignedRegularOfficerCount($siteId);
+        $requiredOfficers = (int)$packageRequest->number_of_guards;
 
-        if ($assignedCount != $requiredCount) {
-            flash('site_error', 'You must assign exactly ' . $requiredCount . ' officer(s). Currently assigned: ' . $assignedCount);
+        if ($assignedOfficers != $requiredOfficers) {
+            flash('site_error', 'You must assign exactly ' . $requiredOfficers . ' officer(s). Currently assigned: ' . $assignedOfficers);
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        // Policy: minimum 1 supervisor per 5 officers (rounded up).
+        $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
+        $assignedSupervisors = $this->adminModel->getAssignedSupervisorCount($siteId);
+
+        if ($assignedSupervisors < $requiredSupervisors) {
+            flash('site_error', 'Supervisor requirement not met. Required: ' . $requiredSupervisors . ', currently assigned: ' . $assignedSupervisors . '.');
             redirect('admin/viewsites/' . $siteId);
             return;
         }
