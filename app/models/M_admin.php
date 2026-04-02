@@ -1363,6 +1363,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Assign officer to site
     public function assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType = 'Full Time', $assignmentEnd = null) {
+        // Validate required parameters
+        if (!$siteId || !$officerId || !$assignedBy) {
+            return ['success' => false, 'message' => 'Missing required parameters'];
+        }
+
         // Check if officer is already assigned to another site
         $this->db->query("SELECT id FROM officer_site_assignments 
                           WHERE officer_id = :officer_id AND status = 'Active'");
@@ -1373,18 +1378,34 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             return ['success' => false, 'message' => 'Officer is already assigned to another site'];
         }
 
+        // Clean up empty strings and convert to NULL
+        $assignmentEnd = (empty($assignmentEnd) || $assignmentEnd === '') ? null : $assignmentEnd;
+
         // Create new assignment with assignment_end if provided
-        $this->db->query("INSERT INTO officer_site_assignments 
-                          (site_id, officer_id, shift_type, assignment_start, assignment_end, assigned_by, status) 
-                          VALUES (:site_id, :officer_id, :shift_type, CURDATE(), :assignment_end, :assigned_by, 'Active')");
+        if ($assignmentEnd === null) {
+            // Don't include assignment_end if it's null
+            $this->db->query("INSERT INTO officer_site_assignments 
+                              (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
+                              VALUES (:site_id, :officer_id, :shift_type, CURDATE(), :assigned_by, 'Active')");
+        } else {
+            // Include assignment_end if provided
+            $this->db->query("INSERT INTO officer_site_assignments 
+                              (site_id, officer_id, shift_type, assignment_start, assignment_end, assigned_by, status) 
+                              VALUES (:site_id, :officer_id, :shift_type, CURDATE(), :assignment_end, :assigned_by, 'Active')");
+            $this->db->bind(':assignment_end', $assignmentEnd);
+        }
+        
         $this->db->bind(':site_id', $siteId);
         $this->db->bind(':officer_id', $officerId);
         $this->db->bind(':shift_type', $shiftType);
-        $this->db->bind(':assignment_end', $assignmentEnd);
         $this->db->bind(':assigned_by', $assignedBy);
 
-        if ($this->db->execute()) {
-            return ['success' => true, 'message' => 'Officer assigned successfully'];
+        try {
+            if ($this->db->execute()) {
+                return ['success' => true, 'message' => 'Officer assigned successfully'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
 
         return ['success' => false, 'message' => 'Failed to assign officer'];
@@ -1574,6 +1595,35 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("DELETE FROM sites WHERE id = :id AND is_draft = 1");
         $this->db->bind(':id', $siteId);
         return $this->db->execute();
+    }
+
+    // Update assignment end dates when approving package request (for calendar/scheduling)
+    public function updateAssignmentsEndDate($siteId, $endDate) {
+        if (!$siteId || !$endDate) {
+            return ['success' => false, 'message' => 'Missing required parameters'];
+        }
+
+        try {
+            // Update officer assignments (includes supervisors with shift_type='Supervisor')
+            $this->db->query("UPDATE officer_site_assignments 
+                             SET assignment_end = :end_date 
+                             WHERE site_id = :site_id AND assignment_end IS NULL");
+            $this->db->bind(':site_id', $siteId);
+            $this->db->bind(':end_date', $endDate);
+            $this->db->execute();
+
+            // Update caretaker assignments
+            $this->db->query("UPDATE caretaker_site_assignments 
+                             SET assignment_end = :end_date 
+                             WHERE site_id = :site_id AND assignment_end IS NULL");
+            $this->db->bind(':site_id', $siteId);
+            $this->db->bind(':end_date', $endDate);
+            $this->db->execute();
+
+            return ['success' => true, 'message' => 'Assignment end dates updated for calendar'];
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Error updating assignment dates: ' . $e->getMessage()];
+        }
     }
 
     // Approve package request (final)
@@ -2185,6 +2235,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Assign supervisor to site
     public function assignSupervisorToSite($siteId, $supervisorId, $assignedBy) {
+        // Validate required parameters
+        if (!$siteId || !$supervisorId || !$assignedBy) {
+            return ['success' => false, 'message' => 'Missing required parameters'];
+        }
+
         // Check if supervisor is already assigned to another site
         $this->db->query("SELECT id FROM officer_site_assignments 
                           WHERE officer_id = :officer_id AND status = 'Active'");
@@ -2206,16 +2261,20 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             return ['success' => false, 'message' => 'User is not a valid supervisor'];
         }
 
-        // Create new assignment with shift_type as 'Supervisor'
-        $this->db->query("INSERT INTO officer_site_assignments 
-                          (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
-                          VALUES (:site_id, :officer_id, 'Supervisor', CURDATE(), :assigned_by, 'Active')");
-        $this->db->bind(':site_id', $siteId);
-        $this->db->bind(':officer_id', $supervisorId);
-        $this->db->bind(':assigned_by', $assignedBy);
+        try {
+            // Create new assignment with shift_type as 'Supervisor'
+            $this->db->query("INSERT INTO officer_site_assignments 
+                              (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
+                              VALUES (:site_id, :officer_id, 'Supervisor', CURDATE(), :assigned_by, 'Active')");
+            $this->db->bind(':site_id', $siteId);
+            $this->db->bind(':officer_id', $supervisorId);
+            $this->db->bind(':assigned_by', $assignedBy);
 
-        if ($this->db->execute()) {
-            return ['success' => true, 'message' => 'Supervisor assigned successfully'];
+            if ($this->db->execute()) {
+                return ['success' => true, 'message' => 'Supervisor assigned successfully'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
 
         return ['success' => false, 'message' => 'Failed to assign supervisor'];
@@ -2418,6 +2477,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Assign caretaker to site
     public function assignCaretakerToSite($siteId, $caretakerId, $assignedBy) {
+        // Validate required parameters
+        if (!$siteId || !$caretakerId || !$assignedBy) {
+            return ['success' => false, 'message' => 'Missing required parameters'];
+        }
+
         // Check if caretaker is already assigned to another site
         $this->db->query("SELECT id FROM caretaker_site_assignments 
                           WHERE caretaker_id = :caretaker_id AND status = 'Active'");
@@ -2439,16 +2503,20 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             return ['success' => false, 'message' => 'User is not a valid caretaker'];
         }
 
-        // Create new assignment
-        $this->db->query("INSERT INTO caretaker_site_assignments 
-                          (site_id, caretaker_id, assignment_start, assigned_by, status) 
-                          VALUES (:site_id, :caretaker_id, CURDATE(), :assigned_by, 'Active')");
-        $this->db->bind(':site_id', $siteId);
-        $this->db->bind(':caretaker_id', $caretakerId);
-        $this->db->bind(':assigned_by', $assignedBy);
+        try {
+            // Create new assignment
+            $this->db->query("INSERT INTO caretaker_site_assignments 
+                              (site_id, caretaker_id, assignment_start, assigned_by, status) 
+                              VALUES (:site_id, :caretaker_id, CURDATE(), :assigned_by, 'Active')");
+            $this->db->bind(':site_id', $siteId);
+            $this->db->bind(':caretaker_id', $caretakerId);
+            $this->db->bind(':assigned_by', $assignedBy);
 
-        if ($this->db->execute()) {
-            return ['success' => true, 'message' => 'Caretaker assigned successfully'];
+            if ($this->db->execute()) {
+                return ['success' => true, 'message' => 'Caretaker assigned successfully'];
+            }
+        } catch (Exception $e) {
+            return ['success' => false, 'message' => 'Database error: ' . $e->getMessage()];
         }
 
         return ['success' => false, 'message' => 'Failed to assign caretaker'];

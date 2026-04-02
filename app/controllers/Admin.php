@@ -812,7 +812,7 @@ class Admin extends Controller {
         elseif($role == 'ct') $role_name = "Care Taker";
         
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
-        $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
+        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
         $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
         
@@ -1705,7 +1705,33 @@ public function editSite($site_id){
             return;
         }
 
-        $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+        // Get admin ID with multi-layer fallback to handle session issues
+        $adminId = null;
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            $adminId = (int)$_SESSION['user_id'];
+        } elseif (isset($_SESSION['user_userID']) && !empty($_SESSION['user_userID'])) {
+            $adminId = (int)$_SESSION['user_userID'];
+        } elseif (isset($_SESSION['user_email']) && !empty($_SESSION['user_email'])) {
+            $tempDb = new Database();
+            $tempDb->query("SELECT id FROM Users WHERE email = :email LIMIT 1");
+            $tempDb->bind(':email', $_SESSION['user_email']);
+            $userRecord = $tempDb->single();
+            if ($userRecord && isset($userRecord->id)) {
+                $adminId = (int)$userRecord->id;
+            }
+        }
+
+        if (!$adminId) {
+            flash('site_error', 'Authorization error - admin ID not found');
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        $this->adminModel->approvePackageRequestFinal($packageRequest->id, $adminId);
+        
+        // Update assignment end dates for calendar/scheduling
+        $this->adminModel->updateAssignmentsEndDate($siteId, $packageRequest->end_date);
+        
         flash('request_success', 'Existing-site package request approved successfully');
         redirect('admin/clientRequests');
     }
@@ -1770,10 +1796,35 @@ public function editSite($site_id){
             return;
         }
 
+        // Get admin ID with multi-layer fallback to handle session issues
+        $adminId = null;
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            $adminId = (int)$_SESSION['user_id'];
+        } elseif (isset($_SESSION['user_userID']) && !empty($_SESSION['user_userID'])) {
+            $adminId = (int)$_SESSION['user_userID'];
+        } elseif (isset($_SESSION['user_email']) && !empty($_SESSION['user_email'])) {
+            $tempDb = new Database();
+            $tempDb->query("SELECT id FROM Users WHERE email = :email LIMIT 1");
+            $tempDb->bind(':email', $_SESSION['user_email']);
+            $userRecord = $tempDb->single();
+            if ($userRecord && isset($userRecord->id)) {
+                $adminId = (int)$userRecord->id;
+            }
+        }
+
+        if (!$adminId) {
+            flash('site_error', 'Authorization error - admin ID not found');
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
         // Finalize the draft site (make it official)
         if ($this->adminModel->finalizeDraftSite($siteId)) {
             // Update package request to Approved
-            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
+            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $adminId);
+            
+            // Update assignment end dates for calendar/scheduling
+            $this->adminModel->updateAssignmentsEndDate($siteId, $packageRequest->end_date);
             
             flash('request_success', 'Package request approved and site created successfully');
             redirect('admin/viewsites/' . $siteId);
@@ -4101,42 +4152,108 @@ public function rejectLeaveRequest($id) {
     public function assignOfficerToSite() {
         header('Content-Type: application/json');
         
+        // Ensure session is active
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        
-        $siteId = $input['site_id'] ?? null;
-        $officerId = $input['officer_id'] ?? null;
-        $shiftType = $input['shift_type'] ?? 'Full Time';
-        $assignmentEnd = $input['assignment_end'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
-
-        if (!$siteId || !$officerId || !$assignedBy) {
-            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-            return;
-        }
-
-        $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType, $assignmentEnd);
-        
-        // Send notification to officer if assignment was successful
-        if ($result['success']) {
-            $site = $this->adminModel->getSiteById($siteId);
-            $siteName = $site ? $site->site_name : 'a site';
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
             
-            $this->notificationModel->insertNotification(
-                $officerId,
-                'assignment',
-                'New Site Assignment',
-                'You have been assigned to ' . $siteName . ' (' . $shiftType . ').',
-                '/premiseofficer/dashboard',
-                'location_on',
-                $assignedBy
-            );
+            // Validate JSON input
+            if (!$input) {
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+            
+            $siteId = isset($input['site_id']) ? (int)$input['site_id'] : null;
+            $officerId = isset($input['officer_id']) ? (int)$input['officer_id'] : null;
+            $shiftType = isset($input['shift_type']) ? trim($input['shift_type']) : 'Full Time';
+            $assignmentEnd = isset($input['assignment_end']) ? trim($input['assignment_end']) : null;
+            
+            // Get assigned by - try multiple session key variations and fallback to DB lookup
+            $assignedBy = null;
+            
+            // First try user_id
+            if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+                $assignedBy = (int)$_SESSION['user_id'];
+            }
+            // Then try user_userID
+            elseif (isset($_SESSION['user_userID']) && !empty($_SESSION['user_userID'])) {
+                $assignedBy = (int)$_SESSION['user_userID'];
+            }
+            // Fallback: if email is available, look up user by email
+            elseif (isset($_SESSION['user_email']) && !empty($_SESSION['user_email'])) {
+                $tempDb = new Database();
+                $tempDb->query("SELECT id FROM Users WHERE email = :email LIMIT 1");
+                $tempDb->bind(':email', $_SESSION['user_email']);
+                $userRecord = $tempDb->single();
+                if ($userRecord && isset($userRecord->id)) {
+                    $assignedBy = (int)$userRecord->id;
+                }
+            }
+
+            // Better parameter validation with specific error messages
+            $errors = [];
+            if (empty($siteId)) {
+                $errors[] = 'site_id is missing or invalid';
+            }
+            if (empty($officerId)) {
+                $errors[] = 'officer_id is missing or invalid';
+            }
+            if (empty($assignedBy)) {
+                $errors[] = 'Cannot determine user ID from session';
+            }
+
+            if (!empty($errors)) {
+                // Get raw session variable values for debugging
+                $user_userID_val = $_SESSION['user_userID'] ?? 'NOT SET';
+                $user_id_val = $_SESSION['user_id'] ?? 'NOT SET';
+                $user_email_val = $_SESSION['user_email'] ?? 'NOT SET';
+                
+                echo json_encode([
+                    'success' => false, 
+                    'message' => 'Missing required parameters: ' . implode('; ', $errors),
+                    'debug' => [
+                        'siteId' => $siteId,
+                        'officerId' => $officerId,
+                        'assignedBy_final' => $assignedBy,
+                        'user_id_val' => is_array($user_id_val) ? 'ARRAY' : $user_id_val,
+                        'user_userID_val' => is_array($user_userID_val) ? 'ARRAY' : $user_userID_val,
+                        'user_email_val' => $user_email_val,
+                        'session_keys' => array_keys($_SESSION)
+                    ]
+                ]);
+                return;
+            }
+
+            $result = $this->adminModel->assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType, $assignmentEnd);
+            
+            // Send notification to officer if assignment was successful
+            if ($result['success']) {
+                $site = $this->adminModel->getSiteById($siteId);
+                $siteName = $site ? $site->site_name : 'a site';
+                
+                $this->notificationModel->insertNotification(
+                    $officerId,
+                    'assignment',
+                    'New Site Assignment',
+                    'You have been assigned to ' . $siteName . ' (' . $shiftType . ').',
+                    '/premiseofficer/dashboard',
+                    'location_on',
+                    $assignedBy
+                );
+            }
+            echo json_encode($result);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
         }
-        echo json_encode($result);
     }
 
     // AJAX endpoint to unassign officer from site
@@ -4382,41 +4499,71 @@ public function rejectLeaveRequest($id) {
     public function assignSupervisorToSite() {
         header('Content-Type: application/json');
         
+        // Ensure session is active
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        
-        $siteId = $input['site_id'] ?? null;
-        $supervisorId = $input['supervisor_id'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
-
-        if (!$siteId || !$supervisorId || !$assignedBy) {
-            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-            return;
-        }
-
-        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
-        
-        // Send notification to supervisor if assignment was successful
-        if ($result['success']) {
-            $site = $this->adminModel->getSiteById($siteId);
-            $siteName = $site ? $site->site_name : 'a site';
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
             
-            $this->notificationModel->insertNotification(
-                $supervisorId,
-                'assignment',
-                'New Site Assignment',
-                'You have been assigned as supervisor to ' . $siteName . '.',
-                '/supervisor/dashboard',
-                'location_on',
-                $assignedBy
-            );
+            if (!$input) {
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+            
+            $siteId = isset($input['site_id']) ? (int)$input['site_id'] : null;
+            $supervisorId = isset($input['supervisor_id']) ? (int)$input['supervisor_id'] : null;
+            
+            // Get assigned by - try multiple session key variations and fallback to DB lookup
+            $assignedBy = null;
+            if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+                $assignedBy = (int)$_SESSION['user_id'];
+            } elseif (isset($_SESSION['user_userID']) && !empty($_SESSION['user_userID'])) {
+                $assignedBy = (int)$_SESSION['user_userID'];
+            } elseif (isset($_SESSION['user_email']) && !empty($_SESSION['user_email'])) {
+                $tempDb = new Database();
+                $tempDb->query("SELECT id FROM Users WHERE email = :email LIMIT 1");
+                $tempDb->bind(':email', $_SESSION['user_email']);
+                $userRecord = $tempDb->single();
+                if ($userRecord && isset($userRecord->id)) {
+                    $assignedBy = (int)$userRecord->id;
+                }
+            }
+
+            if (!$siteId || !$supervisorId || !$assignedBy) {
+                echo json_encode(['success' => false, 'message' => 'Missing or invalid required parameters', 'debug' => ['user_userID' => $_SESSION['user_userID'] ?? 'NOT SET', 'user_id' => $_SESSION['user_id'] ?? 'NOT SET', 'user_email' => $_SESSION['user_email'] ?? 'NOT SET']]);
+                return;
+            }
+
+            $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
+            
+            // Send notification to supervisor if assignment was successful
+            if ($result['success']) {
+                $site = $this->adminModel->getSiteById($siteId);
+                $siteName = $site ? $site->site_name : 'a site';
+                
+                $this->notificationModel->insertNotification(
+                    $supervisorId,
+                    'assignment',
+                    'New Site Assignment',
+                    'You have been assigned as supervisor to ' . $siteName . '.',
+                    '/supervisor/dashboard',
+                    'location_on',
+                    $assignedBy
+                );
+            }
+            
+            echo json_encode($result);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
         }
-        
-        echo json_encode($result);
     }
 
     // AJAX endpoint to get available caretakers
@@ -4448,41 +4595,71 @@ public function rejectLeaveRequest($id) {
     public function assignCaretakerToSite() {
         header('Content-Type: application/json');
         
+        // Ensure session is active
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
 
-        $input = json_decode(file_get_contents('php://input'), true);
-        
-        $siteId = $input['site_id'] ?? null;
-        $caretakerId = $input['caretaker_id'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
-
-        if (!$siteId || !$caretakerId || !$assignedBy) {
-            echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
-            return;
-        }
-
-        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
-        
-        // Send notification to caretaker if assignment was successful
-        if ($result['success']) {
-            $site = $this->adminModel->getSiteById($siteId);
-            $siteName = $site ? $site->site_name : 'a site';
+        try {
+            $input = json_decode(file_get_contents('php://input'), true);
             
-            $this->notificationModel->insertNotification(
-                $caretakerId,
-                'assignment',
-                'New Site Assignment',
-                'You have been assigned as caretaker to ' . $siteName . '.',
-                '/caretaker/dashboard',
-                'location_on',
-                $assignedBy
-            );
+            if (!$input) {
+                echo json_encode(['success' => false, 'message' => 'Invalid JSON input']);
+                return;
+            }
+            
+            $siteId = isset($input['site_id']) ? (int)$input['site_id'] : null;
+            $caretakerId = isset($input['caretaker_id']) ? (int)$input['caretaker_id'] : null;
+            
+            // Get assigned by - try multiple session key variations and fallback to DB lookup
+            $assignedBy = null;
+            if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+                $assignedBy = (int)$_SESSION['user_id'];
+            } elseif (isset($_SESSION['user_userID']) && !empty($_SESSION['user_userID'])) {
+                $assignedBy = (int)$_SESSION['user_userID'];
+            } elseif (isset($_SESSION['user_email']) && !empty($_SESSION['user_email'])) {
+                $tempDb = new Database();
+                $tempDb->query("SELECT id FROM Users WHERE email = :email LIMIT 1");
+                $tempDb->bind(':email', $_SESSION['user_email']);
+                $userRecord = $tempDb->single();
+                if ($userRecord && isset($userRecord->id)) {
+                    $assignedBy = (int)$userRecord->id;
+                }
+            }
+
+            if (!$siteId || !$caretakerId || !$assignedBy) {
+                echo json_encode(['success' => false, 'message' => 'Missing or invalid required parameters', 'debug' => ['user_userID' => $_SESSION['user_userID'] ?? 'NOT SET', 'user_id' => $_SESSION['user_id'] ?? 'NOT SET', 'user_email' => $_SESSION['user_email'] ?? 'NOT SET']]);
+                return;
+            }
+
+            $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
+            
+            // Send notification to caretaker if assignment was successful
+            if ($result['success']) {
+                $site = $this->adminModel->getSiteById($siteId);
+                $siteName = $site ? $site->site_name : 'a site';
+                
+                $this->notificationModel->insertNotification(
+                    $caretakerId,
+                    'assignment',
+                    'New Site Assignment',
+                    'You have been assigned as caretaker to ' . $siteName . '.',
+                    '/caretaker/dashboard',
+                    'location_on',
+                    $assignedBy
+                );
+            }
+            
+            echo json_encode($result);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
         }
-        
-        echo json_encode($result);
     }
 
     // Update Admin (AJAX)

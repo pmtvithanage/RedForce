@@ -1543,6 +1543,7 @@ function loadOfficers() {
     fetch(urlRoot + '/admin/getAvailableOfficers', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             district_filter: districtFilter,
@@ -1684,6 +1685,7 @@ function assignOfficer(officerId, shiftType, officerName) {
     fetch(urlRoot + '/admin/assignOfficerToSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             officer_id: officerId,
@@ -1717,15 +1719,27 @@ function assignOfficer(officerId, shiftType, officerName) {
             `;
             setTimeout(() => location.reload(), 1500);
         } else {
-            // Show error message
+            // Show error message with debug info
+            console.error('Assignment error:', data);
+            let debugInfo = '';
+            if (data.debug) {
+                debugInfo = `<div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 6px; text-align: left; font-size: 12px; color: #666; font-family: monospace; max-height: 200px; overflow-y: auto;">
+                    <strong>Debug Info:</strong><br>
+                    Site ID: ${data.debug.siteId}<br>
+                    Officer ID: ${data.debug.officerId}<br>
+                    Assigned By: ${data.debug.assignedBy}<br>
+                    Session Keys: ${data.debug.session_keys ? data.debug.session_keys.join(', ') : 'None'}
+                </div>`;
+            }
             progressModal.innerHTML = `
-                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+                <div style="background: white; border-radius: 12px; padding: 40px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
                     <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
                         <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
                     </div>
                     <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
                     <p style="color: #666; margin: 0 0 20px 0;">${data.message}</p>
-                    <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
+                    ${debugInfo}
+                    <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 12px;">Close</button>
                 </div>
             `;
         }
@@ -1796,6 +1810,7 @@ function confirmUnassignment(assignmentId, buttonElement) {
     fetch(urlRoot + '/admin/unassignOfficerFromSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             assignment_id: assignmentId
         })
@@ -1902,6 +1917,7 @@ function confirmCaretakerUnassignment(assignmentId, buttonElement) {
     fetch(urlRoot + '/admin/unassignCaretakerFromSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             assignment_id: assignmentId
         })
@@ -1960,6 +1976,7 @@ function loadSupervisors() {
     fetch(urlRoot + '/admin/getAvailableSupervisors', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             district_filter: districtFilter,
@@ -2083,6 +2100,7 @@ function confirmSupervisorAssignment() {
     fetch(urlRoot + '/admin/assignSupervisorToSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             supervisor_id: selectedSupervisorId
@@ -2158,6 +2176,7 @@ function loadCaretakers() {
     fetch(urlRoot + '/admin/getAvailableCaretakers', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             district_filter: districtFilter,
@@ -2281,6 +2300,7 @@ function confirmCaretakerAssignment() {
     fetch(urlRoot + '/admin/assignCaretakerToSite', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'include',
         body: JSON.stringify({
             site_id: siteId,
             caretaker_id: selectedCaretakerId
