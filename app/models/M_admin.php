@@ -1503,9 +1503,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         $tempPassword = '0000'; // Simple temp password
         $role_name = 'admin';
+        
+        // Prepare permissions as JSON
+        $permissionsJson = json_encode($data['permissions'] ?? []);
 
-        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
-                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role)");
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role, permissions) 
+                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role, :permissions)");
         $this->db->bind(':userID', $userID);
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':email', $data['email']);
@@ -1513,6 +1516,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':profile_image', $data['image_name']);
         $this->db->bind(':role', $role_name);
         $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        $this->db->bind(':permissions', $permissionsJson);
     
         if ($this->db->execute()) {
             return [
@@ -1538,6 +1542,87 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("SELECT * FROM Users WHERE id = :id AND role = 'admin'");
         $this->db->bind(':id', $id);
         return $this->db->single();
+    }
+
+    /**
+     * Update admin permissions
+     * @param int $adminId - Admin user ID
+     * @param array $permissions - Array of permission keys
+     * @return bool - Success status
+     */
+    public function updateAdminPermissions($adminId, $permissions = []) {
+        $permissionsJson = json_encode($permissions);
+        $this->db->query("UPDATE Users SET permissions = :permissions WHERE id = :id AND role = 'admin'");
+        $this->db->bind(':permissions', $permissionsJson);
+        $this->db->bind(':id', $adminId);
+        return $this->db->execute();
+    }
+
+    /**
+     * Get admin permissions
+     * @param int $adminId - Admin user ID
+     * @return array - Array of permission keys
+     */
+    public function getAdminPermissions($adminId) {
+        $this->db->query("SELECT permissions FROM Users WHERE id = :id AND role = 'admin'");
+        $this->db->bind(':id', $adminId);
+        $result = $this->db->single();
+        
+        if ($result && !empty($result->permissions)) {
+            return json_decode($result->permissions, true) ?? [];
+        }
+        return [];
+    }
+
+    /**
+     * Check if admin has specific permission
+     * @param int $adminId - Admin user ID
+     * @param string $permission - Permission key
+     * @return bool - True if admin has permission
+     */
+    public function hasAdminPermission($adminId, $permission) {
+        $permissions = $this->getAdminPermissions($adminId);
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Get all admins with their permissions
+     * @return array - Array of admin objects with permissions
+     */
+    public function getAllAdminsWithPermissions() {
+        $this->db->query("SELECT id, userID, name, email, phone_number, role, permissions, created_at FROM Users WHERE role = 'admin' ORDER BY created_at DESC");
+        $admins = $this->db->resultSet();
+        
+        // Decode permissions for each admin
+        foreach ($admins as $admin) {
+            if (!empty($admin->permissions)) {
+                $admin->permissions_array = json_decode($admin->permissions, true) ?? [];
+            } else {
+                $admin->permissions_array = [];
+            }
+        }
+        
+        return $admins;
+    }
+
+    /**
+     * Check if admin has a specific permission
+     * @param string $adminId - Admin user ID (can be userID or numeric ID)
+     * @param string $permission - Permission key to check
+     * @return bool - True if admin has permission, false otherwise
+     */
+    public function hasPermission($adminId, $permission) {
+        // Try to get admin by ID first, then by userID if needed
+        $this->db->query("SELECT permissions FROM Users WHERE (id = :admin_id OR userID = :admin_id) AND role = 'admin'");
+        $this->db->bind(':admin_id', $adminId);
+        $result = $this->db->single();
+        
+        if (!$result || empty($result->permissions)) {
+            return false;
+        }
+        
+        $permissions = json_decode($result->permissions, true);
+        return in_array($permission, $permissions ?? []);
     }
 
     // ==============================
@@ -2012,11 +2097,23 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     // ============================== ============================== ==============================
     // Update Admin
     public function updateAdmin($data) {
-        $this->db->query("UPDATE Users 
-                         SET name = :name, 
-                             email = :email, 
-                             phone_number = :phone_number
-                         WHERE id = :admin_id AND role = 'admin'");
+        // Check if permissions are included
+        if (isset($data['permissions'])) {
+            $permissionsJson = json_encode($data['permissions']);
+            $this->db->query("UPDATE Users 
+                             SET name = :name, 
+                                 email = :email, 
+                                 phone_number = :phone_number,
+                                 permissions = :permissions
+                             WHERE id = :admin_id AND role = 'admin'");
+            $this->db->bind(':permissions', $permissionsJson);
+        } else {
+            $this->db->query("UPDATE Users 
+                             SET name = :name, 
+                                 email = :email, 
+                                 phone_number = :phone_number
+                             WHERE id = :admin_id AND role = 'admin'");
+        }
         
         $this->db->bind(':admin_id', $data['admin_id']);
         $this->db->bind(':name', $data['name']);

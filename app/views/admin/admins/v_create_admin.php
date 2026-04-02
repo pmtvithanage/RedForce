@@ -208,6 +208,57 @@
   font-size: 13px;
 }
 
+/* ---------- Permissions Section ---------- */
+.permissions-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #fafafa;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.permissions-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.permission-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.permission-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.permission-label {
+  font-size: 14px;
+  color: var(--text-color);
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+}
+
+.permission-item:hover {
+  opacity: 0.8;
+}
+
 </style>
     <!-- Content will be loaded here -->
     <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
@@ -259,6 +310,68 @@
 
         
         
+        <input type="hidden" id="logo_path" name="logo_path">
+
+        <!-- Permissions Section -->
+        <div class="permissions-section">
+          <div class="permissions-title">
+            <span class="material-symbols-outlined" style="font-size: 20px;">security</span>
+            Assign Permissions
+          </div>
+          
+          <div class="permissions-grid">
+            <div class="permission-item">
+              <input type="checkbox" id="perm_add_officers" name="permissions[]" value="add_officers" class="permission-checkbox">
+              <label for="perm_add_officers" class="permission-label">Add Officers</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_add_clients" name="permissions[]" value="add_clients" class="permission-checkbox">
+              <label for="perm_add_clients" class="permission-label">Add Clients</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_accept_client_requests" name="permissions[]" value="accept_client_requests" class="permission-checkbox">
+              <label for="perm_accept_client_requests" class="permission-label">Accept Client Requests</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_assign_officers" name="permissions[]" value="assign_officers" class="permission-checkbox">
+              <label for="perm_assign_officers" class="permission-label">Assign Officers</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_accept_leave_requests" name="permissions[]" value="accept_leave_requests" class="permission-checkbox">
+              <label for="perm_accept_leave_requests" class="permission-label">Accept Leave Requests</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_create_advertisements" name="permissions[]" value="create_advertisements" class="permission-checkbox">
+              <label for="perm_create_advertisements" class="permission-label">Create Advertisements</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_view_payments" name="permissions[]" value="view_payments" class="permission-checkbox">
+              <label for="perm_view_payments" class="permission-label">View Client Payments</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_handle_incidents" name="permissions[]" value="handle_incidents" class="permission-checkbox">
+              <label for="perm_handle_incidents" class="permission-label">Handle Incident Reports</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_create_routes" name="permissions[]" value="create_routes" class="permission-checkbox">
+              <label for="perm_create_routes" class="permission-label">Create Routes</label>
+            </div>
+            
+            <div class="permission-item">
+              <input type="checkbox" id="perm_edit_officer_profiles" name="permissions[]" value="edit_officer_profiles" class="permission-checkbox">
+              <label for="perm_edit_officer_profiles" class="permission-label">Edit Officer Profiles</label>
+            </div>
+          </div>
+        </div>
+
         <input type="hidden" id="logo_path" name="logo_path">
 
         <div class="form-actions">
