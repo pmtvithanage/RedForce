@@ -4,13 +4,14 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/notes_style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <main class="main-content">
     <div class="notes-container">
         <!-- Page Header -->
         <div class="page-header">
             <div class="page-header-left">
-                <h1><span class="material-symbols-outlined">note</span></h1>
+                <h1>My Notes</h1>
                 <div class="live-datetime" id="liveDateTime"></div>
             </div>
             <a href="<?php echo URL_ROOT; ?>/caretaker/addNotePage" class="btn-add">
@@ -26,7 +27,7 @@
         <div class="stats-container">
             <div class="stat-card">
                 <div class="stat-icon total">
-                    <span class="material-symbols-outlined">description</span>
+                    <i class="fas fa-file-invoice-dollar"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->total ?? 0; ?></h3>
@@ -36,7 +37,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon important">
-                    <span class="material-symbols-outlined">priority_high</span>
+                    <i class="fas fa-exclamation-triangle"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->important ?? 0; ?></h3>
@@ -46,7 +47,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon priority">
-                    <span class="material-symbols-outlined">flag</span>
+                    <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->highPriority ?? 0; ?></h3>
@@ -56,7 +57,7 @@
 
             <div class="stat-card">
                 <div class="stat-icon reminder">
-                    <span class="material-symbols-outlined">notifications_active</span>
+                    <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
                     <h3><?php echo $data['stats']->pendingReminders ?? 0; ?></h3>
@@ -116,7 +117,7 @@
                                 <span class="material-symbols-outlined">push_pin</span> Pinned
                             </div>
                         <?php endif; ?>
-                        
+
                         <div class="note-header">
                             <h4><?php echo htmlspecialchars($note->title); ?></h4>
                             <div class="note-badges">
@@ -130,7 +131,7 @@
                         </div>
 
                         <div class="note-content">
-                            <?php 
+                            <?php
                             $content = htmlspecialchars($note->note_content);
                             echo strlen($content) > 150 ? substr($content, 0, 150) . '...' : $content;
                             ?>
@@ -156,11 +157,11 @@
                                         <span class="material-symbols-outlined"><?php echo $note->is_pinned ? 'keep_off' : 'keep'; ?></span>
                                     </button>
                                 </form>
-                                
+
                                 <a href="<?php echo URL_ROOT; ?>/caretaker/editNotePage/<?php echo $note->id; ?>" class="btn-action" title="Edit">
                                     <span class="material-symbols-outlined">edit</span>
                                 </a>
-                                
+
                                 <form method="POST" action="<?php echo URL_ROOT; ?>/caretaker/deleteNote/<?php echo $note->id; ?>" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this note?\n\nTitle: <?php echo htmlspecialchars($note->title); ?>\n\nThis action cannot be undone.');">
                                     <button type="submit" class="btn-action" title="Delete">
                                         <span class="material-symbols-outlined">delete</span>
@@ -181,33 +182,40 @@
 </main>
 
 <script>
-// Live Date and Time
-function updateDateTime() {
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-    };
-    const dateTimeString = now.toLocaleDateString('en-US', options);
-    document.getElementById('liveDateTime').textContent = dateTimeString;
-}
+    // Live Date and Time
+    function updateDateTime() {
+        const now = new Date();
+        const dateElement = document.getElementById('liveDateTime');
+        if (!dateElement) {
+            return;
+        }
 
-updateDateTime();
-setInterval(updateDateTime, 1000);
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        const dateTimeString = now.toLocaleDateString('en-US', options);
+        dateElement.textContent = dateTimeString;
+    }
 
-// Auto-hide flash messages
-setTimeout(function() {
-    const flashMessages = document.querySelectorAll('.alert');
-    flashMessages.forEach(function(msg) {
-        msg.style.opacity = '0';
-        setTimeout(function() { msg.style.display = 'none'; }, 300);
-    });
-}, 5000);
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+
+    // Auto-hide flash messages
+    setTimeout(function() {
+        const flashMessages = document.querySelectorAll('.alert');
+        flashMessages.forEach(function(msg) {
+            msg.style.opacity = '0';
+            setTimeout(function() {
+                msg.style.display = 'none';
+            }, 300);
+        });
+    }, 5000);
 </script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>

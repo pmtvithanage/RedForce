@@ -5,98 +5,164 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/caretaker/equipment_style.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-/* Enhanced Stat Cards - Matching Incidents Style */
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
+    /* Enhanced Stat Cards - Matching Incidents Style */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-.stat-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border-left: 5px solid #ccc;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
+    .stat-card {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-left: 5px solid #ccc;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
 
-.stat-card.yellow { border-left-color: #f59e0b; }
-.stat-card.green { border-left-color: #10b981; }
-.stat-card.red { border-left-color: #ef4444; }
-.stat-card.purple { border-left-color: #8b5cf6; }
+    .stat-card.yellow {
+        border-left-color: #f59e0b;
+    }
 
-.stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-}
+    .stat-card.green {
+        border-left-color: #10b981;
+    }
 
-.stat-icon {
-  font-size: 40px !important;
-  transition: transform 0.3s ease;
-  color: #555;
-}
+    .stat-card.red {
+        border-left-color: #ef4444;
+    }
 
-.stat-card.yellow .stat-icon { color: #f59e0b; }
-.stat-card.green .stat-icon { color: #10b981; }
-.stat-card.red .stat-icon { color: #ef4444; }
-.stat-card.purple .stat-icon { color: #8b5cf6; }
+    .stat-card.purple {
+        border-left-color: #8b5cf6;
+    }
 
-.stat-card:hover .stat-icon {
-  transform: scale(1.15);
-}
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+    }
 
-.stat-text {
-  flex: 1;
-}
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        transition: transform 0.3s ease;
+    }
 
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1f2937;
-  line-height: 1;
-  margin-bottom: 5px;
-}
+    .stat-card.yellow .stat-icon {
+        background: #fff3e0;
+        color: #f57c00;
+    }
 
-.stat-label {
-  font-size: 14px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
+    .stat-card.green .stat-icon {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
 
-.stat-sublabel {
-  font-size: 12px;
-  color: #9ca3af;
-  margin-top: 2px;
-}
+    .stat-card.red .stat-icon {
+        background: #ffebee;
+        color: #c62828;
+    }
 
-/* Supervisor Approved Status */
-.status-supervisor-approved {
-  background: linear-gradient(135deg, #3b82f6, #60a5fa);
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    .stat-card.purple .stat-icon {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
 
-.status-supervisor-approved:hover {
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
+    .stat-card:hover .stat-icon {
+        transform: scale(1.15);
+    }
 
-.status-approved:hover,
-.status-rejected:hover {
-  cursor: pointer;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+    .stat-text {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: bold;
+        color: #1f2937;
+        line-height: 1;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-sublabel {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 2px;
+    }
+
+    /* Supervisor Approved Status */
+    .status-supervisor-approved {
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        color: white;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .status-supervisor-approved:hover {
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .status-approved:hover,
+    .status-rejected:hover {
+        cursor: pointer;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Keep action controls perfectly aligned in table rows */
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .action-buttons form {
+        display: flex;
+        margin: 0;
+    }
+
+    .btn-edit,
+    .btn-delete,
+    .btn-view {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .btn-edit .material-symbols-outlined,
+    .btn-delete .material-symbols-outlined,
+    .btn-view .material-symbols-outlined {
+        font-size: 20px;
+        line-height: 1;
+        display: block;
+    }
 </style>
 
 <main class="main-content">
@@ -104,7 +170,7 @@
         <!-- Page Header -->
         <div class="page-header">
             <div class="page-header-left">
-                
+
             </div>
             <a href="<?php echo URL_ROOT; ?>/caretaker/addEquipmentPage" class="btn-add">
                 <span class="material-symbols-outlined">add</span> Request Equipment
@@ -119,7 +185,7 @@
         <div class="stats-container">
             <!-- Pending Requests -->
             <div class="stat-card yellow">
-                <span class="material-symbols-outlined stat-icon">pending_actions</span>
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
                 <div class="stat-text">
                     <div class="stat-value"><?php echo $data['stats']->pending ?? 0; ?></div>
                     <div class="stat-label">Pending</div>
@@ -129,7 +195,7 @@
 
             <!-- Approved Requests -->
             <div class="stat-card green">
-                <span class="material-symbols-outlined stat-icon">task_alt</span>
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
                 <div class="stat-text">
                     <div class="stat-value"><?php echo $data['stats']->approved ?? 0; ?></div>
                     <div class="stat-label">Approved</div>
@@ -139,7 +205,7 @@
 
             <!-- Rejected Requests -->
             <div class="stat-card red">
-                <span class="material-symbols-outlined stat-icon">cancel</span>
+                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
                 <div class="stat-text">
                     <div class="stat-value"><?php echo $data['stats']->rejected ?? 0; ?></div>
                     <div class="stat-label">Rejected</div>
@@ -148,7 +214,7 @@
 
             <!-- Total Requests -->
             <div class="stat-card purple">
-                <span class="material-symbols-outlined stat-icon">inventory</span>
+                <div class="stat-icon"><i class="fas fa-file-invoice-dollar"></i></div>
                 <div class="stat-text">
                     <div class="stat-value"><?php echo $data['stats']->total ?? 0; ?></div>
                     <div class="stat-label">Total Requests</div>
@@ -179,10 +245,10 @@
                                 <td><?php echo date('M d, Y', strtotime($request->requested_date)); ?></td>
                                 <td><strong><?php echo htmlspecialchars($request->equipment_name); ?></strong></td>
                                 <td><?php echo $request->quantity; ?></td>
-                                
+
                                 <!-- Estimated Cost -->
                                 <td class="cost-cell">Rs. <?php echo number_format($request->estimated_cost, 2); ?></td>
-                                
+
                                 <!-- Actual Cost -->
                                 <td class="cost-cell">
                                     <?php if ($request->status == 'Approved' && isset($request->actual_cost) && $request->actual_cost > 0): ?>
@@ -191,7 +257,7 @@
                                         <span class="pending-text">-</span>
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <!-- Total Cost -->
                                 <td class="cost-cell total-cost">
                                     <?php if ($request->status == 'Approved' && isset($request->total_cost) && $request->total_cost > 0): ?>
@@ -202,21 +268,21 @@
                                         </span>
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <!-- Priority -->
                                 <td>
                                     <span class="priority-badge priority-<?php echo strtolower($request->priority); ?>">
                                         <?php echo $request->priority; ?>
                                     </span>
                                 </td>
-                                
+
                                 <!-- Status -->
                                 <td>
                                     <?php if (in_array($request->status, ['Approved', 'Rejected', 'Supervisor Approved'])): ?>
                                         <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $request->status)); ?>"
-                                              onclick="viewStatusDetails(<?php echo htmlspecialchars(json_encode($request)); ?>)"
-                                              style="cursor: pointer;"
-                                              title="Click to view details">
+                                            onclick="viewStatusDetails(<?php echo htmlspecialchars(json_encode($request)); ?>)"
+                                            style="cursor: pointer;"
+                                            title="Click to view details">
                                             <?php echo $request->status; ?>
                                         </span>
                                     <?php else: ?>
@@ -225,31 +291,31 @@
                                         </span>
                                     <?php endif; ?>
                                 </td>
-                                
+
                                 <!-- Actions -->
                                 <td class="action-buttons">
                                     <?php if ($request->status == 'Pending'): ?>
                                         <!-- Edit Button -->
-                                        <a href="<?php echo URL_ROOT; ?>/caretaker/editEquipmentPage/<?php echo $request->id; ?>" 
-                                           class="btn-edit" 
-                                           title="Edit">
+                                        <a href="<?php echo URL_ROOT; ?>/caretaker/editEquipmentPage/<?php echo $request->id; ?>"
+                                            class="btn-edit"
+                                            title="Edit">
                                             <span class="material-symbols-outlined">edit</span>
                                         </a>
-                                        
+
                                         <!-- Delete Button -->
-                                        <form method="POST" 
-                                              action="<?php echo URL_ROOT; ?>/caretaker/deleteEquipmentRequest/<?php echo $request->id; ?>" 
-                                              style="display: inline;"
-                                              onsubmit="return confirm('Are you sure you want to delete this equipment request?\n\nEquipment: <?php echo htmlspecialchars($request->equipment_name); ?>\nQuantity: <?php echo $request->quantity; ?>\n\nThis action cannot be undone.')">
+                                        <form method="POST"
+                                            action="<?php echo URL_ROOT; ?>/caretaker/deleteEquipmentRequest/<?php echo $request->id; ?>"
+                                            style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this equipment request?\n\nEquipment: <?php echo htmlspecialchars($request->equipment_name); ?>\nQuantity: <?php echo $request->quantity; ?>\n\nThis action cannot be undone.')">
                                             <button type="submit" class="btn-delete" title="Delete">
                                                 <span class="material-symbols-outlined">delete</span>
                                             </button>
                                         </form>
                                     <?php else: ?>
                                         <!-- View Details (for approved/rejected) -->
-                                        <button class="btn-view" 
-                                                title="View Details"
-                                                onclick="viewDetails(<?php echo htmlspecialchars(json_encode($request)); ?>)">
+                                        <button class="btn-view"
+                                            title="View Details"
+                                            onclick="viewDetails(<?php echo htmlspecialchars(json_encode($request)); ?>)">
                                             <span class="material-symbols-outlined">visibility</span>
                                         </button>
                                     <?php endif; ?>
@@ -298,15 +364,15 @@
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script>
-// View Status Details (for Supervisor decisions)
-function viewStatusDetails(request) {
-    const modal = document.getElementById('detailsModal');
-    const modalBody = document.getElementById('modalBody');
-    const modalTitle = document.getElementById('modalTitle');
-    
-    modalTitle.textContent = request.status + ' - Details';
-    
-    let detailsHTML = `
+    // View Status Details (for Supervisor decisions)
+    function viewStatusDetails(request) {
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
+
+        modalTitle.textContent = request.status + ' - Details';
+
+        let detailsHTML = `
         <div class="details-grid">
             <div class="detail-item">
                 <span class="detail-label">Equipment Name:</span>
@@ -327,25 +393,25 @@ function viewStatusDetails(request) {
                 <span class="detail-value">${new Date(request.requested_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}</span>
             </div>
     `;
-    
-    if (request.approved_date) {
-        detailsHTML += `
+
+        if (request.approved_date) {
+            detailsHTML += `
             <div class="detail-item">
                 <span class="detail-label">${request.status === 'Rejected' ? 'Rejected' : 'Approved'} Date:</span>
                 <span class="detail-value">${new Date(request.approved_date).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'})}</span>
             </div>
         `;
-    }
-    
-    detailsHTML += `
+        }
+
+        detailsHTML += `
             <div class="detail-item full-width">
                 <span class="detail-label">Request Reason:</span>
                 <span class="detail-value">${request.reason}</span>
             </div>
     `;
-    
-    if (request.supervisor_notes) {
-        detailsHTML += `
+
+        if (request.supervisor_notes) {
+            detailsHTML += `
             <div class="detail-item full-width" style="background: ${request.status === 'Rejected' ? '#fee2e2' : '#dbeafe'}; padding: 15px; border-radius: 8px; border-left: 4px solid ${request.status === 'Rejected' ? '#ef4444' : '#3b82f6'};">
                 <span class="detail-label" style="color: ${request.status === 'Rejected' ? '#991b1b' : '#1e40af'}; font-weight: 600;">
                     <span class="material-symbols-outlined" style="vertical-align: middle; font-size: 18px;">note</span>
@@ -356,25 +422,25 @@ function viewStatusDetails(request) {
                 </span>
             </div>
         `;
+        }
+
+        detailsHTML += `</div>`;
+
+        modalBody.innerHTML = detailsHTML;
+        modal.style.display = 'block';
     }
-    
-    detailsHTML += `</div>`;
-    
-    modalBody.innerHTML = detailsHTML;
-    modal.style.display = 'block';
-}
 
-// View Details Modal
-function viewDetails(request) {
-    const modal = document.getElementById('detailsModal');
-    const modalBody = document.getElementById('modalBody');
-    const modalTitle = document.getElementById('modalTitle');
-    
-    modalTitle.textContent = 'Request Details';
+    // View Details Modal
+    function viewDetails(request) {
+        const modal = document.getElementById('detailsModal');
+        const modalBody = document.getElementById('modalBody');
+        const modalTitle = document.getElementById('modalTitle');
 
-    
-    // Build details HTML
-    let detailsHTML = `
+        modalTitle.textContent = 'Request Details';
+
+
+        // Build details HTML
+        let detailsHTML = `
         <div class="details-grid">
             <div class="detail-item">
                 <span class="detail-label">Equipment Name:</span>
@@ -405,9 +471,9 @@ function viewDetails(request) {
                 <span class="detail-value">Rs. ${parseFloat(request.estimated_cost).toFixed(2)}</span>
             </div>
     `;
-    
-    if (request.actual_cost && request.actual_cost > 0) {
-        detailsHTML += `
+
+        if (request.actual_cost && request.actual_cost > 0) {
+            detailsHTML += `
             <div class="detail-item">
                 <span class="detail-label">Actual Cost:</span>
                 <span class="detail-value">Rs. ${parseFloat(request.actual_cost).toFixed(2)}</span>
@@ -417,41 +483,41 @@ function viewDetails(request) {
                 <span class="detail-value"><strong>Rs. ${parseFloat(request.total_cost).toFixed(2)}</strong></span>
             </div>
         `;
-    }
-    
-    detailsHTML += `
+        }
+
+        detailsHTML += `
             <div class="detail-item full-width">
                 <span class="detail-label">Reason:</span>
                 <span class="detail-value">${request.reason}</span>
             </div>
     `;
-    
-    if (request.admin_remarks) {
-        detailsHTML += `
+
+        if (request.admin_remarks) {
+            detailsHTML += `
             <div class="detail-item full-width">
                 <span class="detail-label">Admin Remarks:</span>
                 <span class="detail-value">${request.admin_remarks}</span>
             </div>
         `;
-    }
-    
-    detailsHTML += `</div>`;
-    
-    modalBody.innerHTML = detailsHTML;
-    modal.style.display = 'block';
-}
+        }
 
-function closeModal() {
-    document.getElementById('detailsModal').style.display = 'none';
-}
+        detailsHTML += `</div>`;
 
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('detailsModal');
-    if (event.target == modal) {
-        modal.style.display = 'none';
+        modalBody.innerHTML = detailsHTML;
+        modal.style.display = 'block';
     }
-}
+
+    function closeModal() {
+        document.getElementById('detailsModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('detailsModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
 </script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>

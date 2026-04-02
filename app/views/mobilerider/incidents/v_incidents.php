@@ -1,473 +1,469 @@
 <?php require_once APP_ROOT . '/views/inc/components/header.php'; ?>
 
-  <?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
+<?php require_once APP_ROOT . '/views/components/v_mobilerider_sidebar.php'; ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-/* Stat Cards Container */
-.stats-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin: 20px;
-}
-
-/* Stat Card */
-.stat-card {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  border-left: 5px solid #ccc;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.stat-card:nth-child(1) { border-left-color: #9333ea; } /* Purple */
-.stat-card:nth-child(2) { border-left-color: #22c55e; } /* Green */
-.stat-card:nth-child(3) { border-left-color: #f59e0b; } /* Gold */
-.stat-card:nth-child(4) { border-left-color: #ef4444; } /* Red */
-
-.stat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Icons */
-.stat-icon {
-  font-size: 40px;
-  transition: transform 0.3s ease;
-  color: #555;
-}
-
-.stat-card:nth-child(1) .stat-icon { color: #9333ea; }
-.stat-card:nth-child(2) .stat-icon { color: #22c55e; }
-.stat-card:nth-child(3) .stat-icon { color: #f59e0b; }
-.stat-card:nth-child(4) .stat-icon { color: #ef4444; }
-
-.stat-card:hover .stat-icon {
-  transform: scale(1.15);
-}
-
-/* Stat text */
-.stat-content {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  color: #1f2937;
-  line-height: 1;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #6b7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Incidents Table Section */
-.incidents-section {
-  margin: 20px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid #e5e7eb;
-}
-
-.incidents-header {
-  padding: 20px;
-  background: linear-gradient(135deg, #a40000, #bd0909);
-  color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.incidents-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.add-incident-btn {
-  background: white;
-  color: #a40000;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.3s ease;
-}
-
-.add-incident-btn:hover {
-  background: #f3f4f6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.incidents-table-container {
-  overflow-x: auto;
-}
-
-.incidents-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.incidents-table thead {
-  background: #f9fafb;
-}
-
-.incidents-table th {
-  padding: 16px 12px;
-  text-align: left;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 12px;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-}
-
-.incidents-table td {
-  padding: 14px 12px;
-  border-bottom: 1px solid #f1f5f9;
-  color: #374151;
-}
-
-.incidents-table tbody tr {
-  transition: background-color 0.3s ease;
-}
-
-.incidents-table tbody tr:hover {
-  background-color: #f8fafc;
-}
-
-.incidents-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-/* Status badges */
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-pending {
-  background: #fef3c7;
-  color: #d97706;
-}
-
-.status-in-progress {
-  background: #dbeafe;
-  color: #2563eb;
-}
-
-.status-resolved {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.status-closed {
-  background: #e5e7eb;
-  color: #4b5563;
-}
-
-/* Priority badges */
-.priority-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.priority-low {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.priority-medium {
-  background: #fef3c7;
-  color: #b45309;
-}
-
-.priority-high {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.priority-critical {
-  background: #fecaca;
-  color: #7f1d1d;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* Action buttons */
-.table-action-btn {
-  background: #6b7280;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-right: 6px;
-}
-
-.table-action-btn:hover {
-  background: #4b5563;
-  transform: translateY(-1px);
-}
-
-.table-action-btn.view {
-  background: #a40000;
-}
-
-.table-action-btn.view:hover {
-  background: #bd0909;
-}
-
-.table-action-btn.edit {
-  background: #2563eb;
-}
-
-.table-action-btn.edit:hover {
-  background: #1d4ed8;
-}
-
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 60px 20px;
-  color: #6b7280;
-}
-
-.empty-state .material-symbols-outlined {
-  font-size: 64px;
-  margin-bottom: 16px;
-  opacity: 0.5;
-  color: #9ca3af;
-}
-
-.empty-state h3 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  color: #374151;
-}
-
-.empty-state p {
-  margin: 0 0 20px 0;
-  font-size: 14px;
-}
-
-/* Mobile Responsive Styles */
-@media (max-width: 968px) {
-  .stats-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin: 15px;
+  :root {
+    --primary-color: #a40000;
+    --success-color: #2e7d32;
+    --warning-color: #f57c00;
+    --danger-color: #c62828;
+    --info-color: #1976d2;
+    --bg-light: #f8f9fa;
+    --border-color: #e0e0e0;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --radius: 8px;
   }
-  
-  .stat-card {
-    padding: 15px;
+
+  .content-wrap {
+    width: 90%;
+    margin: 30px auto;
   }
-  
-  .stat-icon {
-    font-size: 32px;
+
+  .page-header {
+    margin-bottom: 24px;
   }
-  
-  .stat-value {
-    font-size: 24px;
+
+  .page-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
   }
-  
-  .incidents-section {
-    margin: 15px;
+
+  .page-header p {
+    color: #666;
+    font-size: 15px;
   }
-  
-  .incidents-header {
-    flex-direction: column;
-    gap: 15px;
-    align-items: flex-start;
+
+  .filters-section {
+    background: white;
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 24px;
   }
-  
-  .add-incident-btn {
+
+  .filters-bar {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 250px;
+    position: relative;
+  }
+
+  .search-box input {
     width: 100%;
-    justify-content: center;
+    padding: 12px 12px 12px 44px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
   }
-  
+
+  .search-box .fa-search {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+  }
+
+  .filter-select {
+    padding: 12px 16px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
+    background: white;
+    min-width: 150px;
+  }
+
+  .top-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+  }
+
+  .add-incident-btn {
+    padding: 12px 20px;
+    background: var(--primary-color);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: #fff;
+    padding: 24px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+
+  .stat-icon.total {
+    background: #e3f2fd;
+    color: var(--info-color);
+  }
+
+  .stat-icon.pending {
+    background: #fff3e0;
+    color: var(--warning-color);
+  }
+
+  .stat-icon.progress {
+    background: #f3e8ff;
+    color: #7c3aed;
+  }
+
+  .stat-icon.resolved {
+    background: #e8f5e9;
+    color: var(--success-color);
+  }
+
+  .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.1;
+  }
+
+  .stat-label {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+
+  .incidents-section {
+    background: #fff;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
   .incidents-table-container {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
-  
-  .incidents-table {
-    min-width: 700px;
-  }
-}
 
-@media (max-width: 640px) {
-  .stats-container {
-    grid-template-columns: 1fr;
+  .incidents-table {
+    width: 100%;
+    border-collapse: collapse;
   }
-  
-  .stat-card {
-    padding: 12px;
+
+  .incidents-table thead {
+    background: var(--bg-light);
+    border-bottom: 2px solid var(--border-color);
   }
-  
-  .stat-icon {
-    font-size: 28px;
+
+  .incidents-table th {
+    padding: 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
   }
-  
-  .stat-value {
-    font-size: 20px;
+
+  .incidents-table td {
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 14px;
+    color: #333;
+    vertical-align: middle;
   }
-  
-  .stat-label {
-    font-size: 11px;
+
+  .incidents-table tbody tr:hover {
+    background: var(--bg-light);
   }
-  
-  .incidents-header {
-    padding: 15px;
+
+  .status-badge,
+  .priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
-  
-  .incidents-title {
-    font-size: 16px;
+
+  .status-pending {
+    background: #fff3e0;
+    color: var(--warning-color);
   }
-}
+
+  .status-in-progress {
+    background: #e3f2fd;
+    color: var(--info-color);
+  }
+
+  .status-resolved {
+    background: #e8f5e9;
+    color: var(--success-color);
+  }
+
+  .status-closed {
+    background: #e5e7eb;
+    color: #4b5563;
+  }
+
+  .priority-low {
+    background: #e3f2fd;
+    color: var(--info-color);
+  }
+
+  .priority-medium {
+    background: #fff3e0;
+    color: var(--warning-color);
+  }
+
+  .priority-high,
+  .priority-critical {
+    background: #ffebee;
+    color: var(--danger-color);
+  }
+
+  .table-action-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e3f2fd;
+    color: var(--info-color);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+  }
+
+  .empty-state .material-symbols-outlined {
+    font-size: 64px;
+    color: #ddd;
+    margin-bottom: 16px;
+  }
+
+  .empty-state h3 {
+    margin: 0 0 8px 0;
+    color: #666;
+  }
+
+  @media (max-width: 768px) {
+    .content-wrap {
+      width: calc(100% - 30px);
+      margin: 15px;
+    }
+
+    .stats-container {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 
-<div class="stats-container">
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">assessment</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['total_incidents']) ? $data['total_incidents'] : '0'; ?></div>
-      <div class="stat-label">Total Incidents</div>
+<div class="content-wrap">
+  <div class="top-actions">
+
+  </div>
+
+  <div class="page-header">
+    <h2>Incident Reports Management</h2>
+    <p>Monitor and manage all incident reports</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="filters-bar">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchIncidents" placeholder="Search by incident ID, site, or type...">
+      </div>
+
+      <select id="statusFilter" class="filter-select">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="in-progress">In Progress</option>
+        <option value="resolved">Resolved</option>
+      </select>
+
+      <select id="priorityFilter" class="filter-select">
+        <option value="">All Priority</option>
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+        <option value="critical">Critical</option>
+      </select>
+
+      <button class="add-incident-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/createIncident'">
+        <i class="fas fa-plus"></i>
+        Report Incident
+      </button>
     </div>
   </div>
 
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">schedule</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['pending_incidents']) ? $data['pending_incidents'] : '0'; ?></div>
-      <div class="stat-label">Pending</div>
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-icon total"><i class="fas fa-clipboard-list"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['total_incidents']) ? $data['total_incidents'] : '0'; ?></div>
+        <div class="stat-label">Total Incidents</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['pending_incidents']) ? $data['pending_incidents'] : '0'; ?></div>
+        <div class="stat-label">Pending</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon progress"><i class="fas fa-spinner"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['inprogress_incidents']) ? $data['inprogress_incidents'] : '0'; ?></div>
+        <div class="stat-label">In Progress</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon resolved"><i class="fas fa-check-circle"></i></div>
+      <div class="stat-content">
+        <div class="stat-value"><?php echo isset($data['resolved_incidents']) ? $data['resolved_incidents'] : '0'; ?></div>
+        <div class="stat-label">Resolved</div>
+      </div>
     </div>
   </div>
 
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">sync</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['inprogress_incidents']) ? $data['inprogress_incidents'] : '0'; ?></div>
-      <div class="stat-label">In Progress</div>
-    </div>
-  </div>
+  <!-- Incidents Table Section -->
+  <div class="incidents-section">
 
-  <div class="stat-card">
-    <span class="material-symbols-outlined stat-icon">check_circle</span>
-    <div class="stat-content">
-      <div class="stat-value"><?php echo isset($data['resolved_incidents']) ? $data['resolved_incidents'] : '0'; ?></div>
-      <div class="stat-label">Resolved</div>
+    <div class="incidents-table-container">
+      <?php if (empty($data['incidents'])): ?>
+        <div class="empty-state">
+          <span class="material-symbols-outlined">report_off</span>
+          <h3>No Incidents Reported</h3>
+          <p>There are no incident reports to display at this time.</p>
+        </div>
+      <?php else: ?>
+        <table class="incidents-table">
+          <thead>
+            <tr data-status="<?php echo strtolower(str_replace(' ', '-', $incident->status ?? 'pending')); ?>" data-priority="<?php echo strtolower($incident->priority ?? 'medium'); ?>">
+              <th>ID</th>
+              <th>Date & Time</th>
+              <th>Site</th>
+              <th>Type</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($data['incidents'] as $incident): ?>
+              <tr>
+                <td><strong>#<?php echo htmlspecialchars($incident->id); ?></strong></td>
+                <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at)); ?></td>
+                <td><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></td>
+                <td><?php echo htmlspecialchars($incident->incident_type ?? 'General'); ?></td>
+                <td>
+                  <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? 'medium'); ?>">
+                    <?php echo htmlspecialchars($incident->priority ?? 'Medium'); ?>
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $incident->status ?? 'pending')); ?>">
+                    <?php echo htmlspecialchars($incident->status ?? 'Pending'); ?>
+                  </span>
+                </td>
+                <td>
+                  <button class="table-action-btn view" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/viewIncident/<?php echo $incident->id; ?>'">
+                    <i class="fas fa-eye"></i> View
+                  </button>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      <?php endif; ?>
     </div>
   </div>
 </div>
 
-<!-- Incidents Table Section -->
-<div class="incidents-section">
-  <div class="incidents-header">
-    <h2 class="incidents-title">
-      <span class="material-symbols-outlined">report_problem</span>
-      Incident Reports
-    </h2>
-    <button class="add-incident-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/createIncident'">
-      <span class="material-symbols-outlined">add</span>
-      Report Incident
-    </button>
-  </div>
 
-  <div class="incidents-table-container">
-    <?php if(empty($data['incidents'])): ?>
-    <div class="empty-state">
-      <span class="material-symbols-outlined">report_off</span>
-      <h3>No Incidents Reported</h3>
-      <p>There are no incident reports to display at this time.</p>
-    </div>
-    <?php else: ?>
-    <table class="incidents-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Date & Time</th>
-          <th>Site</th>
-          <th>Type</th>
-          <th>Priority</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php foreach($data['incidents'] as $incident): ?>
-        <tr>
-          <td><strong>#<?php echo htmlspecialchars($incident->id); ?></strong></td>
-          <td><?php echo date('M d, Y h:i A', strtotime($incident->created_at)); ?></td>
-          <td><?php echo htmlspecialchars($incident->site_name ?? 'N/A'); ?></td>
-          <td><?php echo htmlspecialchars($incident->incident_type ?? 'General'); ?></td>
-          <td>
-            <span class="priority-badge priority-<?php echo strtolower($incident->priority ?? 'medium'); ?>">
-              <?php echo htmlspecialchars($incident->priority ?? 'Medium'); ?>
-            </span>
-          </td>
-          <td>
-            <span class="status-badge status-<?php echo strtolower(str_replace(' ', '-', $incident->status ?? 'pending')); ?>">
-              <?php echo htmlspecialchars($incident->status ?? 'Pending'); ?>
-            </span>
-          </td>
-          <td>
-            <button class="table-action-btn view" onclick="window.location.href='<?php echo URL_ROOT; ?>/MobileRider/viewIncident/<?php echo $incident->id; ?>'">
-              View
-            </button>
-          </td>
-        </tr>
-        <?php endforeach; ?>
-      </tbody>
-    </table>
-    <?php endif; ?>
-  </div>
+</main>
 </div>
 
-    
-    </main>
-    </div>
+<div class="backdrop" id="backdrop" hidden></div>
 
-    <div class="backdrop" id="backdrop" hidden></div>
+<script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+<script>
+  (function() {
+    const searchInput = document.getElementById('searchIncidents');
+    const statusFilter = document.getElementById('statusFilter');
+    const priorityFilter = document.getElementById('priorityFilter');
+    const rows = document.querySelectorAll('.incidents-table tbody tr');
 
-    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
-<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>                       
+    function applyFilters() {
+      const q = (searchInput?.value || '').toLowerCase().trim();
+      const status = (statusFilter?.value || '').toLowerCase();
+      const priority = (priorityFilter?.value || '').toLowerCase();
+
+      rows.forEach((row) => {
+        const text = row.textContent.toLowerCase();
+        const rowStatus = (row.getAttribute('data-status') || '').toLowerCase();
+        const rowPriority = (row.getAttribute('data-priority') || '').toLowerCase();
+
+        const okSearch = !q || text.includes(q);
+        const okStatus = !status || rowStatus === status;
+        const okPriority = !priority || rowPriority === priority;
+
+        row.style.display = okSearch && okStatus && okPriority ? '' : 'none';
+      });
+    }
+
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (priorityFilter) priorityFilter.addEventListener('change', applyFilters);
+  })();
+</script>
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
