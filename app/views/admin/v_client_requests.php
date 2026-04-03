@@ -113,10 +113,30 @@
               <div class="request-detail">
                 <span class="detail-label">Number of Guards:</span>
                 <span class="detail-value">
-                  <?php echo $request->number_of_guards; ?> Guard<?php echo $request->number_of_guards != 1 ? 's' : ''; ?>
-                  <?php if ($request->day_guards !== null && $request->night_guards !== null): ?>
-                    <br><small style="color: #666;">(<?php echo $request->day_guards; ?> Day, <?php echo $request->night_guards; ?> Night)</small>
-                  <?php endif; ?>
+                  <?php
+                    $requestedOfficers = (int)($request->number_of_guards ?? $request->number_of_officers ?? 0);
+                    $requestedSupervisorsPrimary = isset($request->number_of_supervisors) ? (int)$request->number_of_supervisors : 0;
+                    $requestedSupervisorsFallback = isset($request->day_guards) ? (int)$request->day_guards : 0;
+                    $requestedSupervisors = $requestedSupervisorsPrimary > 0 ? $requestedSupervisorsPrimary : $requestedSupervisorsFallback;
+
+                    $requestedCaretakersPrimary = isset($request->number_of_caretakers) ? (int)$request->number_of_caretakers : 0;
+                    $requestedCaretakersFallback = isset($request->night_guards) ? (int)$request->night_guards : 0;
+                    $requestedCaretakers = $requestedCaretakersPrimary > 0 ? $requestedCaretakersPrimary : $requestedCaretakersFallback;
+
+                    // Legacy add-on requests can store 0 counts; infer from package name.
+                    $packageKey = strtolower(trim((string)($request->package_name ?? '')));
+                    if ($requestedOfficers === 0 && $requestedSupervisors === 0 && $requestedCaretakers === 0) {
+                      if ($packageKey === 'extrasecurityofficer') {
+                        $requestedOfficers = 1;
+                      } elseif ($packageKey === 'extrasupervisor') {
+                        $requestedSupervisors = 1;
+                      } elseif ($packageKey === 'extracaretaker') {
+                        $requestedCaretakers = 1;
+                      }
+                    }
+                  ?>
+                  <?php echo $requestedOfficers; ?> Guard<?php echo $requestedOfficers != 1 ? 's' : ''; ?>
+                  <br><small style="color: #666;">(<?php echo $requestedSupervisors; ?> Supervisor<?php echo $requestedSupervisors != 1 ? 's' : ''; ?>, <?php echo $requestedCaretakers; ?> Caretaker<?php echo $requestedCaretakers != 1 ? 's' : ''; ?>)</small>
                 </span>
               </div>
 

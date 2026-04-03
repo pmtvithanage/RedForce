@@ -584,13 +584,46 @@
         <span class="material-symbols-outlined" style="vertical-align: middle;">info</span>
         Draft Site - Review in Progress
       </h3>
+      <?php
+        $requestedOfficers = (int)($data['package_request']->number_of_guards ?? $data['package_request']->number_of_officers ?? 0);
+        $requestedSupervisorsPrimary = isset($data['package_request']->number_of_supervisors) ? (int)$data['package_request']->number_of_supervisors : 0;
+        $requestedSupervisorsFallback = isset($data['package_request']->day_guards) ? (int)$data['package_request']->day_guards : 0;
+        $requestedSupervisors = $requestedSupervisorsPrimary > 0 ? $requestedSupervisorsPrimary : $requestedSupervisorsFallback;
+
+        $requestedCaretakersPrimary = isset($data['package_request']->number_of_caretakers) ? (int)$data['package_request']->number_of_caretakers : 0;
+        $requestedCaretakersFallback = isset($data['package_request']->night_guards) ? (int)$data['package_request']->night_guards : 0;
+        $requestedCaretakers = $requestedCaretakersPrimary > 0 ? $requestedCaretakersPrimary : $requestedCaretakersFallback;
+
+        $packageKey = strtolower(trim((string)($data['package_request']->package_name ?? '')));
+        if ($requestedOfficers === 0 && $requestedSupervisors === 0 && $requestedCaretakers === 0) {
+          if ($packageKey === 'extrasecurityofficer') {
+            $requestedOfficers = 1;
+          } elseif ($packageKey === 'extrasupervisor') {
+            $requestedSupervisors = 1;
+          } elseif ($packageKey === 'extracaretaker') {
+            $requestedCaretakers = 1;
+          }
+        }
+
+        $assignedOfficersCount = 0;
+        $assignedSupervisorsCount = 0;
+        foreach (($data['assigned_officers'] ?? []) as $assignedOfficer) {
+          if (($assignedOfficer->shift_type ?? '') === 'Supervisor') {
+            $assignedSupervisorsCount++;
+          } else {
+            $assignedOfficersCount++;
+          }
+        }
+        $assignedCaretakersCount = count($data['assigned_caretakers'] ?? []);
+      ?>
       <p style="margin: 0; color: #856404;">
-        This is a temporary draft site. You must assign exactly <strong><?php echo $data['package_request']->number_of_guards ?? 0; ?> officer(s)</strong> before you can approve and create the official site.
-        <?php 
-          $assignedCount = count($data['assigned_officers'] ?? []);
-          $requiredCount = $data['package_request']->number_of_guards ?? 0;
-        ?>
-        Currently assigned: <strong><?php echo $assignedCount; ?>/<?php echo $requiredCount; ?></strong>
+        This is a temporary draft site. Assign requested personnel before approval.
+        Requested: <strong><?php echo $requestedOfficers; ?></strong> officer(s),
+        <strong><?php echo $requestedSupervisors; ?></strong> supervisor(s),
+        <strong><?php echo $requestedCaretakers; ?></strong> caretaker(s).
+        Currently assigned: Officers <strong><?php echo $assignedOfficersCount; ?>/<?php echo $requestedOfficers; ?></strong>,
+        Supervisors <strong><?php echo $assignedSupervisorsCount; ?>/<?php echo $requestedSupervisors; ?></strong>,
+        Caretakers <strong><?php echo $assignedCaretakersCount; ?>/<?php echo $requestedCaretakers; ?></strong>.
       </p>
     </div>
     <?php endif; ?>
@@ -647,7 +680,32 @@
           <p><strong>Phone Number:</strong> <?php echo $site->phone_number?></p>
           <?php if(!empty($data['package_request'])): ?>
           <p><strong>Package:</strong> <?php echo $data['package_request']->package_name?></p>
-          <p><strong>Officers Requested:</strong> <?php echo $data['package_request']->number_of_guards?></p>
+          <p><strong>Requested Personnel:</strong>
+            Officers <?php echo (int)($data['package_request']->number_of_guards ?? $data['package_request']->number_of_officers ?? 0); ?>,
+            Supervisors <?php
+              $profileSupervisorsPrimary = isset($data['package_request']->number_of_supervisors) ? (int)$data['package_request']->number_of_supervisors : 0;
+              $profileSupervisorsFallback = isset($data['package_request']->day_guards) ? (int)$data['package_request']->day_guards : 0;
+              $profileOfficers = (int)($data['package_request']->number_of_guards ?? $data['package_request']->number_of_officers ?? 0);
+              $profileSupervisors = ($profileSupervisorsPrimary > 0 ? $profileSupervisorsPrimary : $profileSupervisorsFallback);
+              $profileCaretakersPrimary = isset($data['package_request']->number_of_caretakers) ? (int)$data['package_request']->number_of_caretakers : 0;
+              $profileCaretakersFallback = isset($data['package_request']->night_guards) ? (int)$data['package_request']->night_guards : 0;
+              $profileCaretakers = ($profileCaretakersPrimary > 0 ? $profileCaretakersPrimary : $profileCaretakersFallback);
+              $profilePackageKey = strtolower(trim((string)($data['package_request']->package_name ?? '')));
+              if ($profileOfficers === 0 && $profileSupervisors === 0 && $profileCaretakers === 0) {
+                if ($profilePackageKey === 'extrasupervisor') {
+                  $profileSupervisors = 1;
+                } elseif ($profilePackageKey === 'extrasecurityofficer') {
+                  $profileOfficers = 1;
+                } elseif ($profilePackageKey === 'extracaretaker') {
+                  $profileCaretakers = 1;
+                }
+              }
+              echo $profileSupervisors;
+            ?>,
+            Caretakers <?php
+              echo $profileCaretakers;
+            ?>
+          </p>
           <p><strong>Service Period:</strong> <?php echo date('d M Y', strtotime($data['package_request']->start_date))?> - <?php echo date('d M Y', strtotime($data['package_request']->end_date))?></p>
           <?php endif; ?>
           <p><strong>Last Updated:</strong> <?php echo time_convert($site->updated_at)?> </p>
@@ -656,49 +714,6 @@
         <!-- RIGHT: Site Statistics Chart -->
         <div style="background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 20px;">
           <canvas id="siteStatsChart" style="max-height: 280px;"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Calendar Section -->
-    <div style="margin: 24px 12px;">
-      <div class="schedule-section">
-        <h2 class="schedule-title">Site Schedule Calendar</h2>
-        <div class="schedule-grid">
-          <div class="calendar-panel">
-            <div class="calendar-toolbar">
-              <button class="nav-btn" id="prevMonth" type="button" aria-label="Previous month">
-                <span class="material-symbols-outlined">chevron_left</span>
-              </button>
-              <div class="month-label" id="currentMonthYear">April 2026</div>
-              <button class="nav-btn" id="nextMonth" type="button" aria-label="Next month">
-                <span class="material-symbols-outlined">chevron_right</span>
-              </button>
-            </div>
-
-            <div class="weekdays">
-              <div class="weekday">MON</div>
-              <div class="weekday">TUE</div>
-              <div class="weekday">WED</div>
-              <div class="weekday">THU</div>
-              <div class="weekday">FRI</div>
-              <div class="weekday">SAT</div>
-              <div class="weekday">SUN</div>
-            </div>
-
-            <div class="calendar-body" id="calendarBody"></div>
-          </div>
-
-          <div class="schedule-panel">
-            <h3>Schedule Details</h3>
-            <div class="selected-date" id="selectedDate">Select a date</div>
-            <hr class="schedule-separator">
-
-            <div id="shiftContent" class="schedule-empty">
-              <span class="material-symbols-outlined">calendar_month</span>
-              <p>Click on a date to view details</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -732,143 +747,44 @@
 
         <!-- Tab Content: Currently Assigned Officers -->
         <div id="assignedContent" class="tab-content" style="padding: 24px;">
-          <?php if(empty($data['assigned_officers']) && empty($data['assigned_caretakers'])): ?>
-            <div style="text-align: center; padding: 60px 20px; color: #666;">
-              <span class="material-symbols-outlined" style="font-size: 64px; color: #ddd;">badge</span>
-              <h3 style="margin: 16px 0 8px; font-size: 18px; font-weight: 600;">No Staff Assigned</h3>
-              <p style="color: #999; margin-bottom: 24px;">This site currently has no officers or caretakers assigned to it.</p>
-              <button class="secondary-btn" onclick="switchTab('available')" style="padding: 10px 24px;">
-                <span class="material-symbols-outlined" style="font-size:18px; vertical-align: middle;">add</span>
-                Assign Staff
-              </button>
-            </div>
-          <?php else: ?>
-            <div class="duty-cards-container" style="margin-top: 0;">
-              <?php if(!empty($data['assigned_officers'])): ?>
-                <?php foreach($data['assigned_officers'] as $officer): ?>
-                  <div class="duty-card" style="background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%); border: 1px solid #e8f5e9; box-shadow: 0 4px 12px rgba(76, 175, 80, 0.08);">
-                    <div class="duty-card-header">
-                      <div style="display: flex; align-items: center; gap: 12px;">
-                        <?php if(!empty($officer->profile_image)): ?>
-                          <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" 
-                               alt="<?php echo htmlspecialchars($officer->name); ?>" 
-                               style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid #c8e6c9;">
-                        <?php else: ?>
-                          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #c8e6c9;">
-                            <span style="font-weight: 700; font-size: 18px; color: #4caf50;"><?php echo strtoupper(substr($officer->name, 0, 1)); ?></span>
-                          </div>
-                        <?php endif; ?>
-                        <div>
-                          <h3 class="duty-location"><?php echo htmlspecialchars($officer->name); ?></h3>
-                          <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                            <?php echo htmlspecialchars($officer->officerID); ?> • 
-                            <?php echo htmlspecialchars($officer->city); ?>
-                          </p>
-                        </div>
-                      </div>
-                      <?php 
-                        $shift = $officer->shift_type ?? 'Full Time';
-                        $badgeColor = match($shift) {
-                          'Day' => '#4caf50',
-                          'Night' => '#2196f3',
-                          'Full Time' => '#9c27b0',
-                          'Flexible' => '#ff9800',
-                          default => '#4caf50'
-                        };
-                      ?>
-                      <span class="duty-status" style="background-color: <?php echo $badgeColor; ?>; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
-                        <?php echo htmlspecialchars($shift); ?>
-                      </span>
-                    </div>
-                    <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
-                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                        <div>
-                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
-                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></p>
-                        </div>
-                        <?php if($officer->assignment_end): ?>
-                          <div>
-                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
-                            <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($officer->assignment_end)); ?></p>
-                          </div>
-                        <?php endif; ?>
-                      </div>
-                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
-                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
-                        <p style="font-weight: 600; font-size: 14px;">
-                          <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
-                          <?php echo htmlspecialchars($officer->phone_number); ?>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="duty-card-footer">
-                      <button class="action-btn" onclick="unassignOfficer(<?php echo $officer->assignment_id; ?>, '<?php echo addslashes($officer->name); ?>')">
-                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
-                        Unassign
-                      </button>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              <?php endif; ?>
+          <div class="schedule-grid">
+            <div class="calendar-panel">
+              <div class="calendar-toolbar">
+                <button class="nav-btn" id="assignedPrevMonth" type="button" aria-label="Previous month">
+                  <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                <div class="month-label" id="assignedCurrentMonthYear">April 2026</div>
+                <button class="nav-btn" id="assignedNextMonth" type="button" aria-label="Next month">
+                  <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+              </div>
 
-              <?php if(!empty($data['assigned_caretakers'])): ?>
-                <?php foreach($data['assigned_caretakers'] as $caretaker): ?>
-                  <div class="duty-card" style="background: linear-gradient(135deg, #ffffff 0%, #f5f9ff 100%); border: 1px solid #e3f2fd; box-shadow: 0 4px 12px rgba(33, 150, 243, 0.08);">
-                    <div class="duty-card-header">
-                      <div style="display: flex; align-items: center; gap: 12px;">
-                        <?php if(!empty($caretaker->profile_image)): ?>
-                          <img src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $caretaker->profile_image; ?>" 
-                               alt="<?php echo htmlspecialchars($caretaker->name); ?>" 
-                               style="width: 48px; height: 48px; border-radius: 12px; object-fit: cover; border: 2px solid #bbdefb;">
-                        <?php else: ?>
-                          <div style="width: 48px; height: 48px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; border: 2px solid #bbdefb;">
-                            <span style="font-weight: 700; font-size: 18px; color: #2196f3;"><?php echo strtoupper(substr($caretaker->name, 0, 1)); ?></span>
-                          </div>
-                        <?php endif; ?>
-                        <div>
-                          <h3 class="duty-location"><?php echo htmlspecialchars($caretaker->name); ?></h3>
-                          <p style="margin: 5px 0; color: #666; font-size: 14px;">
-                            <?php echo htmlspecialchars($caretaker->caretakerID); ?> • 
-                            <?php echo htmlspecialchars($caretaker->city); ?>
-                          </p>
-                        </div>
-                      </div>
-                      <span class="duty-status" style="background-color: #2196f3; color: white; padding: 6px 12px; border-radius: 6px; font-size: 13px; font-weight: 600;">
-                        Caretaker
-                      </span>
-                    </div>
-                    <div style="padding: 15px; background: #fafafa; border-radius: 8px; margin: 12px 0;">
-                      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                        <div>
-                          <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Start Date</p>
-                          <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($caretaker->assignment_start)); ?></p>
-                        </div>
-                        <?php if($caretaker->assignment_end): ?>
-                          <div>
-                            <p style="font-size: 12px; color: #999; margin-bottom: 4px;">End Date</p>
-                            <p style="font-weight: 600; font-size: 14px;"><?php echo date('M d, Y', strtotime($caretaker->assignment_end)); ?></p>
-                          </div>
-                        <?php endif; ?>
-                      </div>
-                      <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0e0e0;">
-                        <p style="font-size: 12px; color: #999; margin-bottom: 4px;">Contact</p>
-                        <p style="font-weight: 600; font-size: 14px;">
-                          <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle; color: #4caf50;">phone</span>
-                          <?php echo htmlspecialchars($caretaker->phone_number); ?>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="duty-card-footer">
-                      <button class="action-btn" onclick="unassignCaretaker(<?php echo $caretaker->assignment_id; ?>, '<?php echo addslashes($caretaker->name); ?>')">
-                        <span class="material-symbols-outlined" style="font-size:16px; vertical-align: middle;">person_remove</span>
-                        Unassign
-                      </button>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              <?php endif; ?>
+              <div class="weekdays">
+                <div class="weekday">MON</div>
+                <div class="weekday">TUE</div>
+                <div class="weekday">WED</div>
+                <div class="weekday">THU</div>
+                <div class="weekday">FRI</div>
+                <div class="weekday">SAT</div>
+                <div class="weekday">SUN</div>
+              </div>
+
+              <div class="calendar-body" id="assignedCalendarBody"></div>
             </div>
-          <?php endif; ?>
+
+            <div class="schedule-panel">
+              <h3>Assigned Staff By Date</h3>
+              <div class="selected-date" id="assignedSelectedDate">Select a date</div>
+              <hr class="schedule-separator">
+              <div style="margin-bottom: 12px;">
+                <span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#e7f7ef;color:#166534;font-size:12px;font-weight:700;">Green dates: Service period</span>
+              </div>
+              <div id="assignedShiftContent" class="schedule-empty">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <p>Click on a date to view assigned officers, supervisors, and caretakers</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Tab Content: Find Officers -->
@@ -1082,9 +998,25 @@
         <?php 
           $isDraftReview = ((int)$data['site']->is_draft === 1);
           if ($isDraftReview) {
-              $requiredOfficers = (int)($data['review_request']->number_of_guards ?? 0);
-              $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
-              $requiredCaretakers = (int)($data['review_request']->night_guards ?? 0);
+              $requiredOfficers = (int)($data['review_request']->number_of_guards ?? $data['review_request']->number_of_officers ?? 0);
+              $requiredSupervisorsPrimary = isset($data['review_request']->number_of_supervisors) ? (int)$data['review_request']->number_of_supervisors : 0;
+              $requiredSupervisorsFallback = isset($data['review_request']->day_guards) ? (int)$data['review_request']->day_guards : 0;
+              $requiredSupervisors = $requiredSupervisorsPrimary > 0 ? $requiredSupervisorsPrimary : $requiredSupervisorsFallback;
+
+              $requiredCaretakersPrimary = isset($data['review_request']->number_of_caretakers) ? (int)$data['review_request']->number_of_caretakers : 0;
+              $requiredCaretakersFallback = isset($data['review_request']->night_guards) ? (int)$data['review_request']->night_guards : 0;
+              $requiredCaretakers = $requiredCaretakersPrimary > 0 ? $requiredCaretakersPrimary : $requiredCaretakersFallback;
+
+              $reviewPackageKey = strtolower(trim((string)($data['review_request']->package_name ?? '')));
+              if ($requiredOfficers === 0 && $requiredSupervisors === 0 && $requiredCaretakers === 0) {
+                if ($reviewPackageKey === 'extrasupervisor') {
+                  $requiredSupervisors = 1;
+                } elseif ($reviewPackageKey === 'extrasecurityofficer') {
+                  $requiredOfficers = 1;
+                } elseif ($reviewPackageKey === 'extracaretaker') {
+                  $requiredCaretakers = 1;
+                }
+              }
 
               $progressOfficers = 0;
               $progressSupervisors = 0;
@@ -1321,6 +1253,18 @@ const siteId = <?php echo $data['site']->id; ?>;
 const siteCity = '<?php echo addslashes($data['site']->city); ?>';
 const siteDistrict = '<?php echo addslashes($data['site']->district ?? ''); ?>';
 const urlRoot = '<?php echo URL_ROOT; ?>';
+const assignedOfficerRows = <?php echo json_encode($data['assigned_officers'] ?? []); ?>;
+const assignedCaretakerRows = <?php echo json_encode($data['assigned_caretakers'] ?? []); ?>;
+<?php
+  $assignedServiceStart = (!empty($data['review_request']) && !empty($data['review_request']->start_date))
+    ? $data['review_request']->start_date
+    : (!empty($data['package_request']) && !empty($data['package_request']->start_date) ? $data['package_request']->start_date : null);
+  $assignedServiceEnd = (!empty($data['review_request']) && !empty($data['review_request']->end_date))
+    ? $data['review_request']->end_date
+    : (!empty($data['package_request']) && !empty($data['package_request']->end_date) ? $data['package_request']->end_date : null);
+?>
+const assignedServiceStartDate = <?php echo json_encode($assignedServiceStart); ?>;
+const assignedServiceEndDate = <?php echo json_encode($assignedServiceEnd); ?>;
 
 // Tab switching functionality
 function switchTab(tab) {
@@ -1374,7 +1318,284 @@ function switchTab(tab) {
 document.addEventListener('DOMContentLoaded', function() {
     switchTab('assigned');
     initializeSiteChart();
+  initializeAssignedScheduleCalendar();
 });
+
+function initializeAssignedScheduleCalendar() {
+  const calendarBody = document.getElementById('assignedCalendarBody');
+  const currentMonthYearSpan = document.getElementById('assignedCurrentMonthYear');
+  const selectedDateSpan = document.getElementById('assignedSelectedDate');
+  const shiftContent = document.getElementById('assignedShiftContent');
+  const prevMonthBtn = document.getElementById('assignedPrevMonth');
+  const nextMonthBtn = document.getElementById('assignedNextMonth');
+
+  if (!calendarBody || !currentMonthYearSpan || !prevMonthBtn || !nextMonthBtn || !shiftContent) {
+    return;
+  }
+
+  const assignedPremiseOfficers = (assignedOfficerRows || []).filter((person) => {
+    return String(person.shift_type || '').toLowerCase() !== 'supervisor';
+  });
+  const assignedSupervisors = (assignedOfficerRows || []).filter((person) => {
+    return String(person.shift_type || '').toLowerCase() === 'supervisor';
+  });
+
+  const parsedServiceStart = parseDateOnly(assignedServiceStartDate);
+  let currentDate = parsedServiceStart || new Date();
+  let currentMonth = currentDate.getMonth();
+  let currentYear = currentDate.getFullYear();
+  let selectedKey = null;
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  function parseDateOnly(dateStr) {
+    if (!dateStr) {
+      return null;
+    }
+    const parts = String(dateStr).split('-');
+    if (parts.length !== 3) {
+      return null;
+    }
+    return new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  }
+
+  function isDateWithinRange(targetKey, startStr, endStr) {
+    const target = parseDateOnly(targetKey);
+    const start = parseDateOnly(startStr);
+    const end = parseDateOnly(endStr);
+
+    if (!target || !start) {
+      return false;
+    }
+
+    if (!end) {
+      return target >= start;
+    }
+
+    return target >= start && target <= end;
+  }
+
+  function isServicePeriodDate(dateKey) {
+    return isDateWithinRange(dateKey, assignedServiceStartDate, assignedServiceEndDate);
+  }
+
+  function filterOnDutyByDate(list, dateKey) {
+    if (!Array.isArray(list) || list.length === 0) {
+      return [];
+    }
+
+    return list.filter((person) => {
+      return isDateWithinRange(dateKey, person.assignment_start, person.assignment_end);
+    });
+  }
+
+  function normalizeShift(shiftType) {
+    const shift = String(shiftType || 'Full Time').trim().toLowerCase();
+    if (shift === 'day') {
+      return { label: 'Day Shift', className: 'shift-day' };
+    }
+    if (shift === 'night') {
+      return { label: 'Night Shift', className: 'shift-night' };
+    }
+    if (shift === 'supervisor') {
+      return { label: 'Supervisor', className: 'shift-full' };
+    }
+    return { label: 'Full Time', className: 'shift-full' };
+  }
+
+  function getShiftBadgeStyle(className) {
+    if (className === 'shift-day') {
+      return 'background:#dcfce7;color:#166534;';
+    }
+    if (className === 'shift-night') {
+      return 'background:#dbeafe;color:#1d4ed8;';
+    }
+    return 'background:#ede9fe;color:#6d28d9;';
+  }
+
+  function dayCell(day, month, year, isOtherMonth, isToday) {
+    const el = document.createElement('div');
+    el.className = 'calendar-day' + (isOtherMonth ? ' other-month' : '') + (isToday ? ' today' : '');
+    el.innerHTML = '<span class="day-number">' + String(day) + '</span>';
+    el.dataset.day = String(day);
+    el.dataset.month = String(month);
+    el.dataset.year = String(year);
+    return el;
+  }
+
+  function renderCalendar(month, year) {
+    calendarBody.innerHTML = '';
+    currentMonthYearSpan.textContent = monthNames[month] + ' ' + year;
+
+    const firstDay = new Date(year, month, 1);
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const mondayStart = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+    const prevMonth = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
+
+    const today = new Date();
+    const todayDay = today.getDate();
+    const todayMonth = today.getMonth();
+    const todayYear = today.getFullYear();
+
+    for (let i = mondayStart - 1; i >= 0; i--) {
+      const day = prevMonthDays - i;
+      calendarBody.appendChild(dayCell(day, prevMonth, prevYear, true, false));
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isToday = day === todayDay && month === todayMonth && year === todayYear;
+      const el = dayCell(day, month, year, false, isToday);
+      const dateKey = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+
+      if (isServicePeriodDate(dateKey)) {
+        el.classList.add('service-period');
+      }
+
+      el.addEventListener('click', () => {
+        selectedKey = dateKey;
+        renderSelectedState();
+        renderScheduleDetails(day, month, year, dateKey);
+      });
+
+      calendarBody.appendChild(el);
+    }
+
+    const totalCells = calendarBody.children.length;
+    const remaining = 42 - totalCells;
+    const nextMonth = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+
+    for (let day = 1; day <= remaining; day++) {
+      calendarBody.appendChild(dayCell(day, nextMonth, nextYear, true, false));
+    }
+
+    renderSelectedState();
+  }
+
+  function renderSelectedState() {
+    const allDays = calendarBody.querySelectorAll('.calendar-day');
+    allDays.forEach((el) => {
+      const key =
+        el.dataset.year + '-' +
+        String(Number(el.dataset.month) + 1).padStart(2, '0') + '-' +
+        String(el.dataset.day).padStart(2, '0');
+      if (selectedKey && key === selectedKey) {
+        el.classList.add('selected');
+      } else {
+        el.classList.remove('selected');
+      }
+    });
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderDutyGroup(title, icon, list, personType) {
+    if (!Array.isArray(list) || list.length === 0) {
+      return '';
+    }
+
+    const items = list.map((person) => {
+      const shift = normalizeShift(person.shift_type);
+      const assignmentId = Number(person.assignment_id || 0);
+      const personName = escapeHtml(person.name || 'Unnamed');
+      let unassignAction = '';
+
+      if (assignmentId > 0) {
+        if (personType === 'caretaker') {
+          unassignAction = `<button class="action-btn" style="padding:6px 10px; font-size:12px;" onclick="unassignCaretaker(${assignmentId}, '${personName.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">person_remove</span> Unassign</button>`;
+        } else {
+          unassignAction = `<button class="action-btn" style="padding:6px 10px; font-size:12px;" onclick="unassignOfficer(${assignmentId}, '${personName.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle;">person_remove</span> Unassign</button>`;
+        }
+      }
+
+      return `
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 12px; border:1px solid #eef0f2; border-radius:8px; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:600; color:#1f2937;">${personName}</div>
+            <div style="font-size:12px; color:#6b7280;">${escapeHtml(person.officerID || person.caretakerID || '')}</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="shift-badge ${shift.className}" style="display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;${getShiftBadgeStyle(shift.className)}">${shift.label}</span>
+            ${unassignAction}
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    return `
+      <div style="margin-bottom: 12px;">
+        <div style="display:flex; align-items:center; gap:6px; font-weight:700; margin-bottom:8px; color:#374151;">
+          <span class="material-symbols-outlined" style="font-size:18px;">${icon}</span>
+          <span>${title} (${list.length})</span>
+        </div>
+        <div>${items}</div>
+      </div>
+    `;
+  }
+
+  function renderScheduleDetails(day, month, year, dateKey) {
+    selectedDateSpan.textContent = monthNames[month] + ' ' + day + ', ' + year;
+
+    const officersOnDuty = filterOnDutyByDate(assignedPremiseOfficers, dateKey);
+    const supervisorsOnDuty = filterOnDutyByDate(assignedSupervisors, dateKey);
+    const caretakersOnDuty = filterOnDutyByDate(assignedCaretakerRows, dateKey);
+
+    const officerGroup = renderDutyGroup('Premise Officers', 'badge', officersOnDuty, 'officer');
+    const supervisorGroup = renderDutyGroup('Supervisors', 'supervisor_account', supervisorsOnDuty, 'supervisor');
+    const caretakerGroup = renderDutyGroup('Caretakers', 'person_check', caretakersOnDuty, 'caretaker');
+
+    if (!officerGroup && !supervisorGroup && !caretakerGroup) {
+      shiftContent.className = 'schedule-empty';
+      shiftContent.innerHTML = `
+        <span class="material-symbols-outlined">event_busy</span>
+        <p>No assigned staff available for ${escapeHtml(dateKey)}</p>
+      `;
+      return;
+    }
+
+    shiftContent.className = '';
+    shiftContent.innerHTML = officerGroup + supervisorGroup + caretakerGroup;
+  }
+
+  prevMonthBtn.addEventListener('click', () => {
+    currentMonth -= 1;
+    if (currentMonth < 0) {
+      currentMonth = 11;
+      currentYear -= 1;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+
+  nextMonthBtn.addEventListener('click', () => {
+    currentMonth += 1;
+    if (currentMonth > 11) {
+      currentMonth = 0;
+      currentYear += 1;
+    }
+    renderCalendar(currentMonth, currentYear);
+  });
+
+  renderCalendar(currentMonth, currentYear);
+
+  const defaultDateObj = parsedServiceStart || new Date();
+  const defaultKey = defaultDateObj.getFullYear() + '-' + String(defaultDateObj.getMonth() + 1).padStart(2, '0') + '-' + String(defaultDateObj.getDate()).padStart(2, '0');
+  selectedKey = defaultKey;
+  renderSelectedState();
+  renderScheduleDetails(defaultDateObj.getDate(), defaultDateObj.getMonth(), defaultDateObj.getFullYear(), defaultKey);
+}
 
 // Approve/Reject Modal Functions
 function openApproveModal() {
@@ -2344,202 +2565,6 @@ function confirmCaretakerAssignment() {
     });
 }
 
-// Calendar functionality
-(function initializeCalendar() {
-    const calendarBody = document.getElementById('calendarBody');
-    const currentMonthYearSpan = document.getElementById('currentMonthYear');
-    const selectedDateSpan = document.getElementById('selectedDate');
-    const shiftContent = document.getElementById('shiftContent');
-    const prevMonthBtn = document.getElementById('prevMonth');
-    const nextMonthBtn = document.getElementById('nextMonth');
-    
-    if (!calendarBody || !currentMonthYearSpan || !prevMonthBtn || !nextMonthBtn) {
-        return; // Calendar elements not found, skip initialization
-    }
-    
-    let currentDate = new Date();
-    let currentMonth = currentDate.getMonth();
-    let currentYear = currentDate.getFullYear();
-    let selectedDateKey = null;
-    const requestStart = <?php echo (!empty($data['package_request']) && !empty($data['package_request']->start_date)) ? ('new Date("' . date('Y-m-d', strtotime($data['package_request']->start_date)) . 'T00:00:00")') : 'null'; ?>;
-    const requestEnd = <?php echo (!empty($data['package_request']) && !empty($data['package_request']->end_date)) ? ('new Date("' . date('Y-m-d', strtotime($data['package_request']->end_date)) . 'T00:00:00")') : 'null'; ?>;
-
-    function formatDateKey(year, month, day) {
-      return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    }
-
-    function isWithinRequestedPeriod(dateObj) {
-      if (!requestStart || !requestEnd) {
-        return false;
-      }
-
-      const compareDate = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
-      const start = new Date(requestStart.getFullYear(), requestStart.getMonth(), requestStart.getDate());
-      const end = new Date(requestEnd.getFullYear(), requestEnd.getMonth(), requestEnd.getDate());
-      return compareDate >= start && compareDate <= end;
-    }
-    
-    // Generate calendar for a specific month and year
-    function generateCalendar(month, year) {
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const daysInMonth = lastDay.getDate();
-        const startingDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1; // Monday = 0
-        
-        const today = new Date();
-        const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
-        const todayDate = today.getDate();
-        
-        calendarBody.innerHTML = '';
-        
-        // Update month/year display
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        currentMonthYearSpan.textContent = `${monthNames[month]} ${year}`;
-        
-        // Add previous month's trailing days
-        const prevMonth = month === 0 ? 11 : month - 1;
-        const prevYear = month === 0 ? year - 1 : year;
-        const prevMonthDays = new Date(prevYear, prevMonth + 1, 0).getDate();
-        
-        for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-          const dayValue = prevMonthDays - i;
-          const dayElement = createDayElement(dayValue, true, prevMonth, prevYear);
-            calendarBody.appendChild(dayElement);
-        }
-        
-        // Add current month's days
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dayElement = createDayElement(day, false, month, year);
-
-            if (isCurrentMonth && day === todayDate) {
-              dayElement.classList.add('today');
-            }
-
-            const dateString = formatDateKey(year, month, day);
-            if (dateString === selectedDateKey) {
-              dayElement.classList.add('selected');
-            }
-            
-            calendarBody.appendChild(dayElement);
-        }
-        
-        // Add next month's leading days
-        const totalCells = calendarBody.children.length;
-        const remainingCells = 42 - totalCells; // 6 rows × 7 days = 42 cells
-        const nextMonth = month === 11 ? 0 : month + 1;
-        const nextYear = month === 11 ? year + 1 : year;
-        
-        for (let day = 1; day <= remainingCells; day++) {
-            const dayElement = createDayElement(day, true, nextMonth, nextYear);
-            calendarBody.appendChild(dayElement);
-        }
-    }
-    
-    // Create a day element
-        function createDayElement(day, isOtherMonth, month, year) {
-        const dayElement = document.createElement('div');
-          dayElement.className = `calendar-day${isOtherMonth ? ' other-month' : ''}`;
-          dayElement.innerHTML = '<span class="day-number">' + String(day) + '</span>';
-          dayElement.dataset.day = String(day);
-          dayElement.dataset.month = String(month);
-          dayElement.dataset.year = String(year);
-
-          const dateObj = new Date(year, month, day);
-          const dateString = formatDateKey(year, month, day);
-
-          if (isWithinRequestedPeriod(dateObj)) {
-            dayElement.classList.add('service-period');
-          }
-
-          if (!isOtherMonth) {
-            dayElement.addEventListener('click', () => selectDate(dateString, day, month, year));
-          }
-        
-        return dayElement;
-    }
-    
-    // Select a date and show details
-        function selectDate(dateString, day, month, year) {
-          selectedDateKey = dateString;
-          const allDays = calendarBody.querySelectorAll('.calendar-day');
-          allDays.forEach(dayEl => dayEl.classList.remove('selected'));
-
-          const clickedElement = Array.from(allDays).find(dayEl => {
-            return !dayEl.classList.contains('other-month') && Number(dayEl.dataset.day) === day;
-          });
-
-          if (clickedElement) {
-            clickedElement.classList.add('selected');
-          }
-        
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
-        selectedDateSpan.textContent = `${monthNames[month]} ${day}, ${year}`;
-        
-          showDateDetails(dateString, new Date(year, month, day));
-    }
-    
-    // Show details for the selected date
-        function showDateDetails(dateString, dateObj) {
-          const isRequestedDate = isWithinRequestedPeriod(dateObj);
-          const requestRangeText = requestStart && requestEnd
-            ? `${requestStart.getFullYear()}-${String(requestStart.getMonth() + 1).padStart(2, '0')}-${String(requestStart.getDate()).padStart(2, '0')} to ${requestEnd.getFullYear()}-${String(requestEnd.getMonth() + 1).padStart(2, '0')}-${String(requestEnd.getDate()).padStart(2, '0')}`
-            : 'Not set';
-
-          const statusBadge = isRequestedDate
-            ? '<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#e7f7ef;color:#166534;font-size:12px;font-weight:700;">Within Requested Period</span>'
-            : '<span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;background:#f3f4f6;color:#4b5563;font-size:12px;font-weight:700;">Outside Requested Period</span>';
-
-        shiftContent.className = '';
-        shiftContent.innerHTML = `
-            <div style="padding: 16px;">
-              <div style="background: white; border-radius: 8px; padding: 16px; border-left: 4px solid ${isRequestedDate ? '#41a863' : 'var(--accent)'};">
-                    <h4 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #333;">Selected Date</h4>
-                    <p style="margin: 0; font-size: 13px; color: #666; line-height: 1.6;">
-                        <strong>Date:</strong> ${dateString}
-                    </p>
-                <p style="margin: 8px 0 0 0; font-size: 13px; color: #666; line-height: 1.6;">
-                  <strong>Requested Period:</strong> ${requestRangeText}
-                </p>
-                <div style="margin-top: 10px;">
-                  ${statusBadge}
-                </div>
-                <p style="margin: 10px 0 0 0; font-size: 13px; color: #999;">
-                  Officer scheduling can be planned within the highlighted service period.
-                    </p>
-                </div>
-            </div>
-        `;
-    }
-    
-    // Navigation: Previous month
-    prevMonthBtn.addEventListener('click', () => {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        generateCalendar(currentMonth, currentYear);
-    });
-    
-    // Navigation: Next month
-    nextMonthBtn.addEventListener('click', () => {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        generateCalendar(currentMonth, currentYear);
-    });
-    
-    // Initialize calendar with current month
-    generateCalendar(currentMonth, currentYear);
-})();
 </script>
 <?php require_once APP_ROOT . '/views/components/showNotification.php'; ?>
 <script>
