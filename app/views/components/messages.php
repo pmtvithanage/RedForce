@@ -25,9 +25,13 @@
             <div class="avatar">
               <?php if (!empty($conv->profile_image)): ?>
                 <?php 
-                  $imagePath = (strtolower($conv->role) === 'client') 
-                    ? URL_ROOT . '/uploads/clientLogos/' . $conv->profile_image 
-                    : URL_ROOT . '/uploads/applicantPhotos/' . $conv->profile_image;
+                  $imagePath = (strtolower($conv->name) === 'system administrator') 
+                    ? URL_ROOT . '/public/img/logo.png' 
+                    : ((strtolower($conv->role) === 'client') 
+                      ? URL_ROOT . '/uploads/clientLogos/' . $conv->profile_image 
+                      : ((strtolower($conv->role) === 'admin') 
+                        ? URL_ROOT . '/uploads/image/' . $conv->profile_image 
+                        : URL_ROOT . '/uploads/applicantPhotos/' . $conv->profile_image));
                 ?>
                 <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($conv->name); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
               <?php else: ?>
@@ -70,9 +74,13 @@
             <div class="avatar">
               <?php if (!empty($user->profile_image)): ?>
                 <?php 
-                  $imagePath = (strtolower($user->role) === 'client') 
-                    ? URL_ROOT . '/uploads/clientLogos/' . $user->profile_image 
-                    : URL_ROOT . '/uploads/applicantPhotos/' . $user->profile_image;
+                  $imagePath = (strtolower($user->name) === 'system administrator') 
+                    ? URL_ROOT . '/public/img/logo.png' 
+                    : ((strtolower($user->role) === 'client') 
+                      ? URL_ROOT . '/uploads/clientLogos/' . $user->profile_image 
+                      : ((strtolower($user->role) === 'admin') 
+                        ? URL_ROOT . '/uploads/image/' . $user->profile_image 
+                        : URL_ROOT . '/uploads/applicantPhotos/' . $user->profile_image));
                 ?>
                 <img src="<?php echo $imagePath; ?>" alt="<?php echo htmlspecialchars($user->name); ?>" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
               <?php else: ?>

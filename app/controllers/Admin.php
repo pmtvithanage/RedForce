@@ -4112,7 +4112,7 @@ public function rejectLeaveRequest($id) {
         $officerId = $input['officer_id'] ?? null;
         $shiftType = $input['shift_type'] ?? 'Full Time';
         $assignmentEnd = $input['assignment_end'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
 
         if (!$siteId || !$officerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);

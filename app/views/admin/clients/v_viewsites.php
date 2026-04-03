@@ -1733,7 +1733,7 @@ function assignOfficer(officerId, shiftType, officerName) {
     .catch(error => {
         console.error('Error:', error);
         progressModal.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 1500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
                 <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
                     <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
                 </div>
