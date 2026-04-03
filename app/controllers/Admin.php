@@ -4398,9 +4398,7 @@ public function rejectLeaveRequest($id) {
             return;
         }
 
-        $assignmentEnd = $input['assignment_end'] ?? null;
-        
-        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy, $assignmentEnd);
+        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
         
         // Send notification to supervisor if assignment was successful
         if ($result['success']) {
@@ -4466,9 +4464,7 @@ public function rejectLeaveRequest($id) {
             return;
         }
 
-        $assignmentEnd = $input['assignment_end'] ?? null;
-        
-        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy, $assignmentEnd);
+        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
         
         // Send notification to caretaker if assignment was successful
         if ($result['success']) {
