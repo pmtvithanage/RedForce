@@ -1307,13 +1307,30 @@ class Admin extends Controller {
 
         if ($reviewRequest && $site->is_draft == 0) {
             $added = $this->adminModel->getAddedAssignmentsSince($site_id, $reviewRequest->submitted_date);
+
+            $requiredOfficers = (int)($reviewRequest->number_of_guards ?? 0);
+            $requiredSupervisors = (int)($reviewRequest->day_guards ?? 0);
+            $requiredCaretakers = (int)($reviewRequest->night_guards ?? 0);
+
+            // Legacy add-on request rows may persist as 0/0/0 counts; infer required role from package name.
+            if ($requiredOfficers === 0 && $requiredSupervisors === 0 && $requiredCaretakers === 0) {
+                $reviewPackageKey = strtolower(trim((string)($reviewRequest->package_name ?? '')));
+                if ($reviewPackageKey === 'extrasupervisor') {
+                    $requiredSupervisors = 1;
+                } elseif ($reviewPackageKey === 'extrasecurityofficer') {
+                    $requiredOfficers = 1;
+                } elseif ($reviewPackageKey === 'extracaretaker') {
+                    $requiredCaretakers = 1;
+                }
+            }
+
             $reviewProgress = [
                 'added_officers' => (int)($added->added_officers ?? 0),
                 'added_supervisors' => (int)($added->added_supervisors ?? 0),
                 'added_caretakers' => (int)($added->added_caretakers ?? 0),
-                'required_officers' => (int)($reviewRequest->number_of_guards ?? 0),
-                'required_supervisors' => (int)($reviewRequest->day_guards ?? 0),
-                'required_caretakers' => (int)($reviewRequest->night_guards ?? 0),
+                'required_officers' => $requiredOfficers,
+                'required_supervisors' => $requiredSupervisors,
+                'required_caretakers' => $requiredCaretakers,
             ];
         }
 
@@ -3974,6 +3991,80 @@ public function rejectLeaveRequest($id) {
     }
 
     /**
+     * Resolve requested officers/supervisors/caretakers from a request row.
+     */
+    private function resolveRequestedPersonnelCounts($request) {
+        $requiredOfficers = (int)($request->number_of_guards ?? 0);
+        $requiredSupervisors = (int)($request->day_guards ?? 0);
+        $requiredCaretakers = (int)($request->night_guards ?? 0);
+
+        // Legacy add-on requests may persist as 0/0/0; infer from known package names.
+        if ($requiredOfficers === 0 && $requiredSupervisors === 0 && $requiredCaretakers === 0) {
+            $packageKey = strtolower(trim((string)($request->package_name ?? '')));
+            if ($packageKey === 'extrasupervisor') {
+                $requiredSupervisors = 1;
+            } elseif ($packageKey === 'extrasecurityofficer') {
+                $requiredOfficers = 1;
+            } elseif ($packageKey === 'extracaretaker') {
+                $requiredCaretakers = 1;
+            }
+        }
+
+        return [
+            'officers' => $requiredOfficers,
+            'supervisors' => $requiredSupervisors,
+            'caretakers' => $requiredCaretakers,
+        ];
+    }
+
+    /**
+     * Get assignment quota and current progress for the active request on a site.
+     * Returns null when there is no active review request (no quota enforcement needed).
+     */
+    private function getSiteAssignmentQuota($siteId) {
+        $site = $this->adminModel->getSiteById($siteId);
+        if (!$site) {
+            return null;
+        }
+
+        if ((int)$site->is_draft === 1) {
+            $request = $this->adminModel->getPackageRequestBySiteId($siteId);
+            if (!$request) {
+                return null;
+            }
+
+            $required = $this->resolveRequestedPersonnelCounts($request);
+
+            return [
+                'required' => $required,
+                'current' => [
+                    'officers' => (int)$this->adminModel->getAssignedRegularOfficerCount($siteId),
+                    'supervisors' => (int)$this->adminModel->getAssignedSupervisorCount($siteId),
+                    'caretakers' => (int)count($this->adminModel->getAssignedCaretakers($siteId) ?? []),
+                ],
+            ];
+        }
+
+        // Existing site update request flow.
+        $request = $this->adminModel->getPendingPackageRequestByLinkedSite($siteId);
+        if (!$request) {
+            return null;
+        }
+
+        $required = $this->resolveRequestedPersonnelCounts($request);
+        $added = $this->adminModel->getAddedAssignmentsSince($siteId, $request->submitted_date);
+
+        return [
+            'required' => $required,
+            'current' => [
+                'officers' => (int)($added->added_officers ?? 0),
+                'supervisors' => (int)($added->added_supervisors ?? 0),
+                'caretakers' => (int)($added->added_caretakers ?? 0),
+            ],
+        ];
+    }
+
+    /**
      * Validate and process permissions array
      * @param array $permissions - Array of permission values from form
      * @return array - Validated permissions array
@@ -4116,6 +4207,12 @@ public function rejectLeaveRequest($id) {
 
         if (!$siteId || !$officerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $quota = $this->getSiteAssignmentQuota($siteId);
+        if ($quota && $quota['current']['officers'] >= $quota['required']['officers']) {
+            echo json_encode(['success' => false, 'message' => 'Requested officer quota already reached']);
             return;
         }
 
@@ -4391,10 +4488,22 @@ public function rejectLeaveRequest($id) {
         
         $siteId = $input['site_id'] ?? null;
         $supervisorId = $input['supervisor_id'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
+
+        // assigned_by expects numeric Users.id; resolve it from session safely.
+        $assignedBy = $_SESSION['user_id'] ?? null;
+        if (!$assignedBy && !empty($_SESSION['user_userID'])) {
+            $adminUser = $this->adminModel->getAdmin($_SESSION['user_userID']);
+            $assignedBy = $adminUser->id ?? null;
+        }
 
         if (!$siteId || !$supervisorId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $quota = $this->getSiteAssignmentQuota($siteId);
+        if ($quota && $quota['current']['supervisors'] >= $quota['required']['supervisors']) {
+            echo json_encode(['success' => false, 'message' => 'Requested supervisor quota already reached']);
             return;
         }
 
@@ -4457,10 +4566,22 @@ public function rejectLeaveRequest($id) {
         
         $siteId = $input['site_id'] ?? null;
         $caretakerId = $input['caretaker_id'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
+
+        // assigned_by expects numeric Users.id; resolve it from session safely.
+        $assignedBy = $_SESSION['user_id'] ?? null;
+        if (!$assignedBy && !empty($_SESSION['user_userID'])) {
+            $adminUser = $this->adminModel->getAdmin($_SESSION['user_userID']);
+            $assignedBy = $adminUser->id ?? null;
+        }
 
         if (!$siteId || !$caretakerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+            return;
+        }
+
+        $quota = $this->getSiteAssignmentQuota($siteId);
+        if ($quota && $quota['current']['caretakers'] >= $quota['required']['caretakers']) {
+            echo json_encode(['success' => false, 'message' => 'Requested caretaker quota already reached']);
             return;
         }
 
