@@ -66,7 +66,35 @@
                         
                         //Create session and redirect to appropriate dashboard
                         $this->createUserSession($loggedInUser);
-                        $this->redirectToDashboard();
+                        
+                        // Check if user logged in with default password '0000'
+                        if ($password === '0000') {
+                            // Redirect to edit profile with password change prompt based on role
+                            $role = strtolower($loggedInUser->role);
+                            switch($role) {
+                                case 'admin':
+                                    redirect('admin/editProfile?show=password');
+                                    break;
+                                case 'supervisor':
+                                    redirect('supervisor/editProfile?show=password');
+                                    break;
+                                case 'premise officer':
+                                    redirect('premiseOfficer/editProfile?show=password');
+                                    break;
+                                case 'mobile rider':
+                                    redirect('MobileRider/editProfile?show=password');
+                                    break;
+                                case 'caretaker':
+                                    redirect('caretaker/editProfile?show=password');
+                                    break;
+                                case 'client':
+                                default:
+                                    redirect('client/editProfile?show=password');
+                                    break;
+                            }
+                        } else {
+                            $this->redirectToDashboard();
+                        }
                         
                     } else {
                         $data['password_err'] = 'Password incorrect';
