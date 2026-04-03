@@ -57,7 +57,7 @@ class Admin extends Controller {
 
     public function notifications() {
         // TODO: Fetch notifications from database
-        $notifications = $this->notificationModel->getNotifications($_SESSION['user_userID']);
+        $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
         
         $data = [
             'title' => 'Notifications',
@@ -98,17 +98,17 @@ class Admin extends Controller {
     }
 
     public function messages(){
-        $user_userID = $_SESSION['user_userID'] ?? null;
+        $user_id = $_SESSION['user_id'] ?? null;
         
-        if (!$user_userID) {
+        if (!$user_id) {
             redirect('admin/dashboard');
             return;
         }
         
-        $conversations = $this->messageModel->getConversations($user_userID);
+        $conversations = $this->messageModel->getConversations($user_id);
         // Admin can message all users
-        $all_users = $this->messageModel->getAllUsers($user_userID);
-        $unread_count = $this->messageModel->getUnreadCount($user_userID);
+        $all_users = $this->messageModel->getAllUsers($user_id);
+        $unread_count = $this->messageModel->getUnreadCount($user_id);
         
         $data = [
             'title' => 'Dashboard',
@@ -127,7 +127,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -151,7 +151,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             
             if (!$sender_id || !$recipient_id) {
@@ -172,7 +172,7 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $sender_id = $_SESSION['user_userID'] ?? null;
+            $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             $message = trim($_POST['message'] ?? '');
             
@@ -202,14 +202,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $users = $this->messageModel->getAllUsers($user_userID);
+            $users = $this->messageModel->getAllUsers($user_id);
             echo json_encode(['status' => 'success', 'users' => $users]);
         }
     }
@@ -220,14 +220,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $conversations = $this->messageModel->getConversations($user_userID);
+            $conversations = $this->messageModel->getConversations($user_id);
             echo json_encode(['status' => 'success', 'conversations' => $conversations]);
         }
     }
@@ -238,15 +238,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $search_term = trim($_POST['search'] ?? '');
             
-            if (!$user_userID || empty($search_term)) {
+            if (!$user_id || empty($search_term)) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            $results = $this->messageModel->searchConversations($user_userID, $search_term);
+            $results = $this->messageModel->searchConversations($user_id, $search_term);
             echo json_encode(['status' => 'success', 'results' => $results]);
         }
     }
@@ -257,15 +257,15 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             
-            if (!$user_userID || !$message_id) {
+            if (!$user_id || !$message_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
             
-            if ($this->messageModel->deleteMessage($message_id, $user_userID)) {
+            if ($this->messageModel->deleteMessage($message_id, $user_id)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error']);
@@ -279,14 +279,14 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_POST['user_userID'] ?? null;
+            $user_id = $_POST['user_id'] ?? null;
             
-            if (!$user_userID) {
+            if (!$user_id) {
                 echo json_encode(['status' => 'error', 'message' => 'User ID required']);
                 return;
             }
             
-            $userStatus = $this->userModel->getUserOnlineStatus($user_userID);
+            $userStatus = $this->userModel->getUserOnlineStatus($user_id);
             
             if ($userStatus) {
                 echo json_encode([
@@ -310,16 +310,16 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
             
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             $message = $_POST['message'] ?? null;
             
-            if (!$user_userID || !$message_id || !$message) {
+            if (!$user_id || !$message_id || !$message) {
                 echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
                 return;
             }
             
-            if ($this->messageModel->updateMessage($message_id, $user_userID, $message)) {
+            if ($this->messageModel->updateMessage($message_id, $user_id, $message)) {
                 echo json_encode(['status' => 'success']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update message']);
@@ -331,10 +331,10 @@ class Admin extends Controller {
     public function updateLastSeen()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if ($user_userID) {
-                $this->userModel->updateLastSeen($user_userID);
+            if ($user_id) {
+                $this->userModel->updateLastSeen($user_id);
             }
         }
     }
@@ -343,10 +343,10 @@ class Admin extends Controller {
     public function setOffline()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $user_userID = $_SESSION['user_userID'] ?? null;
+            $user_id = $_SESSION['user_id'] ?? null;
             
-            if ($user_userID) {
-                $this->userModel->setUserOffline($user_userID);
+            if ($user_id) {
+                $this->userModel->setUserOffline($user_id);
             }
         }
     }
@@ -385,6 +385,7 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function officers() {
+
         $officers = $this->adminModel->getAllPO();
         $data = [
             'title' => 'Officers',
@@ -394,6 +395,7 @@ class Admin extends Controller {
         $this->view('admin/officers/v_officers', $data);
     }
     public function mobileriders() {
+        
         $officers = $this->adminModel->getAllMR();
         $data = [
             'title' => 'Officers',
@@ -403,6 +405,7 @@ class Admin extends Controller {
         $this->view('admin/officers/v_mobileriders', $data);
     }
     public function caretakers() {
+        
         $officers = $this->adminModel->getAllCT();
         $data = [
             'title' => 'Officers',
@@ -413,6 +416,12 @@ class Admin extends Controller {
     }
 
     public function officer_profile($id){
+                // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
+            flash('msg', 'You do not have permission to manage officers', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         $officer = $this->adminModel->getPOById($id);
         $data = [
             'title' => 'Officers',
@@ -422,6 +431,12 @@ class Admin extends Controller {
         $this->view('admin/officers/v_officer_profile', $data);
     }
     public function mobile_rider_profile($id){
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
+            flash('msg', 'You do not have permission to manage mobile riders', 'alert-danger');
+            redirect('admin/mobileriders');
+        }
+
         $officer = $this->adminModel->getMRById($id);
         $data = [
             'title' => 'Officers',
@@ -431,6 +446,12 @@ class Admin extends Controller {
         $this->view('admin/officers/v_mobilerider_profile', $data);
     }
     public function care_taker_profile($id){
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
+            flash('msg', 'You do not have permission to manage caretakers', 'alert-danger');
+            redirect('admin/caretakers');
+        }
+
         $officer = $this->adminModel->getCTById($id);
         $data = [
             'title' => 'Officers',
@@ -502,6 +523,12 @@ class Admin extends Controller {
     }
 
     public function porecruitment() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to manage officer recruitment', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         $exists = $this->adminModel->getJobApplication('po');
         if($exists) {
             $this->edit_job_application($exists,'po');
@@ -511,6 +538,12 @@ class Admin extends Controller {
         }
     }
     public function mrrecruitment() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to manage mobile rider recruitment', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         $exists = $this->adminModel->getJobApplication('mr');
         if($exists) {
             $this->edit_job_application($exists,'mr');
@@ -520,6 +553,12 @@ class Admin extends Controller {
         }
     }
     public function ctrecruitment() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to manage caretaker recruitment', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         $exists = $this->adminModel->getJobApplication('ct');
         if($exists) {
             $this->edit_job_application($exists,'ct');
@@ -705,6 +744,12 @@ class Admin extends Controller {
 
 
     public function pending_officer_applications($type) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to view pending officer applications', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         if($type == 'po' || $type == 'ct' || $type == 'mr') {
             $officer = $this->homeModel->getPendingOfficerApplications($type);
         } else {
@@ -718,7 +763,12 @@ class Admin extends Controller {
         $this->view('admin/officers/v_pending_officer_applications', $data);
     }
     public function accepted_officer_applications($type) {
-       
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to view accepted officer applications', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         if($type == 'po' || $type == 'ct' || $type == 'mr') {
             $officer = $this->homeModel->getApprovedOfficerApplications($type);
         } else {
@@ -732,6 +782,12 @@ class Admin extends Controller {
         $this->view('admin/officers/v_accepted_officer_applications', $data);
     }
     public function rejected_officer_applications($type) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to view rejected officer applications', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         if($type == 'po' || $type == 'ct' || $type == 'mr') {
             $officer = $this->homeModel->getRejectedOfficerApplications($type);
         } else {
@@ -745,6 +801,12 @@ class Admin extends Controller {
         $this->view('admin/officers/v_rejected_officer_applications', $data);
     }
     public function accept_officer_applications($id,$role) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to accept officer applications', 'alert-danger');
+            redirect('admin/officers');
+        }
+        
         if($role == 'po') $role_name = "Premise Officer";
         elseif($role == 'mr') $role_name = "Mobile Rider";
         elseif($role == 'ct') $role_name = "Care Taker";
@@ -815,6 +877,12 @@ class Admin extends Controller {
         }
     }
     public function reject_officer_applications($id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to reject officer applications', 'alert-danger');
+            redirect('admin/pending_officer_applications/all');
+        }
+        
         if ($this->adminModel->rejectOfficerApplication($id)) {
             // Add activity log
             $title = "Officer Application Rejected";
@@ -842,6 +910,12 @@ class Admin extends Controller {
         }
     }
     public function deleteOfficerApplication($id){
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_officers')) {
+            flash('msg', 'You do not have permission to delete officer applications', 'alert-danger');
+            redirect('admin/rejected_officer_applications/all');
+        }
+        
         if ($this->adminModel->deleteOfficerApplication($id)) {
             // Add activity log
             $title = "Officer Application Deleted";
@@ -861,6 +935,7 @@ class Admin extends Controller {
 // ======================================================================== //
 
     public function clients() {
+      
         // Get pending service requests count for notification badge
         $requestStats = $this->adminModel->getServiceRequestStats();
 
@@ -888,6 +963,12 @@ class Admin extends Controller {
     }
 
     public function addclients(){
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_clients')) {
+            flash('msg', 'You do not have permission to add clients', 'alert-danger');
+            redirect('admin/clients');
+        }
+        
         $clients = $this->homeModel->getPendingRequest();
         $data = [
             'title' => 'Clients',
@@ -898,6 +979,12 @@ class Admin extends Controller {
         $this->view('admin/clients/v_requests-pending', $data);
     }
     public function acceptClient($clientId) {
+    // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'add_clients')) {
+        flash('msg', 'You do not have permission to accept client requests', 'alert-danger');
+        redirect('admin/clients');
+    }
+    
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
     $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
     
@@ -958,6 +1045,12 @@ class Admin extends Controller {
     }
 }
     public function rejectClient($clientId){
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'add_clients')) {
+            flash('msg', 'You do not have permission to reject client requests', 'alert-danger');
+            redirect('admin/clients');
+        }
+        
         if($this->adminModel->rejectClient($clientId)){
             // Add activity log
             $title = "Client Rejected";
@@ -1207,6 +1300,22 @@ class Admin extends Controller {
         }
         $assignedOfficers = $this->adminModel->getAssignedOfficers($site_id);              
         $packageRequest = $this->adminModel->getPackageRequestBySiteId($site_id);
+        $pendingExistingRequest = $this->adminModel->getPendingPackageRequestByLinkedSite($site_id);
+
+        $reviewRequest = ($site->is_draft == 1) ? $packageRequest : $pendingExistingRequest;
+        $reviewProgress = null;
+
+        if ($reviewRequest && $site->is_draft == 0) {
+            $added = $this->adminModel->getAddedAssignmentsSince($site_id, $reviewRequest->submitted_date);
+            $reviewProgress = [
+                'added_officers' => (int)($added->added_officers ?? 0),
+                'added_supervisors' => (int)($added->added_supervisors ?? 0),
+                'added_caretakers' => (int)($added->added_caretakers ?? 0),
+                'required_officers' => (int)($reviewRequest->number_of_guards ?? 0),
+                'required_supervisors' => (int)($reviewRequest->day_guards ?? 0),
+                'required_caretakers' => (int)($reviewRequest->night_guards ?? 0),
+            ];
+        }
 
         $assignedCaretakers = $this->adminModel->getAssignedCaretakers($site_id);
         
@@ -1217,6 +1326,8 @@ class Admin extends Controller {
             'client' => $clients,
             'assigned_officers' => $assignedOfficers,
             'package_request' => $packageRequest,
+            'review_request' => $reviewRequest,
+            'review_progress' => $reviewProgress,
             'assigned_caretakers' => $assignedCaretakers
         ];
         $this->view('admin/clients/v_viewsites', $data);
@@ -1397,6 +1508,10 @@ public function editSite($site_id){
     }
 
     public function clientRequests() {
+        if (!$this->hasPermission($_SESSION['user_userID'], 'accept_client_requests')) {
+        flash('msg', 'You do not have permission to accept client requests', 'alert-danger');
+        redirect('admin/clients');
+    }
         // Handle approve/reject actions
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
@@ -1507,15 +1622,32 @@ public function editSite($site_id){
         $packageRequest = $this->adminModel->getPackageRequestById($requestId);
         
         if (!$packageRequest) {
-            flash('request_error', 'Package request not found');
+            flash('request_error', 'Package request not found or payment is not completed yet');
             redirect('admin/clientRequests');
             return;
         }
 
-        // Check if draft site already exists
+        // Check if draft/existing site link already exists
         if ($packageRequest->draft_site_id) {
-            // Draft already exists, redirect to it
+            $linkedSite = $this->adminModel->getSiteById($packageRequest->draft_site_id);
+
+            // Existing-site customize requests should be reviewed on the existing site page,
+            // where admin assigns requested staff before approval/rejection.
+            if ($linkedSite && (int)$linkedSite->is_draft === 0) {
+                flash('site_success', 'Review existing-site request: assign required officers/supervisors/caretakers, then approve or reject this request.');
+            }
+
             redirect('admin/viewsites/' . $packageRequest->draft_site_id);
+            return;
+        }
+
+        // Fallback for older existing-site requests that were saved without a site link.
+        // If a matching official site exists for this client + site name, treat it as existing-site request.
+        $existingSiteId = $this->adminModel->findOfficialSiteIdByClientAndName($packageRequest->client_id, $packageRequest->site_name);
+        if ($existingSiteId) {
+            $this->adminModel->linkDraftSiteToRequest($requestId, $existingSiteId);
+            flash('site_success', 'Existing site matched. Assign requested staff, then approve or reject this request from the site review panel.');
+            redirect('admin/viewsites/' . $existingSiteId);
             return;
         }
 
@@ -1534,6 +1666,69 @@ public function editSite($site_id){
         // Redirect to viewsites page for officer assignment
         flash('site_success', 'Draft site created. Assign exactly ' . $packageRequest->number_of_guards . ' officer(s) to continue.');
         redirect('admin/viewsites/' . $draftSiteId);
+    }
+
+    public function approveExistingSiteRequest($requestId) {
+        $packageRequest = $this->adminModel->getPackageRequestById($requestId);
+        if (!$packageRequest || $packageRequest->status !== 'Pending') {
+            flash('request_error', 'Pending package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $siteId = (int)($packageRequest->draft_site_id ?? 0);
+        $site = $this->adminModel->getSiteById($siteId);
+
+        if (!$site || (int)$site->is_draft !== 0) {
+            flash('request_error', 'This action is only for existing-site requests');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $added = $this->adminModel->getAddedAssignmentsSince($siteId, $packageRequest->submitted_date);
+        $addedOfficers = (int)($added->added_officers ?? 0);
+        $addedSupervisors = (int)($added->added_supervisors ?? 0);
+        $addedCaretakers = (int)($added->added_caretakers ?? 0);
+
+        $requiredOfficers = (int)($packageRequest->number_of_guards ?? 0);
+        $requiredSupervisors = (int)($packageRequest->day_guards ?? 0);
+        $requiredCaretakers = (int)($packageRequest->night_guards ?? 0);
+
+        if ($addedOfficers < $requiredOfficers || $addedSupervisors < $requiredSupervisors || $addedCaretakers < $requiredCaretakers) {
+            flash(
+                'site_error',
+                'Assignment requirements not met yet. Added after request: Officers ' . $addedOfficers . '/' . $requiredOfficers .
+                ', Supervisors ' . $addedSupervisors . '/' . $requiredSupervisors .
+                ', Caretakers ' . $addedCaretakers . '/' . $requiredCaretakers
+            );
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+        flash('request_success', 'Existing-site package request approved successfully');
+        redirect('admin/clientRequests');
+    }
+
+    public function rejectExistingSiteRequest($requestId) {
+        $packageRequest = $this->adminModel->getPackageRequestById($requestId);
+        if (!$packageRequest || $packageRequest->status !== 'Pending') {
+            flash('request_error', 'Pending package request not found');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $siteId = (int)($packageRequest->draft_site_id ?? 0);
+        $site = $this->adminModel->getSiteById($siteId);
+        if (!$site || (int)$site->is_draft !== 0) {
+            flash('request_error', 'This action is only for existing-site requests');
+            redirect('admin/clientRequests');
+            return;
+        }
+
+        $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
+        flash('request_success', 'Existing-site package request rejected');
+        redirect('admin/clientRequests');
     }
 
     // Approve draft site - finalize and approve package request
@@ -1555,12 +1750,22 @@ public function editSite($site_id){
             return;
         }
 
-        // Verify correct number of officers assigned
-        $assignedCount = $this->adminModel->getAssignedOfficerCount($siteId);
-        $requiredCount = $packageRequest->number_of_guards;
+        // Verify correct number of regular officers assigned (excluding supervisors).
+        $assignedOfficers = $this->adminModel->getAssignedRegularOfficerCount($siteId);
+        $requiredOfficers = (int)$packageRequest->number_of_guards;
 
-        if ($assignedCount != $requiredCount) {
-            flash('site_error', 'You must assign exactly ' . $requiredCount . ' officer(s). Currently assigned: ' . $assignedCount);
+        if ($assignedOfficers != $requiredOfficers) {
+            flash('site_error', 'You must assign exactly ' . $requiredOfficers . ' officer(s). Currently assigned: ' . $assignedOfficers);
+            redirect('admin/viewsites/' . $siteId);
+            return;
+        }
+
+        // Policy: minimum 1 supervisor per 5 officers (rounded up).
+        $requiredSupervisors = $requiredOfficers > 0 ? (int)ceil($requiredOfficers / 5) : 0;
+        $assignedSupervisors = $this->adminModel->getAssignedSupervisorCount($siteId);
+
+        if ($assignedSupervisors < $requiredSupervisors) {
+            flash('site_error', 'Supervisor requirement not met. Required: ' . $requiredSupervisors . ', currently assigned: ' . $assignedSupervisors . '.');
             redirect('admin/viewsites/' . $siteId);
             return;
         }
@@ -2034,22 +2239,11 @@ public function editSite($site_id){
     }
 
 // ======================================================================== //
-// =======================      Admin Scheduling       ====================== //
-// ======================================================================== //
-
-    public function scheduling() {
-        $data = [
-            'title' => 'Scheduling',
-            'pageTitle' => 'Manage Scheduling'
-        ];
-        $this->view('admin/v_scheduling', $data);
-    }
-
-// ======================================================================== //
 // =======================      Admin Routes       ====================== //
 // ======================================================================== //
 
     public function routes() {
+      
         $routes = $this->adminModel->getAllRoutes();
         $allSites = $this->adminModel->getAllSites();
         $allMobileRiders = $this->adminModel->getAllMR();
@@ -2087,6 +2281,12 @@ public function editSite($site_id){
     }
 
     public function addroute() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_routes')) {
+            flash('msg', 'You do not have permission to create routes', 'alert-danger');
+            redirect('admin/routes');
+        }
+        
         if($_SERVER['REQUEST_METHOD']=='POST'){
             $data = [
                 'route_name' => trim($_POST['route_name']),
@@ -2143,6 +2343,12 @@ public function editSite($site_id){
     }
 
     public function viewroute($id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_routes')) {
+            flash('msg', 'You do not have permission to view routes', 'alert-danger');
+            redirect('admin/routes');
+        }
+        
         $route = $this->adminModel->getRouteById($id);
         $routeSites = $this->adminModel->getRouteSites($id);
         
@@ -2172,6 +2378,12 @@ public function editSite($site_id){
     }
 
     public function updateRouteLocation() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_routes')) {
+            echo json_encode(['success' => false, 'message' => 'You do not have permission to update routes']);
+            return;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $routeId = trim($_POST['route_id']);
             $location = trim($_POST['location']);
@@ -2219,6 +2431,12 @@ public function editSite($site_id){
     }
 
     public function deleteRoute() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_routes')) {
+            echo json_encode(['success' => false, 'message' => 'You do not have permission to delete routes', 'alert-danger']);
+            return;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $routeId = trim($_POST['route_id']);
 
@@ -2337,21 +2555,16 @@ public function editSite($site_id){
     }
 
 // ======================================================================== //
-// =======================      Admin Salary       ====================== //
-// ======================================================================== //
-
-    public function salary() {
-        $data = [
-            'title' => 'Salary',
-            'pageTitle' => 'Manage Salary'];
-        $this->view('admin/v_salary', $data);
-    }
-
-// ======================================================================== //
 // =======================      Admin client payments       ================ //
 // ======================================================================== //
 
     public function clients_payments() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'view_payments')) {
+            flash('msg', 'You do not have permission to view client payments', 'alert-danger');
+            redirect('admin/dashboard');
+        }
+        
         // Load payment model
         $paymentModel = $this->model('M_payment');
         
@@ -2375,6 +2588,12 @@ public function editSite($site_id){
      * View payment details
      */
     public function viewPaymentDetails($payment_id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'view_payments')) {
+            flash('payment_error', 'You do not have permission to view payment details', 'alert-danger');
+            redirect('admin/dashboard');
+        }
+        
         $payment = $this->adminModel->getPaymentDetailsById($payment_id);
         
         if (!$payment) {
@@ -2395,6 +2614,12 @@ public function editSite($site_id){
      * Edit payment
      */
     public function editPayment($payment_id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'view_payments')) {
+            flash('msg', 'You do not have permission to edit payments', 'alert-danger');
+            redirect('admin/clients_payments');
+        }
+        
         $payment = $this->adminModel->getPaymentDetailsById($payment_id);
         
         if (!$payment) {
@@ -2505,6 +2730,12 @@ public function editSite($site_id){
 // ======================================================================== //
     // View leave request details
     public function viewLeaveRequest($id) {
+            // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
     $leaveRequest = $this->adminModel->getLeaveRequestById($id);
     
     if (!$leaveRequest) {
@@ -2522,6 +2753,12 @@ public function editSite($site_id){
 
 // Approve leave request
 public function approveLeave($id) {
+        // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $admin_id = $_SESSION['user_userID'];
         
@@ -2554,6 +2791,12 @@ public function approveLeave($id) {
 
 // Reject leave request
 public function rejectLeave($id) {
+        // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $admin_id = $_SESSION['user_userID'];
         $reason = trim($_POST['reason'] ?? '');
@@ -2592,13 +2835,20 @@ public function rejectLeave($id) {
 
 // Approve leave request (GET method for modal)
 public function approveLeaveRequest($id) {
+    // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
+    
     if (!isset($_SESSION['user_userID'])) {
         flash('leave_error', 'Unauthorized access');
         redirect('admin/dashboard');
         return;
     }
     
-    $admin_id = $_SESSION['user_userID'];
+    $admin_id = $_SESSION['user_id'];
     
     if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
         // Get leave request details for notification
@@ -2677,6 +2927,13 @@ public function approveLeaveRequest($id) {
 
 // Reject leave request (GET method for modal)
 public function rejectLeaveRequest($id) {
+    // Check permission
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to reject leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
+    
     if (!isset($_SESSION['user_userID'])) {
         flash('leave_error', 'Unauthorized access');
         redirect('admin/dashboard');
@@ -2772,6 +3029,8 @@ public function rejectLeaveRequest($id) {
 // ======================================================================== //
 
     public function advertisements() {
+
+        
         $advertisements = $this->adminModel->getAdvertisements();
         $data = [
             'title' => 'Advertisements',
@@ -2782,6 +3041,12 @@ public function rejectLeaveRequest($id) {
     }
 
         public function createAdvertisement() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_advertisements')) {
+            flash('msg', 'You do not have permission to create advertisements', 'alert-danger');
+            redirect('admin/advertisements');
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Process form submission
             $data = [
@@ -2905,6 +3170,11 @@ public function rejectLeaveRequest($id) {
     }
 
     public function toggleAdvertisementStatus($id) {
+                // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_advertisements')) {
+            flash('msg', 'You do not have permission to edit advertisements', 'alert-danger');
+            redirect('admin/advertisements');
+        }
         // Only accept POST requests
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             redirect('admin/advertisements');
@@ -2929,6 +3199,13 @@ public function rejectLeaveRequest($id) {
     }
 
     public function deleteAdvertisement($id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_advertisements')) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'message' => 'You do not have permission to delete advertisements']);
+            return;
+        }
+        
         // Only accept POST requests
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             redirect('admin/advertisements');
@@ -2963,6 +3240,12 @@ public function rejectLeaveRequest($id) {
     }
 
     public function editAdvertisement($id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'create_advertisements')) {
+            flash('msg', 'You do not have permission to edit advertisements', 'alert-danger');
+            redirect('admin/advertisements');
+        }
+        
         // Get advertisement details
         $advertisement = $this->adminModel->getAdvertisementById($id);
 
@@ -3087,7 +3370,7 @@ public function rejectLeaveRequest($id) {
 // ======================================================================== //
 // =======================      Admin incidents        ====================== //
 // ======================================================================== //
-    public function incidents() {
+    public function incidents() {        
         // Fetch all incidents from database
         $incidents = $this->adminModel->getAllIncidents();
         $stats = $this->adminModel->getIncidentStats();
@@ -3102,6 +3385,12 @@ public function rejectLeaveRequest($id) {
     }
 
     public function incidentReports() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'handle_incidents')) {
+            flash('msg', 'You do not have permission to view incident reports', 'alert-danger');
+            redirect('admin/dashboard');
+        }
+        
         // Get comprehensive incident analytics data
         $chartData = $this->chartModel->getIncidentAnalytics();
         $stats = $this->adminModel->getIncidentStats();
@@ -3125,6 +3414,13 @@ public function rejectLeaveRequest($id) {
     }
     
     public function viewIncident($id) {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'handle_incidents')) {
+            flash('incident_message', 'You do not have permission to view incidents', 'alert-danger');
+            redirect('admin/incidents');
+            return;
+        }
+        
         // Get incident details
         $incident = $this->adminModel->getIncidentById($id);
         
@@ -3148,6 +3444,13 @@ public function rejectLeaveRequest($id) {
     }
     
     public function addIncidentReview() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'handle_incidents')) {
+            flash('incident_message', 'You do not have permission to add incident reviews', 'alert-danger');
+            redirect('admin/incidents');
+            return;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             redirect('admin/incidents');
             return;
@@ -3211,6 +3514,13 @@ public function rejectLeaveRequest($id) {
     }
     
     public function resolveIncident() {
+        // Check permission
+        if (!$this->hasPermission($_SESSION['user_userID'], 'handle_incidents')) {
+            flash('incident_message', 'You do not have permission to resolve incidents', 'alert-danger');
+            redirect('admin/incidents');
+            return;
+        }
+        
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             redirect('admin/incidents');
             return;
@@ -3368,6 +3678,10 @@ public function rejectLeaveRequest($id) {
     public function addadmin(){
         if(isset($_SESSION['user_userID']) && $_SESSION['user_userID'] == 'ADMIN001'){
         if(($_SERVER['REQUEST_METHOD'] ?? '') === 'POST'){
+            // Get permissions from form
+            $permissions = $_POST['permissions'] ?? [];
+            $validPermissions = $this->validatePermissions($permissions);
+
             $data = [
                 
                 'title' => 'Admins',
@@ -3379,6 +3693,7 @@ public function rejectLeaveRequest($id) {
                 'name' => $this->sanitizeInput($_POST['name'] ?? ''),
                 'email' => $this->sanitizeInput($_POST['email'] ?? ''),
                 'phone_number' => $this->sanitizeInput($_POST['phone_number'] ?? ''),
+                'permissions' => $validPermissions,
 
                 'image_err' => '',
                 'name_err' => '',
@@ -3656,6 +3971,104 @@ public function rejectLeaveRequest($id) {
         // Remove or encode potentially dangerous characters
         $input = strip_tags($input);
         return $input;
+    }
+
+    /**
+     * Validate and process permissions array
+     * @param array $permissions - Array of permission values from form
+     * @return array - Validated permissions array
+     */
+    private function validatePermissions($permissions = []) {
+        $validPermissionsList = [
+            'add_officers',
+            'add_clients',
+            'accept_client_requests',
+            'assign_officers',
+            'accept_leave_requests',
+            'create_advertisements',
+            'view_payments',
+            'handle_incidents',
+            'create_routes',
+            'edit_officer_profiles'
+        ];
+
+        $validatedPermissions = [];
+
+        if (is_array($permissions)) {
+            foreach ($permissions as $permission) {
+                $sanitized = $this->sanitizeInput($permission);
+                if (in_array($sanitized, $validPermissionsList)) {
+                    $validatedPermissions[] = $sanitized;
+                }
+            }
+        }
+
+        return $validatedPermissions;
+    }
+
+    /**
+     * Check if admin has specific permission
+     * @param int $adminId - Admin user ID
+     * @param string $permission - Permission key to check
+     * @return bool - True if admin has permission
+     */
+    public function hasPermission($adminId, $permission) {
+        return $this->adminModel->hasPermission($adminId, $permission);
+    }
+
+    /**
+     * Get all permissions for an admin
+     * @param int $adminId - Admin user ID
+     * @return array - Array of permission keys
+     */
+    public function getAdminPermissions2($adminId) {
+        $admin = $this->adminModel->getAdminById($adminId);
+        
+        if (!$admin || empty($admin->permissions)) {
+            return [];
+        }
+
+        return json_decode($admin->permissions, true) ?? [];
+    }
+
+    /**
+     * Update admin permissions
+     * @param int $adminId - Admin user ID
+     * @param array $permissions - New permissions array
+     * @return bool - Success status
+     */
+    public function updateAdminPermissions($adminId, $permissions = []) {
+        $validatedPermissions = $this->validatePermissions($permissions);
+        return $this->adminModel->updateAdminPermissions($adminId, $validatedPermissions);
+    }
+
+    /**
+     * Format permissions for display
+     * @param array $permissions - Array of permission keys
+     * @return array - Array of formatted permission labels
+     */
+    public function formatPermissionsDisplay($permissions = []) {
+        $permissionLabels = [
+            'add_officers' => 'Add Officers',
+            'add_clients' => 'Add Clients',
+            'accept_client_requests' => 'Accept Client Requests',
+            'assign_officers' => 'Assign Officers',
+            'accept_leave_requests' => 'Accept Leave Requests',
+            'create_advertisements' => 'Create Advertisements',
+            'view_payments' => 'View Client Payments',
+            'handle_incidents' => 'Handle Incident Reports',
+            'create_routes' => 'Create Routes',
+            'edit_officer_profiles' => 'Edit Officer Profiles'
+        ];
+
+        $formatted = [];
+        foreach ($permissions as $permission) {
+            if (isset($permissionLabels[$permission])) {
+                $formatted[] = $permissionLabels[$permission];
+            }
+        }
+
+        return $formatted;
     }
 
     // AJAX endpoint to get available officers
@@ -4073,6 +4486,41 @@ public function rejectLeaveRequest($id) {
     }
 
     // Update Admin (AJAX)
+    /**
+     * Get admin permissions via AJAX
+     */
+    public function getAdminPermissions() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            
+            if (!$admin_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin ID is required']);
+                return;
+            }
+            
+            $admin = $this->adminModel->getAdminById($admin_id);
+            
+            if (!$admin) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin not found']);
+                return;
+            }
+            
+            $permissions = !empty($admin->permissions) ? json_decode($admin->permissions, true) : [];
+            
+            echo json_encode([
+                'status' => 'success',
+                'permissions' => $permissions ?? []
+            ]);
+        }
+    }
+
     public function updateAdmin() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
@@ -4086,6 +4534,7 @@ public function rejectLeaveRequest($id) {
             $name = trim($_POST['name'] ?? '');
             $email = trim($_POST['email'] ?? '');
             $phone_number = trim($_POST['phone_number'] ?? '');
+            $permissions = $_POST['permissions'] ?? [];
             
             if (!$admin_id || empty($name) || empty($email) || empty($phone_number)) {
                 echo json_encode(['status' => 'error', 'message' => 'All fields are required']);
@@ -4112,9 +4561,52 @@ public function rejectLeaveRequest($id) {
             ];
             
             if ($this->adminModel->updateAdmin($data)) {
+                // Update permissions if provided
+                if (!empty($permissions)) {
+                    $validatedPermissions = $this->validatePermissions($permissions);
+                    $this->adminModel->updateAdminPermissions($admin_id, $validatedPermissions);
+                }
+                
                 echo json_encode(['status' => 'success', 'message' => 'Admin updated successfully']);
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Failed to update admin']);
+            }
+        }
+    }
+
+    /**
+     * Update admin permissions via AJAX
+     */
+    public function updateAdminPermissionsAjax() {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            header('Content-Type: application/json');
+            
+            // Only ADMIN001 can manage permissions
+            if(!isset($_SESSION['user_userID']) || $_SESSION['user_userID'] != 'ADMIN001'){
+                echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
+                return;
+            }
+            
+            $admin_id = $_POST['admin_id'] ?? null;
+            $permissions = $_POST['permissions'] ?? [];
+            
+            if (!$admin_id) {
+                echo json_encode(['status' => 'error', 'message' => 'Admin ID is required']);
+                return;
+            }
+            
+            // Validate and process permissions
+            $validatedPermissions = $this->validatePermissions($permissions);
+            
+            // Update permissions in database
+            if ($this->adminModel->updateAdminPermissions($admin_id, $validatedPermissions)) {
+                echo json_encode([
+                    'status' => 'success', 
+                    'message' => 'Admin permissions updated successfully',
+                    'permissions' => $validatedPermissions
+                ]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Failed to update permissions']);
             }
         }
     }

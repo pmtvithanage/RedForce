@@ -13,190 +13,180 @@
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/client/dashboard_style.css">
 
 <style>
-    .chart-section {
-        background: white;
-        border-radius: 8px;
-        border: 1px solid #ececec;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        padding: 0;
-    }
-
-    .chart-section.full-width {
-        grid-column: 1 / -1;
-        margin-top: 0;
-    }
-
-    .chart-container {
-        position: relative;
-        height: 300px;
-        padding: 10px 0;
-    }
-
-    .chart-section.full-width .chart-container {
-        height: 350px;
-    }
-
-    .chart-carousel {
-        position: relative;
-        overflow: hidden;
-        border-radius: 8px;
-    }
-
-    .chart-carousel-wrapper {
-        display: flex;
-        transition: transform 0.5s ease-in-out;
-    }
-
-    .chart-slide {
-        min-width: 100%;
-        padding: 16px 20px 20px;
-        box-sizing: border-box;
+    /* Charts Grid Layout */
+    .charts-grid {
         display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 28px;
-        align-items: center;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-top: 32px;
+        margin-bottom: 30px;
     }
 
-    .chart-content {
-        opacity: 0;
-        transform: translateX(-50px);
-        transition: opacity 0.6s ease-out, transform 1s ease-out;
+    /* Chart Card Styling */
+    .chart-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        padding: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        position: relative;
     }
 
-    .chart-description {
-        opacity: 0;
-        transform: translateX(50px);
-        transition: opacity 0.6s ease-out, transform 1s ease-out;
+    .chart-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-2px);
+        border-color: #e8e8e8;
     }
 
-    .chart-slide.active .chart-content {
-        opacity: 1;
-        transform: translateX(0);
-    }
 
-    .chart-slide.active .chart-description {
-        opacity: 1;
-        transform: translateX(0);
-    }
 
-    .chart-content {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .chart-description {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #ececec;
-    }
-
-    .chart-description h4 {
-        margin: 0 0 15px 0;
-        color: #D32F2F;
+    /* Chart Card Header */
+    .chart-card h3 {
+        margin: 0 0 20px 0;
+        color: #2c3e50;
         font-size: 16px;
         font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 8px;
-    }
-
-    .chart-description h4 .material-icons {
-        font-size: 20px;
-    }
-
-    .chart-description p {
-        margin: 0 0 12px 0;
-        color: #555;
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .chart-description ul {
-        margin: 10px 0;
-        padding-left: 20px;
-        color: #666;
-        font-size: 13px;
-    }
-
-    .chart-description ul li {
-        margin-bottom: 6px;
-    }
-
-    .chart-title {
-        text-align: center;
-        margin-bottom: 12px;
-        color: #333;
-        font-size: 20px;
-        font-weight: 600;
-    }
-
-    .carousel-controls {
-        display: flex;
         gap: 10px;
+        letter-spacing: 0.3px;
     }
 
-    .carousel-nav {
-        background: #f2f4f7;
-        border: none;
-        width: 34px;
-        height: 34px;
-        border-radius: 50%;
-        cursor: pointer;
+    .chart-card h3 .material-icons {
+        font-size: 22px;
+        color: #FF8A80;
+    }
+
+    /* Chart Container */
+    .chart-container {
+        position: relative;
+        height: 300px;
+        padding: 10px 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s ease;
     }
 
-    .carousel-nav:hover {
-        background: #e4e7ec;
-        transform: translateY(-1px);
+    .chart-container canvas {
+        max-height: 100%;
     }
 
-    .carousel-nav .material-icons {
-        font-size: 20px;
-        color: #c41212;
-    }
-
-    .carousel-indicators {
+    /* Chart Legend Styling */
+    .chart-card canvas + .chart-legend {
         display: flex;
+        flex-wrap: wrap;
         justify-content: center;
-        gap: 8px;
-        margin-top: 15px;
+        gap: 16px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #f5f5f5;
     }
 
-    .carousel-dot {
-        width: 10px;
-        height: 10px;
+    .chart-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .chart-legend-color {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+    }
+
+    /* Loading State */
+    .chart-card.loading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .chart-card.loading::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #FF8A80;
         border-radius: 50%;
-        background: #ccc;
-        cursor: pointer;
-        transition: all 0.3s ease;
+        animation: spin 1s linear infinite;
     }
 
-    .carousel-dot.active {
-        background: #c41212;
-        width: 28px;
-        border-radius: 5px;
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
     }
 
-    @media (max-width: 768px) {
-        .chart-container {
-            height: 250px;
+    /* Responsive Design */
+    @media (max-width: 1440px) {
+        .charts-grid {
+            gap: 20px;
         }
 
-        .chart-section.full-width .chart-container {
-            height: 300px;
+        .chart-card {
+            padding: 20px;
         }
+    }
 
-        .chart-slide {
+    @media (max-width: 1024px) {
+        .charts-grid {
             grid-template-columns: 1fr;
             gap: 20px;
         }
 
-        .chart-description {
-            padding: 15px;
+        .chart-container {
+            height: 280px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .charts-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .chart-card {
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .chart-card h3 {
+            font-size: 15px;
+            margin-bottom: 16px;
+        }
+
+        .chart-container {
+            height: 250px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .charts-grid {
+            gap: 12px;
+        }
+
+        .chart-card {
+            padding: 12px;
+        }
+
+        .chart-container {
+            height: 200px;
+        }
+
+        .chart-card h3 {
+            font-size: 14px;
+            gap: 6px;
+        }
+
+        .chart-card h3 .material-icons {
+            font-size: 18px;
         }
     }
 </style>
@@ -246,142 +236,38 @@
         </div>
     </div>
 
-    <!-- Charts Carousel Section -->
-    <div class="section chart-section full-width">
-        <div class="section-header">
-            <h2 class="section-title">Analytics Overview</h2>
-            <div class="carousel-controls">
-                <button class="carousel-nav prev" onclick="changeChartSlide(-1)">
-                    <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="carousel-nav next" onclick="changeChartSlide(1)">
-                    <span class="material-icons">chevron_right</span>
-                </button>
+    <!-- Charts 2x2 Grid Section -->
+    <div class="charts-grid">
+        <!-- Chart 1: Sites with Total Officers -->
+        <div class="chart-card">
+            <h3><span class="material-icons">person_outline</span> Officers by Site</h3>
+            <div class="chart-container">
+                <canvas id="sitesOfficersChart"></canvas>
             </div>
         </div>
 
-        <div class="chart-carousel">
-            <div class="chart-carousel-wrapper" id="chartCarouselWrapper">
-                <!-- Chart 1: Incidents by Severity -->
-                <div class="chart-slide">
-                    <div class="chart-content">
-                        <h3 class="chart-title">Incidents by Severity</h3>
-                        <div class="chart-container">
-                            <canvas id="severityChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-description">
-                        <h4><span class="material-icons">bar_chart</span> Severity Distribution</h4>
-                        <p>This chart displays the distribution of incidents across different severity levels at your sites.</p>
-                        <p><strong>Severity Levels:</strong></p>
-                        <ul>
-                            <li><strong>Critical:</strong> Immediate threat requiring urgent action</li>
-                            <li><strong>High:</strong> Significant security concern</li>
-                            <li><strong>Medium:</strong> Notable incident requiring attention</li>
-                            <li><strong>Low:</strong> Minor security event</li>
-                        </ul>
-                        <p>Use this data to prioritize security improvements and resource allocation.</p>
-                    </div>
-                </div>
-
-                <!-- Chart 2: Monthly Incident Trend -->
-                <div class="chart-slide">
-                    <div class="chart-content">
-                        <h3 class="chart-title">Monthly Incident Trend</h3>
-                        <div class="chart-container">
-                            <canvas id="trendChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-description">
-                        <h4><span class="material-icons">trending_up</span> Trend Analysis</h4>
-                        <p>Track incident patterns over the past 6 months to identify trends and seasonal variations.</p>
-                        <p><strong>Key Insights:</strong></p>
-                        <ul>
-                            <li>Identify peak incident periods</li>
-                            <li>Measure effectiveness of security measures</li>
-                            <li>Plan staffing and resource allocation</li>
-                            <li>Detect emerging security patterns</li>
-                        </ul>
-                        <p>A declining trend indicates improving security conditions.</p>
-                    </div>
-                </div>
-
-                <!-- Chart 3: Incidents by Site -->
-                <div class="chart-slide">
-                    <div class="chart-content">
-                        <h3 class="chart-title">Incidents by Site</h3>
-                        <div class="chart-container">
-                            <canvas id="siteChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-description">
-                        <h4><span class="material-icons">business</span> Site Comparison</h4>
-                        <p>Compare incident rates across all your locations to identify high-risk sites.</p>
-                        <p><strong>Action Items:</strong></p>
-                        <ul>
-                            <li>Focus additional security on high-incident sites</li>
-                            <li>Review security procedures at problem locations</li>
-                            <li>Share best practices from low-incident sites</li>
-                            <li>Adjust staffing levels based on site needs</li>
-                        </ul>
-                        <p>Sites with higher bars may require enhanced security measures.</p>
-                    </div>
-                </div>
-
-                <!-- Chart 4: Incidents by Type -->
-                <div class="chart-slide">
-                    <div class="chart-content">
-                        <h3 class="chart-title">Incidents by Type</h3>
-                        <div class="chart-container">
-                            <canvas id="typeChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-description">
-                        <h4><span class="material-icons">search</span> Incident Categories</h4>
-                        <p>Understand what types of security incidents are most common at your facilities.</p>
-                        <p><strong>Common Types:</strong></p>
-                        <ul>
-                            <li>Theft & Robbery attempts</li>
-                            <li>Unauthorized access</li>
-                            <li>Vandalism</li>
-                            <li>Disturbances</li>
-                            <li>Safety hazards</li>
-                        </ul>
-                        <p>Use this data to develop targeted prevention strategies for each incident type.</p>
-                    </div>
-                </div>
-
-                <!-- Chart 5: Incidents by Status -->
-                <div class="chart-slide">
-                    <div class="chart-content">
-                        <h3 class="chart-title">Incidents by Status</h3>
-                        <div class="chart-container">
-                            <canvas id="statusChart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-description">
-                        <h4><span class="material-icons">bolt</span> Resolution Status</h4>
-                        <p>Monitor the current status of all reported incidents across your sites.</p>
-                        <p><strong>Status Categories:</strong></p>
-                        <ul>
-                            <li><strong>Pending:</strong> Awaiting investigation or action</li>
-                            <li><strong>In Progress:</strong> Currently being addressed</li>
-                            <li><strong>Resolved:</strong> Successfully handled and closed</li>
-                            <li><strong>Rejected:</strong> Determined not to be valid incidents</li>
-                        </ul>
-                        <p>A high proportion of resolved incidents indicates effective incident management.</p>
-                    </div>
-                </div>
+        <!-- Chart 2: Incidents by Status (Pie) -->
+        <div class="chart-card">
+            <h3><span class="material-icons">pie_chart</span> Incidents Status</h3>
+            <div class="chart-container">
+                <canvas id="incidentStatusChart"></canvas>
             </div>
         </div>
 
-        <!-- Carousel Indicators -->
-        <div class="carousel-indicators" id="chartCarouselIndicators">
-            <span class="carousel-dot active" onclick="goToChartSlide(0)"></span>
-            <span class="carousel-dot" onclick="goToChartSlide(1)"></span>
-            <span class="carousel-dot" onclick="goToChartSlide(2)"></span>
-            <span class="carousel-dot" onclick="goToChartSlide(3)"></span>
-            <span class="carousel-dot" onclick="goToChartSlide(4)"></span>
+        <!-- Chart 3: Payment History (Line) -->
+        <div class="chart-card">
+            <h3><span class="material-icons">trending_up</span> Payment History</h3>
+            <div class="chart-container">
+                <canvas id="paymentHistoryChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Chart 4: Next Payment by Site -->
+        <div class="chart-card">
+            <h3><span class="material-icons">paypal</span> Upcoming Payments</h3>
+            <div class="chart-container">
+                <canvas id="nextPaymentChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -390,15 +276,61 @@
 <script>
     const chartData = <?php echo json_encode($data['charts']); ?>;
 
-    // Chart 1: Incidents by Severity - Doughnut Chart
-    const severityCtx = document.getElementById('severityChart').getContext('2d');
-    const severityChart = new Chart(severityCtx, {
-        type: 'doughnut',
+    // Chart 1: Officers by Site - Bar Chart
+    const sitesOfficersCtx = document.getElementById('sitesOfficersChart').getContext('2d');
+    const sitesOfficersChart = new Chart(sitesOfficersCtx, {
+        type: 'bar',
         data: {
-            labels: chartData.severityChart.labels,
+            labels: chartData.sitesOfficers.labels,
             datasets: [{
-                data: chartData.severityChart.data,
-                backgroundColor: chartData.severityChart.colors,
+                label: 'Total Officers',
+                data: chartData.sitesOfficers.data,
+                backgroundColor: '#FF8A80',
+                borderWidth: 0,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Officers: ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 0
+                    }
+                }
+            }
+        }
+    });
+
+    // Chart 2: Incidents by Status - Pie Chart
+    const incidentStatusCtx = document.getElementById('incidentStatusChart').getContext('2d');
+    const incidentStatusChart = new Chart(incidentStatusCtx, {
+        type: 'pie',
+        data: {
+            labels: chartData.incidentStatus.labels,
+            datasets: [{
+                data: chartData.incidentStatus.data,
+                backgroundColor: chartData.incidentStatus.colors,
                 borderWidth: 2,
                 borderColor: '#fff'
             }]
@@ -431,23 +363,23 @@
         }
     });
 
-    // Chart 2: Monthly Trend - Line Chart
-    const trendCtx = document.getElementById('trendChart').getContext('2d');
-    const trendChart = new Chart(trendCtx, {
+    // Chart 3: Payment History - Line Chart
+    const paymentHistoryCtx = document.getElementById('paymentHistoryChart').getContext('2d');
+    const paymentHistoryChart = new Chart(paymentHistoryCtx, {
         type: 'line',
         data: {
-            labels: chartData.monthlyTrend.labels,
+            labels: chartData.paymentHistory.labels,
             datasets: [{
-                label: 'Incidents',
-                data: chartData.monthlyTrend.data,
-                borderColor: chartData.monthlyTrend.borderColor,
-                backgroundColor: chartData.monthlyTrend.backgroundColor,
+                label: 'Payments',
+                data: chartData.paymentHistory.data,
+                borderColor: '#FF8A80',
+                backgroundColor: 'rgba(255, 138, 128, 0.3)',
                 borderWidth: 3,
                 fill: true,
                 tension: 0.4,
                 pointRadius: 4,
                 pointHoverRadius: 6,
-                pointBackgroundColor: chartData.monthlyTrend.borderColor,
+                pointBackgroundColor: '#FF8A80',
                 pointBorderColor: '#fff',
                 pointBorderWidth: 2
             }]
@@ -457,34 +389,41 @@
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    display: false
+                    position: 'top'
                 },
                 tooltip: {
                     mode: 'index',
-                    intersect: false
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return 'Amount: KES ' + context.parsed.y.toFixed(2);
+                        }
+                    }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 1
+                        callback: function(value) {
+                            return 'KES ' + value.toLocaleString();
+                        }
                     }
                 }
             }
         }
     });
 
-    // Chart 3: Incidents by Site - Bar Chart
-    const siteCtx = document.getElementById('siteChart').getContext('2d');
-    const siteChart = new Chart(siteCtx, {
+    // Chart 4: Next Payment by Site - Bar Chart
+    const nextPaymentCtx = document.getElementById('nextPaymentChart').getContext('2d');
+    const nextPaymentChart = new Chart(nextPaymentCtx, {
         type: 'bar',
         data: {
-            labels: chartData.siteIncidents.labels,
+            labels: chartData.nextPaymentBySite.labels,
             datasets: [{
-                label: 'Incidents',
-                data: chartData.siteIncidents.data,
-                backgroundColor: chartData.siteIncidents.colors,
+                label: 'Next Payment Amount',
+                data: chartData.nextPaymentBySite.data,
+                backgroundColor: '#FFB74D',
                 borderWidth: 0,
                 borderRadius: 6
             }]
@@ -494,12 +433,12 @@
             maintainAspectRatio: true,
             plugins: {
                 legend: {
-                    display: false
+                    position: 'top'
                 },
                 tooltip: {
                     callbacks: {
                         label: function(context) {
-                            return 'Incidents: ' + context.parsed.y;
+                            return 'Amount: KES ' + context.parsed.y.toFixed(2);
                         }
                     }
                 }
@@ -508,137 +447,20 @@
                 y: {
                     beginAtZero: true,
                     ticks: {
-                        stepSize: 1
+                        callback: function(value) {
+                            return 'KES ' + value.toLocaleString();
+                        }
                     }
                 },
                 x: {
                     ticks: {
                         maxRotation: 45,
-                        minRotation: 45
+                        minRotation: 0
                     }
                 }
             }
         }
     });
-
-    // Chart 4: Incidents by Type - Pie Chart
-    const typeCtx = document.getElementById('typeChart').getContext('2d');
-    const typeChart = new Chart(typeCtx, {
-        type: 'pie',
-        data: {
-            labels: chartData.typeChart.labels,
-            datasets: [{
-                data: chartData.typeChart.data,
-                backgroundColor: chartData.typeChart.colors,
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // Chart 5: Incidents by Status - Doughnut Chart
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    const statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: chartData.statusChart.labels,
-            datasets: [{
-                data: chartData.statusChart.data,
-                backgroundColor: chartData.statusChart.colors,
-                borderWidth: 2,
-                borderColor: '#fff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        padding: 15,
-                        font: {
-                            size: 12
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // Chart Carousel Functionality
-    let currentChartSlide = 0;
-    let chartAutoSlideInterval;
-    const totalChartSlides = 5;
-
-    function updateChartCarousel() {
-        const wrapper = document.getElementById('chartCarouselWrapper');
-        const slides = wrapper.querySelectorAll('.chart-slide');
-
-        // Remove active class from all slides
-        slides.forEach(slide => slide.classList.remove('active'));
-
-        // Update transform for slide transition
-        wrapper.style.transform = `translateX(-${currentChartSlide * 100}%)`;
-
-        // Wait for slide transition to complete, then trigger content animations
-        setTimeout(() => {
-            slides[currentChartSlide].classList.add('active');
-        }, 100);
-
-        // Update indicators
-        document.querySelectorAll('#chartCarouselIndicators .carousel-dot').forEach((dot, index) => {
-            dot.classList.toggle('active', index === currentChartSlide);
-        });
-    }
-
-    function changeChartSlide(direction) {
-        currentChartSlide = (currentChartSlide + direction + totalChartSlides) % totalChartSlides;
-        updateChartCarousel();
-        resetChartAutoSlide();
-    }
-
-    function goToChartSlide(index) {
-        currentChartSlide = index;
-        updateChartCarousel();
-        resetChartAutoSlide();
-    }
-
-    function autoSlideChart() {
-        currentChartSlide = (currentChartSlide + 1) % totalChartSlides;
-        updateChartCarousel();
-    }
-
-    function resetChartAutoSlide() {
-        clearInterval(chartAutoSlideInterval);
-        chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
-    }
-
-    // Start auto-slide
-    chartAutoSlideInterval = setInterval(autoSlideChart, 5000);
-
-    // Initialize first slide as active
-    document.querySelector('.chart-slide').classList.add('active');
-
-    // Pause on hover
-    const chartCarousel = document.querySelector('.chart-carousel');
-    chartCarousel.addEventListener('mouseenter', () => clearInterval(chartAutoSlideInterval));
-    chartCarousel.addEventListener('mouseleave', resetChartAutoSlide);
 </script>
 
 

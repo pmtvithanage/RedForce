@@ -3,401 +3,463 @@
 <?php require_once APP_ROOT . '/views/components/v_adminsidebar.php'; ?>
 
 <link rel="stylesheet" href="<?= URL_ROOT ?>/css/style.css">
+<link rel="stylesheet" href="<?= URL_ROOT ?>/css/components/profile_style.css">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
-<!-- <span class="material-icons">face</span> -->
+<button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
+    <span class="material-icons" style="font-size:18px;">arrow_back</span>
+    Back
+</button>
 
+<style>
+    .main-content {
+        margin: 0 20px;
+    }
 
-    <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="history.back()"> 
-        <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
-        Back
-    </button>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #a40000;
-            --primary-dark: #7a0000;
-            --primary-light: #d84f4f;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #333;
-            --text-color: #444;
-            --white: #ffffff;
-            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --border-radius: 8px;
-        }
+    .profile-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 24px;
+        margin-bottom: 30px;
+    }
 
-        .container {
-            margin: 20px;   
-        }
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid var(--medium-gray);
-        }
+    .card-header h3 {
+        flex: 1;
+        margin: 0;
+        margin-left: 12px;
+        color: #333;
+        font-size: 1.2rem;
+    }
 
-        .header h1 {
-            color: var(--primary-color);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
+    .card-header .material-icons {
+        color: #a40000;
+        font-size: 28px;
+    }
 
-        .header p {
-            color: var(--dark-gray);
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+    .profile-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+    }
 
-        .profile-card {
-            display: flex;
-            flex-direction: column;
-            background-color: var(--white);
-            border-radius: var(--border-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            margin-bottom: 30px;
-        }
+    .info-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 24px;
+    }
 
-        @media (min-width: 768px) {
-            .profile-card {
-                flex-direction: row;
-            }
-        }
+    .card-body {
+        color: #555;
+    }
 
-        .profile-header {
-            background: linear-gradient(to right, #a40000, #fe8e8eff);
-            color: var(--white);
-            padding: 30px;
-            text-align: center;
-            flex: 1;
-        }
+    .profile-avatar-large {
+        position: relative;
+        width: fit-content;
+        margin: 0 auto 20px;
+    }
 
-        @media (min-width: 768px) {
-            .profile-header {
-                flex: 0 0 300px;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-            }
-        }
+    .avatar-circle-large {
+        width: 140px;
+        height: 140px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #f0f0f0;
+        border: 4px solid #a40000;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        margin: 0 auto;
+    }
 
-        .profile-image {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+    }
 
-        .profile-name {
-            font-size: 1.8rem;
-            margin-bottom: 5px;
-        }
+    .profile-name {
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin: 15px 0 8px;
+    }
 
-        .profile-rank {
-            display: inline-block;
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-bottom: 10px;
-        }
+    .profile-role {
+        text-align: center;
+        font-size: 0.95rem;
+        color: #a40000;
+        margin-bottom: 15px;
+        font-weight: 500;
+    }
 
-        .profile-status {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
+    .profile-rank-badge {
+        text-align: center;
+        display: inline-block;
+        width: 100%;
+        background: #fff3e0;
+        color: #ef6c00;
+        padding: 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
 
-        .status-active {
-            background-color: rgba(76, 175, 80, 0.2);
-            color: #2e7d32;
-        }
+    .profile-status-badge {
+        text-align: center;
+        display: inline-block;
+        width: 100%;
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
 
-        .status-on-leave {
-            background-color: rgba(255, 152, 0, 0.2);
-            color: #ef6c00;
-        }
+    .info-row {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 20px;
+        align-items: flex-start;
+    }
 
-        .profile-contact {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
+    .info-icon {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        border-radius: 50%;
+    }
 
-        .contact-item {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+    .info-icon .material-icons {
+        color: #a40000;
+        font-size: 20px;
+    }
 
-        .contact-item i {
-            width: 20px;
-            color: var(--primary-light);
-        }
+    .info-details {
+        flex: 1;
+    }
 
-        .profile-details {
-            flex: 2;
-            padding: 30px;
-        }
+    .info-label {
+        font-size: 0.85rem;
+        color: #999;
+        margin-bottom: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
 
-        .section-title {
-            color: var(--primary-color);
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--primary-light);
+    .info-value {
+        font-size: 1rem;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .section-title {
+        color: #a40000;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 24px 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #d84f4f;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .detail-group {
+        margin-bottom: 15px;
+    }
+
+    .detail-label {
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .detail-label .material-icons {
+        color: #a40000;
+        font-size: 18px;
+    }
+
+    .detail-value {
+        padding: 12px;
+        background-color: #f5f5f5;
+        border-radius: 6px;
+        border-left: 4px solid #a40000;
+        font-size: 0.95rem;
+        color: #333;
+    }
+
+    .detail-value select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 15px;
+        margin-top: 30px;
+        grid-column: 1 / -1;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+    }
+
+    .btn-primary {
+        background-color: #a40000;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #7a0000;
+    }
+
+    .btn-secondary {
+        background-color: #f0f0f0;
+        color: #333;
+        border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e0e0e0;
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
         }
 
         .details-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .detail-group {
-            margin-bottom: 15px;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: var(--dark-gray);
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .detail-label i {
-            color: var(--primary-color);
-            width: 20px;
-        }
-
-        .detail-value {
-            padding: 10px 15px;
-            background-color: var(--light-gray);
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .badge-junior {
-            background-color: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .badge-senior {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .badge-supervisor {
-            background-color: #fff3e0;
-            color: #ef6c00;
+            grid-template-columns: 1fr;
         }
 
         .actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--medium-gray);
+            flex-direction: column;
         }
 
         .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: var(--border-radius);
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            justify-content: center;
         }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: var(--white);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-        }
-
-        .btn-secondary {
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--medium-gray);
-        }
-
-        .footer {
-            text-align: center;
-            padding: 20px;
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-            border-top: 1px solid var(--medium-gray);
-            margin-top: 30px;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 767px) {
-            .details-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .actions {
-                flex-direction: column;
-            }
-            
-            .btn {
-                justify-content: center;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 <body>
-    <div class="container">
-
-        <main class="profile-card">
-            <div class="profile-header">
-                <img class="profile-image" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" alt="<?php echo $officer->name; ?>" >
-                <h2 class="profile-name"><?php echo $officer->name; ?></h2>
-                <div class="profile-rank"><?php echo $officer->rank; ?></div>
-                <div class="profile-status status-active"><?php echo $officer->user_status; ?></div>
-                
-                <div class="profile-contact">
-                    <div class="contact-item">
-                        <i class="fas fa-phone"></i>
-                        <span><?php echo $officer->phone_number; ?></span>
+    <div class="main-content">
+        <div class="profile-container">
+            <div class="profile-grid" style="margin-top: 20px;">
+                <!-- Profile Information Card -->
+                <div class="profile-card">
+                    <div class="card-header">
+                        <span class="material-icons">account_circle</span>
+                        <h3>Profile Information</h3>
                     </div>
-                    <div class="contact-item">
-                        <i class="fas fa-envelope"></i>
-                        <span><?php echo $officer->email; ?></span>
+                    <div class="card-body">
+                        <div class="profile-avatar-large">
+                            <div class="avatar-circle-large">
+                                <img class="profile-image" src="<?php echo URL_ROOT; ?>/uploads/applicantPhotos/<?php echo $officer->profile_image; ?>" alt="<?php echo $officer->name; ?>">
+                            </div>
+                        </div>
+                        <div class="profile-name"><?php echo $officer->name; ?></div>
+                        <div class="profile-role">Caretaker</div>
+                        <div class="profile-rank-badge"><?php echo $officer->rank; ?></div>
+                        <div class="profile-status-badge"><?php echo $officer->user_status; ?></div>
+                    </div>
+                </div>
+
+                <!-- Contact Information Card -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="material-icons">contact_phone</span>
+                        <h3>Contact Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">phone</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Phone Number</div>
+                                <div class="info-value"><?php echo $officer->phone_number; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">email</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Email Address</div>
+                                <div class="info-value"><?php echo $officer->email; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">badge</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Caretaker ID</div>
+                                <div class="info-value"><?php echo $officer->caretakerID; ?></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Information Card -->
+                <div class="info-card">
+                    <div class="card-header">
+                        <span class="material-icons">person</span>
+                        <h3>Personal Information</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">cake</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Date of Birth</div>
+                                <div class="info-value"><?php echo $officer->date_of_birth; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">assignment_ind</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">NIC Number</div>
+                                <div class="info-value"><?php echo $officer->NIC; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">wc</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Gender</div>
+                                <div class="info-value"><?php echo $officer->gender; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">location_on</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">Address</div>
+                                <div class="info-value"><?php echo $officer->address; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">map</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">District</div>
+                                <div class="info-value"><?php echo $officer->district; ?></div>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <div class="info-icon">
+                                <span class="material-icons">location_city</span>
+                            </div>
+                            <div class="info-details">
+                                <div class="info-label">City</div>
+                                <div class="info-value"><?php echo $officer->city; ?></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            
-            <div class="profile-details">
-                <h3 class="section-title">Personal Information</h3>
-                <div class="details-grid">
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-id-card"></i>
-                            Officer ID
-                        </div>
-                        <div class="detail-value"><?php echo $officer->caretakerID; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-birthday-cake"></i>
-                            Date of Birth
-                        </div>
-                        <div class="detail-value"><?php echo $officer->date_of_birth; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-address-card"></i>
-                            NIC Number
-                        </div>
-                        <div class="detail-value"><?php echo $officer->NIC; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-venus-mars"></i>
-                            Gender
-                        </div>
-                        <div class="detail-value"><?php echo $officer->gender; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-map-marker-alt"></i>
-                            Address
-                        </div>
-                        <div class="detail-value"><?php echo $officer->address; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-map"></i>
-                            District
-                        </div>
-                        <div class="detail-value"><?php echo $officer->district; ?></div>
-                    </div>
-                    
-                    <div class="detail-group">
-                        <div class="detail-label">
-                            <i class="fas fa-city"></i>
-                            City
-                        </div>
-                        <div class="detail-value"><?php echo $officer->city; ?></div>
-                    </div>
-                </div>
-                
+
+            <!-- Employment Details Section -->
+            <div class="info-card" style="margin-bottom: 30px;">
                 <h3 class="section-title">Employment Details</h3>
                 <div class="details-grid">
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-calendar-alt"></i>
+                            <span class="material-icons">calendar_today</span>
                             Hire Date
                         </div>
                         <div class="detail-value"><?php echo $officer->hire_date; ?></div>
                     </div>
-                    
+
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-user-tie"></i>
+                            <span class="material-icons">work</span>
                             Rank
                         </div>
                         <div class="detail-value">
-                            <select id="rank" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="rank" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; font-weight: 600;">
+                            <select id="rank" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="rank">
                                 <option value="Junior" <?php echo ($officer->rank == 'Junior') ? 'selected' : ''; ?>>Junior</option>
                                 <option value="Senior" <?php echo ($officer->rank == 'Senior') ? 'selected' : ''; ?>>Senior</option>
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-clock"></i>
+                            <span class="material-icons">schedule</span>
                             Shift Pattern
                         </div>
                         <div class="detail-value"><?php echo $officer->shift_pattern; ?></div>
                     </div>
-                    
+
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-calendar-check"></i>
+                            <span class="material-icons">task_alt</span>
                             Employment Status
                         </div>
                         <div class="detail-value">
-                            <select id="employment_status" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="employment_status" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: white; font-weight: 600;">
+                            <select id="employment_status" class="editable-select" data-officer-id="<?php echo $officer->user_id; ?>" data-field="employment_status">
                                 <option value="Active" <?php echo ($officer->user_status == 'Active') ? 'selected' : ''; ?>>Active</option>
                                 <option value="On Leave" <?php echo ($officer->user_status == 'On Leave') ? 'selected' : ''; ?>>On Leave</option>
                                 <option value="Suspended" <?php echo ($officer->user_status == 'Suspended') ? 'selected' : ''; ?>>Suspended</option>
@@ -405,45 +467,106 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-file-alt"></i>
+                            <span class="material-icons">document_scanner</span>
                             Application ID
                         </div>
                         <div class="detail-value"><?php echo $officer->application_id; ?></div>
                     </div>
-                    
+
                     <div class="detail-group">
                         <div class="detail-label">
-                            <i class="fas fa-calendar-plus"></i>
+                            <span class="material-icons">update</span>
                             Last Updated
                         </div>
                         <div class="detail-value"><?php echo $officer->user_account_updated; ?></div>
                     </div>
                 </div>
-                
+
                 <div class="actions">
-                    <button class="btn btn-secondary">
-                        <i class="fas fa-edit"></i> Edit Profile
+                    <button class="btn btn-secondary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/editOfficer/<?php echo $officer->user_id; ?>'">
+                        <span class="material-icons">edit</span> Edit Profile
                     </button>
-                    <button class="btn btn-primary">
-                        View Calander
+                    <button class="btn btn-primary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewOfficerCalendar/<?php echo $officer->user_id; ?>'">
+                        <span class="material-icons">calendar_month</span> View Calendar
                     </button>
                 </div>
             </div>
-        </main>
-        
-        <footer class="footer">
-           
-        </footer>
+        </div>
     </div>
 
-    
+    <div class="backdrop" id="backdrop" hidden></div>
+
+    <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
+    <script>
+        // Auto-save functionality for editable selects
+        document.querySelectorAll('.editable-select').forEach(select => {
+            select.addEventListener('change', function() {
+                const officerId = this.dataset.officerId;
+                const field = this.dataset.field;
+                const value = this.value;
+                const originalBg = this.style.backgroundColor;
+                
+                console.log('Updating:', {officerId, field, value, role: 'caretaker'});
+                
+                // Show loading state
+                this.style.backgroundColor = '#fff3cd';
+                this.disabled = true;
+                
+                // Send update to server
+                fetch('<?php echo URL_ROOT; ?>/admin/updateOfficerField', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        officer_id: officerId,
+                        field: field,
+                        value: value,
+                        role: 'caretaker'
+                    })
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        // Show success state
+                        this.style.backgroundColor = '#d4edda';
+                        setTimeout(() => {
+                            this.style.backgroundColor = originalBg;
+                        }, 1500);
+                    } else {
+                        console.error('Update failed:', data);
+                        alert('Error updating field: ' + (data.message || 'Unknown error'));
+                        this.style.backgroundColor = '#f8d7da';
+                        setTimeout(() => {
+                            this.style.backgroundColor = originalBg;
+                        }, 1500);
+                    }
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    alert('Error updating field: ' + error.message);
+                    this.style.backgroundColor = '#f8d7da';
+                    setTimeout(() => {
+                        this.style.backgroundColor = originalBg;
+                    }, 1500);
+                })
+                .finally(() => {
+                    this.disabled = false;
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-    </main>
-    </div>
+
+<?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
 
     <div class="backdrop" id="backdrop" hidden></div>
 

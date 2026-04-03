@@ -1026,18 +1026,55 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Package request methods
     public function getAllPackageRequests() {
-        $this->db->query("SELECT pr.*, u.name as client_name FROM package_requests pr JOIN Users u ON pr.client_id = u.id ORDER BY pr.submitted_date DESC");
+        $this->db->query("SELECT pr.*, u.name as client_name
+                          FROM package_requests pr
+                          JOIN Users u ON pr.client_id = u.id
+                          WHERE (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )
+                          ORDER BY pr.submitted_date DESC");
         return $this->db->resultSet();
     }
 
     public function getPackageRequestStats() {
-        $this->db->query("SELECT COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending, COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved, COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected, COUNT(*) as total FROM package_requests");
+        $this->db->query("SELECT
+                            COUNT(CASE WHEN status = 'Pending' THEN 1 END) as pending,
+                            COUNT(CASE WHEN status = 'Approved' THEN 1 END) as approved,
+                            COUNT(CASE WHEN status = 'Rejected' THEN 1 END) as rejected,
+                            COUNT(*) as total
+                          FROM package_requests pr
+                          WHERE (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )");
         return $this->db->single();
     }
 
     // Get package request by ID
     public function getPackageRequestById($id) {
-        $this->db->query("SELECT * FROM package_requests WHERE id = :id");
+        $this->db->query("SELECT *
+                          FROM package_requests pr
+                          WHERE pr.id = :id
+                          AND (
+                              LOWER(COALESCE(pr.payment_status, '')) = 'paid'
+                              OR EXISTS (
+                                  SELECT 1
+                                  FROM payments p
+                                  WHERE p.package_request_id = pr.id
+                                  AND LOWER(COALESCE(p.status, '')) = 'paid'
+                              )
+                          )");
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
@@ -1050,6 +1087,50 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':site_id', $site_id);
         return $this->db->single();
     }
+
+        // Get latest pending package request linked to an existing site via draft_site_id.
+        public function getPendingPackageRequestByLinkedSite($site_id) {
+                $this->db->query("SELECT pr.*
+                                                    FROM package_requests pr
+                                                    WHERE pr.draft_site_id = :site_id
+                                                        AND pr.status = 'Pending'
+                                                    ORDER BY pr.submitted_date DESC
+                                                    LIMIT 1");
+                $this->db->bind(':site_id', $site_id);
+                return $this->db->single();
+        }
+
+        // Count assignments newly added on/after a request submission date.
+        public function getAddedAssignmentsSince($siteId, $sinceDate) {
+                $this->db->query("SELECT
+                                                        (SELECT COUNT(*)
+                                                         FROM officer_site_assignments osa
+                                                         WHERE osa.site_id = :site_id
+                                                             AND osa.status = 'Active'
+                                                             AND (osa.shift_type IS NULL OR osa.shift_type != 'Supervisor')
+                                                             AND osa.assigned_at >= :since_officers
+                                                        ) AS added_officers,
+                                                        (SELECT COUNT(*)
+                                                         FROM officer_site_assignments osa
+                                                         WHERE osa.site_id = :site_id
+                                                             AND osa.status = 'Active'
+                                                             AND osa.shift_type = 'Supervisor'
+                                                             AND osa.assigned_at >= :since_supervisors
+                                                        ) AS added_supervisors,
+                                                        (SELECT COUNT(*)
+                                                         FROM caretaker_site_assignments csa
+                                                         WHERE csa.site_id = :site_id
+                                                             AND csa.status = 'Active'
+                                                             AND csa.assigned_at >= :since_caretakers
+                                                        ) AS added_caretakers");
+
+                $this->db->bind(':site_id', $siteId);
+                $this->db->bind(':since_officers', $sinceDate);
+                $this->db->bind(':since_supervisors', $sinceDate);
+                $this->db->bind(':since_caretakers', $sinceDate);
+
+                return $this->db->single();
+        }
 
     // Get client's phone number
     public function getClientPhoneNumber($user_id) {
@@ -1073,6 +1154,27 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             error_log("ERROR: No Clients record found for user_id = {$user_id}");
             return null;
         }
+    }
+
+    // Find an official (non-draft) site for this client by site name.
+    public function findOfficialSiteIdByClientAndName($user_id, $site_name) {
+        $clientsTableId = $this->getClientsTableId($user_id);
+        if (!$clientsTableId) {
+            return null;
+        }
+
+        $this->db->query("SELECT id
+                          FROM sites
+                          WHERE client_id = :client_id
+                            AND site_name = :site_name
+                            AND is_draft = 0
+                          ORDER BY id DESC
+                          LIMIT 1");
+        $this->db->bind(':client_id', $clientsTableId);
+        $this->db->bind(':site_name', $site_name);
+        $site = $this->db->single();
+
+        return $site ? (int)$site->id : null;
     }
 
     // Create site from approved package request
@@ -1119,6 +1221,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     public function approvePackageRequest($id, $admin_id, $notes) {
+        // Guard: admin can only process paid requests.
+        $packageRequest = $this->getPackageRequestById($id);
+        if (!$packageRequest) {
+            return false;
+        }
+
         // Step 1: Update the package request status to Approved
         $this->db->query("UPDATE package_requests 
                           SET status = 'Approved', 
@@ -1134,14 +1242,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
             return false; // Failed to approve
         }
         
-        // Step 2: Get the package request details
-        $packageRequest = $this->getPackageRequestById($id);
-        
-        if (!$packageRequest) {
-            return true; // Approved but couldn't get details
-        }
-        
-        // Step 3: Create a site from the package request
+        // Step 2: Create a site from the package request
         $siteId = $this->createSiteFromPackageRequest($packageRequest);
         
         // Return the site ID (or true if site creation failed but approval succeeded)
@@ -1367,6 +1468,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     public function rejectPackageRequest($id, $admin_id, $reason) {
+        // Guard: admin can only process paid requests.
+        if (!$this->getPackageRequestById($id)) {
+            return false;
+        }
+
         $this->db->query("UPDATE package_requests SET status = 'Rejected', admin_notes = :reason, approved_by = :admin_id, approved_at = NOW() WHERE id = :id");
         $this->db->bind(':id', $id);
         $this->db->bind(':admin_id', $admin_id);
@@ -1426,6 +1532,28 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':site_id', $siteId);
         $result = $this->db->single();
         return $result ? $result->count : 0;
+    }
+
+    public function getAssignedRegularOfficerCount($siteId) {
+        $this->db->query("SELECT COUNT(*) as count
+                          FROM officer_site_assignments
+                          WHERE site_id = :site_id
+                            AND status = 'Active'
+                            AND (shift_type IS NULL OR shift_type != 'Supervisor')");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
+    }
+
+    public function getAssignedSupervisorCount($siteId) {
+        $this->db->query("SELECT COUNT(*) as count
+                          FROM officer_site_assignments
+                          WHERE site_id = :site_id
+                            AND status = 'Active'
+                            AND shift_type = 'Supervisor'");
+        $this->db->bind(':site_id', $siteId);
+        $result = $this->db->single();
+        return $result ? (int)$result->count : 0;
     }
 
     // Finalize draft site (convert to official)
@@ -1503,9 +1631,12 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $userID = 'ADMIN' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
         $tempPassword = '0000'; // Simple temp password
         $role_name = 'admin';
+        
+        // Prepare permissions as JSON
+        $permissionsJson = json_encode($data['permissions'] ?? []);
 
-        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role) 
-                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role)");
+        $this->db->query("INSERT INTO Users (userID, name, email, phone_number, profile_image, password, role, permissions) 
+                    VALUES (:userID, :name, :email, :phone, :profile_image, :password, :role, :permissions)");
         $this->db->bind(':userID', $userID);
         $this->db->bind(':name', $data['name']);
         $this->db->bind(':email', $data['email']);
@@ -1513,6 +1644,7 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':profile_image', $data['image_name']);
         $this->db->bind(':role', $role_name);
         $this->db->bind(':password', password_hash($tempPassword, PASSWORD_DEFAULT));
+        $this->db->bind(':permissions', $permissionsJson);
     
         if ($this->db->execute()) {
             return [
@@ -1538,6 +1670,87 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->query("SELECT * FROM Users WHERE id = :id AND role = 'admin'");
         $this->db->bind(':id', $id);
         return $this->db->single();
+    }
+
+    /**
+     * Update admin permissions
+     * @param int $adminId - Admin user ID
+     * @param array $permissions - Array of permission keys
+     * @return bool - Success status
+     */
+    public function updateAdminPermissions($adminId, $permissions = []) {
+        $permissionsJson = json_encode($permissions);
+        $this->db->query("UPDATE Users SET permissions = :permissions WHERE id = :id AND role = 'admin'");
+        $this->db->bind(':permissions', $permissionsJson);
+        $this->db->bind(':id', $adminId);
+        return $this->db->execute();
+    }
+
+    /**
+     * Get admin permissions
+     * @param int $adminId - Admin user ID
+     * @return array - Array of permission keys
+     */
+    public function getAdminPermissions($adminId) {
+        $this->db->query("SELECT permissions FROM Users WHERE id = :id AND role = 'admin'");
+        $this->db->bind(':id', $adminId);
+        $result = $this->db->single();
+        
+        if ($result && !empty($result->permissions)) {
+            return json_decode($result->permissions, true) ?? [];
+        }
+        return [];
+    }
+
+    /**
+     * Check if admin has specific permission
+     * @param int $adminId - Admin user ID
+     * @param string $permission - Permission key
+     * @return bool - True if admin has permission
+     */
+    public function hasAdminPermission($adminId, $permission) {
+        $permissions = $this->getAdminPermissions($adminId);
+        return in_array($permission, $permissions);
+    }
+
+    /**
+     * Get all admins with their permissions
+     * @return array - Array of admin objects with permissions
+     */
+    public function getAllAdminsWithPermissions() {
+        $this->db->query("SELECT id, userID, name, email, phone_number, role, permissions, created_at FROM Users WHERE role = 'admin' ORDER BY created_at DESC");
+        $admins = $this->db->resultSet();
+        
+        // Decode permissions for each admin
+        foreach ($admins as $admin) {
+            if (!empty($admin->permissions)) {
+                $admin->permissions_array = json_decode($admin->permissions, true) ?? [];
+            } else {
+                $admin->permissions_array = [];
+            }
+        }
+        
+        return $admins;
+    }
+
+    /**
+     * Check if admin has a specific permission
+     * @param string $adminId - Admin user ID (can be userID or numeric ID)
+     * @param string $permission - Permission key to check
+     * @return bool - True if admin has permission, false otherwise
+     */
+    public function hasPermission($adminId, $permission) {
+        // Try to get admin by ID first, then by userID if needed
+        $this->db->query("SELECT permissions FROM Users WHERE (id = :admin_id OR userID = :admin_id) AND role = 'admin'");
+        $this->db->bind(':admin_id', $adminId);
+        $result = $this->db->single();
+        
+        if (!$result || empty($result->permissions)) {
+            return false;
+        }
+        
+        $permissions = json_decode($result->permissions, true);
+        return in_array($permission, $permissions ?? []);
     }
 
     // ==============================
@@ -2012,11 +2225,23 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     // ============================== ============================== ==============================
     // Update Admin
     public function updateAdmin($data) {
-        $this->db->query("UPDATE Users 
-                         SET name = :name, 
-                             email = :email, 
-                             phone_number = :phone_number
-                         WHERE id = :admin_id AND role = 'admin'");
+        // Check if permissions are included
+        if (isset($data['permissions'])) {
+            $permissionsJson = json_encode($data['permissions']);
+            $this->db->query("UPDATE Users 
+                             SET name = :name, 
+                                 email = :email, 
+                                 phone_number = :phone_number,
+                                 permissions = :permissions
+                             WHERE id = :admin_id AND role = 'admin'");
+            $this->db->bind(':permissions', $permissionsJson);
+        } else {
+            $this->db->query("UPDATE Users 
+                             SET name = :name, 
+                                 email = :email, 
+                                 phone_number = :phone_number
+                             WHERE id = :admin_id AND role = 'admin'");
+        }
         
         $this->db->bind(':admin_id', $data['admin_id']);
         $this->db->bind(':name', $data['name']);

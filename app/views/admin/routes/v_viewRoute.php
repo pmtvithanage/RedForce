@@ -8,43 +8,64 @@
 }
 
 .route-header {
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    padding: 40px;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f6f7 50%, #eff0f2 100%);
+    padding: 50px;
     border-radius: 16px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(164, 0, 0, 0.1);
+    box-shadow: 0 12px 35px rgba(164, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
     margin-bottom: 30px;
-    border-left: 6px solid #a40000;
+
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
-.route-header::before {
+
+
+.route-header::after {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #a40000, #d32f2f);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(164, 0, 0, 0.05) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.route-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 25px;
+    position: relative;
+    z-index: 1;
+    flex-wrap: wrap;
 }
 
 .route-description {
     display: flex;
     align-items: flex-start;
     gap: 20px;
-    padding: 25px;
-    background: rgba(255, 255, 255, 0.9);
+    padding: 28px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
     border-radius: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(229, 231, 235, 0.6);
     margin-bottom: 30px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    z-index: 1;
 }
 
 .route-description .material-symbols-outlined {
     font-size: 32px;
     color: #a40000;
     flex-shrink: 0;
-    margin-top: 4px;
+    margin-top: 2px;
+    opacity: 0.85;
+    transition: all 0.3s ease;
 }
 
 .description-content {
@@ -52,55 +73,73 @@
 }
 
 .description-label {
-    font-size: 16px;
-    color: #6b7280;
+    font-size: 12px;
+    color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
+    letter-spacing: 0.7px;
+    font-weight: 700;
     margin-bottom: 8px;
 }
 
 .description-value {
-    font-size: 18px;
+    font-size: 17px;
     color: #1f2937;
-    font-weight: 400;
-    line-height: 1.6;
+    font-weight: 500;
+    line-height: 1.7;
 }
 
 .route-title {
-    font-size: 32px;
-    font-weight: bold;
+    font-size: 36px;
+    font-weight: 700;
     color: #1f2937;
     margin: 0;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    position: relative;
+    z-index: 1;
 }
 
 .route-meta {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
-    margin-top: 0;
+    margin-top: 30px;
+    position: relative;
+    z-index: 1;
 }
 
 .meta-item {
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 15px;
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    padding: 16px 18px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
+    border-radius: 10px;
+    border: 1px solid rgba(229, 231, 235, 0.8);
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
 .meta-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(164, 0, 0, 0.12);
+    transform: translateY(-4px);
+    border-color: rgba(164, 0, 0, 0.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 250, 250, 0.95) 100%);
 }
 
 .meta-icon {
-    font-size: 24px;
+    font-size: 26px;
     color: #a40000;
     flex-shrink: 0;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+}
+
+.meta-item:hover .meta-icon {
+    color: #d32f2f;
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .meta-content {
@@ -108,38 +147,44 @@
 }
 
 .meta-label {
-    font-size: 14px;
-    color: #6b7280;
+    font-size: 12px;
+    color: #9ca3af;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    margin-bottom: 4px;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
 .meta-value {
     font-size: 16px;
     color: #1f2937;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .route-status {
     display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-size: 13px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
 }
 
 .status-active {
-    background: #d1fae5;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
     color: #065f46;
+    border: 1px solid #6ee7b7;
 }
 
 .status-inactive {
-    background: #fee2e2;
+    background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
     color: #991b1b;
+    border: 1px solid #fca5a5;
 }
 
 .sites-section {
@@ -181,6 +226,27 @@
     padding: 20px;
     transition: all 0.3s ease;
     background: #fff;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+.site-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.4) 100%);
+    border-radius: 8px;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .site-card:hover {
@@ -191,14 +257,18 @@
 .site-name {
     font-size: 18px;
     font-weight: bold;
-    color: #1f2937;
+    color: #fff;
     margin-bottom: 10px;
+    position: relative;
+    z-index: 2;
 }
 
 .site-info {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    position: relative;
+    z-index: 2;
 }
 
 .site-info-item {
@@ -209,13 +279,13 @@
 
 .site-label {
     font-size: 14px;
-    color: #6b7280;
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 500;
 }
 
 .site-value {
     font-size: 14px;
-    color: #1f2937;
+    color: #fff;
     font-weight: 600;
 }
 
@@ -676,7 +746,7 @@
         <?php else: ?>
             <div class="sites-grid">
                 <?php foreach ($data['routeSites'] as $site): ?>
-                    <div class="site-card">
+                    <div class="site-card" style="background-image: url('<?php echo URL_ROOT; ?>/uploads/siteImages/<?php echo htmlspecialchars($site->image ?? ''); ?>')">
                         <div class="site-name"><?php echo htmlspecialchars($site->site_name); ?></div>
                         <div class="site-info">
                             <div class="site-info-item">
