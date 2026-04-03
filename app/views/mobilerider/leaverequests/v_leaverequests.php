@@ -95,6 +95,31 @@
         overflow-x: auto;
     }
 
+    /* Filters */
+    .filter-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        min-width: 150px;
+        height: 44px;
+        border: 1px solid #dadada;
+        border-radius: 6px;
+        padding: 0 12px;
+        background: #fff;
+        font-size: 14px;
+        color: #333;
+        outline: none;
+    }
+
+    .filter-select:focus {
+        border-color: #a40000;
+    }
+
     /* Search Bar */
     .search-box {
         display: flex;
@@ -103,8 +128,9 @@
         border: 1px solid #dadada;
         padding: 10px 14px;
         border-radius: 6px;
-        margin-bottom: 16px;
-        max-width: 400px;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 280px;
     }
 
     .search-box:focus-within {
@@ -426,9 +452,20 @@
     <?php endif; ?>
 
     <div class="table-card">
-        <div class="search-box">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" id="searchInput" placeholder="Search leave requests...">
+        <div class="filter-controls">
+            <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="searchInput" placeholder="Search leave requests...">
+            </div>
+            <select id="statusFilter" class="filter-select">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+            </select>
+            <select id="monthFilter" class="filter-select">
+                <option value="">All Months</option>
+            </select>
         </div>
 
         <?php if (empty($data['leaveRequests'])): ?>
@@ -568,9 +605,10 @@
         }
     });
 
-    // Search functionality
-    document.getElementById('searchInput')?.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
+    function applyFilters() {
+        const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const statusFilter = (document.getElementById('statusFilter')?.value || '').toLowerCase();
+        const monthFilter = document.getElementById('monthFilter')?.value || '';
         const table = document.getElementById('leaveRequestsTable');
         if (!table) return;
 
@@ -580,14 +618,58 @@
             const leaveType = row.cells[0].textContent.toLowerCase();
             const reason = row.cells[4].textContent.toLowerCase();
             const status = row.cells[5].textContent.toLowerCase();
+            const createdDateText = row.cells[6].textContent.trim();
+            const createdDate = new Date(createdDateText);
+            const rowMonth = !Number.isNaN(createdDate.getTime()) ?
+                `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}` :
+                '';
 
-            if (leaveType.includes(searchTerm) || reason.includes(searchTerm) || status.includes(searchTerm)) {
+            const matchesSearch = !searchTerm || leaveType.includes(searchTerm) || reason.includes(searchTerm) || status.includes(searchTerm);
+            const matchesStatus = !statusFilter || status === statusFilter;
+            const matchesMonth = !monthFilter || rowMonth === monthFilter;
+
+            if (matchesSearch && matchesStatus && matchesMonth) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
             }
         }
-    });
+    }
+
+    function populateMonthFilter() {
+        const table = document.getElementById('leaveRequestsTable');
+        const monthFilter = document.getElementById('monthFilter');
+        if (!table || !monthFilter) return;
+
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const monthMap = new Map();
+
+        for (let row of rows) {
+            const createdDateText = row.cells[6].textContent.trim();
+            const createdDate = new Date(createdDateText);
+            if (Number.isNaN(createdDate.getTime())) continue;
+
+            const value = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+            const label = createdDate.toLocaleString('default', {
+                month: 'long',
+                year: 'numeric'
+            });
+            monthMap.set(value, label);
+        }
+
+        const sortedMonths = Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+        for (const [value, label] of sortedMonths) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            monthFilter.appendChild(option);
+        }
+    }
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+    document.getElementById('monthFilter')?.addEventListener('change', applyFilters);
+    populateMonthFilter();
 
     // View leave request
     function viewRequest(id) {
