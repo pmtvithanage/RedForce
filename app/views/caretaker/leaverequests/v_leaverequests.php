@@ -159,22 +159,29 @@
     .badge {
         padding: 5px 12px;
         border-radius: 20px;
-        color: white;
+        color: #374151;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         display: inline-block;
+        border: 1px solid transparent;
     }
 
     .badge.Pending {
-        background: #ff9800;
+        background: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
     }
 
     .badge.Approved {
-        background: #4caf50;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-color: #c8e6c9;
     }
 
     .badge.Rejected {
-        background: #e74c3c;
+        background: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
     }
 
     /* Leave Type Tags */
@@ -195,41 +202,74 @@
     }
 
     .action-btn {
-        padding: 6px 12px;
-        border: none;
+        padding: 8px 12px;
+        border: 1px solid transparent;
         border-radius: 6px;
         cursor: pointer;
         font-size: 12px;
-        transition: all 0.2s;
-        display: flex;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
+        line-height: 1;
     }
 
     .action-btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .view-btn {
-        background: #2196F3;
-        color: white;
+        background: #e3f2fd;
+        color: #1976d2;
+        border-color: #cfe5fc;
+    }
+
+    .view-btn:hover {
+        background: #1976d2;
+        color: #fff;
     }
 
     .edit-btn {
-        background: #f39c12;
-        color: white;
+        background: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
+    }
+
+    .edit-btn:hover {
+        background: #f57c00;
+        color: #fff;
     }
 
     .delete-btn {
-        background: #e74c3c;
-        color: white;
+        background: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
+    }
+
+    .delete-btn:hover {
+        background: #c62828;
+        color: #fff;
     }
 
     .create-btn {
-        display: flex;
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .create-btn:hover {
+        background: #1b5e20;
+        transform: translateY(-1px);
     }
 
     .empty-state {
@@ -460,17 +500,20 @@
                                         onclick="event.stopPropagation(); viewRequest(<?php echo $request->id; ?>)"
                                         title="View Details">
                                         <span class="material-symbols-outlined">visibility</span>
+                                        View
                                     </button>
                                     <?php if ($request->status == 'Pending'): ?>
                                         <button class="action-btn edit-btn"
                                             onclick="event.stopPropagation(); editRequest(<?php echo $request->id; ?>)"
                                             title="Edit">
                                             <span class="material-symbols-outlined">edit</span>
+                                            Edit
                                         </button>
                                         <button class="action-btn delete-btn"
                                             onclick="event.stopPropagation(); deleteRequest(<?php echo $request->id; ?>)"
                                             title="Delete">
                                             <span class="material-symbols-outlined">delete</span>
+                                            Delete
                                         </button>
                                     <?php endif; ?>
                                 </div>

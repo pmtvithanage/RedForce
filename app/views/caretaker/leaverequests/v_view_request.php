@@ -9,7 +9,7 @@
 
 <style>
     .page {
-        margin: 20px;
+        margin: 0 40px;
         padding: 0 20px;
     }
 
