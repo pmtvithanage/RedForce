@@ -246,11 +246,25 @@
 .chart-section {
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
+    min-height: 400px;
+}
+
+.chart-section h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f1f1f;
 }
 
 .chart-wrapper {
-    margin-top: 10px;
+    margin: auto;
     height: 260px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .chart-wrapper canvas {

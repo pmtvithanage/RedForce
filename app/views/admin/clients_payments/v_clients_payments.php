@@ -4,6 +4,7 @@
 
 <link rel="stylesheet" href="<?php echo URL_ROOT; ?>/css/style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
 <style>
     :root {
@@ -260,13 +261,7 @@
         width: 40px;
         height: 40px;
         border-radius: 50%;
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 16px;
+        object-fit: cover;
         flex-shrink: 0;
     }
 
@@ -352,6 +347,60 @@
     .actions-cell {
         display: flex;
         gap: 8px;
+    }
+
+    /* Group Header Styles */
+    .group-header {
+        background: #f5f5f5;
+        font-weight: 600;
+    }
+
+    .group-header td {
+        padding: 12px 16px;
+    }
+
+    .expand-icon {
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-right: 8px;
+        transition: transform 0.3s ease;
+        color: var(--primary-color);
+    }
+
+    .expand-icon.expanded {
+        transform: rotate(90deg);
+    }
+
+    .group-row {
+        display: none;
+    }
+
+    .group-row.show {
+        display: table-row;
+    }
+
+    .group-row td {
+        padding-left: 60px;
+        background: #fafafa;
+    }
+
+    .site-details-cell {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .site-detail-item {
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .site-detail-label {
+        font-weight: 600;
+        color: #666;
     }
 
     .action-btn {
@@ -598,7 +647,7 @@
             <table class="payments-table" id="paymentsTable">
                 <thead>
                     <tr>
-                        <th>Invoice #</th>
+               
                         <th>Client</th>
                         <th>Site</th>
                         <th>Amount</th>
@@ -610,80 +659,128 @@
                 </thead>
                 <tbody id="paymentsTableBody">
                     <?php if (!empty($data['payments'])): ?>
-                        <?php foreach($data['payments'] as $payment): ?>
-                            <tr data-payment-id="<?= $payment->id ?>" 
-                                data-status="<?= strtolower($payment->status) ?>" 
-                                data-month="<?= date('n', strtotime($payment->payment_date)) ?>">
-                                <td>
-                                    <span class="invoice-number"><?= htmlspecialchars($payment->invoice_number) ?></span>
-                                </td>
-                                <td>
-                                    <div class="client-info">
-                                        <div class="client-avatar">
-                                            <?= strtoupper(substr($payment->client_name ?? 'C', 0, 1)) ?>
-                                        </div>
+                        <?php
+                            // Group payments by client and payment date
+                            $grouped = [];
+                            foreach($data['payments'] as $payment) {
+                                $groupKey = ($payment->client_name ?? 'N/A') . '|' . ($payment->payment_date ?? 'N/A');
+                                if (!isset($grouped[$groupKey])) {
+                                    $grouped[$groupKey] = [
+                                        'client_name' => $payment->client_name ?? 'N/A',
+                                        'client_email' => $payment->client_email ?? '',
+                                        'client_logo' => $payment->client_logo ?? 'default.png',
+                                        'payment_date' => $payment->payment_date ?? '',
+                                        'payments' => []
+                                    ];
+                                }
+                                $grouped[$groupKey]['payments'][] = $payment;
+                            }
+                        ?>
+                        
+                        <?php foreach($grouped as $groupKey => $group): ?>
+                            <?php 
+                                $groupId = 'group_' . md5($groupKey);
+                                $totalAmount = 0;
+                                $statuses = [];
+                                foreach($group['payments'] as $p) {
+                                    $totalAmount += $p->amount;
+                                    $statuses[] = $p->status;
+                                }
+                                // Determine group status
+                                $groupStatus = count(array_unique($statuses)) === 1 ? $statuses[0] : 'mixed';
+                            ?>
+                            
+                            <!-- Group Header Row -->
+                            <tr class="group-header" data-group-id="<?= $groupId ?>" onclick="toggleGroup('<?= $groupId ?>')">
+                                <td colspan="7">
+                                    <span class="expand-icon material-symbols-outlined" id="icon-<?= $groupId ?>">arrow_right</span>
+                                    <div class="client-info" style="display: inline-flex; align-items: center; gap: 10px;">
+                                        <img src="<?php echo URL_ROOT; ?>/uploads/clientLogos/<?php echo $group['client_logo']; ?>" alt="<?= htmlspecialchars($group['client_name']) ?>" class="client-avatar">
                                         <div class="client-details">
-                                            <span class="client-name"><?= htmlspecialchars($payment->client_name ?? 'N/A') ?></span>
-                                            <span class="client-email"><?= htmlspecialchars($payment->client_email ?? '') ?></span>
+                                            <span class="client-name"><?= htmlspecialchars($group['client_name']) ?></span>
+                                            <span class="client-email"><?= htmlspecialchars($group['client_email']) ?></span>
                                         </div>
                                     </div>
-                                </td>
-                                <td>
-                                    <div class="site-name">
-                                        <i class="fas fa-map-marker-alt"></i>
-                                        <?php 
-                                        if (!empty($payment->site_name)) {
-                                            echo htmlspecialchars($payment->site_name);
-                                        } elseif (!empty($payment->package_request_site_name)) {
-                                            echo htmlspecialchars($payment->package_request_site_name);
-                                            echo ' <span style="color: #ff9800; font-size: 11px; font-weight: 600;">(New Request)</span>';
-                                        } else {
-                                            echo 'N/A';
-                                        }
-                                        ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="payment-amount">Rs. <?= number_format($payment->amount, 2) ?></span>
-                                </td>
-                                <td class="date-cell">
-                                    <?= $payment->payment_date ? date('d M Y', strtotime($payment->payment_date)) : '-' ?>
-                                </td>
-                                <td class="date-cell">
-                                    <?= $payment->due_date ? date('d M Y', strtotime($payment->due_date)) : '-' ?>
-                                </td>
-                                <td>
-                                    <span class="status <?= strtolower($payment->status) ?>">
-                                        <?php if($payment->status === 'paid'): ?>
-                                            <i class="fas fa-check-circle"></i>
-                                        <?php elseif($payment->status === 'pending'): ?>
-                                            <i class="fas fa-clock"></i>
-                                        <?php else: ?>
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                        <?php endif; ?>
-                                        <?= ucfirst($payment->status) ?>
+                                    <span style="margin-left: 40px; font-weight: 600; color: #333;">
+                                        <?= count($group['payments']) ?> payment<?= count($group['payments']) !== 1 ? 's' : '' ?> | 
+                                        Rs. <?= number_format($totalAmount, 2) ?>
+                                    </span>
+                                    <span style="margin-left: 20px;">
+                                        <small style="background: #fff3e0; color: #f57c00; padding: 4px 8px; border-radius: 4px; font-weight: 600;">
+                                            <?= date('d M Y', strtotime($group['payment_date'])) ?>
+                                        </small>
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="actions-cell">
-                                        <button class="action-btn view" onclick="viewPaymentDetails(<?= $payment->id ?>)" title="View Details">
-                                            <i class="fas fa-eye"></i> View
-                                        </button>
-                                        <?php if($payment->status === 'paid'): ?>
-                                            <button class="action-btn download" onclick="downloadReceipt(<?= $payment->id ?>)" title="Download Receipt">
-                                                <i class="fas fa-download"></i>
-                                            </button>
-                                        <?php endif; ?>
-                                        <button class="action-btn edit" onclick="editPayment(<?= $payment->id ?>)" title="Edit Payment">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
+                            
+                            <!-- Detail Rows for Each Site -->
+                            <?php foreach($group['payments'] as $payment): ?>
+                                <tr class="group-row" data-group-id="<?= $groupId ?>" data-payment-id="<?= $payment->id ?>" data-status="<?= strtolower($payment->status) ?>" data-month="<?= date('n', strtotime($payment->payment_date)) ?>">
+                                    <td>
+                                        <div class="site-details-cell" style="padding-left: 20px;">
+                                            <div class="site-detail-item">
+                                                <span class="site-detail-label">Invoice:</span>
+                                                <span class="invoice-number"><?= htmlspecialchars($payment->invoice_number) ?></span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="site-name">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <?php 
+                                            if (!empty($payment->site_name)) {
+                                                echo htmlspecialchars($payment->site_name);
+                                            } elseif (!empty($payment->package_request_site_name)) {
+                                                echo htmlspecialchars($payment->package_request_site_name);
+                                                echo ' <span style="color: #ff9800; font-size: 11px; font-weight: 600;">(New Request)</span>';
+                                            } else {
+                                                echo 'N/A';
+                                            }
+                                            ?>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="payment-amount">Rs. <?= number_format($payment->amount, 2) ?></span>
+                                    </td>
+                                    <td class="date-cell">
+                                        <?= $payment->payment_date ? date('d M Y', strtotime($payment->payment_date)) : '-' ?>
+                                    </td>
+                                    <td class="date-cell">
+                                        <?= $payment->due_date ? date('d M Y', strtotime($payment->due_date)) : '-' ?>
+                                    </td>
+                                    <td>
+                                        <span class="status <?= strtolower($payment->status) ?>">
+                                            <?php if($payment->status === 'paid'): ?>
+                                                <i class="fas fa-check-circle"></i>
+                                            <?php elseif($payment->status === 'pending'): ?>
+                                                <i class="fas fa-clock"></i>
+                                            <?php else: ?>
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            <?php endif; ?>
+                                            <?= ucfirst($payment->status) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <button class="action-btn view" onclick="viewPaymentDetails(<?= $payment->id ?>)" title="View Details">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                            <?php if($payment->status === 'paid'): ?>
+                                                <button class="action-btn download" onclick="downloadReceipt(<?= $payment->id ?>)" title="Download Receipt">
+                                                    <i class="fas fa-download"></i>
+                                                </button>
+                                            <?php endif; ?>
+                                            <button class="action-btn edit" onclick="editPayment(<?= $payment->id ?>)" title="Edit Payment">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="8">
+                            <td colspan="7">
                                 <div class="empty-state">
                                     <i class="fas fa-file-invoice"></i>
                                     <h3>No Payment Records Found</h3>
@@ -702,6 +799,21 @@
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <script>
+// Toggle Group Rows
+function toggleGroup(groupId) {
+    const rows = document.querySelectorAll(`tr[data-group-id="${groupId}"].group-row`);
+    const headerRow = document.querySelector(`tr[data-group-id="${groupId}"].group-header`);
+    const icon = document.getElementById(`icon-${groupId}`);
+    
+    rows.forEach(row => {
+        row.classList.toggle('show');
+    });
+    
+    if (icon) {
+        icon.classList.toggle('expanded');
+    }
+}
+
 // Search and Filter Functionality
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchPayments');
@@ -719,36 +831,75 @@ document.addEventListener('DOMContentLoaded', function() {
         const searchTerm = searchInput.value.toLowerCase();
         const statusValue = statusFilter.value.toLowerCase();
         const monthValue = monthFilter.value;
-        const rows = tableBody.getElementsByTagName('tr');
-
-        for (let row of rows) {
-            if (row.querySelector('.empty-state')) {
-                continue;
+        
+        // Get all groups
+        const groups = new Set();
+        const rows = tableBody.querySelectorAll('tr');
+        
+        rows.forEach(row => {
+            if (row.classList.contains('group-header')) {
+                const groupId = row.getAttribute('data-group-id');
+                groups.add(groupId);
             }
+        });
 
-            const text = row.textContent.toLowerCase();
-            const status = row.getAttribute('data-status');
-            const month = row.getAttribute('data-month');
+        // Filter groups
+        groups.forEach(groupId => {
+            const groupHeader = document.querySelector(`tr[data-group-id="${groupId}"].group-header`);
+            const detailRows = document.querySelectorAll(`tr[data-group-id="${groupId}"].group-row`);
+            
+            let showGroup = false;
+            let visibleDetails = 0;
 
-            let showRow = true;
+            // Check each detail row
+            detailRows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const status = row.getAttribute('data-status');
+                const month = row.getAttribute('data-month');
 
-            // Filter by search term
-            if (searchTerm && !text.includes(searchTerm)) {
-                showRow = false;
+                let showRow = true;
+
+                // Filter by search term
+                if (searchTerm && !text.includes(searchTerm)) {
+                    showRow = false;
+                }
+
+                // Filter by status
+                if (statusValue && status !== statusValue) {
+                    showRow = false;
+                }
+
+                // Filter by month
+                if (monthValue && month !== monthValue) {
+                    showRow = false;
+                }
+
+                if (showRow) {
+                    visibleDetails++;
+                    showGroup = true;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+
+            // Show/hide group header if any details match
+            if (groupHeader) {
+                groupHeader.style.display = showGroup ? '' : 'none';
+                
+                // If group has matching rows, automatically show them
+                if (showGroup && (searchTerm || statusValue || monthValue)) {
+                    const icon = document.getElementById(`icon-${groupId}`);
+                    detailRows.forEach(row => {
+                        if (row.style.display !== 'none') {
+                            row.classList.add('show');
+                        }
+                    });
+                    if (icon) {
+                        icon.classList.add('expanded');
+                    }
+                }
             }
-
-            // Filter by status
-            if (statusValue && status !== statusValue) {
-                showRow = false;
-            }
-
-            // Filter by month
-            if (monthValue && month !== monthValue) {
-                showRow = false;
-            }
-
-            row.style.display = showRow ? '' : 'none';
-        }
+        });
     }
 });
 
