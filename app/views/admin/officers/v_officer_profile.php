@@ -29,7 +29,7 @@
 
 
         .container {
-            margin: 20px;   
+            margin: 0 50px;   
         }
 
         .header {
