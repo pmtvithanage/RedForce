@@ -2848,7 +2848,7 @@ public function approveLeaveRequest($id) {
         return;
     }
     
-    $admin_id = $_SESSION['user_userID'];
+    $admin_id = $_SESSION['user_id'];
     
     if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
         // Get leave request details for notification
