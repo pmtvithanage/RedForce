@@ -4,7 +4,7 @@
 
 <style>
 .page-container {
-    margin: 20px;
+    margin: 0 50px;
 }
 
 .route-header {
