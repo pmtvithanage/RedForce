@@ -1363,6 +1363,9 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
     // Assign officer to site
     public function assignOfficerToSite($siteId, $officerId, $assignedBy, $shiftType = 'Full Time', $assignmentEnd = null) {
+        // Convert empty string to null
+        $assignmentEnd = (!empty($assignmentEnd)) ? $assignmentEnd : null;
+        
         // Check if officer is already assigned to another site
         $this->db->query("SELECT id FROM officer_site_assignments 
                           WHERE officer_id = :officer_id AND status = 'Active'");
@@ -2184,7 +2187,10 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     // Assign supervisor to site
-    public function assignSupervisorToSite($siteId, $supervisorId, $assignedBy) {
+    public function assignSupervisorToSite($siteId, $supervisorId, $assignedBy, $assignmentEnd = null) {
+        // Convert empty string to null
+        $assignmentEnd = (!empty($assignmentEnd)) ? $assignmentEnd : null;
+        
         // Check if supervisor is already assigned to another site
         $this->db->query("SELECT id FROM officer_site_assignments 
                           WHERE officer_id = :officer_id AND status = 'Active'");
@@ -2208,10 +2214,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         // Create new assignment with shift_type as 'Supervisor'
         $this->db->query("INSERT INTO officer_site_assignments 
-                          (site_id, officer_id, shift_type, assignment_start, assigned_by, status) 
-                          VALUES (:site_id, :officer_id, 'Supervisor', CURDATE(), :assigned_by, 'Active')");
+                          (site_id, officer_id, shift_type, assignment_start, assignment_end, assigned_by, status) 
+                          VALUES (:site_id, :officer_id, 'Supervisor', CURDATE(), :assignment_end, :assigned_by, 'Active')");
         $this->db->bind(':site_id', $siteId);
         $this->db->bind(':officer_id', $supervisorId);
+        $this->db->bind(':assignment_end', $assignmentEnd);
         $this->db->bind(':assigned_by', $assignedBy);
 
         if ($this->db->execute()) {
@@ -2417,7 +2424,10 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
     }
 
     // Assign caretaker to site
-    public function assignCaretakerToSite($siteId, $caretakerId, $assignedBy) {
+    public function assignCaretakerToSite($siteId, $caretakerId, $assignedBy, $assignmentEnd = null) {
+        // Convert empty string to null
+        $assignmentEnd = (!empty($assignmentEnd)) ? $assignmentEnd : null;
+        
         // Check if caretaker is already assigned to another site
         $this->db->query("SELECT id FROM caretaker_site_assignments 
                           WHERE caretaker_id = :caretaker_id AND status = 'Active'");
@@ -2441,10 +2451,11 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         // Create new assignment
         $this->db->query("INSERT INTO caretaker_site_assignments 
-                          (site_id, caretaker_id, assignment_start, assigned_by, status) 
-                          VALUES (:site_id, :caretaker_id, CURDATE(), :assigned_by, 'Active')");
+                          (site_id, caretaker_id, assignment_start, assignment_end, assigned_by, status) 
+                          VALUES (:site_id, :caretaker_id, CURDATE(), :assignment_end, :assigned_by, 'Active')");
         $this->db->bind(':site_id', $siteId);
         $this->db->bind(':caretaker_id', $caretakerId);
+        $this->db->bind(':assignment_end', $assignmentEnd);
         $this->db->bind(':assigned_by', $assignedBy);
 
         if ($this->db->execute()) {

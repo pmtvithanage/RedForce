@@ -4112,7 +4112,7 @@ public function rejectLeaveRequest($id) {
         $officerId = $input['officer_id'] ?? null;
         $shiftType = $input['shift_type'] ?? 'Full Time';
         $assignmentEnd = $input['assignment_end'] ?? null;
-        $assignedBy = $_SESSION['user_userID'] ?? null;
+        $assignedBy = $_SESSION['user_id'] ?? null;
 
         if (!$siteId || !$officerId || !$assignedBy) {
             echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
@@ -4398,7 +4398,9 @@ public function rejectLeaveRequest($id) {
             return;
         }
 
-        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy);
+        $assignmentEnd = $input['assignment_end'] ?? null;
+        
+        $result = $this->adminModel->assignSupervisorToSite($siteId, $supervisorId, $assignedBy, $assignmentEnd);
         
         // Send notification to supervisor if assignment was successful
         if ($result['success']) {
@@ -4464,7 +4466,9 @@ public function rejectLeaveRequest($id) {
             return;
         }
 
-        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy);
+        $assignmentEnd = $input['assignment_end'] ?? null;
+        
+        $result = $this->adminModel->assignCaretakerToSite($siteId, $caretakerId, $assignedBy, $assignmentEnd);
         
         // Send notification to caretaker if assignment was successful
         if ($result['success']) {

@@ -1553,7 +1553,19 @@ function loadOfficers() {
             city: siteCity
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         displayOfficers(data.officers);
     })
@@ -1688,10 +1700,22 @@ function assignOfficer(officerId, shiftType, officerName) {
             site_id: siteId,
             officer_id: officerId,
             shift_type: shiftType,
-            assignment_end: servicePeriodEnd
+            assignment_end: servicePeriodEnd ? servicePeriodEnd : null
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         if (data.success) {
             // Show success message
@@ -1733,12 +1757,14 @@ function assignOfficer(officerId, shiftType, officerName) {
     .catch(error => {
         console.error('Error:', error);
         progressModal.innerHTML = `
-            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center;">
+            <div style="background: white; border-radius: 12px; padding: 40px; max-width: 600px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); text-align: center; max-height: 80vh; display: flex; flex-direction: column;">
                 <div style="width: 64px; height: 64px; background: #f8d7da; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
                     <span class="material-symbols-outlined" style="font-size: 32px; color: #dc3545;">error</span>
                 </div>
                 <h3 style="margin: 0 0 8px 0; color: #dc3545; font-size: 20px;">Error</h3>
-                <p style="color: #666; margin: 0 0 20px 0;">Failed to assign officer</p>
+                <div style="background: #fff5f5; border-left: 4px solid #dc3545; padding: 16px; border-radius: 8px; margin: 0 0 20px 0; text-align: left; max-height: 300px; overflow-y: auto; flex: 1;">
+                    <p style="color: #666; margin: 0; word-wrap: break-word; white-space: pre-wrap; font-size: 14px; line-height: 1.6;">${error.message || 'Failed to assign officer'}</p>
+                </div>
                 <button onclick="this.closest('div[style*=z-index]').remove()" style="padding: 10px 24px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">Close</button>
             </div>
         `;
@@ -1800,7 +1826,19 @@ function confirmUnassignment(assignmentId, buttonElement) {
             assignment_id: assignmentId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         if (data.success) {
             // Show success message
@@ -1906,7 +1944,19 @@ function confirmCaretakerUnassignment(assignmentId, buttonElement) {
             assignment_id: assignmentId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         if (data.success) {
             modal.innerHTML = `
@@ -1969,7 +2019,19 @@ function loadSupervisors() {
             city: siteCity
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         displaySupervisors(data.supervisors);
     })
@@ -2085,10 +2147,23 @@ function confirmSupervisorAssignment() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             site_id: siteId,
-            supervisor_id: selectedSupervisorId
+            supervisor_id: selectedSupervisorId,
+            assignment_end: servicePeriodEnd ? servicePeriodEnd : null
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         if (data.success) {
             // Reset opacity and show success message
@@ -2167,7 +2242,19 @@ function loadCaretakers() {
             city: siteCity
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         displayCaretakers(data.caretakers);
     })
@@ -2283,10 +2370,23 @@ function confirmCaretakerAssignment() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             site_id: siteId,
-            caretaker_id: selectedCaretakerId
+            caretaker_id: selectedCaretakerId,
+            assignment_end: servicePeriodEnd ? servicePeriodEnd : null
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
+        }
+        return response.text();
+    })
+    .then(text => {
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`Invalid JSON response: ${text.substring(0, 200)}`);
+        }
+    })
     .then(data => {
         if (data.success) {
             // Reset opacity and show success message
