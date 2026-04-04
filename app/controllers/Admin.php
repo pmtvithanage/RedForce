@@ -3114,7 +3114,7 @@ public function rejectLeaveRequest($id) {
                         'description' => $data['description_value'],
                         'image_path' => $image_path,
                         'target_roles' => $target_roles,
-                        'created_by' => $_SESSION['user_userID'],
+                        'created_by' => $_SESSION['user_id'],
                         'status' => 'active'
                     ];
                     
