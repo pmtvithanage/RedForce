@@ -128,8 +128,15 @@ class M_premiseofficer {
                             osa.id,
                             osa.site_id,
                             osa.shift_type,
-                            osa.assignment_start,
-                            osa.assignment_end,
+                            GREATEST(
+                                osa.assignment_start,
+                                COALESCE(pr.start_date, osa.assignment_start)
+                            ) AS assignment_start,
+                            CASE
+                                WHEN pr.end_date IS NOT NULL AND osa.assignment_end IS NOT NULL THEN LEAST(osa.assignment_end, pr.end_date)
+                                WHEN pr.end_date IS NOT NULL THEN pr.end_date
+                                ELSE osa.assignment_end
+                            END AS assignment_end,
                             osa.notes,
                             s.site_name,
                             s.address,
@@ -137,6 +144,7 @@ class M_premiseofficer {
                             c.contact_person_name
                          FROM officer_site_assignments osa
                          INNER JOIN sites s ON osa.site_id = s.id
+                         LEFT JOIN package_requests pr ON s.package_request_id = pr.id
                          LEFT JOIN Clients c ON s.client_id = c.id
                          WHERE osa.officer_id = :premiseofficer_id 
                          AND osa.status = 'Active'
@@ -162,8 +170,15 @@ class M_premiseofficer {
         $this->db->query("SELECT 
                             osa.id,
                             osa.shift_type,
-                            osa.assignment_start,
-                            osa.assignment_end,
+                            GREATEST(
+                                osa.assignment_start,
+                                COALESCE(pr.start_date, osa.assignment_start)
+                            ) AS assignment_start,
+                            CASE
+                                WHEN pr.end_date IS NOT NULL AND osa.assignment_end IS NOT NULL THEN LEAST(osa.assignment_end, pr.end_date)
+                                WHEN pr.end_date IS NOT NULL THEN pr.end_date
+                                ELSE osa.assignment_end
+                            END AS assignment_end,
                             osa.notes,
                             s.site_name,
                             s.address,
@@ -172,12 +187,23 @@ class M_premiseofficer {
                             c.contact_person_name
                          FROM officer_site_assignments osa
                          INNER JOIN sites s ON osa.site_id = s.id
+                         LEFT JOIN package_requests pr ON s.package_request_id = pr.id
                          LEFT JOIN Clients c ON s.client_id = c.id
                          WHERE osa.officer_id = :premiseofficer_id 
                          AND osa.status = 'Active'
                          AND s.is_draft = 0
-                         AND :date BETWEEN osa.assignment_start 
-                         AND IFNULL(osa.assignment_end, '2099-12-31')");
+                         AND :date BETWEEN GREATEST(
+                                osa.assignment_start,
+                                COALESCE(pr.start_date, osa.assignment_start)
+                             )
+                         AND IFNULL(
+                                CASE
+                                    WHEN pr.end_date IS NOT NULL AND osa.assignment_end IS NOT NULL THEN LEAST(osa.assignment_end, pr.end_date)
+                                    WHEN pr.end_date IS NOT NULL THEN pr.end_date
+                                    ELSE osa.assignment_end
+                                END,
+                                '2099-12-31'
+                             )");
         $this->db->bind(':premiseofficer_id', $premiseofficer_id);
         $this->db->bind(':date', $date);
         return $this->db->single();
