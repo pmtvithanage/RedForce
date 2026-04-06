@@ -556,20 +556,6 @@
                                         <span class="material-symbols-outlined">visibility</span>
                                         View
                                     </button>
-                                    <?php if ($request->status == 'Pending'): ?>
-                                        <button class="action-btn approve-btn"
-                                            onclick="approveRequest(<?php echo $request->id; ?>)"
-                                            title="Approve">
-                                            <span class="material-symbols-outlined">check</span>
-                                            Approve
-                                        </button>
-                                        <button class="action-btn reject-btn"
-                                            onclick="rejectRequest(<?php echo $request->id; ?>)"
-                                            title="Reject">
-                                            <span class="material-symbols-outlined">close</span>
-                                            Reject
-                                        </button>
-                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -580,91 +566,9 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
-<div id="confirmModal" class="confirm-modal">
-    <div class="confirm-modal-content">
-        <div class="confirm-modal-header">
-            <span class="material-symbols-outlined confirm-modal-icon" id="modalIcon">help</span>
-            <h3 class="confirm-modal-title" id="modalTitle">Confirm Action</h3>
-        </div>
-        <p class="confirm-modal-message" id="modalMessage">Are you sure you want to proceed?</p>
-        <textarea class="confirm-modal-input" id="modalInput" placeholder="Enter reason (optional)" style="display: none;" rows="3"></textarea>
-        <div class="confirm-modal-actions">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
-            <button class="modal-btn modal-btn-confirm" id="modalConfirmBtn" onclick="confirmAction()">Confirm</button>
-        </div>
-    </div>
-</div>
-
 <?php flash('msg') ?>
 
 <script>
-    let currentAction = null;
-    let currentRequestId = null;
-
-    // Show modal for approve
-    function showApproveModal(requestId) {
-        document.getElementById('modalTitle').textContent = 'Approve Leave Request';
-        document.getElementById('modalMessage').textContent = 'Are you sure you want to approve this leave request?';
-        document.getElementById('modalIcon').textContent = 'check_circle';
-        document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon approve';
-        document.getElementById('modalInput').style.display = 'none';
-        document.getElementById('modalConfirmBtn').className = 'modal-btn modal-btn-confirm approve';
-        document.getElementById('modalConfirmBtn').textContent = 'Approve';
-
-        currentAction = 'approve';
-        currentRequestId = requestId;
-
-        document.getElementById('confirmModal').classList.add('active');
-    }
-
-    // Show modal for reject
-    function showRejectModal(requestId) {
-        document.getElementById('modalTitle').textContent = 'Reject Leave Request';
-        document.getElementById('modalMessage').textContent = 'Please provide a reason for rejecting this leave request:';
-        document.getElementById('modalIcon').textContent = 'cancel';
-        document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon reject';
-        document.getElementById('modalInput').style.display = 'block';
-        document.getElementById('modalInput').value = '';
-        document.getElementById('modalConfirmBtn').className = 'modal-btn modal-btn-confirm reject';
-        document.getElementById('modalConfirmBtn').textContent = 'Reject';
-
-        currentAction = 'reject';
-        currentRequestId = requestId;
-
-        document.getElementById('confirmModal').classList.add('active');
-    }
-
-    // Close modal
-    function closeModal() {
-        document.getElementById('confirmModal').classList.remove('active');
-        currentAction = null;
-        currentRequestId = null;
-        document.getElementById('modalInput').value = '';
-    }
-
-    // Confirm action
-    function confirmAction() {
-        if (currentAction === 'approve') {
-            window.location.href = '<?php echo URL_ROOT; ?>/admin/approveLeaveRequest/' + currentRequestId;
-        } else if (currentAction === 'reject') {
-            const reason = document.getElementById('modalInput').value.trim();
-            if (!reason) {
-                alert('Please provide a reason for rejection');
-                return;
-            }
-            window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectLeaveRequest/' + currentRequestId + '?reason=' + encodeURIComponent(reason);
-        }
-        closeModal();
-    }
-
-    // Close modal on background click
-    document.getElementById('confirmModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
-        }
-    });
-
     // Search and filter functionality
     document.getElementById('searchInput')?.addEventListener('input', filterTable);
     document.getElementById('statusFilter')?.addEventListener('change', filterTable);
@@ -703,16 +607,6 @@
     // View request details
     function viewRequest(id) {
         window.location.href = '<?php echo URL_ROOT; ?>/admin/viewLeaveRequest/' + id;
-    }
-
-    // Approve request
-    function approveRequest(id) {
-        showApproveModal(id);
-    }
-
-    // Reject request
-    function rejectRequest(id) {
-        showRejectModal(id);
     }
 
     // Flash message auto-remove

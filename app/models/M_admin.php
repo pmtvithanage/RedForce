@@ -926,6 +926,373 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         return $this->db->single();
     }
 
+    // Resolve the currently assigned site/shift for a premise officer leave request.
+    public function getPremiseOfficerLeaveCoverageContext($leaveRequestId) {
+        $this->db->query("
+            SELECT
+                lr.id as leave_request_id,
+                lr.premiseofficer_id,
+                lr.start_date,
+                lr.end_date,
+                lr.status,
+                osa.id as assignment_id,
+                osa.site_id,
+                osa.shift_type,
+                osa.assignment_start,
+                osa.assignment_end,
+                s.site_name,
+                s.address,
+                s.city,
+                s.district
+            FROM leave_requests lr
+            INNER JOIN officer_site_assignments osa
+                ON osa.officer_id = lr.premiseofficer_id
+               AND osa.status = 'Active'
+               AND lr.start_date BETWEEN osa.assignment_start AND IFNULL(osa.assignment_end, '2099-12-31')
+            INNER JOIN sites s ON s.id = osa.site_id
+            WHERE lr.id = :leave_id
+              AND lr.premiseofficer_id IS NOT NULL
+            LIMIT 1
+        ");
+        $this->db->bind(':leave_id', $leaveRequestId);
+        return $this->db->single();
+    }
+
+    private function replacementPlanToken($officerId) {
+        return '[replacement_officer_id:' . (int)$officerId . ']';
+    }
+
+    public function getPlannedReplacementOfficerForLeave($leaveRequestId) {
+        $this->db->query("SELECT admin_response FROM leave_requests WHERE id = :id LIMIT 1");
+        $this->db->bind(':id', $leaveRequestId);
+        $row = $this->db->single();
+        if (!$row || empty($row->admin_response)) {
+            return null;
+        }
+
+        if (preg_match('/\[replacement_officer_id:(\d+)\]/', $row->admin_response, $matches)) {
+            return (int)$matches[1];
+        }
+
+        return null;
+    }
+
+    public function planReplacementOfficerForLeave($leaveRequestId, $adminId, $replacementOfficerId) {
+        $leaveRequest = $this->getLeaveRequestById($leaveRequestId);
+        if (!$leaveRequest || $leaveRequest->status !== 'Pending' || empty($leaveRequest->premiseofficer_id)) {
+            return ['success' => false, 'message' => 'Pending premise officer leave request not found'];
+        }
+
+        $coverageContext = $this->getPremiseOfficerLeaveCoverageContext($leaveRequestId);
+        if (!$coverageContext) {
+            return ['success' => false, 'message' => 'No active site assignment found for the requesting officer'];
+        }
+
+        if ((int)$replacementOfficerId === (int)$leaveRequest->premiseofficer_id) {
+            return ['success' => false, 'message' => 'Replacement officer cannot be the same as requesting officer'];
+        }
+
+        $this->db->query("
+            SELECT 1
+            FROM Users u
+            INNER JOIN premise_officers po ON po.userID = u.id
+            WHERE u.id = :replacement_officer
+              AND u.role = 'premise officer'
+              AND po.rank <> 'Supervisor'
+              AND po.employment_status = 'Active'
+            LIMIT 1
+        ");
+        $this->db->bind(':replacement_officer', $replacementOfficerId);
+        $eligible = $this->db->single();
+        if (!$eligible) {
+            return ['success' => false, 'message' => 'Selected replacement officer is not eligible'];
+        }
+
+        $this->db->query("
+            SELECT 1
+            FROM officer_site_assignments
+            WHERE officer_id = :replacement_officer
+              AND status = 'Active'
+              AND assignment_start <= :leave_end
+              AND IFNULL(assignment_end, '2099-12-31') >= :leave_start
+            LIMIT 1
+        ");
+        $this->db->bind(':replacement_officer', $replacementOfficerId);
+        $this->db->bind(':leave_start', $leaveRequest->start_date);
+        $this->db->bind(':leave_end', $leaveRequest->end_date);
+        $assignmentOverlap = $this->db->single();
+        if ($assignmentOverlap) {
+            return ['success' => false, 'message' => 'Selected replacement officer is not free for those dates'];
+        }
+
+        $this->db->query("
+            SELECT 1
+            FROM leave_requests lr
+            WHERE lr.status = 'Approved'
+              AND lr.start_date <= :leave_end
+              AND lr.end_date >= :leave_start
+              AND (
+                    lr.premiseofficer_id = :replacement_officer
+                 OR lr.supervisor_id = :replacement_officer
+                 OR lr.mobilerider_id = :replacement_officer
+                 OR lr.caretaker_id = :replacement_officer
+              )
+            LIMIT 1
+        ");
+        $this->db->bind(':replacement_officer', $replacementOfficerId);
+        $this->db->bind(':leave_start', $leaveRequest->start_date);
+        $this->db->bind(':leave_end', $leaveRequest->end_date);
+        $leaveOverlap = $this->db->single();
+        if ($leaveOverlap) {
+            return ['success' => false, 'message' => 'Selected replacement officer is on leave in that period'];
+        }
+
+        $this->db->query("
+            UPDATE leave_requests
+            SET admin_response = :plan,
+                reviewed_by = :admin_id
+            WHERE id = :id
+              AND status = 'Pending'
+        ");
+        $this->db->bind(':plan', $this->replacementPlanToken($replacementOfficerId));
+        $this->db->bind(':admin_id', $adminId);
+        $this->db->bind(':id', $leaveRequestId);
+        if (!$this->db->execute()) {
+            return ['success' => false, 'message' => 'Failed to save replacement plan'];
+        }
+
+        return [
+            'success' => true,
+            'message' => 'Replacement officer selected. You can now approve the leave request.',
+            'site_id' => (int)$coverageContext->site_id,
+            'leave_start' => $leaveRequest->start_date,
+            'leave_end' => $leaveRequest->end_date,
+            'replacement_officer_id' => (int)$replacementOfficerId
+        ];
+    }
+
+    public function getAvailablePremiseOfficersForLeaveCoverage($siteId, $startDate, $endDate, $excludeOfficerId) {
+        $this->db->query("
+            SELECT
+                u.id AS user_id,
+                u.userID,
+                u.name,
+                u.email,
+                u.phone_number,
+                u.profile_image,
+                po.officerID,
+                po.city,
+                po.district,
+                po.rank,
+                po.employment_status,
+                po.rating
+            FROM Users u
+            INNER JOIN premise_officers po ON po.userID = u.id
+            WHERE u.role = 'premise officer'
+              AND u.id <> :exclude_officer_id
+              AND po.rank <> 'Supervisor'
+              AND po.employment_status = 'Active'
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM officer_site_assignments osa
+                  WHERE osa.officer_id = u.id
+                    AND osa.status = 'Active'
+                    AND osa.assignment_start <= :end_date
+                    AND IFNULL(osa.assignment_end, '2099-12-31') >= :start_date
+              )
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM leave_requests lr
+                  WHERE lr.status = 'Approved'
+                    AND lr.start_date <= :end_date
+                    AND lr.end_date >= :start_date
+                    AND (
+                        lr.premiseofficer_id = u.id
+                        OR lr.supervisor_id = u.id
+                        OR lr.mobilerider_id = u.id
+                        OR lr.caretaker_id = u.id
+                    )
+              )
+            ORDER BY u.name ASC
+        ");
+        $this->db->bind(':exclude_officer_id', $excludeOfficerId);
+        $this->db->bind(':start_date', $startDate);
+        $this->db->bind(':end_date', $endDate);
+        return $this->db->resultSet();
+    }
+
+    public function approvePremiseOfficerLeaveWithReplacement($leaveRequestId, $adminId, $replacementOfficerId) {
+        try {
+            if (!$this->db->beginTransaction()) {
+                return ['success' => false, 'message' => 'Failed to start transaction'];
+            }
+
+            $this->db->query("
+                SELECT *
+                FROM leave_requests
+                WHERE id = :id
+                  AND status = 'Pending'
+                  AND premiseofficer_id IS NOT NULL
+                FOR UPDATE
+            ");
+            $this->db->bind(':id', $leaveRequestId);
+            $leaveRequest = $this->db->single();
+
+            if (!$leaveRequest) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'Pending premise officer leave request not found'];
+            }
+
+            $this->db->query("
+                SELECT
+                    osa.id,
+                    osa.site_id,
+                    osa.shift_type,
+                    osa.assignment_start,
+                    osa.assignment_end
+                FROM officer_site_assignments osa
+                WHERE osa.officer_id = :officer_id
+                  AND osa.status = 'Active'
+                  AND :leave_start BETWEEN osa.assignment_start AND IFNULL(osa.assignment_end, '2099-12-31')
+                ORDER BY osa.assignment_start DESC
+                LIMIT 1
+                FOR UPDATE
+            ");
+            $this->db->bind(':officer_id', $leaveRequest->premiseofficer_id);
+            $this->db->bind(':leave_start', $leaveRequest->start_date);
+            $sourceAssignment = $this->db->single();
+
+            if (!$sourceAssignment) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'No active site assignment found for the requesting officer in this leave period'];
+            }
+
+            $this->db->query("
+                SELECT 1
+                FROM Users u
+                INNER JOIN premise_officers po ON po.userID = u.id
+                WHERE u.id = :replacement_officer
+                  AND u.role = 'premise officer'
+                  AND po.rank <> 'Supervisor'
+                  AND po.employment_status = 'Active'
+                  AND u.id <> :requesting_officer
+                LIMIT 1
+            ");
+            $this->db->bind(':replacement_officer', $replacementOfficerId);
+            $this->db->bind(':requesting_officer', $leaveRequest->premiseofficer_id);
+            $replacementValid = $this->db->single();
+
+            if (!$replacementValid) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'Selected replacement officer is not eligible'];
+            }
+
+            $this->db->query("
+                SELECT 1
+                FROM officer_site_assignments
+                WHERE officer_id = :replacement_officer
+                  AND status = 'Active'
+                  AND assignment_start <= :leave_end
+                  AND IFNULL(assignment_end, '2099-12-31') >= :leave_start
+                LIMIT 1
+            ");
+            $this->db->bind(':replacement_officer', $replacementOfficerId);
+            $this->db->bind(':leave_start', $leaveRequest->start_date);
+            $this->db->bind(':leave_end', $leaveRequest->end_date);
+            $overlap = $this->db->single();
+
+            if ($overlap) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'Selected replacement officer is not free for the requested leave dates'];
+            }
+
+            $this->db->query("
+                UPDATE officer_site_assignments
+                SET assignment_end = DATE_SUB(:leave_start, INTERVAL 1 DAY)
+                WHERE id = :assignment_id
+            ");
+            $this->db->bind(':leave_start', $leaveRequest->start_date);
+            $this->db->bind(':assignment_id', $sourceAssignment->id);
+            $this->db->execute();
+
+            $this->db->query("
+                INSERT INTO officer_site_assignments
+                    (site_id, officer_id, shift_type, assignment_start, assignment_end, assigned_by, status, notes)
+                VALUES
+                    (:site_id, :officer_id, :shift_type, :assignment_start, :assignment_end, :assigned_by, 'Active', :notes)
+            ");
+            $this->db->bind(':site_id', $sourceAssignment->site_id);
+            $this->db->bind(':officer_id', $replacementOfficerId);
+            $this->db->bind(':shift_type', $sourceAssignment->shift_type ?? 'Full Time');
+            $this->db->bind(':assignment_start', $leaveRequest->start_date);
+            $this->db->bind(':assignment_end', $leaveRequest->end_date);
+            $this->db->bind(':assigned_by', $adminId);
+            $this->db->bind(':notes', 'Temporary leave cover for leave request #' . $leaveRequest->id);
+            if (!$this->db->execute()) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'Failed to assign replacement officer'];
+            }
+
+            $originalEnd = $sourceAssignment->assignment_end;
+            if (empty($originalEnd) || strtotime($originalEnd) > strtotime($leaveRequest->end_date)) {
+                $rejoinStart = date('Y-m-d', strtotime($leaveRequest->end_date . ' +1 day'));
+
+                $this->db->query("
+                    INSERT INTO officer_site_assignments
+                        (site_id, officer_id, shift_type, assignment_start, assignment_end, assigned_by, status, notes)
+                    VALUES
+                        (:site_id, :officer_id, :shift_type, :assignment_start, :assignment_end, :assigned_by, 'Active', :notes)
+                ");
+                $this->db->bind(':site_id', $sourceAssignment->site_id);
+                $this->db->bind(':officer_id', $leaveRequest->premiseofficer_id);
+                $this->db->bind(':shift_type', $sourceAssignment->shift_type ?? 'Full Time');
+                $this->db->bind(':assignment_start', $rejoinStart);
+                $this->db->bind(':assignment_end', $originalEnd);
+                $this->db->bind(':assigned_by', $adminId);
+                $this->db->bind(':notes', 'Reassignment after leave request #' . $leaveRequest->id);
+                if (!$this->db->execute()) {
+                    $this->db->rollBack();
+                    return ['success' => false, 'message' => 'Failed to restore original officer assignment after leave period'];
+                }
+            }
+
+            $this->db->query("
+                UPDATE leave_requests
+                SET status = 'Approved',
+                    reviewed_by = :admin_id,
+                    reviewed_at = NOW(),
+                    admin_response = :response
+                WHERE id = :id
+            ");
+            $this->db->bind(':admin_id', $adminId);
+            $this->db->bind(':response', 'Approved with replacement officer assignment for leave period');
+            $this->db->bind(':id', $leaveRequestId);
+            if (!$this->db->execute()) {
+                $this->db->rollBack();
+                return ['success' => false, 'message' => 'Failed to approve leave request'];
+            }
+
+            if (!$this->db->commit()) {
+                return ['success' => false, 'message' => 'Failed to commit transaction'];
+            }
+
+            return [
+                'success' => true,
+                'message' => 'Leave request approved with replacement assignment',
+                'requesting_officer_id' => (int)$leaveRequest->premiseofficer_id,
+                'replacement_officer_id' => (int)$replacementOfficerId,
+                'site_id' => (int)$sourceAssignment->site_id,
+                'leave_start' => $leaveRequest->start_date,
+                'leave_end' => $leaveRequest->end_date,
+                'leave_type' => $leaveRequest->leave_type
+            ];
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log('approvePremiseOfficerLeaveWithReplacement error: ' . $e->getMessage());
+            return ['success' => false, 'message' => 'Unexpected error while approving leave with replacement'];
+        }
+    }
+
     // Approve leave request
     public function approveLeaveRequest($id, $admin_id) {
         $this->db->query("

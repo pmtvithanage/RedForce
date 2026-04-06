@@ -2758,14 +2758,57 @@ public function editSite($site_id){
     if (!$leaveRequest) {
         flash('leave_error', 'Leave request not found');
         redirect('admin/dashboard');
+        return;
     }
     
+    $replacementContext = null;
+    $plannedReplacementOfficerId = null;
+    $plannedReplacementOfficer = null;
+
+    if ($leaveRequest->status === 'Pending' && !empty($leaveRequest->premiseofficer_id)) {
+        $replacementContext = $this->adminModel->getPremiseOfficerLeaveCoverageContext($id);
+        $plannedReplacementOfficerId = $this->adminModel->getPlannedReplacementOfficerForLeave($id);
+        if ($plannedReplacementOfficerId) {
+            $plannedReplacementOfficer = $this->userModel->getUserById($plannedReplacementOfficerId);
+        }
+    }
+
     $data = [
         'title' => 'Dashboard',
         'pageTitle' => 'Leave Request Details',
-        'leaveRequest' => $leaveRequest
+        'leaveRequest' => $leaveRequest,
+        'replacementContext' => $replacementContext,
+        'plannedReplacementOfficerId' => $plannedReplacementOfficerId,
+        'plannedReplacementOfficer' => $plannedReplacementOfficer
     ];
     $this->view('admin/dashboard/v_leave_details', $data);
+}
+
+public function planReplacementOfficerForLeave() {
+    header('Content-Type: application/json');
+
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        echo json_encode(['success' => false, 'message' => 'You do not have permission to approve leave requests']);
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        return;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $leaveRequestId = (int)($input['leave_request_id'] ?? 0);
+    $replacementOfficerId = (int)($input['replacement_officer_id'] ?? 0);
+    $adminId = $_SESSION['user_id'] ?? null;
+
+    if (!$leaveRequestId || !$replacementOfficerId || !$adminId) {
+        echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+        return;
+    }
+
+    $result = $this->adminModel->planReplacementOfficerForLeave($leaveRequestId, $adminId, $replacementOfficerId);
+    echo json_encode($result);
 }
 
 // Approve leave request
@@ -2866,6 +2909,54 @@ public function approveLeaveRequest($id) {
     }
     
     $admin_id = $_SESSION['user_id'];
+
+    $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+    if ($leaveRequest && $leaveRequest->status === 'Pending' && !empty($leaveRequest->premiseofficer_id)) {
+        $plannedReplacementOfficerId = $this->adminModel->getPlannedReplacementOfficerForLeave($id);
+        if (!$plannedReplacementOfficerId) {
+            flash('leave_error', 'Manually select and assign a replacement officer before approving this premise officer leave request.');
+            redirect('admin/viewLeaveRequest/' . $id);
+            return;
+        }
+
+        $replacementResult = $this->adminModel->approvePremiseOfficerLeaveWithReplacement($id, $admin_id, $plannedReplacementOfficerId);
+        if (!$replacementResult['success']) {
+            flash('leave_error', $replacementResult['message'] ?? 'Failed to approve leave request with replacement');
+            redirect('admin/viewLeaveRequest/' . $id);
+            return;
+        }
+
+        try {
+            $site = $this->adminModel->getSiteById($replacementResult['site_id']);
+            $siteName = $site ? $site->site_name : 'assigned site';
+
+            $this->notificationModel->insertNotification(
+                $replacementResult['requesting_officer_id'],
+                'success',
+                'Leave Request Approved',
+                'Your ' . ($replacementResult['leave_type'] ?? 'leave') . ' request from ' . $replacementResult['leave_start'] . ' to ' . $replacementResult['leave_end'] . ' has been approved with replacement coverage.',
+                URL_ROOT . '/premiseOfficer/leaverequests',
+                'check_circle',
+                $admin_id
+            );
+
+            $this->notificationModel->insertNotification(
+                $replacementResult['replacement_officer_id'],
+                'assignment',
+                'Temporary Leave Coverage Assigned',
+                'You have been assigned to cover ' . $siteName . ' from ' . $replacementResult['leave_start'] . ' to ' . $replacementResult['leave_end'] . '.',
+                URL_ROOT . '/premiseOfficer/schedule',
+                'calendar_today',
+                $admin_id
+            );
+        } catch (Exception $e) {
+            error_log('approveLeaveRequest premise officer notifications error: ' . $e->getMessage());
+        }
+
+        flash('leave_success', 'Leave request approved successfully with manual replacement assignment');
+        redirect('admin/pendings');
+        return;
+    }
     
     if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
         // Get leave request details for notification
@@ -2939,6 +3030,79 @@ public function approveLeaveRequest($id) {
         flash('leave_error', 'Failed to approve leave request');
     }
     
+    redirect('admin/pendings');
+}
+
+public function approvePremiseOfficerLeaveWithReplacement($id) {
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        flash('leave_error', 'Invalid request method');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    $adminId = $_SESSION['user_id'] ?? null;
+    $replacementOfficerId = (int)($_POST['replacement_officer_id'] ?? 0);
+
+    if (!$adminId || $replacementOfficerId <= 0) {
+        flash('leave_error', 'Please select a replacement premise officer before approving');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    $result = $this->adminModel->approvePremiseOfficerLeaveWithReplacement($id, $adminId, $replacementOfficerId);
+    if (!$result['success']) {
+        flash('leave_error', $result['message'] ?? 'Failed to approve leave request with replacement');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    try {
+        $leaveDetails = $this->adminModel->getLeaveRequestById($id);
+
+        // Notify requesting officer
+        $this->notificationModel->insertNotification(
+            $result['requesting_officer_id'],
+            'success',
+            'Leave Request Approved',
+            'Your ' . ($result['leave_type'] ?? 'leave') . ' request from ' . $result['leave_start'] . ' to ' . $result['leave_end'] . ' has been approved with coverage assigned.',
+            URL_ROOT . '/premiseOfficer/leaverequests',
+            'check_circle',
+            $adminId
+        );
+
+        // Notify replacement officer
+        $site = $this->adminModel->getSiteById($result['site_id']);
+        $siteName = $site ? $site->site_name : 'assigned site';
+        $this->notificationModel->insertNotification(
+            $result['replacement_officer_id'],
+            'assignment',
+            'Temporary Leave Coverage Assigned',
+            'You have been assigned to cover ' . $siteName . ' from ' . $result['leave_start'] . ' to ' . $result['leave_end'] . '.',
+            URL_ROOT . '/premiseOfficer/schedule',
+            'calendar_today',
+            $adminId
+        );
+
+        if ($leaveDetails) {
+            $requestingName = $leaveDetails->employee_name ?? 'Officer';
+            $this->adminModel->insertRecentActivity(
+                'Leave Replacement Assigned',
+                'Approved leave request #' . $id . ' for ' . $requestingName . ' with replacement officer coverage from ' . $result['leave_start'] . ' to ' . $result['leave_end'],
+                'leave_approval',
+                $adminId
+            );
+        }
+    } catch (Exception $e) {
+        error_log('approvePremiseOfficerLeaveWithReplacement notifications error: ' . $e->getMessage());
+    }
+
+    flash('leave_success', 'Leave request approved and replacement officer assigned successfully');
     redirect('admin/pendings');
 }
 
