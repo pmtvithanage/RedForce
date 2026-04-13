@@ -114,32 +114,188 @@ class M_supervisor {
     }
 
     // ==========================================
-    // OFFICER ATTENDANCE CRUD METHODS
+    // OFFICER ATTENDANCE + DUTY POINT METHODS
     // ==========================================
+
+    public function getSupervisorPrimarySiteId($supervisor_id) {
+        $this->db->query('
+            SELECT site_id
+            FROM officer_site_assignments
+            WHERE officer_id = :supervisor_id
+              AND status = "Active"
+              AND shift_type = "Supervisor"
+            ORDER BY id DESC
+            LIMIT 1
+        ');
+        $this->db->bind(':supervisor_id', $supervisor_id);
+
+        $assignment = $this->db->single();
+        return $assignment ? (int)$assignment->site_id : null;
+    }
+
+    public function getSupervisorAttendanceSite($supervisor_id) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId) {
+            return null;
+        }
+
+        $this->db->query('SELECT id, site_name, address, city, district FROM sites WHERE id = :site_id LIMIT 1');
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->single();
+    }
+
+    public function getAttendanceEligibleStaff($supervisor_id) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId) {
+            return [];
+        }
+
+        $this->db->query('
+            (
+                SELECT DISTINCT
+                    u.id AS staff_user_id,
+                    u.userID AS staff_code,
+                    u.name AS staff_name,
+                    "Premise Officer" AS staff_role
+                FROM officer_site_assignments osa
+                INNER JOIN Users u ON u.id = osa.officer_id
+                WHERE osa.site_id = :site_id
+                  AND osa.status = "Active"
+                  AND (osa.shift_type IS NULL OR osa.shift_type <> "Supervisor")
+                  AND u.role IN ("Premise Officer", "premise officer")
+            )
+            UNION ALL
+            (
+                SELECT DISTINCT
+                    u.id AS staff_user_id,
+                    u.userID AS staff_code,
+                    u.name AS staff_name,
+                    "Caretaker" AS staff_role
+                FROM caretaker_site_assignments csa
+                INNER JOIN Users u ON u.id = csa.caretaker_id
+                WHERE csa.site_id = :site_id
+                  AND csa.status = "Active"
+                  AND u.role IN ("Caretaker", "Care Taker", "Care-Taker", "caretaker")
+            )
+            ORDER BY staff_name ASC
+        ');
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
+    public function getValidAttendanceStaffMember($supervisor_id, $staff_user_id) {
+        $staff_user_id = (int)$staff_user_id;
+        if ($staff_user_id <= 0) {
+            return null;
+        }
+
+        $eligibleStaff = $this->getAttendanceEligibleStaff($supervisor_id);
+        foreach ($eligibleStaff as $staff) {
+            if ((int)$staff->staff_user_id === $staff_user_id) {
+                return $staff;
+            }
+        }
+
+        return null;
+    }
+
+    public function getAttendanceDutyPoints($supervisor_id) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId) {
+            return [];
+        }
+
+        $this->db->query('
+            SELECT id, duty_point_name
+            FROM supervisor_duty_points
+            WHERE site_id = :site_id
+              AND status = "Active"
+            ORDER BY duty_point_name ASC
+        ');
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->resultSet();
+    }
+
+    public function addAttendanceDutyPoint($supervisor_id, $duty_point_name) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId) {
+            return false;
+        }
+
+        $this->db->query('
+            INSERT INTO supervisor_duty_points (site_id, created_by, duty_point_name, status)
+            VALUES (:site_id, :created_by, :duty_point_name, "Active")
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':created_by', $supervisor_id);
+        $this->db->bind(':duty_point_name', $duty_point_name);
+        return $this->db->execute();
+    }
+
+    public function isValidDutyPointForSupervisor($supervisor_id, $duty_point_id) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId || !$duty_point_id) {
+            return null;
+        }
+
+        $this->db->query('
+            SELECT id, duty_point_name
+            FROM supervisor_duty_points
+            WHERE id = :id
+              AND site_id = :site_id
+              AND status = "Active"
+            LIMIT 1
+        ');
+        $this->db->bind(':id', (int)$duty_point_id);
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->single();
+    }
 
     // CREATE - Add new attendance record
     public function addAttendance($data) {
-        $this->db->query('INSERT INTO officer_attendance 
-                          (supervisor_id, officer_id, officer_name, attendance_date, check_in_time, check_out_time, status, notes) 
-                          VALUES (:supervisor_id, :officer_id, :officer_name, :attendance_date, :check_in_time, :check_out_time, :status, :notes)');
-        
-        $this->db->bind(':supervisor_id', $data['supervisor_id']);
+        // Honor existing unique key (officer_id + attendance_date) by upserting.
+        $this->db->query('SELECT id FROM officer_attendance WHERE officer_id = :officer_id AND attendance_date = :attendance_date LIMIT 1');
         $this->db->bind(':officer_id', $data['officer_id']);
-        $this->db->bind(':officer_name', $data['officer_name']);
         $this->db->bind(':attendance_date', $data['attendance_date']);
+        $existing = $this->db->single();
+
+        if ($existing) {
+            $this->db->query('UPDATE officer_attendance
+                              SET supervisor_id = :supervisor_id,
+                                  officer_name = :officer_name,
+                                  check_in_time = :check_in_time,
+                                  check_out_time = :check_out_time,
+                                  status = :status,
+                                  notes = :notes,
+                                  duty_point = :duty_point,
+                                  staff_role = :staff_role,
+                                  updated_at = NOW()
+                              WHERE id = :id');
+            $this->db->bind(':id', $existing->id);
+        } else {
+            $this->db->query('INSERT INTO officer_attendance
+                              (supervisor_id, officer_id, officer_name, attendance_date, check_in_time, check_out_time, status, notes, duty_point, staff_role)
+                              VALUES (:supervisor_id, :officer_id, :officer_name, :attendance_date, :check_in_time, :check_out_time, :status, :notes, :duty_point, :staff_role)');
+            $this->db->bind(':officer_id', $data['officer_id']);
+            $this->db->bind(':attendance_date', $data['attendance_date']);
+        }
+
+        $this->db->bind(':supervisor_id', $data['supervisor_id']);
+        $this->db->bind(':officer_name', $data['officer_name']);
         $this->db->bind(':check_in_time', $data['check_in_time']);
         $this->db->bind(':check_out_time', $data['check_out_time']);
         $this->db->bind(':status', $data['status']);
         $this->db->bind(':notes', $data['notes']);
-        
+        $this->db->bind(':duty_point', $data['duty_point']);
+        $this->db->bind(':staff_role', $data['staff_role']);
+
         return $this->db->execute();
     }
 
     // READ - Get all attendance records with optional filters
     public function getAttendanceRecords($supervisor_id, $filters = []) {
         $query = 'SELECT * FROM officer_attendance WHERE supervisor_id = :supervisor_id';
-        
-        // Add filters if provided
+
         if (!empty($filters['date'])) {
             $query .= ' AND attendance_date = :date';
         }
@@ -147,14 +303,17 @@ class M_supervisor {
             $query .= ' AND status = :status';
         }
         if (!empty($filters['officer_id'])) {
-            $query .= ' AND officer_id LIKE :officer_id';
+            $query .= ' AND (officer_id LIKE :officer_id OR officer_name LIKE :officer_name)';
         }
-        
-        $query .= ' ORDER BY attendance_date DESC, check_in_time DESC';
-        
+        if (!empty($filters['duty_point'])) {
+            $query .= ' AND duty_point = :duty_point';
+        }
+
+        $query .= ' ORDER BY attendance_date DESC, officer_name ASC';
+
         $this->db->query($query);
         $this->db->bind(':supervisor_id', $supervisor_id);
-        
+
         if (!empty($filters['date'])) {
             $this->db->bind(':date', $filters['date']);
         }
@@ -162,9 +321,14 @@ class M_supervisor {
             $this->db->bind(':status', $filters['status']);
         }
         if (!empty($filters['officer_id'])) {
-            $this->db->bind(':officer_id', '%' . $filters['officer_id'] . '%');
+            $searchTerm = '%' . $filters['officer_id'] . '%';
+            $this->db->bind(':officer_id', $searchTerm);
+            $this->db->bind(':officer_name', $searchTerm);
         }
-        
+        if (!empty($filters['duty_point'])) {
+            $this->db->bind(':duty_point', $filters['duty_point']);
+        }
+
         return $this->db->resultSet();
     }
 
@@ -227,37 +391,20 @@ class M_supervisor {
         return $this->db->single();
     }
 
-    // Get all caretakers (for filter dropdown)
-    public function getAllCaretakers() {
-        $this->db->query('
-            SELECT id, name 
-            FROM Users 
-            WHERE role = "Care-Taker"
-            ORDER BY name
-        ');
-        return $this->db->resultSet();
-    }
-
-    // Get total unique officers in the system
+    // Get total staff count for this supervisor site
     public function getTotalOfficersCount($supervisor_id = null) {
         if ($supervisor_id) {
-            // Get unique officers who have attendance records under this supervisor
-            $this->db->query('
-                SELECT COUNT(DISTINCT officer_id) as total
-                FROM officer_attendance
-                WHERE supervisor_id = :supervisor_id
-            ');
-            $this->db->bind(':supervisor_id', $supervisor_id);
+            return count($this->getAttendanceEligibleStaff($supervisor_id));
         } else {
             // Get all unique officers
             $this->db->query('
                 SELECT COUNT(DISTINCT officer_id) as total
                 FROM officer_attendance
             ');
+
+            $result = $this->db->single();
+            return $result->total ?? 0;
         }
-        
-        $result = $this->db->single();
-        return $result->total ?? 0;
     }
 
     // Get recent activities for supervisor
