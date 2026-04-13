@@ -462,21 +462,44 @@ class Admin extends Controller {
     }
 
     public function viewOfficerCalendar($officerId) {
-        // Get officer details
-        $officer = $this->adminModel->getPOById($officerId);
-        
-        // Get officer assignments
-        $assignments = $this->premiseOfficerModel->getActiveAssignments($officerId);
-        
-        // Get approved leave dates
-        $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($officerId);
+        $user = $this->userModel->getUserById($officerId);
+        if (!$user) {
+            flash('msg', 'User not found', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $role = strtolower(trim((string)($user->role ?? '')));
+        $officer = null;
+        if ($role === 'premise officer') {
+            $officer = $this->adminModel->getPOById($officerId);
+        } elseif ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $officer = $this->adminModel->getCTById($officerId);
+        } elseif ($role === 'mobile rider') {
+            $officer = $this->adminModel->getMRById($officerId);
+        }
+
+        if (!$officer) {
+            $officer = (object)[
+                'name' => $user->name,
+                'officerID' => $user->userID,
+                'rank' => ucfirst($role),
+                'user_id' => $user->id
+            ];
+        }
+
+        $assignments = $this->premiseOfficerModel->getCalendarAssignments($officerId, $role);
+        $leaveDates = $this->premiseOfficerModel->getCalendarLeaveDates($officerId, $role);
+        $attendanceStatuses = $this->premiseOfficerModel->getAttendanceStatusesByUserId($officerId);
         
         $data = [
             'title' => 'Officer Calendar',
             'pageTitle' => 'Officer Schedule',
             'officer' => $officer,
             'assignments' => $assignments,
-            'leaveDates' => $leaveDates
+            'leaveDates' => $leaveDates,
+            'attendanceStatuses' => $attendanceStatuses,
+            'officerRole' => $role
         ];
         
         $this->view('admin/officers/v_officer_calendar', $data);
@@ -486,24 +509,52 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $date = $_POST['date'] ?? null;
             $officerId = $_POST['officer_id'] ?? null;
+            $role = strtolower(trim((string)($_POST['role'] ?? '')));
             
             if (!$date || !$officerId) {
                 echo json_encode(['success' => false, 'message' => 'Missing date or officer ID']);
                 return;
             }
+
+            if ($role === '') {
+                $user = $this->userModel->getUserById($officerId);
+                $role = strtolower(trim((string)($user->role ?? '')));
+            }
             
             // Get shift details for the date
-            $shiftDetails = $this->premiseOfficerModel->getShiftDetailsForDate($officerId, $date);
+            $shiftDetails = $this->premiseOfficerModel->getCalendarShiftDetailsForDate($officerId, $role, $date);
             
             // Get leave details if any
-            $leaveDetails = $this->premiseOfficerModel->getLeaveForDate($officerId, $date);
+            $leaveDetails = $this->premiseOfficerModel->getCalendarLeaveForDate($officerId, $role, $date);
+            $attendanceInfo = $this->premiseOfficerModel->getAttendanceStatusForDateByUserId($officerId, $date);
+            $isPastDate = strtotime($date) < strtotime(date('Y-m-d'));
+
+            $attendanceStatus = null;
+            if ($attendanceInfo && !empty($attendanceInfo->status)) {
+                $attendanceStatus = $attendanceInfo->status;
+            } elseif ($shiftDetails && !$leaveDetails && $isPastDate) {
+                $attendanceStatus = 'Absent';
+            }
+
+            $shiftTypeLower = strtolower(trim((string)($shiftDetails->shift_type ?? '')));
+            $shiftTime = 'Not Specified';
+            if ($shiftTypeLower === 'day') {
+                $shiftTime = '08:00 AM - 06:00 PM';
+            } elseif ($shiftTypeLower === 'night') {
+                $shiftTime = '06:00 PM - 06:00 AM';
+            } elseif ($shiftTypeLower === 'full time' || $shiftTypeLower === 'caretaker') {
+                $shiftTime = '08:00 AM - 06:00 PM';
+            } elseif ($shiftTypeLower === 'flexible') {
+                $shiftTime = 'Flexible Hours';
+            }
             
             if ($leaveDetails) {
                 echo json_encode([
                     'success' => true,
                     'isLeave' => true,
                     'leave_type' => $leaveDetails->leave_type,
-                    'reason' => $leaveDetails->reason
+                    'reason' => $leaveDetails->reason,
+                    'attendance_status' => $attendanceStatus
                 ]);
             } elseif ($shiftDetails) {
                 echo json_encode([
@@ -512,12 +563,18 @@ class Admin extends Controller {
                     'shift_type' => $shiftDetails->shift_type,
                     'location' => $shiftDetails->site_name,
                     'address' => $shiftDetails->address . ', ' . $shiftDetails->city,
-                    'time' => $shiftDetails->shift_type === 'day' ? '6:00 AM - 6:00 PM' : '6:00 PM - 6:00 AM',
+                    'time' => $shiftTime,
                     'client' => $shiftDetails->contact_person_name ?? 'N/A',
-                    'notes' => $shiftDetails->notes ?? 'No additional notes'
+                    'notes' => $shiftDetails->notes ?? 'No additional notes',
+                    'attendance_status' => $attendanceStatus
                 ]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'No shift details found']);
+                echo json_encode([
+                    'success' => true,
+                    'isLeave' => false,
+                    'noShift' => true,
+                    'attendance_status' => $attendanceStatus
+                ]);
             }
         }
     }
@@ -1790,7 +1847,7 @@ public function editSite($site_id){
         // Finalize the draft site (make it official)
         if ($this->adminModel->finalizeDraftSite($siteId)) {
             // Update package request to Approved
-            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
+            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
             
             flash('request_success', 'Package request approved and site created successfully');
             redirect('admin/viewsites/' . $siteId);
@@ -1822,7 +1879,7 @@ public function editSite($site_id){
         // Delete draft site
         if ($this->adminModel->deleteDraftSite($siteId)) {
             // Update package request to Rejected
-            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
+            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
             
             flash('request_success', 'Package request rejected and draft site deleted');
             redirect('admin/clientRequests');

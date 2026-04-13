@@ -70,10 +70,12 @@ class PremiseOfficer extends Controller {
         
         $assignments = [];
         $leaveDates = [];
+        $attendanceStatuses = [];
         
         if ($premiseofficer_id) {
             $assignments = $this->premiseOfficerModel->getActiveAssignments($premiseofficer_id);
             $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($premiseofficer_id);
+            $attendanceStatuses = $this->premiseOfficerModel->getAttendanceStatusesByUserId($premiseofficer_id);
             
             // Debug logging
             error_log('Schedule - Officer ID: ' . $premiseofficer_id);
@@ -86,7 +88,8 @@ class PremiseOfficer extends Controller {
             'title' => 'Schedule',
             'pageTitle' => 'My Schedule',
             'assignments' => $assignments,
-            'leaveDates' => $leaveDates
+            'leaveDates' => $leaveDates,
+            'attendanceStatuses' => $attendanceStatuses
         ];
         $this->view('premiseofficer/schedule/v_schedule', $data);
     }
@@ -137,13 +140,23 @@ class PremiseOfficer extends Controller {
         
         // Check if it's a leave day using the model method
         $leaveInfo = $this->premiseOfficerModel->getLeaveForDate($premiseofficer_id, $date);
+        $attendanceInfo = $this->premiseOfficerModel->getAttendanceStatusForDateByUserId($premiseofficer_id, $date);
+        $isPastDate = strtotime($date) < strtotime(date('Y-m-d'));
+
+        $attendanceStatus = null;
+        if ($attendanceInfo && !empty($attendanceInfo->status)) {
+            $attendanceStatus = $attendanceInfo->status;
+        } elseif ($shift && !$leaveInfo && $isPastDate) {
+            $attendanceStatus = 'Absent';
+        }
         
         if ($leaveInfo) {
             $response = json_encode([
                 'success' => true,
                 'type' => 'leave',
                 'leave_type' => $leaveInfo->leave_type,
-                'reason' => $leaveInfo->reason
+                'reason' => $leaveInfo->reason,
+                'attendance_status' => $attendanceStatus
             ]);
             ob_end_clean();
             echo $response;
@@ -178,7 +191,8 @@ class PremiseOfficer extends Controller {
                 'time' => $shiftTime,
                 'shift_type' => $shift->shift_type,
                 'client' => $shift->contact_person_name ?? '',
-                'notes' => $shift->notes ?? 'No additional notes'
+                'notes' => $shift->notes ?? 'No additional notes',
+                'attendance_status' => $attendanceStatus
             ]);
             ob_end_clean();
             echo $response;
@@ -186,7 +200,8 @@ class PremiseOfficer extends Controller {
         } else {
             $response = json_encode([
                 'success' => true,
-                'type' => 'no_shift'
+                'type' => 'no_shift',
+                'attendance_status' => $attendanceStatus
             ]);
             ob_end_clean();
             echo $response;

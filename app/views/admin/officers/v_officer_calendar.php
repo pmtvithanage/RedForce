@@ -18,8 +18,8 @@
 <!-- Officer Info Header -->
 <div class="officer-info-header">
     <h2><?php echo htmlspecialchars($data['officer']->name ?? 'Officer'); ?>'s Calendar</h2>
-    <p><strong>Officer ID:</strong> <?php echo htmlspecialchars($data['officer']->officerID ?? 'N/A'); ?></p>
-    <p><strong>Rank:</strong> <?php echo htmlspecialchars($data['officer']->rank ?? 'N/A'); ?></p>
+    <p><strong>Officer ID:</strong> <?php echo htmlspecialchars($data['officer']->officerID ?? $data['officer']->userID ?? 'N/A'); ?></p>
+    <p><strong>Rank:</strong> <?php echo htmlspecialchars($data['officer']->rank ?? ucwords($data['officerRole'] ?? 'N/A')); ?></p>
 </div>
 
 <!-- Schedule Content -->
@@ -65,6 +65,10 @@
                     <span>Approved Leave</span>
                 </div>
                 <div class="legend-item">
+                    <div class="legend-color absent-day"></div>
+                    <span>Absent (End Of Day)</span>
+                </div>
+                <div class="legend-item">
                     <div class="legend-color today"></div>
                     <span>Today</span>
                 </div>
@@ -97,6 +101,12 @@
     
     // Leave dates data
     const leaveDatesData = <?php echo json_encode($data['leaveDates'] ?? []); ?>;
+
+    // Marked attendance data
+    const attendanceData = <?php echo json_encode($data['attendanceStatuses'] ?? []); ?>;
+
+    // Officer role for role-aware shift endpoints
+    const officerRole = <?php echo json_encode($data['officerRole'] ?? ''); ?>;
     
     // Officer ID for AJAX requests
     const officerId = <?php echo json_encode($data['officer']->user_id ?? null); ?>;

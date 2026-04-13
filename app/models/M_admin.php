@@ -85,7 +85,7 @@ public function getAvailableMR($excludeRouteId = null) {
 }
 
 public function getMRById($mobile_rider_id) {
-    $this->db->query("SELECT * FROM mobile_rider_full_details WHERE mobile_rider_id = :id");
+    $this->db->query("SELECT * FROM mobile_rider_full_details WHERE mobile_rider_id = :id OR user_id = :id");
     $this->db->bind(':id', $mobile_rider_id);
     return $this->db->single();
 }
@@ -97,7 +97,7 @@ public function getAllCT() {
 }
 
 public function getCTById($care_taker_id) {
-    $this->db->query("SELECT * FROM care_taker_full_details WHERE care_taker_id = :id");
+    $this->db->query("SELECT * FROM care_taker_full_details WHERE care_taker_id = :id OR user_id = :id");
     $this->db->bind(':id', $care_taker_id);
     return $this->db->single();
 }

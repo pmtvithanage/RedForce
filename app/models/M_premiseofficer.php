@@ -221,6 +221,140 @@ class M_premiseofficer {
         return $this->db->single();
     }
 
+    // Get marked attendance statuses for a user keyed by date.
+    public function getAttendanceStatusesByUserId($user_id, $startDate = null, $endDate = null) {
+        $query = 'SELECT oa.attendance_date, oa.status
+                  FROM officer_attendance oa
+                  INNER JOIN Users u ON u.userID = oa.officer_id
+                  WHERE u.id = :user_id';
+
+        if (!empty($startDate)) {
+            $query .= ' AND oa.attendance_date >= :start_date';
+        }
+        if (!empty($endDate)) {
+            $query .= ' AND oa.attendance_date <= :end_date';
+        }
+
+        $query .= ' ORDER BY oa.attendance_date ASC';
+
+        $this->db->query($query);
+        $this->db->bind(':user_id', $user_id);
+        if (!empty($startDate)) {
+            $this->db->bind(':start_date', $startDate);
+        }
+        if (!empty($endDate)) {
+            $this->db->bind(':end_date', $endDate);
+        }
+
+        return $this->db->resultSet();
+    }
+
+    public function getAttendanceStatusForDateByUserId($user_id, $date) {
+        $this->db->query('SELECT oa.attendance_date, oa.status, oa.duty_point
+                          FROM officer_attendance oa
+                          INNER JOIN Users u ON u.userID = oa.officer_id
+                          WHERE u.id = :user_id
+                            AND oa.attendance_date = :date
+                          LIMIT 1');
+        $this->db->bind(':user_id', $user_id);
+        $this->db->bind(':date', $date);
+        return $this->db->single();
+    }
+
+    public function getCalendarAssignments($user_id, $role) {
+        $role = strtolower(trim((string)$role));
+
+        if ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $this->db->query("SELECT
+                                csa.id,
+                                csa.site_id,
+                                'Caretaker' AS shift_type,
+                                csa.assignment_start,
+                                csa.assignment_end,
+                                csa.notes,
+                                s.site_name,
+                                s.address,
+                                s.city,
+                                c.contact_person_name
+                              FROM caretaker_site_assignments csa
+                              INNER JOIN sites s ON csa.site_id = s.id
+                              LEFT JOIN Users c ON s.client_id = c.id
+                              WHERE csa.caretaker_id = :user_id
+                                AND csa.status = 'Active'
+                                AND s.is_draft = 0
+                              ORDER BY csa.assignment_start DESC");
+            $this->db->bind(':user_id', $user_id);
+            return $this->db->resultSet();
+        }
+
+        return $this->getActiveAssignments($user_id);
+    }
+
+    public function getCalendarLeaveDates($user_id, $role) {
+        $role = strtolower(trim((string)$role));
+
+        if ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $this->db->query("SELECT start_date, end_date, leave_type, reason
+                              FROM leave_requests
+                              WHERE caretaker_id = :user_id
+                                AND status = 'Approved'
+                              ORDER BY start_date ASC");
+            $this->db->bind(':user_id', $user_id);
+            return $this->db->resultSet();
+        }
+
+        return $this->getApprovedLeaveDates($user_id);
+    }
+
+    public function getCalendarShiftDetailsForDate($user_id, $role, $date) {
+        $role = strtolower(trim((string)$role));
+
+        if ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $this->db->query("SELECT
+                                csa.id,
+                                'Caretaker' AS shift_type,
+                                csa.assignment_start,
+                                csa.assignment_end,
+                                csa.notes,
+                                s.site_name,
+                                s.address,
+                                s.city,
+                                s.phone_number,
+                                c.contact_person_name
+                              FROM caretaker_site_assignments csa
+                              INNER JOIN sites s ON csa.site_id = s.id
+                              LEFT JOIN Users c ON s.client_id = c.id
+                              WHERE csa.caretaker_id = :user_id
+                                AND csa.status = 'Active'
+                                AND s.is_draft = 0
+                                AND :date BETWEEN csa.assignment_start AND IFNULL(csa.assignment_end, '2099-12-31')
+                              LIMIT 1");
+            $this->db->bind(':user_id', $user_id);
+            $this->db->bind(':date', $date);
+            return $this->db->single();
+        }
+
+        return $this->getShiftDetailsForDate($user_id, $date);
+    }
+
+    public function getCalendarLeaveForDate($user_id, $role, $date) {
+        $role = strtolower(trim((string)$role));
+
+        if ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $this->db->query("SELECT leave_type, reason
+                              FROM leave_requests
+                              WHERE caretaker_id = :user_id
+                                AND :date BETWEEN start_date AND end_date
+                                AND status = 'Approved'
+                              LIMIT 1");
+            $this->db->bind(':user_id', $user_id);
+            $this->db->bind(':date', $date);
+            return $this->db->single();
+        }
+
+        return $this->getLeaveForDate($user_id, $date);
+    }
+
 // ======================================================================== //
 // =======================      profile       ====================== //
 // ======================================================================== //
