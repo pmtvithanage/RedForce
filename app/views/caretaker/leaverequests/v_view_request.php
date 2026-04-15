@@ -20,7 +20,7 @@
     .details-card {
         background: white;
         border-radius: 12px;
-        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
 
@@ -236,7 +236,7 @@
     .btn-edit:hover {
         background: #e67e22;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .btn-delete {
@@ -248,7 +248,7 @@
     .btn-delete:hover {
         background: #c0392b;
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .timeline-section {
@@ -329,7 +329,7 @@
         border-radius: 12px;
         max-width: 450px;
         width: 90%;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
         animation: modalSlideIn 0.3s ease-out;
     }
 
@@ -338,6 +338,7 @@
             transform: translateY(-50px);
             opacity: 0;
         }
+
         to {
             transform: translateY(0);
             opacity: 1;
@@ -402,12 +403,12 @@
 
     .modal-btn-confirm:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 </style>
 
 <div class="back-btn-container" style="margin: 20px;">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/leaverequests'"> 
+    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/leaverequests'">
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back
     </button>
@@ -442,7 +443,7 @@
                         Duration
                     </div>
                     <div class="detail-value">
-                        <?php 
+                        <?php
                         $start = new DateTime($data['leaveRequest']->start_date);
                         $end = new DateTime($data['leaveRequest']->end_date);
                         $interval = $start->diff($end);
@@ -487,7 +488,7 @@
                 </h3>
                 <?php if (!empty($data['leaveRequest']->proof_file)): ?>
                     <div class="proof-file">
-                        <?php 
+                        <?php
                         $file_extension = pathinfo($data['leaveRequest']->proof_file, PATHINFO_EXTENSION);
                         $icon = 'description';
                         if (in_array(strtolower($file_extension), ['jpg', 'jpeg', 'png', 'gif'])) {
@@ -501,9 +502,9 @@
                             <div class="proof-file-name">
                                 <?php echo basename($data['leaveRequest']->proof_file); ?>
                             </div>
-                            <a href="<?php echo URL_ROOT . $data['leaveRequest']->proof_file; ?>" 
-                               target="_blank" 
-                               class="proof-file-link">
+                            <a href="<?php echo URL_ROOT . $data['leaveRequest']->proof_file; ?>"
+                                target="_blank"
+                                class="proof-file-link">
                                 <span class="material-symbols-outlined" style="font-size: 14px;">open_in_new</span>
                                 View Document
                             </a>
@@ -531,17 +532,17 @@
                     </div>
                 </div>
                 <?php if (isset($data['leaveRequest']->updated_at) && $data['leaveRequest']->updated_at != $data['leaveRequest']->created_at): ?>
-                <div class="timeline-item">
-                    <div class="timeline-icon">
-                        <span class="material-symbols-outlined">update</span>
-                    </div>
-                    <div class="timeline-content">
-                        <div class="timeline-date">
-                            <?php echo date('M d, Y \a\t g:i A', strtotime($data['leaveRequest']->updated_at)); ?>
+                    <div class="timeline-item">
+                        <div class="timeline-icon">
+                            <span class="material-symbols-outlined">update</span>
                         </div>
-                        <div class="timeline-text">Request updated</div>
+                        <div class="timeline-content">
+                            <div class="timeline-date">
+                                <?php echo date('M d, Y \a\t g:i A', strtotime($data['leaveRequest']->updated_at)); ?>
+                            </div>
+                            <div class="timeline-text">Request updated</div>
+                        </div>
                     </div>
-                </div>
                 <?php endif; ?>
             </div>
 
@@ -551,14 +552,14 @@
                     Back to List
                 </button>
                 <?php if ($data['leaveRequest']->status == 'Pending'): ?>
-                <button class="btn btn-edit" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/editLeaveRequest/<?php echo $data['leaveRequest']->id; ?>'">
-                    <span class="material-symbols-outlined">edit</span>
-                    Edit Request
-                </button>
-                <button class="btn btn-delete" onclick="confirmDelete()">
-                    <span class="material-symbols-outlined">delete</span>
-                    Delete Request
-                </button>
+                    <button class="btn btn-edit" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/editLeaveRequest/<?php echo $data['leaveRequest']->id; ?>'">
+                        <span class="material-symbols-outlined">edit</span>
+                        Edit Request
+                    </button>
+                    <button class="btn btn-delete" onclick="confirmDelete()">
+                        <span class="material-symbols-outlined">delete</span>
+                        Delete Request
+                    </button>
                 <?php endif; ?>
             </div>
         </div>
@@ -580,47 +581,47 @@
     </div>
 </div>
 
-<?php flash('msg')?>
+<?php flash('msg') ?>
 
 <script>
-// Show delete confirmation modal
-function confirmDelete() {
-    document.getElementById('confirmModal').classList.add('active');
-}
-
-// Close modal
-function closeModal() {
-    document.getElementById('confirmModal').classList.remove('active');
-}
-
-// Perform delete
-function performDelete() {
-    window.location.href = '<?php echo URL_ROOT; ?>/caretaker/deleteLeaveRequest/<?php echo $data['leaveRequest']->id; ?>';
-}
-
-// Close modal on background click
-document.getElementById('confirmModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeModal();
+    // Show delete confirmation modal
+    function confirmDelete() {
+        document.getElementById('confirmModal').classList.add('active');
     }
-});
 
-// Flash message auto-remove
-document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('msg-flash');
-    
-    if (flashMessage) {
-        setTimeout(function() {
-            flashMessage.classList.add('fade-out');
-            
+    // Close modal
+    function closeModal() {
+        document.getElementById('confirmModal').classList.remove('active');
+    }
+
+    // Perform delete
+    function performDelete() {
+        window.location.href = '<?php echo URL_ROOT; ?>/caretaker/deleteLeaveRequest/<?php echo $data['leaveRequest']->id; ?>';
+    }
+
+    // Close modal on background click
+    document.getElementById('confirmModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Flash message auto-remove
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('msg-flash');
+
+        if (flashMessage) {
             setTimeout(function() {
-                if (flashMessage.parentNode) {
-                    flashMessage.parentNode.removeChild(flashMessage);
-                }
-            }, 300);
-        }, 5000);
-    }
-});
+                flashMessage.classList.add('fade-out');
+
+                setTimeout(function() {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    });
 </script>
 
 </main>
