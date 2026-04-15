@@ -667,6 +667,13 @@ class Supervisor extends Controller {
         
         // Get caretakers for this site
         $caretakers = $this->supervisorModel->getSiteCaretakers($supervisorId);
+
+        // Get this supervisor's existing officer ratings
+        $officerRatings = $this->supervisorModel->getSupervisorOfficerRatings($supervisorId);
+
+        $ratingSuccess = $_SESSION['supervisor_rating_success'] ?? '';
+        $ratingError = $_SESSION['supervisor_rating_error'] ?? '';
+        unset($_SESSION['supervisor_rating_success'], $_SESSION['supervisor_rating_error']);
         
         $data = [
             'title' => 'Sites',
@@ -675,10 +682,91 @@ class Supervisor extends Controller {
             'supervisors' => $siteData['supervisors'],
             'site' => $siteData['site'],
             'mobile_riders' => $mobileRiders,
-            'caretakers' => $caretakers
+            'caretakers' => $caretakers,
+            'officer_ratings' => $officerRatings,
+            'rating_success' => $ratingSuccess,
+            'rating_error' => $ratingError
         ];
         
         $this->view('supervisor/site/v_site_info', $data);
+    }
+
+    public function saveOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $supervisorId = $_SESSION['user_id'] ?? null;
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingValue = (int)($_POST['rating_value'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+        $description = trim((string)($_POST['description'] ?? ''));
+
+        if (!$supervisorId || $officerUserId <= 0) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid request for officer rating.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid rating date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($ratingValue < 1 || $ratingValue > 5) {
+            $_SESSION['supervisor_rating_error'] = 'Rating must be between 1 and 5.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if (!$this->supervisorModel->canSupervisorRateOfficer($supervisorId, $officerUserId, $ratingDate)) {
+            $_SESSION['supervisor_rating_error'] = 'You can only rate premise officers assigned to your site on that date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($this->supervisorModel->saveSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate, $ratingValue, $description)) {
+            $_SESSION['supervisor_rating_success'] = 'Officer rating saved successfully.';
+        } else {
+            $_SESSION['supervisor_rating_error'] = 'Failed to save officer rating.';
+        }
+
+        redirect('supervisor/site_info');
+    }
+
+    public function deleteOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $supervisorId = $_SESSION['user_id'] ?? null;
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+
+        if (!$supervisorId || $officerUserId <= 0) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid delete request for officer rating.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid rating date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($this->supervisorModel->deleteSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate)) {
+            $_SESSION['supervisor_rating_success'] = 'Officer rating deleted successfully.';
+        } else {
+            $_SESSION['supervisor_rating_error'] = 'Failed to delete officer rating.';
+        }
+
+        redirect('supervisor/site_info');
     }
 
     // Incidents - List all incidents

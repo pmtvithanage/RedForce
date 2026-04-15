@@ -654,6 +654,106 @@ class M_supervisor {
     }
 
     /**
+     * Validate that a supervisor can rate the selected premise officer in supervisor's site.
+     */
+    public function canSupervisorRateOfficer($supervisorId, $officerUserId, $ratingDate = null) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisorId);
+        if (!$siteId) {
+            return false;
+        }
+
+        $query = '
+            SELECT osa.id
+            FROM officer_site_assignments osa
+            INNER JOIN Users u ON u.id = osa.officer_id
+            WHERE osa.site_id = :site_id
+              AND osa.status = "Active"
+              AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)
+              AND osa.officer_id = :officer_user_id
+              AND LOWER(TRIM(u.role)) = "premise officer"';
+
+        if (!empty($ratingDate)) {
+            $query .= ' AND :rating_date BETWEEN osa.assignment_start AND IFNULL(osa.assignment_end, "2099-12-31")';
+        }
+
+        $query .= ' LIMIT 1';
+
+        $this->db->query($query);
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_user_id', (int)$officerUserId);
+        if (!empty($ratingDate)) {
+            $this->db->bind(':rating_date', $ratingDate);
+        }
+
+        return (bool)$this->db->single();
+    }
+
+    public function saveSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate, $ratingValue, $description) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisorId);
+        if (!$siteId) {
+            return false;
+        }
+
+        $this->db->query('
+            INSERT INTO officer_performance_ratings
+                (site_id, officer_user_id, reviewer_user_id, reviewer_role, rating_date, rating_value, description)
+            VALUES
+                (:site_id, :officer_user_id, :supervisor_id, "supervisor", :rating_date, :rating_value, :description)
+            ON DUPLICATE KEY UPDATE
+                rating_value = VALUES(rating_value),
+                description = VALUES(description),
+                updated_at = CURRENT_TIMESTAMP
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_user_id', (int)$officerUserId);
+        $this->db->bind(':supervisor_id', (int)$supervisorId);
+        $this->db->bind(':rating_date', $ratingDate);
+        $this->db->bind(':rating_value', (int)$ratingValue);
+        $this->db->bind(':description', $description);
+        return $this->db->execute();
+    }
+
+    public function deleteSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisorId);
+        if (!$siteId) {
+            return false;
+        }
+
+        $this->db->query('
+            DELETE FROM officer_performance_ratings
+            WHERE site_id = :site_id
+              AND officer_user_id = :officer_user_id
+              AND reviewer_user_id = :supervisor_id
+              AND reviewer_role = "supervisor"
+              AND rating_date = :rating_date
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':officer_user_id', (int)$officerUserId);
+        $this->db->bind(':supervisor_id', (int)$supervisorId);
+        $this->db->bind(':rating_date', $ratingDate);
+        return $this->db->execute();
+    }
+
+    public function getSupervisorOfficerRatings($supervisorId) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisorId);
+        if (!$siteId) {
+            return [];
+        }
+
+        $this->db->query('
+            SELECT officer_user_id, rating_date, rating_value, description, updated_at
+            FROM officer_performance_ratings
+            WHERE site_id = :site_id
+              AND reviewer_user_id = :supervisor_id
+              AND reviewer_role = "supervisor"
+            ORDER BY rating_date DESC, updated_at DESC
+        ');
+        $this->db->bind(':site_id', $siteId);
+        $this->db->bind(':supervisor_id', (int)$supervisorId);
+        return $this->db->resultSet();
+    }
+
+    /**
      * Get mobile riders assigned to a supervisor's site
      */
     public function getSiteMobileRiders($supervisorId) {

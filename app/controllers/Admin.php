@@ -387,6 +387,29 @@ class Admin extends Controller {
     public function officers() {
 
         $officers = $this->adminModel->getAllPO();
+
+        $userIds = [];
+        foreach ($officers as $officer) {
+            if (isset($officer->user_id)) {
+                $userIds[] = (int)$officer->user_id;
+            }
+        }
+
+        $scoreMap = $this->adminModel->getPremiseOfficerFinalScores($userIds);
+        foreach ($officers as $officer) {
+            $uid = isset($officer->user_id) ? (int)$officer->user_id : 0;
+            $officer->rating = isset($scoreMap[$uid]) ? $scoreMap[$uid]['final_score'] : 0;
+        }
+
+        usort($officers, function ($a, $b) {
+            $aScore = isset($a->rating) ? (float)$a->rating : 0;
+            $bScore = isset($b->rating) ? (float)$b->rating : 0;
+            if ($aScore === $bScore) {
+                return strcmp((string)($a->name ?? ''), (string)($b->name ?? ''));
+            }
+            return $aScore < $bScore ? 1 : -1;
+        });
+
         $data = [
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers',
@@ -430,6 +453,33 @@ class Admin extends Controller {
     ];
         $this->view('admin/officers/v_officer_profile', $data);
     }
+
+    public function officerRatings($officerUserId) {
+        if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
+            flash('msg', 'You do not have permission to view officer ratings', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $officer = $this->adminModel->getPOById($officerUserId);
+        if (!$officer) {
+            flash('msg', 'Officer not found', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $ratings = $this->adminModel->getOfficerRatingsByUserId($officer->user_id);
+
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Ratings',
+            'officer' => $officer,
+            'ratings' => $ratings
+        ];
+
+        $this->view('admin/officers/v_officer_ratings', $data);
+    }
+
     public function mobile_rider_profile($id){
         // Check permission
         if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {

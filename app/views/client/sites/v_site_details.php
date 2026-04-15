@@ -350,6 +350,49 @@
         padding: 10px 12px;
     }
 
+    .duty-main {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex: 1;
+    }
+
+    .duty-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .rating-mini-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #8a2d00;
+        background: #fff2df;
+        border: 1px solid #ffd7ad;
+    }
+
+    .rate-btn {
+        border: 1px solid #b20000;
+        background: #fff;
+        color: #a40000;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .rate-btn:hover {
+        background: #fff4f4;
+    }
+
     .duty-name {
         font-weight: 600;
         color: #111827;
@@ -385,6 +428,141 @@
     .shift-full {
         background: #f3e5f5;
         color: #6a1b9a;
+    }
+
+    .rating-alert {
+        margin-bottom: 16px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .rating-alert.success {
+        background: #e8f5e9;
+        color: #1b5e20;
+        border: 1px solid #c8e6c9;
+    }
+
+    .rating-alert.error {
+        background: #ffebee;
+        color: #b71c1c;
+        border: 1px solid #ffcdd2;
+    }
+
+    .rating-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1200;
+    }
+
+    .rating-modal-overlay.active {
+        display: flex;
+    }
+
+    .rating-modal {
+        width: 92%;
+        max-width: 520px;
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #f0dede;
+        box-shadow: 0 16px 35px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+
+    .rating-modal-header {
+        background: linear-gradient(135deg, #8f0000 0%, #b40000 100%);
+        color: #fff;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .rating-modal-header h4 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+    }
+
+    .rating-close-btn {
+        border: 0;
+        background: transparent;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .rating-modal-body {
+        padding: 16px;
+    }
+
+    .rating-meta {
+        margin: 0 0 12px;
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+    .rating-stars {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .rating-stars label {
+        cursor: pointer;
+        font-size: 26px;
+        color: #d1d5db;
+        transition: color 0.15s;
+    }
+
+    .rating-stars input {
+        display: none;
+    }
+
+    .rating-stars label.active {
+        color: #ffb300;
+    }
+
+    .rating-textarea {
+        width: 100%;
+        min-height: 96px;
+        border: 1px solid #d7dbe3;
+        border-radius: 10px;
+        padding: 10px;
+        font-size: 14px;
+        resize: vertical;
+        font-family: inherit;
+    }
+
+    .rating-modal-actions {
+        margin-top: 14px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .rating-primary,
+    .rating-delete {
+        border: 0;
+        border-radius: 8px;
+        padding: 9px 14px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .rating-primary {
+        background: #a40000;
+        color: #fff;
+    }
+
+    .rating-delete {
+        background: #ffe9e9;
+        color: #b00000;
     }
 
     @media (max-width: 1400px) {
@@ -426,6 +604,13 @@
         <span class="material-symbols-outlined">arrow_back</span>
         Back to Sites
     </a>
+
+    <?php if (!empty($data['rating_success'])): ?>
+        <div class="rating-alert success"><?php echo htmlspecialchars($data['rating_success']); ?></div>
+    <?php endif; ?>
+    <?php if (!empty($data['rating_error'])): ?>
+        <div class="rating-alert error"><?php echo htmlspecialchars($data['rating_error']); ?></div>
+    <?php endif; ?>
 
     <div class="site-cover">
         <?php if(!empty($data['site']->image)): ?>
@@ -547,9 +732,52 @@
     </div>
 </div>
 
+<div class="rating-modal-overlay" id="officerRatingModal" aria-hidden="true">
+    <div class="rating-modal">
+        <div class="rating-modal-header">
+            <h4>Rate Premise Officer</h4>
+            <button type="button" class="rating-close-btn" id="closeOfficerRatingModal">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <div class="rating-modal-body">
+            <p class="rating-meta" id="ratingOfficerMeta">Officer</p>
+
+            <form method="POST" action="<?php echo URL_ROOT; ?>/client/saveOfficerRating" id="saveOfficerRatingForm">
+                <input type="hidden" name="site_id" value="<?php echo (int)$data['site']->id; ?>">
+                <input type="hidden" name="officer_user_id" id="ratingOfficerId" value="">
+                <input type="hidden" name="rating_date" id="ratingDateInput" value="">
+                <input type="hidden" name="rating_value" id="ratingValueInput" value="0">
+
+                <div class="rating-stars" id="ratingStarsWrap">
+                    <label data-value="1">★</label>
+                    <label data-value="2">★</label>
+                    <label data-value="3">★</label>
+                    <label data-value="4">★</label>
+                    <label data-value="5">★</label>
+                </div>
+
+                <textarea class="rating-textarea" name="description" id="ratingDescription" maxlength="600" placeholder="Write a short note about this officer's performance (optional)"></textarea>
+
+                <div class="rating-modal-actions">
+                    <button type="submit" class="rating-primary">Save Rating</button>
+                </div>
+            </form>
+
+            <form method="POST" action="<?php echo URL_ROOT; ?>/client/deleteOfficerRating" id="deleteOfficerRatingForm" style="display:none; margin-top: 8px; text-align: right;">
+                <input type="hidden" name="site_id" value="<?php echo (int)$data['site']->id; ?>">
+                <input type="hidden" name="officer_user_id" id="deleteRatingOfficerId" value="">
+                <input type="hidden" name="rating_date" id="deleteRatingDateInput" value="">
+                <button type="submit" class="rating-delete">Delete Rating</button>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     const assignedOfficers = <?php echo json_encode($data['assigned_officers'] ?? []); ?>;
     const assignedSupervisors = <?php echo json_encode($data['assigned_supervisors'] ?? []); ?>;
+    const clientOfficerRatings = <?php echo json_encode($data['client_officer_ratings'] ?? []); ?>;
     const serviceStartDate = <?php echo json_encode($data['site']->service_start_date ?? null); ?>;
     const serviceEndDate = <?php echo json_encode($data['site']->service_end_date ?? null); ?>;
 
@@ -570,6 +798,24 @@
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
         let selectedKey = null;
+        const ratingModal = document.getElementById('officerRatingModal');
+        const closeRatingModalBtn = document.getElementById('closeOfficerRatingModal');
+        const ratingOfficerMeta = document.getElementById('ratingOfficerMeta');
+        const ratingOfficerIdInput = document.getElementById('ratingOfficerId');
+        const ratingDateInput = document.getElementById('ratingDateInput');
+        const deleteRatingOfficerId = document.getElementById('deleteRatingOfficerId');
+        const deleteRatingDateInput = document.getElementById('deleteRatingDateInput');
+        const deleteForm = document.getElementById('deleteOfficerRatingForm');
+        const ratingValueInput = document.getElementById('ratingValueInput');
+        const ratingDescriptionInput = document.getElementById('ratingDescription');
+        const ratingStarLabels = Array.from(document.querySelectorAll('#ratingStarsWrap label'));
+        const saveOfficerRatingForm = document.getElementById('saveOfficerRatingForm');
+        const ratingMap = {};
+
+        clientOfficerRatings.forEach((row) => {
+            const key = String(row.officer_user_id) + '_' + String(row.rating_date);
+            ratingMap[key] = row;
+        });
 
         const monthNames = [
             'January', 'February', 'March', 'April', 'May', 'June',
@@ -705,7 +951,7 @@
             });
         }
 
-        function renderDutyGroup(title, icon, list) {
+        function renderDutyGroup(title, icon, list, allowRating, dateKey) {
             if (!Array.isArray(list) || list.length === 0) {
                 return '';
             }
@@ -713,11 +959,29 @@
             const items = list.map((person) => {
                 const shift = normalizeShift(person.shift_type);
                 const rankText = person.rank || person.officer_rank || person.role || 'N/A';
+                const personId = Number(person.id || person.user_id || 0);
+                const ratingKey = String(personId) + '_' + String(dateKey);
+                const existingRating = ratingMap[ratingKey] || null;
+                const ratingBadge = existingRating
+                    ? `<span class="rating-mini-badge">${escapeHtml(String(existingRating.rating_value))}/5</span>`
+                    : '';
+                const rateButton = allowRating && personId > 0
+                    ? `<button type="button" class="rate-btn"
+                           data-officer-id="${personId}"
+                           data-officer-name="${escapeHtml(person.name || 'Unnamed')}"
+                           data-officer-rank="${escapeHtml(String(rankText))}"
+                           data-rating-date="${escapeHtml(String(dateKey))}">
+                          ${existingRating ? 'Edit' : 'Rate'}
+                       </button>`
+                    : '';
                 return `
                     <div class="duty-item">
-                        <div>
-                            <div class="duty-name">${escapeHtml(person.name || 'Unnamed')}</div>
-                            <div class="duty-meta">Rank: ${escapeHtml(String(rankText))}</div>
+                        <div class="duty-main">
+                            <div>
+                                <div class="duty-name">${escapeHtml(person.name || 'Unnamed')}</div>
+                                <div class="duty-meta">Rank: ${escapeHtml(String(rankText))}</div>
+                            </div>
+                            <div class="duty-actions">${ratingBadge}${rateButton}</div>
                         </div>
                         <span class="shift-badge ${shift.className}">${shift.label}</span>
                     </div>
@@ -741,8 +1005,8 @@
             const officersOnDuty = filterOnDutyByDate(assignedOfficers, dateKey);
             const supervisorsOnDuty = filterOnDutyByDate(assignedSupervisors, dateKey);
 
-            const officerGroup = renderDutyGroup('Premise Officers On Duty', 'badge', officersOnDuty);
-            const supervisorGroup = renderDutyGroup('Supervisors On Duty', 'supervisor_account', supervisorsOnDuty);
+            const officerGroup = renderDutyGroup('Premise Officers On Duty', 'badge', officersOnDuty, true, dateKey);
+            const supervisorGroup = renderDutyGroup('Supervisors On Duty', 'supervisor_account', supervisorsOnDuty, false, dateKey);
 
             if (!officerGroup && !supervisorGroup) {
                 shiftContent.className = 'schedule-empty';
@@ -755,6 +1019,88 @@
 
             shiftContent.className = '';
             shiftContent.innerHTML = officerGroup + supervisorGroup;
+            bindRateButtons();
+        }
+
+        function setStarSelection(value) {
+            const numeric = Number(value) || 0;
+            ratingValueInput.value = String(numeric);
+            ratingStarLabels.forEach((label) => {
+                const val = Number(label.dataset.value || 0);
+                label.classList.toggle('active', val <= numeric);
+            });
+        }
+
+        function openRatingModal(officerId, officerName, officerRank, ratingDate) {
+            const ratingKey = String(officerId) + '_' + String(ratingDate);
+            const existing = ratingMap[ratingKey] || null;
+
+            ratingOfficerMeta.textContent = officerName + ' (' + officerRank + ') - ' + ratingDate;
+            ratingOfficerIdInput.value = String(officerId);
+            ratingDateInput.value = String(ratingDate);
+            deleteRatingOfficerId.value = String(officerId);
+            deleteRatingDateInput.value = String(ratingDate);
+
+            if (existing) {
+                setStarSelection(existing.rating_value);
+                ratingDescriptionInput.value = existing.description || '';
+                deleteForm.style.display = 'block';
+            } else {
+                setStarSelection(0);
+                ratingDescriptionInput.value = '';
+                deleteForm.style.display = 'none';
+            }
+
+            ratingModal.classList.add('active');
+            ratingModal.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeRatingModal() {
+            ratingModal.classList.remove('active');
+            ratingModal.setAttribute('aria-hidden', 'true');
+        }
+
+        function bindRateButtons() {
+            shiftContent.querySelectorAll('.rate-btn').forEach((btn) => {
+                btn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    const officerId = Number(btn.dataset.officerId || 0);
+                    const officerName = String(btn.dataset.officerName || 'Officer');
+                    const officerRank = String(btn.dataset.officerRank || 'N/A');
+                    const ratingDate = String(btn.dataset.ratingDate || '');
+                    if (!officerId || !ratingDate) {
+                        return;
+                    }
+                    openRatingModal(officerId, officerName, officerRank, ratingDate);
+                });
+            });
+        }
+
+        ratingStarLabels.forEach((label) => {
+            label.addEventListener('click', () => {
+                setStarSelection(Number(label.dataset.value || 0));
+            });
+        });
+
+        if (closeRatingModalBtn) {
+            closeRatingModalBtn.addEventListener('click', closeRatingModal);
+        }
+
+        if (ratingModal) {
+            ratingModal.addEventListener('click', (event) => {
+                if (event.target === ratingModal) {
+                    closeRatingModal();
+                }
+            });
+        }
+
+        if (saveOfficerRatingForm) {
+            saveOfficerRatingForm.addEventListener('submit', (event) => {
+                if (Number(ratingValueInput.value || 0) < 1) {
+                    event.preventDefault();
+                    alert('Please select a rating between 1 and 5.');
+                }
+            });
         }
 
         function escapeHtml(value) {

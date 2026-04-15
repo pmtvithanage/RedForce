@@ -102,6 +102,171 @@ public function getCTById($care_taker_id) {
     return $this->db->single();
 }
 
+public function getOfficerRatingsByUserId($officerUserId) {
+    $this->db->query('
+        SELECT
+            opr.id,
+            opr.rating_date,
+            opr.rating_value,
+            opr.description,
+            opr.reviewer_role,
+            opr.created_at,
+            opr.updated_at,
+            reviewer.name AS reviewer_name,
+            s.site_name
+        FROM officer_performance_ratings opr
+        INNER JOIN Users reviewer ON reviewer.id = opr.reviewer_user_id
+        INNER JOIN sites s ON s.id = opr.site_id
+        WHERE opr.officer_user_id = :officer_user_id
+          AND opr.reviewer_role IN ("client", "supervisor")
+        ORDER BY opr.rating_date DESC, opr.updated_at DESC, opr.id DESC
+    ');
+    $this->db->bind(':officer_user_id', (int)$officerUserId);
+    return $this->db->resultSet();
+}
+
+/**
+ * Compute final performance score for premise officers using:
+ * 1) Attendance reliability (fewer absences => higher score)
+ * 2) Client/supervisor rating average
+ */
+public function getPremiseOfficerFinalScores($userIds = []) {
+    $scores = [];
+
+    $normalizedIds = array_values(array_unique(array_map('intval', (array)$userIds)));
+    if (empty($normalizedIds)) {
+        return $scores;
+    }
+
+    $windowStart = date('Y-m-d', strtotime('-89 days'));
+    $yesterday = date('Y-m-d', strtotime('-1 day'));
+
+    if ($windowStart > $yesterday) {
+        foreach ($normalizedIds as $uid) {
+            $scores[$uid] = [
+                'attendance_score' => 0.0,
+                'rating_score' => 0.0,
+                'final_score' => 0.0,
+                'average_rating' => null,
+                'rating_count' => 0
+            ];
+        }
+        return $scores;
+    }
+
+    $inPlaceholders = [];
+    foreach ($normalizedIds as $idx => $uid) {
+        $inPlaceholders[] = ':uid_' . $idx;
+    }
+    $inClause = implode(',', $inPlaceholders);
+
+    // Assigned duty days for the rolling window.
+    $assignedByUser = [];
+    $assignedQuery = '
+        SELECT
+            osa.officer_id AS user_id,
+            SUM(
+                CASE
+                    WHEN LEAST(IFNULL(osa.assignment_end, :yesterday), :yesterday) < GREATEST(osa.assignment_start, :window_start) THEN 0
+                    ELSE DATEDIFF(
+                        LEAST(IFNULL(osa.assignment_end, :yesterday), :yesterday),
+                        GREATEST(osa.assignment_start, :window_start)
+                    ) + 1
+                END
+            ) AS assigned_days
+        FROM officer_site_assignments osa
+        WHERE osa.officer_id IN (' . $inClause . ')
+          AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)
+          AND osa.assignment_start <= :yesterday
+          AND (osa.assignment_end IS NULL OR osa.assignment_end >= :window_start)
+        GROUP BY osa.officer_id
+    ';
+    $this->db->query($assignedQuery);
+    $this->db->bind(':window_start', $windowStart);
+    $this->db->bind(':yesterday', $yesterday);
+    foreach ($normalizedIds as $idx => $uid) {
+        $this->db->bind(':uid_' . $idx, $uid);
+    }
+    $assignedRows = $this->db->resultSet();
+    foreach ($assignedRows as $row) {
+        $assignedByUser[(int)$row->user_id] = (int)$row->assigned_days;
+    }
+
+    // Present days in the same rolling window.
+    $presentByUser = [];
+    $presentQuery = '
+        SELECT
+            u.id AS user_id,
+            COUNT(DISTINCT oa.attendance_date) AS present_days
+        FROM officer_attendance oa
+        INNER JOIN Users u ON u.userID = oa.officer_id
+        WHERE u.id IN (' . $inClause . ')
+          AND oa.status = "Present"
+          AND oa.attendance_date BETWEEN :window_start AND :yesterday
+        GROUP BY u.id
+    ';
+    $this->db->query($presentQuery);
+    $this->db->bind(':window_start', $windowStart);
+    $this->db->bind(':yesterday', $yesterday);
+    foreach ($normalizedIds as $idx => $uid) {
+        $this->db->bind(':uid_' . $idx, $uid);
+    }
+    $presentRows = $this->db->resultSet();
+    foreach ($presentRows as $row) {
+        $presentByUser[(int)$row->user_id] = (int)$row->present_days;
+    }
+
+    // Average rating from client/supervisor reviewers.
+    $ratingByUser = [];
+    $ratingQuery = '
+        SELECT
+            officer_user_id AS user_id,
+            AVG(rating_value) AS avg_rating,
+            COUNT(*) AS rating_count
+        FROM officer_performance_ratings
+        WHERE officer_user_id IN (' . $inClause . ')
+          AND reviewer_role IN ("client", "supervisor")
+        GROUP BY officer_user_id
+    ';
+    $this->db->query($ratingQuery);
+    foreach ($normalizedIds as $idx => $uid) {
+        $this->db->bind(':uid_' . $idx, $uid);
+    }
+    $ratingRows = $this->db->resultSet();
+    foreach ($ratingRows as $row) {
+        $ratingByUser[(int)$row->user_id] = [
+            'avg_rating' => $row->avg_rating !== null ? (float)$row->avg_rating : null,
+            'rating_count' => (int)$row->rating_count
+        ];
+    }
+
+    foreach ($normalizedIds as $uid) {
+        $assignedDays = (int)($assignedByUser[$uid] ?? 0);
+        $presentDays = (int)($presentByUser[$uid] ?? 0);
+        $attendanceScore = 0.0;
+        if ($assignedDays > 0) {
+            $attendanceScore = max(0.0, min(100.0, ($presentDays / $assignedDays) * 100));
+        }
+
+        $avgRating = $ratingByUser[$uid]['avg_rating'] ?? null;
+        $ratingCount = (int)($ratingByUser[$uid]['rating_count'] ?? 0);
+        $ratingScore = $avgRating !== null ? max(0.0, min(100.0, ($avgRating / 5) * 100)) : 0.0;
+
+        // Weight attendance reliability more heavily than feedback score.
+        $finalScore = ($attendanceScore * 0.60) + ($ratingScore * 0.40);
+
+        $scores[$uid] = [
+            'attendance_score' => round($attendanceScore, 2),
+            'rating_score' => round($ratingScore, 2),
+            'final_score' => round($finalScore, 2),
+            'average_rating' => $avgRating !== null ? round($avgRating, 2) : null,
+            'rating_count' => $ratingCount
+        ];
+    }
+
+    return $scores;
+}
+
 
 //Insert Job Application
 public function insertJobApplication($data,$role) {

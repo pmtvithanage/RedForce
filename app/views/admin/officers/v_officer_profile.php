@@ -490,6 +490,9 @@
                     <button class="btn btn-secondary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/editOfficer/<?php echo $officer->user_id; ?>'">
                         <span class="material-icons">edit</span> Edit Profile
                     </button>
+                    <button class="btn btn-secondary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officerRatings/<?php echo $officer->user_id; ?>'">
+                        <span class="material-icons">star</span> Ratings
+                    </button>
                     <button class="btn btn-primary" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/viewOfficerCalendar/<?php echo $officer->user_id; ?>'">
                         <span class="material-icons">calendar_month</span> View Calendar
                     </button>

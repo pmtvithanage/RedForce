@@ -144,16 +144,110 @@ class Client extends Controller {
         // Get assigned caretakers for this site
         $assignedCaretakers = $this->clientModel->getSiteCaretakers($site_id);
 
+        // Get client's existing ratings for officers in this site
+        $clientOfficerRatings = $this->clientModel->getClientSiteOfficerRatings($client_id, $site_id);
+
+        $ratingSuccess = $_SESSION['site_rating_success'] ?? '';
+        $ratingError = $_SESSION['site_rating_error'] ?? '';
+        unset($_SESSION['site_rating_success'], $_SESSION['site_rating_error']);
+
         $data = [
             'title' => 'Site Details',
             'pageTitle' => $site->site_name,
             'site' => $site,
             'assigned_officers' => $assignedOfficers,
             'assigned_supervisors' => $assignedSupervisors,
-            'assigned_caretakers' => $assignedCaretakers
+            'assigned_caretakers' => $assignedCaretakers,
+            'client_officer_ratings' => $clientOfficerRatings,
+            'rating_success' => $ratingSuccess,
+            'rating_error' => $ratingError
         ];
         
         $this->view('client/sites/v_site_details', $data);
+    }
+
+    public function saveOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('client/sites');
+            return;
+        }
+
+        $clientId = $_SESSION['user_id'] ?? null;
+        $siteId = (int)($_POST['site_id'] ?? 0);
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingValue = (int)($_POST['rating_value'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+        $description = trim((string)($_POST['description'] ?? ''));
+
+        if (!$clientId || $siteId <= 0 || $officerUserId <= 0) {
+            $_SESSION['site_rating_error'] = 'Invalid request for officer rating.';
+            redirect('client/sites');
+            return;
+        }
+
+        $redirectPath = 'client/viewSite/' . $siteId;
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['site_rating_error'] = 'Invalid rating date.';
+            redirect($redirectPath);
+            return;
+        }
+
+        if ($ratingValue < 1 || $ratingValue > 5) {
+            $_SESSION['site_rating_error'] = 'Rating must be between 1 and 5.';
+            redirect($redirectPath);
+            return;
+        }
+
+        if (!$this->clientModel->canClientRateOfficerInSite($clientId, $siteId, $officerUserId, $ratingDate)) {
+            $_SESSION['site_rating_error'] = 'You can only rate premise officers assigned to your own site on that date.';
+            redirect($redirectPath);
+            return;
+        }
+
+        if ($this->clientModel->saveClientOfficerRating($clientId, $siteId, $officerUserId, $ratingDate, $ratingValue, $description)) {
+            $_SESSION['site_rating_success'] = 'Officer rating saved successfully.';
+        } else {
+            $_SESSION['site_rating_error'] = 'Failed to save officer rating.';
+        }
+
+        redirect($redirectPath);
+    }
+
+    public function deleteOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('client/sites');
+            return;
+        }
+
+        $clientId = $_SESSION['user_id'] ?? null;
+        $siteId = (int)($_POST['site_id'] ?? 0);
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+
+        if (!$clientId || $siteId <= 0 || $officerUserId <= 0) {
+            $_SESSION['site_rating_error'] = 'Invalid delete request for officer rating.';
+            redirect('client/sites');
+            return;
+        }
+
+        $redirectPath = 'client/viewSite/' . $siteId;
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['site_rating_error'] = 'Invalid rating date.';
+            redirect($redirectPath);
+            return;
+        }
+
+        if ($this->clientModel->deleteClientOfficerRating($clientId, $siteId, $officerUserId, $ratingDate)) {
+            $_SESSION['site_rating_success'] = 'Officer rating deleted successfully.';
+        } else {
+            $_SESSION['site_rating_error'] = 'Failed to delete officer rating.';
+        }
+
+        redirect($redirectPath);
     }
 
     //requests
