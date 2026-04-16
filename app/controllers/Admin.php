@@ -3605,17 +3605,31 @@ public function rejectLeaveRequest($id) {
     }
 
     public function attendencereports() {
+        $attendanceRecords = $this->adminModel->getAttendanceReportRecords();
+        $sites = $this->adminModel->getAllSites();
+        $supervisors = $this->adminModel->getAttendanceReportSupervisors();
+
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Atendence Reports'
+            'pageTitle' => 'Attendance Reports',
+            'attendanceRecords' => $attendanceRecords,
+            'sites' => $sites,
+            'supervisors' => $supervisors
         ];
         $this->view('admin/reports/v_attendence', $data);  
     }
 
     public function paymentsreports() {
+        $payments = $this->adminModel->getAllClientsPayments();
+        $stats = $this->adminModel->getAllPaymentsStats();
+        $sites = $this->adminModel->getAllSites();
+
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Client Payment Reports'
+            'pageTitle' => 'Client Payment Reports',
+            'payments' => $payments,
+            'stats' => $stats,
+            'sites' => $sites
         ];
         $this->view('admin/reports/v_clientpayments', $data);  
     }
@@ -3651,17 +3665,31 @@ public function rejectLeaveRequest($id) {
     }
 
     public function sitereports() {
+        $siteDataset = $this->adminModel->getSiteReportDataset();
+        $sites = $this->adminModel->getAllSites();
+
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Site Reports'
+            'pageTitle' => 'Site Reports',
+            'siteDataset' => $siteDataset,
+            'sites' => $sites
         ];
         $this->view('admin/reports/v_site', $data);  
     }
 
     public function performancereports() {
+        $dataset = $this->adminModel->getPerformanceReportDataset();
+        $sites = $this->adminModel->getAllSites();
+        $supervisors = $this->adminModel->getAttendanceReportSupervisors();
+        $officers = $this->adminModel->getPerformanceReportOfficers();
+
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Officer Performance Reports'
+            'pageTitle' => 'Officer Performance Reports',
+            'dataset' => $dataset,
+            'sites' => $sites,
+            'supervisors' => $supervisors,
+            'officers' => $officers
         ];
         $this->view('admin/reports/v_performance', $data);  
     }
