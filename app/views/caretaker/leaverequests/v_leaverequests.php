@@ -105,6 +105,31 @@
         overflow-x: auto;
     }
 
+    /* Filters */
+    .filter-controls {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+    }
+
+    .filter-select {
+        min-width: 150px;
+        height: 44px;
+        border: 1px solid #dadada;
+        border-radius: 6px;
+        padding: 0 12px;
+        background: #fff;
+        font-size: 14px;
+        color: #333;
+        outline: none;
+    }
+
+    .filter-select:focus {
+        border-color: #a40000;
+    }
+
     /* Search Bar */
     .search-box {
         display: flex;
@@ -113,8 +138,9 @@
         border: 1px solid #dadada;
         padding: 10px 14px;
         border-radius: 6px;
-        margin-bottom: 16px;
-        max-width: 400px;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 280px;
     }
 
     .search-box:focus-within {
@@ -159,22 +185,29 @@
     .badge {
         padding: 5px 12px;
         border-radius: 20px;
-        color: white;
+        color: #374151;
         font-size: 12px;
-        font-weight: 600;
+        font-weight: 700;
         display: inline-block;
+        border: 1px solid transparent;
     }
 
     .badge.Pending {
-        background: #ff9800;
+        background: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
     }
 
     .badge.Approved {
-        background: #4caf50;
+        background: #e8f5e9;
+        color: #2e7d32;
+        border-color: #c8e6c9;
     }
 
     .badge.Rejected {
-        background: #e74c3c;
+        background: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
     }
 
     /* Leave Type Tags */
@@ -195,41 +228,74 @@
     }
 
     .action-btn {
-        padding: 6px 12px;
-        border: none;
+        padding: 8px 12px;
+        border: 1px solid transparent;
         border-radius: 6px;
         cursor: pointer;
         font-size: 12px;
-        transition: all 0.2s;
-        display: flex;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: 6px;
+        line-height: 1;
     }
 
     .action-btn:hover {
         transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     .view-btn {
-        background: #2196F3;
-        color: white;
+        background: #e3f2fd;
+        color: #1976d2;
+        border-color: #cfe5fc;
+    }
+
+    .view-btn:hover {
+        background: #1976d2;
+        color: #fff;
     }
 
     .edit-btn {
-        background: #f39c12;
-        color: white;
+        background: #fff3e0;
+        color: #f57c00;
+        border-color: #ffe0b2;
+    }
+
+    .edit-btn:hover {
+        background: #f57c00;
+        color: #fff;
     }
 
     .delete-btn {
-        background: #e74c3c;
-        color: white;
+        background: #ffebee;
+        color: #c62828;
+        border-color: #ffcdd2;
+    }
+
+    .delete-btn:hover {
+        background: #c62828;
+        color: #fff;
     }
 
     .create-btn {
-        display: flex;
+        background: #2e7d32;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
         align-items: center;
         gap: 8px;
+    }
+
+    .create-btn:hover {
+        background: #1b5e20;
+        transform: translateY(-1px);
     }
 
     .empty-state {
@@ -398,9 +464,20 @@
     <?php endif; ?>
 
     <div class="table-card">
-        <div class="search-box">
-            <span class="material-symbols-outlined">search</span>
-            <input type="text" id="searchInput" placeholder="Search leave requests...">
+        <div class="filter-controls">
+            <div class="search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="searchInput" placeholder="Search leave requests...">
+            </div>
+            <select id="statusFilter" class="filter-select">
+                <option value="">All Status</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+            </select>
+            <select id="monthFilter" class="filter-select">
+                <option value="">All Months</option>
+            </select>
         </div>
 
         <?php if (empty($data['leaveRequests'])): ?>
@@ -460,17 +537,20 @@
                                         onclick="event.stopPropagation(); viewRequest(<?php echo $request->id; ?>)"
                                         title="View Details">
                                         <span class="material-symbols-outlined">visibility</span>
+                                        View
                                     </button>
                                     <?php if ($request->status == 'Pending'): ?>
                                         <button class="action-btn edit-btn"
                                             onclick="event.stopPropagation(); editRequest(<?php echo $request->id; ?>)"
                                             title="Edit">
                                             <span class="material-symbols-outlined">edit</span>
+                                            Edit
                                         </button>
                                         <button class="action-btn delete-btn"
                                             onclick="event.stopPropagation(); deleteRequest(<?php echo $request->id; ?>)"
                                             title="Delete">
                                             <span class="material-symbols-outlined">delete</span>
+                                            Delete
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -537,9 +617,10 @@
         }
     });
 
-    // Search functionality
-    document.getElementById('searchInput')?.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.toLowerCase();
+    function applyFilters() {
+        const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase();
+        const statusFilter = (document.getElementById('statusFilter')?.value || '').toLowerCase();
+        const monthFilter = document.getElementById('monthFilter')?.value || '';
         const table = document.getElementById('leaveRequestsTable');
         if (!table) return;
 
@@ -549,14 +630,58 @@
             const leaveType = row.cells[0].textContent.toLowerCase();
             const reason = row.cells[4].textContent.toLowerCase();
             const status = row.cells[5].textContent.toLowerCase();
+            const createdDateText = row.cells[6].textContent.trim();
+            const createdDate = new Date(createdDateText);
+            const rowMonth = !Number.isNaN(createdDate.getTime()) ?
+                `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}` :
+                '';
 
-            if (leaveType.includes(searchTerm) || reason.includes(searchTerm) || status.includes(searchTerm)) {
+            const matchesSearch = !searchTerm || leaveType.includes(searchTerm) || reason.includes(searchTerm) || status.includes(searchTerm);
+            const matchesStatus = !statusFilter || status === statusFilter;
+            const matchesMonth = !monthFilter || rowMonth === monthFilter;
+
+            if (matchesSearch && matchesStatus && matchesMonth) {
                 row.style.display = '';
             } else {
                 row.style.display = 'none';
             }
         }
-    });
+    }
+
+    function populateMonthFilter() {
+        const table = document.getElementById('leaveRequestsTable');
+        const monthFilter = document.getElementById('monthFilter');
+        if (!table || !monthFilter) return;
+
+        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+        const monthMap = new Map();
+
+        for (let row of rows) {
+            const createdDateText = row.cells[6].textContent.trim();
+            const createdDate = new Date(createdDateText);
+            if (Number.isNaN(createdDate.getTime())) continue;
+
+            const value = `${createdDate.getFullYear()}-${String(createdDate.getMonth() + 1).padStart(2, '0')}`;
+            const label = createdDate.toLocaleString('default', {
+                month: 'long',
+                year: 'numeric'
+            });
+            monthMap.set(value, label);
+        }
+
+        const sortedMonths = Array.from(monthMap.entries()).sort((a, b) => b[0].localeCompare(a[0]));
+        for (const [value, label] of sortedMonths) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            monthFilter.appendChild(option);
+        }
+    }
+
+    document.getElementById('searchInput')?.addEventListener('input', applyFilters);
+    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+    document.getElementById('monthFilter')?.addEventListener('change', applyFilters);
+    populateMonthFilter();
 
     // View leave request
     function viewRequest(id) {

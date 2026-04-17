@@ -22,7 +22,7 @@
   .main-content {
     padding: 30px;
     max-width: 1600px;
-    margin: 0 auto;
+    margin: 0 40px;
   }
 
   .page-header {

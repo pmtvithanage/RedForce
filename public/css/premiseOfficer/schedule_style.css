@@ -6,29 +6,29 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f9f9f9;
+    background-color: #f3f4f6;
 }
 
 .main-content {
-    padding: 20px;
+    padding: 24px;
     margin-left: 0;
     min-height: calc(100vh - 100px);
-    background-color: #f9f9f9;
+    background-color: #f3f4f6;
 }
-
 
 
 .schedule-layout {
     display: grid;
     grid-template-columns: 2fr 1fr;
-    gap: 20px;
+    gap: 16px;
 }
 
 .calendar-container {
     background: white;
-    border-radius: 12px;
+    border-radius: 8px;
+    border: 1px solid #ececec;
     padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     height: fit-content;
 }
 
@@ -36,16 +36,17 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     padding: 10px 15px;
     background: #f8f9fa;
+    border: 1px solid #ececec;
     border-radius: 8px;
 }
 
 .nav-btn {
-    background: #a40000;
-    color: white;
-    border: none;
+    background: #ffffff;
+    color: #a40000;
+    border: 1px solid #d0d5dd;
     padding: 8px;
     border-radius: 50%;
     cursor: pointer;
@@ -58,8 +59,8 @@ body {
 }
 
 .nav-btn:hover {
-    background: #b50000;
-    transform: scale(1.05);
+    background: #f8f9fa;
+    border-color: #b8c0cc;
 }
 
 .nav-btn .material-icons {
@@ -67,9 +68,9 @@ body {
 }
 
 .current-month-year {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
+    font-size: 32px;
+    font-weight: 700;
+    color: #1f2937;
 }
 
 .month-select,
@@ -96,15 +97,18 @@ body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     background: #f8f9fa;
+    border: 1px solid #ececec;
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .day-name {
-    padding: 15px 10px;
+    padding: 12px 8px;
     text-align: center;
-    font-weight: 600;
-    font-size: 14px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
     color: #666;
     border-right: 1px solid #e9ecef;
 }
@@ -116,15 +120,16 @@ body {
 .calendar-body {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    background: #e9ecef;
+    gap: 0;
+    background: #ffffff;
+    border: 1px solid #ececec;
     border-radius: 8px;
     overflow: hidden;
 }
 
 .calendar-day {
     background: white;
-    min-height: 80px;
+    min-height: 74px;
     padding: 8px;
     display: flex;
     flex-direction: column;
@@ -135,7 +140,6 @@ body {
 
 .calendar-day:hover {
     background: #f8f9fa;
-    transform: scale(1.02);
 }
 
 .calendar-day.other-month {
@@ -144,13 +148,13 @@ body {
 }
 
 .calendar-day.today {
-    background: #e3f2fd;
+    background: #eef6ff;
     border: 2px solid #2196f3;
 }
 
 .calendar-day.selected {
-    background: #ffebee;
-    border: 2px solid #d32f2f;
+    background: #e3f2fd;
+    border: 2px solid #1976d2;
 }
 
 .calendar-day.has-shift {
@@ -170,42 +174,42 @@ body {
 
 /* Work day styling - Green background */
 .calendar-day.work-day {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-    border: 1px solid #81c784;
+    background: #e8f5e9;
+    border: 1px solid #c8e6c9;
 }
 
 .calendar-day.work-day:hover {
-    background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+    background: #dff1e3;
 }
 
 .calendar-day.work-day.selected {
-    background: #4caf50;
+    background: #e8f5e9;
     border: 2px solid #2e7d32;
-    color: white;
+    color: #1f2937;
 }
 
 .calendar-day.work-day.selected .day-number {
-    color: white;
+    color: #1f2937;
 }
 
 /* Leave day styling - Red background */
 .calendar-day.leave-day {
-    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-    border: 1px solid #e57373;
+    background: #ffebee;
+    border: 1px solid #ffcdd2;
 }
 
 .calendar-day.leave-day:hover {
-    background: linear-gradient(135deg, #ffcdd2 0%, #ef9a9a 100%);
+    background: #ffe2e6;
 }
 
 .calendar-day.leave-day.selected {
-    background: #f44336;
+    background: #ffebee;
     border: 2px solid #c62828;
-    color: white;
+    color: #1f2937;
 }
 
 .calendar-day.leave-day.selected .day-number {
-    color: white;
+    color: #1f2937;
 }
 
 .day-number {
@@ -222,9 +226,10 @@ body {
 
 /* Calendar Legend */
 .calendar-legend {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 14px;
+    padding: 10px 12px;
     background: #f8f9fa;
+    border: 1px solid #ececec;
     border-radius: 8px;
     display: flex;
     gap: 20px;
@@ -246,17 +251,17 @@ body {
 }
 
 .legend-color.work-day {
-    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-    border-color: #81c784;
+    background: #e8f5e9;
+    border-color: #c8e6c9;
 }
 
 .legend-color.leave-day {
-    background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-    border-color: #e57373;
+    background: #ffebee;
+    border-color: #ffcdd2;
 }
 
 .legend-color.today {
-    background: #e3f2fd;
+    background: #eef6ff;
     border: 2px solid #2196f3;
 }
 
@@ -269,8 +274,9 @@ body {
 /* Shift Details Panel */
 .shift-details-panel {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    border: 1px solid #ececec;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     height: fit-content;
     max-height: 600px;
     overflow-y: auto;
@@ -328,21 +334,26 @@ body {
 }
 
 .status-badge {
-    background: #4caf50;
-    color: white;
+    background: #e8f5e9;
+    color: #2e7d32;
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
     text-transform: uppercase;
+    border: 1px solid #c8e6c9;
 }
 
 .status-badge.work-badge {
-    background: #4caf50;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-color: #c8e6c9;
 }
 
 .status-badge.leave-badge {
-    background: #f44336;
+    background: #ffebee;
+    color: #c62828;
+    border-color: #ffcdd2;
 }
 
 .shift-details-grid {
@@ -448,8 +459,8 @@ body {
 }
 
 .day-off-badge {
-    background: #4caf50;
-    color: white;
+    background: #e8f5e9;
+    color: #2e7d32;
     padding: 6px 16px;
     border-radius: 16px;
     font-size: 12px;
@@ -457,6 +468,7 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    border: 1px solid #c8e6c9;
 }
 
 .day-off-badge .material-icons {
@@ -468,7 +480,7 @@ body {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
-    border-left: 4px solid #f44336;
+    border-left: 4px solid #ef9a9a;
 }
 
 .leave-icon-container {
@@ -519,8 +531,13 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .error-icon {
@@ -542,7 +559,7 @@ body {
         grid-template-columns: 1fr;
         gap: 15px;
     }
-    
+
     .shift-details-panel {
         max-height: none;
     }
@@ -553,37 +570,37 @@ body {
         margin-left: 0;
         padding: 15px;
     }
-    
+
     .calendar-day {
         min-height: 60px;
         padding: 5px;
     }
-    
+
     .day-number {
         font-size: 12px;
     }
-    
+
     .shift-indicator {
         font-size: 9px;
     }
-    
+
     .day-name {
         padding: 10px 5px;
         font-size: 12px;
     }
-    
+
     .shift-details {
         padding: 15px;
     }
-    
+
     .detail-item {
         padding: 8px;
     }
-    
+
     .no-selection-icon {
         font-size: 36px !important;
     }
-    
+
     .no-shift-icon {
         font-size: 36px !important;
     }
@@ -594,16 +611,16 @@ body {
         flex-direction: column;
         align-items: stretch;
     }
-    
+
     .month-select,
     .year-select {
         width: 100%;
     }
-    
+
     .shift-card {
         padding: 15px;
     }
-    
+
     .no-selection {
         padding: 30px 15px;
     }

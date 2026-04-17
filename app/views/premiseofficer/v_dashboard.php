@@ -6,7 +6,7 @@
 <style>
   .dashboard {
     width: 90%;
-    margin: 40px auto;
+    margin: 0 40px;
     padding: 0;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
