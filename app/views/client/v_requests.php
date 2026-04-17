@@ -1064,6 +1064,8 @@ $packages = $packageModel->getAllPackages();
                              data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
                              data-price="<?php echo $package->package_price; ?>" 
                              data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
+                             data-supervisors="<?php echo $isCustomPackage ? 'custom' : $package->number_of_supervisors; ?>"
+                             data-caretakers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_caretakers; ?>"
                              <?php if ($isCustomPackage): ?>
                              data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
                              data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
@@ -1686,7 +1688,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: this.dataset.package,
                 fullName: this.dataset.packageName,
                 price: this.dataset.price,
-                officers: this.dataset.officers
+                officers: this.dataset.officers,
+                supervisors: this.dataset.supervisors,
+                caretakers: this.dataset.caretakers
             };
 
             // Stop auto-slide permanently
@@ -1913,7 +1917,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize on page load
     updateCounterDisplays();
-    
+
     // Error message helper functions
     function showErrorMessage(elementId, message) {
         const errorElement = document.getElementById(elementId);
@@ -2057,7 +2061,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 headerTitle.textContent = siteName;
                 headerDesc.textContent = 'Adjust the number of personnel for this site (Minimum: 1 officer + 1 supervisor)';
-                
+
                 // Update display with current values
                 updateCounterDisplays();
             } else {
@@ -2211,7 +2215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         hideErrorMessage('assignmentErrorMessage');
-        
+
         if (selectedPackage) {
             // Check if this is for a new site or existing site
             if (newSiteData) {
@@ -2229,7 +2233,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('number_of_officers', officersChange);
                 formData.append('number_of_supervisors', supervisorsChange);
                 formData.append('number_of_caretakers', caretakersChange);
-                
                 // Calculate package price based on personnel changes
                 const totalPrice = (officersChange * pricePerOfficer) + 
                                   (supervisorsChange * pricePerSupervisor) + 
@@ -2255,7 +2258,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('number_of_officers', officersChange);
                 formData.append('number_of_supervisors', supervisorsChange);
                 formData.append('number_of_caretakers', caretakersChange);
-                
                 // Calculate package price based on personnel changes (can be negative)
                 const totalPrice = (officersChange * pricePerOfficer) + 
                                   (supervisorsChange * pricePerSupervisor) + 
@@ -2473,7 +2475,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('confirmPackageName').textContent = packageName;
         document.getElementById('confirmPackageDetails').textContent = packageOfficers;
         document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
-        
         // Update site info
         if (isNewSite && newSiteData) {
             document.getElementById('confirmSiteName').textContent = newSiteData.site_name;
@@ -2526,7 +2527,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Proceed with new site
                 const formData = new FormData();
                 formData.append('mode', 'new');
-                formData.append('package_name', selectedPackage.name);
+                formData.append('package_name', selectedPackage.fullName || selectedPackage.name);
                 formData.append('site_name', newSiteData.site_name);
                 formData.append('site_address', newSiteData.site_address);
                 formData.append('district', newSiteData.district);
@@ -2538,7 +2539,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
                 formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
                 formData.append('package_price', selectedPackage.price);
-                
                 if (newSiteData.image) {
                     formData.append('image', newSiteData.image);
                 }
@@ -2550,7 +2550,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formData = new FormData();
                 formData.append('mode', 'existing');
                 formData.append('site_id', selectedSiteId);
-                formData.append('package_name', selectedPackage.name);
+                formData.append('package_name', selectedPackage.fullName || selectedPackage.name);
                 formData.append('site_name', selectedSiteData.site_name);
                 formData.append('site_address', selectedSiteData.address);
                 formData.append('district', selectedSiteData.district || '');
@@ -2559,7 +2559,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
                 formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
                 formData.append('package_price', selectedPackage.price);
-                
                 // Submit via AJAX
                 submitPackageRequestAjax(formData);
             }
@@ -2852,7 +2851,7 @@ document.addEventListener('DOMContentLoaded', function() {
             pricePerSupervisor = parseFloat(selectedItem.dataset.priceSupervisor || 0);
             pricePerCaretaker = parseFloat(selectedItem.dataset.priceCaretaker || 0);
         }
-        
+
         updateCounterDisplays();
     }
 
