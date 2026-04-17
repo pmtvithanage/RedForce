@@ -171,9 +171,9 @@ if (isset($_SESSION['user_userID'])) {
 
                     <hr>
 
-                    <a href="#" class="dropdown-link change-password">
+                    <!-- <a href="#" class="dropdown-link change-password">
                         <span class="material-symbols-outlined">lock</span> Change Password
-                    </a>
+                    </a> -->
 
                     <a href="<?php echo URL_ROOT; ?>/users/logout" class="dropdown-link logout">
                         <span class="material-symbols-outlined">logout</span> Logout

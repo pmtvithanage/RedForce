@@ -182,6 +182,19 @@ html, body {
     background-color: #b71c1c;
 }
 
+.forgot-password-link {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 0.9rem;
+    align-self: flex-end;
+    margin-top: -0.75rem;
+}
+
+.forgot-password-link:hover {
+    color: #ffffff;
+    text-decoration: underline;
+}
+
 .form-input.is-invalid {
     border-bottom-color: #d32f2f;
 }
