@@ -500,6 +500,136 @@ class M_client {
         return $this->db->resultSet();
     }
 
+    /**
+     * Validate that a client can rate a premise officer assigned to the given site.
+     * When ratingDate is provided, officer must be on an active assignment for that date.
+     */
+    public function canClientRateOfficerInSite($client_id, $site_id, $officer_user_id, $ratingDate = null) {
+        $query = '
+            SELECT osa.id
+            FROM sites s
+            INNER JOIN officer_site_assignments osa ON osa.site_id = s.id
+            INNER JOIN Users u ON u.id = osa.officer_id
+            WHERE s.id = :site_id
+              AND (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1 FROM Clients c WHERE c.id = s.client_id AND c.user_id = :client_user_id
+                   ))
+              AND s.is_draft = 0
+              AND osa.status = "Active"
+              AND (osa.shift_type != "Supervisor" OR osa.shift_type IS NULL)
+              AND u.id = :officer_user_id
+              AND LOWER(TRIM(u.role)) = "premise officer"';
+
+        if (!empty($ratingDate)) {
+            $query .= ' AND :rating_date BETWEEN osa.assignment_start AND IFNULL(osa.assignment_end, "2099-12-31")';
+        }
+
+        $query .= ' LIMIT 1';
+
+        $this->db->query($query);
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        $this->db->bind(':officer_user_id', $officer_user_id);
+        if (!empty($ratingDate)) {
+            $this->db->bind(':rating_date', $ratingDate);
+        }
+
+        return (bool)$this->db->single();
+    }
+
+    public function getClientOfficerRatingForDate($client_id, $site_id, $officer_user_id, $ratingDate) {
+        $this->db->query('
+            SELECT opr.id, opr.rating_value, opr.description, opr.rating_date, opr.updated_at
+            FROM officer_performance_ratings opr
+            INNER JOIN sites s ON s.id = opr.site_id
+            WHERE opr.site_id = :site_id
+              AND opr.officer_user_id = :officer_user_id
+              AND opr.reviewer_user_id = :client_id
+              AND opr.reviewer_role = "client"
+              AND opr.rating_date = :rating_date
+              AND (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1 FROM Clients c WHERE c.id = s.client_id AND c.user_id = :client_user_id
+                   ))
+            LIMIT 1
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':officer_user_id', $officer_user_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        $this->db->bind(':rating_date', $ratingDate);
+        return $this->db->single();
+    }
+
+    public function saveClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate, $ratingValue, $description) {
+        $this->db->query('
+            INSERT INTO officer_performance_ratings
+                (site_id, officer_user_id, reviewer_user_id, reviewer_role, rating_date, rating_value, description)
+            VALUES
+                (:site_id, :officer_user_id, :client_id, "client", :rating_date, :rating_value, :description)
+            ON DUPLICATE KEY UPDATE
+                rating_value = VALUES(rating_value),
+                description = VALUES(description),
+                updated_at = CURRENT_TIMESTAMP
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':officer_user_id', $officer_user_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':rating_date', $ratingDate);
+        $this->db->bind(':rating_value', $ratingValue);
+        $this->db->bind(':description', $description);
+        return $this->db->execute();
+    }
+
+    public function deleteClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate) {
+        $this->db->query('
+            DELETE opr FROM officer_performance_ratings opr
+            INNER JOIN sites s ON s.id = opr.site_id
+            WHERE opr.site_id = :site_id
+              AND opr.officer_user_id = :officer_user_id
+              AND opr.reviewer_user_id = :client_id
+              AND opr.reviewer_role = "client"
+              AND opr.rating_date = :rating_date
+              AND (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1 FROM Clients c WHERE c.id = s.client_id AND c.user_id = :client_user_id
+                   ))
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':officer_user_id', $officer_user_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        $this->db->bind(':rating_date', $ratingDate);
+        return $this->db->execute();
+    }
+
+    public function getClientSiteOfficerRatings($client_id, $site_id) {
+        $this->db->query('
+            SELECT
+                opr.officer_user_id,
+                opr.rating_date,
+                opr.rating_value,
+                opr.description,
+                opr.updated_at
+            FROM officer_performance_ratings opr
+            INNER JOIN sites s ON s.id = opr.site_id
+            WHERE opr.site_id = :site_id
+              AND opr.reviewer_user_id = :client_id
+              AND opr.reviewer_role = "client"
+              AND (s.client_id = :client_id
+                   OR EXISTS (
+                       SELECT 1 FROM Clients c WHERE c.id = s.client_id AND c.user_id = :client_user_id
+                   ))
+            ORDER BY opr.rating_date DESC, opr.updated_at DESC
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        return $this->db->resultSet();
+    }
+
         /**
          * Get active officer/supervisor/caretaker counts for a client site.
          */

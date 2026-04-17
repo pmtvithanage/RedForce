@@ -322,6 +322,173 @@
     font-size: 18px;
   }
 
+  .rating-alert {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .rating-alert.success {
+    background: #e8f5e9;
+    color: #1b5e20;
+    border: 1px solid #c8e6c9;
+  }
+
+  .rating-alert.error {
+    background: #ffebee;
+    color: #b71c1c;
+    border: 1px solid #ffcdd2;
+  }
+
+  .rate-officer-btn {
+    border: 1px solid var(--primary);
+    background: #fff;
+    color: var(--primary);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .rate-officer-btn:hover {
+    background: #fff2f2;
+  }
+
+  .mini-rating {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a2d00;
+    background: #fff2df;
+    border: 1px solid #ffd7ad;
+    margin-right: 8px;
+  }
+
+  .rating-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rating-overlay.active {
+    display: flex;
+  }
+
+  .rating-dialog {
+    width: 92%;
+    max-width: 520px;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+  }
+
+  .rating-dialog-header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .rating-dialog-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .rating-close {
+    border: 0;
+    background: transparent;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .rating-dialog-body {
+    padding: 16px;
+  }
+
+  .rating-meta-text {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+
+  .star-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .star-row span {
+    font-size: 26px;
+    color: #d1d5db;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .star-row span.active {
+    color: #ffb300;
+  }
+
+  .rating-description {
+    width: 100%;
+    min-height: 96px;
+    border: 1px solid #d7dbe3;
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  .rating-date-input {
+    width: 100%;
+    margin-bottom: 12px;
+    border: 1px solid #d7dbe3;
+    border-radius: 10px;
+    padding: 9px 10px;
+    font-size: 14px;
+  }
+
+  .rating-actions {
+    margin-top: 14px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .rating-save-btn,
+  .rating-delete-btn {
+    border: 0;
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .rating-save-btn {
+    background: var(--primary);
+    color: #fff;
+  }
+
+  .rating-delete-btn {
+    background: #ffe9e9;
+    color: #b00000;
+  }
+
   /* Modal Styles */
   .modal-overlay {
     display: none;
@@ -703,6 +870,13 @@
     </div>
   </div>
 
+  <?php if (!empty($data['rating_success'])): ?>
+    <div class="rating-alert success"><?php echo htmlspecialchars($data['rating_success']); ?></div>
+  <?php endif; ?>
+  <?php if (!empty($data['rating_error'])): ?>
+    <div class="rating-alert error"><?php echo htmlspecialchars($data['rating_error']); ?></div>
+  <?php endif; ?>
+
   <?php if ($data['site']): ?>
     <!-- Site Details Card -->
     <div class="site-details-card">
@@ -833,6 +1007,7 @@
                 <th>Employment Status</th>
                 <th>Contact</th>
                 <th>Assignment Start</th>
+                <th>Rating</th>
               </tr>
             </thead>
             <tbody>
@@ -878,6 +1053,15 @@
                     </div>
                   </td>
                   <td><?php echo date('M d, Y', strtotime($officer->assignment_start)); ?></td>
+                  <td>
+                    <button
+                      type="button"
+                      class="rate-officer-btn"
+                      data-officer-id="<?php echo (int)$officer->user_id; ?>"
+                      data-officer-name="<?php echo htmlspecialchars($officer->name); ?>"
+                      data-officer-rank="<?php echo htmlspecialchars($officer->rank); ?>"
+                    >Rate</button>
+                  </td>
                 </tr>
               <?php endforeach; ?>
             </tbody>
@@ -1072,6 +1256,47 @@
   <?php endif; ?>
 </div>
 
+    <div class="rating-overlay" id="officerRatingOverlay" aria-hidden="true">
+      <div class="rating-dialog">
+        <div class="rating-dialog-header">
+          <h3>Rate Premise Officer</h3>
+          <button type="button" class="rating-close" id="closeOfficerRatingOverlay">
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+        <div class="rating-dialog-body">
+          <div class="rating-meta-text" id="officerRatingMeta">Officer</div>
+
+          <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/saveOfficerRating" id="saveSupervisorOfficerRatingForm">
+            <input type="hidden" name="officer_user_id" id="supervisorRatingOfficerId" value="">
+            <input type="hidden" name="rating_value" id="supervisorRatingValue" value="0">
+
+            <input type="date" class="rating-date-input" name="rating_date" id="supervisorRatingDate" value="<?php echo date('Y-m-d'); ?>" max="<?php echo date('Y-m-d'); ?>">
+
+            <div class="star-row" id="supervisorStarRow">
+              <span data-value="1">★</span>
+              <span data-value="2">★</span>
+              <span data-value="3">★</span>
+              <span data-value="4">★</span>
+              <span data-value="5">★</span>
+            </div>
+
+            <textarea class="rating-description" name="description" id="supervisorRatingDescription" maxlength="600" placeholder="Write a short note about the officer performance (optional)"></textarea>
+
+            <div class="rating-actions">
+              <button type="submit" class="rating-save-btn">Save Rating</button>
+            </div>
+          </form>
+
+          <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteOfficerRating" id="deleteSupervisorOfficerRatingForm" style="display:none; margin-top: 8px; text-align: right;">
+            <input type="hidden" name="officer_user_id" id="supervisorDeleteOfficerId" value="">
+            <input type="hidden" name="rating_date" id="supervisorDeleteRatingDate" value="">
+            <button type="submit" class="rating-delete-btn">Delete Rating</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
 
     </main>
     </div>
@@ -1102,6 +1327,127 @@
     <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
     <script>
       const URL_ROOT = '<?php echo URL_ROOT; ?>';
+      const supervisorOfficerRatings = <?php echo json_encode($data['officer_ratings'] ?? []); ?>;
+      const todayDate = '<?php echo date('Y-m-d'); ?>';
+
+      const ratingOverlay = document.getElementById('officerRatingOverlay');
+      const closeRatingOverlayBtn = document.getElementById('closeOfficerRatingOverlay');
+      const officerRatingMeta = document.getElementById('officerRatingMeta');
+      const supervisorRatingOfficerId = document.getElementById('supervisorRatingOfficerId');
+      const supervisorRatingDate = document.getElementById('supervisorRatingDate');
+      const supervisorRatingValue = document.getElementById('supervisorRatingValue');
+      const supervisorRatingDescription = document.getElementById('supervisorRatingDescription');
+      const supervisorDeleteOfficerId = document.getElementById('supervisorDeleteOfficerId');
+      const supervisorDeleteRatingDate = document.getElementById('supervisorDeleteRatingDate');
+      const deleteSupervisorForm = document.getElementById('deleteSupervisorOfficerRatingForm');
+      const supervisorStars = Array.from(document.querySelectorAll('#supervisorStarRow span'));
+      const saveSupervisorForm = document.getElementById('saveSupervisorOfficerRatingForm');
+      const ratingRowsByKey = {};
+      let currentRatingContext = { officerId: 0, officerName: 'Officer', officerRank: 'N/A' };
+
+      supervisorOfficerRatings.forEach((row) => {
+        const key = String(row.officer_user_id) + '_' + String(row.rating_date);
+        ratingRowsByKey[key] = row;
+      });
+
+      function setSupervisorStarSelection(value) {
+        const numeric = Number(value) || 0;
+        supervisorRatingValue.value = String(numeric);
+        supervisorStars.forEach((star) => {
+          const val = Number(star.dataset.value || 0);
+          star.classList.toggle('active', val <= numeric);
+        });
+      }
+
+      function refreshSupervisorRatingState(officerId, officerName, officerRank) {
+        const selectedDate = String(supervisorRatingDate.value || todayDate);
+        const ratingKey = String(officerId) + '_' + selectedDate;
+        const existing = ratingRowsByKey[ratingKey] || null;
+
+        supervisorDeleteOfficerId.value = String(officerId);
+        supervisorDeleteRatingDate.value = selectedDate;
+        officerRatingMeta.textContent = officerName + ' (' + officerRank + ') - ' + selectedDate;
+
+        if (existing) {
+          setSupervisorStarSelection(existing.rating_value);
+          supervisorRatingDescription.value = existing.description || '';
+          deleteSupervisorForm.style.display = 'block';
+        } else {
+          setSupervisorStarSelection(0);
+          supervisorRatingDescription.value = '';
+          deleteSupervisorForm.style.display = 'none';
+        }
+      }
+
+      function openSupervisorRatingModal(officerId, officerName, officerRank) {
+        currentRatingContext = { officerId, officerName, officerRank };
+        supervisorRatingOfficerId.value = String(officerId);
+        supervisorRatingDate.value = todayDate;
+        refreshSupervisorRatingState(officerId, officerName, officerRank);
+
+        ratingOverlay.classList.add('active');
+        ratingOverlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function closeSupervisorRatingModal() {
+        ratingOverlay.classList.remove('active');
+        ratingOverlay.setAttribute('aria-hidden', 'true');
+      }
+
+      supervisorStars.forEach((star) => {
+        star.addEventListener('click', () => {
+          setSupervisorStarSelection(Number(star.dataset.value || 0));
+        });
+      });
+
+      document.querySelectorAll('.rate-officer-btn').forEach((btn) => {
+        const officerId = Number(btn.dataset.officerId || 0);
+        const key = String(officerId) + '_' + todayDate;
+        const existing = ratingRowsByKey[key] || null;
+        if (existing) {
+          btn.innerHTML = '<span class="mini-rating">' + existing.rating_value + '/5</span>Edit';
+        }
+
+        btn.addEventListener('click', () => {
+          openSupervisorRatingModal(
+            officerId,
+            String(btn.dataset.officerName || 'Officer'),
+            String(btn.dataset.officerRank || 'N/A')
+          );
+        });
+      });
+
+      supervisorRatingDate.addEventListener('change', () => {
+        if (!currentRatingContext.officerId) {
+          return;
+        }
+        refreshSupervisorRatingState(
+          currentRatingContext.officerId,
+          currentRatingContext.officerName,
+          currentRatingContext.officerRank
+        );
+      });
+
+      if (saveSupervisorForm) {
+        saveSupervisorForm.addEventListener('submit', (event) => {
+          if (Number(supervisorRatingValue.value || 0) < 1) {
+            event.preventDefault();
+            alert('Please select a rating between 1 and 5.');
+          }
+        });
+      }
+
+      if (closeRatingOverlayBtn) {
+        closeRatingOverlayBtn.addEventListener('click', closeSupervisorRatingModal);
+      }
+
+      if (ratingOverlay) {
+        ratingOverlay.addEventListener('click', (event) => {
+          if (event.target === ratingOverlay) {
+            closeSupervisorRatingModal();
+          }
+        });
+      }
 
       // Open equipment modal
       document.querySelectorAll('.view-requests-btn').forEach(btn => {

@@ -13,6 +13,9 @@
     
     // Leave dates data
     const leaveDatesData = <?php echo json_encode($data['leaveDates'] ?? []); ?>;
+
+    // Marked attendance data
+    const attendanceData = <?php echo json_encode($data['attendanceStatuses'] ?? []); ?>;
     
     // Base URL for AJAX requests
     const baseURL = '<?php echo URL_ROOT; ?>';
@@ -20,6 +23,7 @@
     // Debug output
     console.log('Assignment Data:', assignmentData);
     console.log('Leave Dates Data:', leaveDatesData);
+    console.log('Attendance Data:', attendanceData);
     console.log('Base URL:', baseURL);
 </script>
 

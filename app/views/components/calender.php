@@ -49,6 +49,10 @@
                     <span>Approved Leave</span>
                 </div>
                 <div class="legend-item">
+                    <div class="legend-color absent-day"></div>
+                    <span>Absent (End Of Day)</span>
+                </div>
+                <div class="legend-item">
                     <div class="legend-color today"></div>
                     <span>Today</span>
                 </div>

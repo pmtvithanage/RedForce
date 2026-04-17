@@ -107,6 +107,84 @@
     margin: 0 auto;
 }
 
+.attendance-site-banner {
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+.attendance-blocks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.attendance-block {
+    max-width: 100%;
+}
+
+.block-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.1rem;
+    color: #1a1a1a;
+}
+
+.inline-form {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.compact-grid {
+    gap: 1rem;
+}
+
+.compact-grid .form-actions {
+    position: static;
+    margin: 0;
+    padding: 0;
+    border-top: none;
+    background: transparent;
+    justify-content: flex-start;
+}
+
+.duty-points-list-wrap {
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid #f0d6dc;
+}
+
+.duty-points-list-title {
+    margin: 0 0 0.6rem 0;
+    font-size: 0.9rem;
+    color: #444;
+    font-weight: 600;
+}
+
+.duty-points-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.duty-point-chip {
+    display: inline-block;
+    background: #fdf2f2;
+    color: #a80f0f;
+    border: 1px solid #f7cdcd;
+    border-radius: 999px;
+    padding: 0.32rem 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.duty-points-empty {
+    margin: 0;
+    color: #777;
+    font-size: 0.88rem;
+}
+
 /* Flash Messages */
 .flash-message {
     padding: 1rem 1.25rem;
@@ -713,6 +791,10 @@
         grid-template-columns: 1fr;
     }
 
+    .inline-form {
+        grid-template-columns: 1fr;
+    }
+
     .modal-content {
         width: 95%;
         margin: 10px auto;
@@ -758,6 +840,13 @@
     .btn-edit,
     .btn-delete {
         width: 100%;
+
         justify-content: center;
+    }
+}
+
+@media (max-width: 1024px) {
+    .attendance-blocks {
+        grid-template-columns: 1fr;
     }
 }

@@ -84,6 +84,18 @@
         background: #f9e9e9;
     }
 
+    th.sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+    }
+
+    th.sortable .sort-indicator {
+        font-size: 12px;
+        margin-left: 6px;
+        color: #7d1d1d;
+    }
+
 
     /* Status Badges */
     .badge {
@@ -176,11 +188,11 @@
                     <th>Rank</th>
                     <th>Status</th>
                     <th>Location</th>
-                    <th>Rating</th>
+                    <th class="sortable" id="ratingSortHeader">Rating <span class="sort-indicator" id="ratingSortIndicator">▼</span></th>
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="officersTableBody">
                 <?php foreach ($data['officer'] as $officer) : ?>
                     <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officer_profile/<?php echo $officer->premise_officer_id; ?>'">
                         <td style="padding: 8px; text-align: center;">
@@ -203,7 +215,7 @@
                             </span>
                         </td>
                         <td><?php echo "{$officer->city}, {$officer->district}"; ?></td>
-                        <td><?php echo ($officer->rating == NULL) ? '---' : $officer->rating; ?></td>
+                        <td class="rating-cell" data-rating="<?php echo (float)($officer->rating ?? 0); ?>"><?php echo number_format((float)($officer->rating ?? 0), 2); ?></td>
                     </tr>
                 <?php endforeach; ?>
 
@@ -237,6 +249,43 @@
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
+
+<script>
+    (function initOfficerRatingSort() {
+        const tableBody = document.getElementById('officersTableBody');
+        const ratingHeader = document.getElementById('ratingSortHeader');
+        const indicator = document.getElementById('ratingSortIndicator');
+        if (!tableBody || !ratingHeader || !indicator) {
+            return;
+        }
+
+        let isDescending = true;
+
+        function sortRows() {
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            rows.sort((a, b) => {
+                const aRating = Number(a.querySelector('.rating-cell')?.dataset.rating || 0);
+                const bRating = Number(b.querySelector('.rating-cell')?.dataset.rating || 0);
+                if (aRating === bRating) {
+                    const aName = (a.children[2]?.textContent || '').trim().toLowerCase();
+                    const bName = (b.children[2]?.textContent || '').trim().toLowerCase();
+                    return aName.localeCompare(bName);
+                }
+                return isDescending ? bRating - aRating : aRating - bRating;
+            });
+
+            rows.forEach((row) => tableBody.appendChild(row));
+            indicator.textContent = isDescending ? '▼' : '▲';
+        }
+
+        ratingHeader.addEventListener('click', () => {
+            isDescending = !isDescending;
+            sortRows();
+        });
+
+        sortRows();
+    })();
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
