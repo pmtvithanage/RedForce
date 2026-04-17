@@ -19,16 +19,19 @@ $packages = $packageModel->getAllPackages();
     :root {
         --accent: #a40000;
         --accent-light: #c41e1e;
-        --shadow: 0 6px 18px rgba(20,20,40,0.06);
+        --shadow: 0 6px 18px rgba(20, 20, 40, 0.06);
         --radius: 12px;
     }
 
     .requests-container {
         display: grid;
-        grid-template-columns: 1fr 1.5fr;
+        grid-template-columns: 1fr 1fr;
         gap: 24px;
-        padding: 24px;
+        width: 90%;
+        margin: 24px auto;
+        padding: 0;
         min-height: calc(100vh - 80px);
+        align-items: start;
     }
 
     /* Left Container - Packages */
@@ -122,7 +125,7 @@ $packages = $packageModel->getAllPackages();
         display: none;
     }
 
-    .package-item > * {
+    .package-item>* {
         position: relative;
         z-index: 1;
     }
@@ -214,7 +217,7 @@ $packages = $packageModel->getAllPackages();
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
         z-index: 10;
     }
@@ -225,7 +228,7 @@ $packages = $packageModel->getAllPackages();
 
     .carousel-nav:hover {
         background: white;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         transform: translateY(-50%) scale(1.1);
     }
 
@@ -931,6 +934,7 @@ $packages = $packageModel->getAllPackages();
             opacity: 0;
             transform: translateY(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -940,6 +944,8 @@ $packages = $packageModel->getAllPackages();
     @media (max-width: 1024px) {
         .requests-container {
             grid-template-columns: 1fr;
+            width: 90%;
+            margin: 20px auto;
         }
 
         .packages-container {
@@ -1024,11 +1030,11 @@ $packages = $packageModel->getAllPackages();
 
                 <div class="packages-carousel-wrapper" id="packagesCarouselWrapper">
                     <?php if (!empty($packages)): ?>
-                        <?php foreach ($packages as $package): 
+                        <?php foreach ($packages as $package):
                             $isCustomPackage = ($package->package_name === 'Custom Package');
                             // Create URL-friendly package slug
                             $packageSlug = strtolower(str_replace(' ', '', $package->package_name));
-                            
+
                             // Build personnel/pricing display text
                             if ($isCustomPackage) {
                                 // For Custom Package, show per-unit pricing
@@ -1058,43 +1064,43 @@ $packages = $packageModel->getAllPackages();
                                 $displayPersonnel = !empty($personnelText) ? implode(', ', $personnelText) : 'Security Package';
                             }
                         ?>
-                        <div class="package-item" 
-                             data-package="<?php echo htmlspecialchars($packageSlug); ?>" 
-                             data-package-id="<?php echo $package->id; ?>"
-                             data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
-                             data-price="<?php echo $package->package_price; ?>" 
-                             data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
-                             <?php if ($isCustomPackage): ?>
-                             data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
-                             data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
-                             data-price-caretaker="<?php echo $package->price_per_caretaker ?? 0; ?>"
-                             <?php endif; ?>
-                             <?php if (!empty($package->background_image)): ?>
-                                style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?php echo URL_ROOT; ?>/uploads/packages/<?php echo $package->background_image; ?>'); background-size: cover; background-position: center;"
-                             <?php endif; ?>>
-                            <?php if (empty($package->background_image)): ?>
-                            <style>
-                                .package-item[data-package="<?php echo htmlspecialchars($packageSlug); ?>"]::before {
-                                    background: url('<?php echo URL_ROOT; ?>/img/SecurityOfficer.png') no-repeat center;
-                                    background-size: cover;
-                                    filter: grayscale(30%) brightness(0.7);
-                                }
-                            </style>
-                            <?php endif; ?>
-                            <div class="package-name"><?php echo htmlspecialchars($package->package_name); ?></div>
-                            <?php if (!empty($package->description)): ?>
-                            <div class="package-description"><?php echo htmlspecialchars($package->description); ?></div>
-                            <?php endif; ?>
-                            <div class="package-officers"><?php echo $displayPersonnel; ?></div>
-                            <div class="package-price">
+                            <div class="package-item"
+                                data-package="<?php echo htmlspecialchars($packageSlug); ?>"
+                                data-package-id="<?php echo $package->id; ?>"
+                                data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
+                                data-price="<?php echo $package->package_price; ?>"
+                                data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
                                 <?php if ($isCustomPackage): ?>
-                                    <span class="material-symbols-outlined" style="vertical-align: middle;">settings</span>
-                                    Customizable
-                                <?php else: ?>
-                                    LKR <?php echo number_format($package->package_price, 0); ?><span class="package-period">/month</span>
+                                data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
+                                data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
+                                data-price-caretaker="<?php echo $package->price_per_caretaker ?? 0; ?>"
                                 <?php endif; ?>
+                                <?php if (!empty($package->background_image)): ?>
+                                style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?php echo URL_ROOT; ?>/uploads/packages/<?php echo $package->background_image; ?>'); background-size: cover; background-position: center;"
+                                <?php endif; ?>>
+                                <?php if (empty($package->background_image)): ?>
+                                    <style>
+                                        .package-item[data-package="<?php echo htmlspecialchars($packageSlug); ?>"]::before {
+                                            background: url('<?php echo URL_ROOT; ?>/img/SecurityOfficer.png') no-repeat center;
+                                            background-size: cover;
+                                            filter: grayscale(30%) brightness(0.7);
+                                        }
+                                    </style>
+                                <?php endif; ?>
+                                <div class="package-name"><?php echo htmlspecialchars($package->package_name); ?></div>
+                                <?php if (!empty($package->description)): ?>
+                                    <div class="package-description"><?php echo htmlspecialchars($package->description); ?></div>
+                                <?php endif; ?>
+                                <div class="package-officers"><?php echo $displayPersonnel; ?></div>
+                                <div class="package-price">
+                                    <?php if ($isCustomPackage): ?>
+                                        <span class="material-symbols-outlined" style="vertical-align: middle;">settings</span>
+                                        Customizable
+                                    <?php else: ?>
+                                        LKR <?php echo number_format($package->package_price, 0); ?><span class="package-period">/month</span>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                        </div>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <div class="package-item">
@@ -1122,7 +1128,7 @@ $packages = $packageModel->getAllPackages();
                     <h2 id="formHeaderTitle">Request Security Service</h2>
                     <p id="formHeaderDesc">Select a package and choose your deployment option</p>
                 </div>
-                <?php 
+                <?php
                 // Check if Custom Package exists
                 $hasCustomPackage = false;
                 if (!empty($packages)) {
@@ -1133,12 +1139,12 @@ $packages = $packageModel->getAllPackages();
                         }
                     }
                 }
-                if ($hasCustomPackage): 
+                if ($hasCustomPackage):
                 ?>
-                <button class="btn-custom-package" onclick="selectCustomPackage()">
-                    <span class="material-symbols-outlined">settings</span>
-                    Custom Package
-                </button>
+                    <button class="btn-custom-package" onclick="selectCustomPackage()">
+                        <span class="material-symbols-outlined">settings</span>
+                        Custom Package
+                    </button>
                 <?php endif; ?>
             </div>
 
@@ -1316,14 +1322,14 @@ $packages = $packageModel->getAllPackages();
                     <div class="form-step active" id="step1">
                         <!-- Error Message Container -->
                         <span class="error-message" id="step1ErrorMessage"></span>
-                        
+
                         <!-- Photo Upload -->
                         <div class="site-photo-upload">
                             <label class="site-form-label" style="text-align: center; margin-bottom: 10px;">Site Photo *</label>
                             <div class="site-photo-frame" id="sitePhotoFrame">
-                                <img src="<?php echo URL_ROOT; ?>/img/photo.png" 
-                                     alt="Site image" 
-                                     id="siteImagePreview" />
+                                <img src="<?php echo URL_ROOT; ?>/img/photo.png"
+                                    alt="Site image"
+                                    id="siteImagePreview" />
                             </div>
                             <button type="button" class="btn-add-photo" id="addSitePhotoBtn" onclick="document.getElementById('siteImageInput').click()">
                                 <span class="material-symbols-outlined" style="font-size: 18px;">add_photo_alternate</span>
@@ -1343,44 +1349,44 @@ $packages = $packageModel->getAllPackages();
                         <!-- Site Name -->
                         <div class="site-form-field">
                             <label class="site-form-label">Site Name *</label>
-                            <input type="text" 
-                                   class="site-form-input" 
-                                   id="newSiteName" 
-                                   placeholder="Enter site name" 
-                                   required />
+                            <input type="text"
+                                class="site-form-input"
+                                id="newSiteName"
+                                placeholder="Enter site name"
+                                required />
                         </div>
 
                         <!-- District -->
                         <div class="site-form-field">
                             <label class="site-form-label">District *</label>
-                            <input type="text" 
-                                   class="site-form-input" 
-                                   id="district" 
-                                   name="district"
-                                   placeholder="Enter district" 
-                                   required />
+                            <input type="text"
+                                class="site-form-input"
+                                id="district"
+                                name="district"
+                                placeholder="Enter district"
+                                required />
                         </div>
 
                         <!-- City -->
                         <div class="site-form-field" id="city-field" style="display: none;">
                             <label class="site-form-label">City</label>
-                            <input type="text" 
-                                   class="site-form-input" 
-                                   id="city" 
-                                   name="city"
-                                   placeholder="Enter city" />
+                            <input type="text"
+                                class="site-form-input"
+                                id="city"
+                                name="city"
+                                placeholder="Enter city" />
                         </div>
 
                         <!-- Phone Number -->
                         <div class="site-form-field">
                             <label class="site-form-label">Phone Number *</label>
-                            <input type="tel" 
-                                   class="site-form-input" 
-                                   id="newSitePhone" 
-                                   placeholder="Enter 10 digit phone number" 
-                                   maxlength="10"
-                                   pattern="[0-9]{10}"
-                                   required />
+                            <input type="tel"
+                                class="site-form-input"
+                                id="newSitePhone"
+                                placeholder="Enter 10 digit phone number"
+                                maxlength="10"
+                                pattern="[0-9]{10}"
+                                required />
                             <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
                                 <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">phone</span>
                                 Enter 10 digits only (e.g., 0771234567)
@@ -1400,23 +1406,23 @@ $packages = $packageModel->getAllPackages();
                     <div class="form-step" id="step2">
                         <!-- Error Message Container -->
                         <span class="error-message" id="step2ErrorMessage"></span>
-                        
+
                         <div class="site-map-container">
                             <div class="site-map-instructions">
                                 <span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">location_on</span>
                                 Search for a location below or click on the map to pin the exact site location. The address will be automatically detected.
                             </div>
-                            
+
                             <!-- Location Search Box -->
                             <div class="location-search-box" style="margin-bottom: 15px; position: relative;">
                                 <span class="material-symbols-outlined" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #999; font-size: 20px; pointer-events: none;">search</span>
-                                <input type="text" 
-                                       id="newSiteLocationSearch" 
-                                       placeholder="Search for places, addresses, or landmarks..." 
-                                       autocomplete="off"
-                                       style="width: 100%; padding: 12px 45px 12px 40px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease;">
+                                <input type="text"
+                                    id="newSiteLocationSearch"
+                                    placeholder="Search for places, addresses, or landmarks..."
+                                    autocomplete="off"
+                                    style="width: 100%; padding: 12px 45px 12px 40px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; transition: all 0.3s ease;">
                             </div>
-                            
+
                             <div id="siteMap"></div>
                             <input type="hidden" id="newSiteLatitude" />
                             <input type="hidden" id="newSiteLongitude" />
@@ -1425,11 +1431,11 @@ $packages = $packageModel->getAllPackages();
                         <!-- Location Address -->
                         <div class="site-form-field" style="margin-top: 20px;">
                             <label class="site-form-label">Location Address *</label>
-                            <input type="text" 
-                                   class="site-form-input" 
-                                   id="newSiteAddress" 
-                                   placeholder="Search location above or click on map - address will auto-fill" 
-                                   required />
+                            <input type="text"
+                                class="site-form-input"
+                                id="newSiteAddress"
+                                placeholder="Search location above or click on map - address will auto-fill"
+                                required />
                             <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
                                 <span class="material-symbols-outlined" style="font-size: 14px; vertical-align: middle;">location_on</span>
                                 The address is automatically detected from the map location. You can edit it if needed.
@@ -1515,461 +1521,461 @@ $packages = $packageModel->getAllPackages();
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const packageItems = document.querySelectorAll('.package-item');
-    const addToExistingBtn = document.getElementById('addToExistingSite');
-    const createNewSiteBtn = document.getElementById('createNewSite');
-    
-    let selectedPackage = null;
-    let currentPackageSlide = 0;
-    let packageAutoSlideInterval;
-    let isPackageSelected = false;
-    let isDeploymentOptionSelected = false;
-    const totalPackages = packageItems.length;
-    const customPackageIndex = Array.from(packageItems).findIndex(item => item.dataset.officers === 'custom');
+    document.addEventListener('DOMContentLoaded', function() {
+        const packageItems = document.querySelectorAll('.package-item');
+        const addToExistingBtn = document.getElementById('addToExistingSite');
+        const createNewSiteBtn = document.getElementById('createNewSite');
 
-    // Carousel Functions
-    function updatePackageCarousel() {
-        const wrapper = document.getElementById('packagesCarouselWrapper');
-        if (wrapper) {
-            wrapper.style.transform = `translateX(-${currentPackageSlide * 100}%)`;
-            document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
-                dot.classList.toggle('active', index === currentPackageSlide);
-            });
-        }
-    }
+        let selectedPackage = null;
+        let currentPackageSlide = 0;
+        let packageAutoSlideInterval;
+        let isPackageSelected = false;
+        let isDeploymentOptionSelected = false;
+        const totalPackages = packageItems.length;
+        const customPackageIndex = Array.from(packageItems).findIndex(item => item.dataset.officers === 'custom');
 
-    window.changePackageSlide = function(direction) {
-        if (isDeploymentOptionSelected) return;
-        currentPackageSlide = (currentPackageSlide + direction + totalPackages) % totalPackages;
-        updatePackageCarousel();
-        
-        // Clear selection when navigating away
-        if (isPackageSelected) {
-            packageItems.forEach(p => p.classList.remove('selected'));
-            selectedPackage = null;
-            isPackageSelected = false;
-            isDeploymentOptionSelected = false;
-            
-            // Re-enable package container
-            const packagesContainer = document.querySelector('.packages-container');
-            if (packagesContainer) {
-                packagesContainer.classList.remove('disabled');
-            }
-            
-            // Show arrow buttons and indicators
-            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
-            document.getElementById('packageCarouselIndicators').classList.remove('hidden');
-            
-            // Show custom package button again
-            const customPackageBtn = document.querySelector('.btn-custom-package');
-            if (customPackageBtn) {
-                customPackageBtn.style.display = 'inline-flex';
-            }
-            
-            // Reset right container
-            const emptyState = document.getElementById('emptyState');
-            const optionCards = document.getElementById('optionCards');
-            const sitesListContainer = document.getElementById('sitesListContainer');
-            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-            const headerTitle = document.getElementById('formHeaderTitle');
-            const headerDesc = document.getElementById('formHeaderDesc');
-            
-            if (emptyState && optionCards) {
-                emptyState.style.display = 'block';
-                optionCards.style.display = 'none';
-                sitesListContainer.style.display = 'none';
-                assignmentFormContainer.style.display = 'none';
-                headerTitle.textContent = 'Request Security Service';
-                headerDesc.textContent = 'Select a package and choose your deployment option';
+        // Carousel Functions
+        function updatePackageCarousel() {
+            const wrapper = document.getElementById('packagesCarouselWrapper');
+            if (wrapper) {
+                wrapper.style.transform = `translateX(-${currentPackageSlide * 100}%)`;
+                document.querySelectorAll('.carousel-dot').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentPackageSlide);
+                });
             }
         }
-        
-        if (!isPackageSelected) {
-            resetPackageAutoSlide();
-        }
-    }
 
-    window.goToPackageSlide = function(index) {
-        if (isDeploymentOptionSelected) return;
-        currentPackageSlide = index;
-        updatePackageCarousel();
-        
-        // Clear selection when navigating away
-        if (isPackageSelected) {
-            packageItems.forEach(p => p.classList.remove('selected'));
-            selectedPackage = null;
-            isPackageSelected = false;
-            isDeploymentOptionSelected = false;
-            
-            // Re-enable package container
-            const packagesContainer = document.querySelector('.packages-container');
-            if (packagesContainer) {
-                packagesContainer.classList.remove('disabled');
-            }
-            
-            // Show arrow buttons and indicators
-            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
-            document.getElementById('packageCarouselIndicators').classList.remove('hidden');
-            
-            // Show custom package button again
-            const customPackageBtn = document.querySelector('.btn-custom-package');
-            if (customPackageBtn) {
-                customPackageBtn.style.display = 'inline-flex';
-            }
-            
-            // Reset right container
-            const emptyState = document.getElementById('emptyState');
-            const optionCards = document.getElementById('optionCards');
-            const sitesListContainer = document.getElementById('sitesListContainer');
-            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-            const headerTitle = document.getElementById('formHeaderTitle');
-            const headerDesc = document.getElementById('formHeaderDesc');
-            
-            if (emptyState && optionCards) {
-                emptyState.style.display = 'block';
-                optionCards.style.display = 'none';
-                sitesListContainer.style.display = 'none';
-                assignmentFormContainer.style.display = 'none';
-                headerTitle.textContent = 'Request Security Service';
-                headerDesc.textContent = 'Select a package and choose your deployment option';
-            }
-        }
-        
-        if (!isPackageSelected) {
-            resetPackageAutoSlide();
-        }
-    }
-
-    function autoPackageSlide() {
-        if (isPackageSelected) return;
-        currentPackageSlide = (currentPackageSlide + 1) % totalPackages;
-        updatePackageCarousel();
-    }
-
-    function resetPackageAutoSlide() {
-        if (isPackageSelected) return;
-        clearInterval(packageAutoSlideInterval);
-        packageAutoSlideInterval = setInterval(autoPackageSlide, 5000);
-    }
-
-    // Initialize auto-slide
-    packageAutoSlideInterval = setInterval(autoPackageSlide, 5000);
-
-    // Pause on hover
-    const packagesContainer = document.querySelector('.packages-container');
-    if (packagesContainer) {
-        packagesContainer.addEventListener('mouseenter', () => {
-            if (!isPackageSelected) clearInterval(packageAutoSlideInterval);
-        });
-        packagesContainer.addEventListener('mouseleave', resetPackageAutoSlide);
-    }
-
-    // Keyboard navigation
-    document.addEventListener('keydown', e => {
-        if (isDeploymentOptionSelected) return;
-        if (e.key === 'ArrowLeft') changePackageSlide(-1);
-        if (e.key === 'ArrowRight') changePackageSlide(1);
-    });
-
-    // Package selection
-    packageItems.forEach(item => {
-        item.addEventListener('click', function() {
+        window.changePackageSlide = function(direction) {
             if (isDeploymentOptionSelected) return;
-            // Remove previous selection
-            packageItems.forEach(p => p.classList.remove('selected'));
-            
-            // Add selection
-            this.classList.add('selected');
-            
-            selectedPackage = {
-                name: this.dataset.package,
-                fullName: this.dataset.packageName,
-                price: this.dataset.price,
-                officers: this.dataset.officers
-            };
+            currentPackageSlide = (currentPackageSlide + direction + totalPackages) % totalPackages;
+            updatePackageCarousel();
 
-            // Stop auto-slide permanently
-            isPackageSelected = true;
-            clearInterval(packageAutoSlideInterval);
+            // Clear selection when navigating away
+            if (isPackageSelected) {
+                packageItems.forEach(p => p.classList.remove('selected'));
+                selectedPackage = null;
+                isPackageSelected = false;
+                isDeploymentOptionSelected = false;
 
-            // Hide custom package button when any package is selected
-            const customPackageBtn = document.querySelector('.btn-custom-package');
-            if (customPackageBtn) {
-                customPackageBtn.style.display = 'none';
+                // Re-enable package container
+                const packagesContainer = document.querySelector('.packages-container');
+                if (packagesContainer) {
+                    packagesContainer.classList.remove('disabled');
+                }
+
+                // Show arrow buttons and indicators
+                document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+                document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+
+                // Show custom package button again
+                const customPackageBtn = document.querySelector('.btn-custom-package');
+                if (customPackageBtn) {
+                    customPackageBtn.style.display = 'inline-flex';
+                }
+
+                // Reset right container
+                const emptyState = document.getElementById('emptyState');
+                const optionCards = document.getElementById('optionCards');
+                const sitesListContainer = document.getElementById('sitesListContainer');
+                const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+
+                if (emptyState && optionCards) {
+                    emptyState.style.display = 'block';
+                    optionCards.style.display = 'none';
+                    sitesListContainer.style.display = 'none';
+                    assignmentFormContainer.style.display = 'none';
+                    headerTitle.textContent = 'Request Security Service';
+                    headerDesc.textContent = 'Select a package and choose your deployment option';
+                }
             }
 
-            // Show options in right container
-            const emptyState = document.getElementById('emptyState');
+            if (!isPackageSelected) {
+                resetPackageAutoSlide();
+            }
+        }
+
+        window.goToPackageSlide = function(index) {
+            if (isDeploymentOptionSelected) return;
+            currentPackageSlide = index;
+            updatePackageCarousel();
+
+            // Clear selection when navigating away
+            if (isPackageSelected) {
+                packageItems.forEach(p => p.classList.remove('selected'));
+                selectedPackage = null;
+                isPackageSelected = false;
+                isDeploymentOptionSelected = false;
+
+                // Re-enable package container
+                const packagesContainer = document.querySelector('.packages-container');
+                if (packagesContainer) {
+                    packagesContainer.classList.remove('disabled');
+                }
+
+                // Show arrow buttons and indicators
+                document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+                document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+
+                // Show custom package button again
+                const customPackageBtn = document.querySelector('.btn-custom-package');
+                if (customPackageBtn) {
+                    customPackageBtn.style.display = 'inline-flex';
+                }
+
+                // Reset right container
+                const emptyState = document.getElementById('emptyState');
+                const optionCards = document.getElementById('optionCards');
+                const sitesListContainer = document.getElementById('sitesListContainer');
+                const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+
+                if (emptyState && optionCards) {
+                    emptyState.style.display = 'block';
+                    optionCards.style.display = 'none';
+                    sitesListContainer.style.display = 'none';
+                    assignmentFormContainer.style.display = 'none';
+                    headerTitle.textContent = 'Request Security Service';
+                    headerDesc.textContent = 'Select a package and choose your deployment option';
+                }
+            }
+
+            if (!isPackageSelected) {
+                resetPackageAutoSlide();
+            }
+        }
+
+        function autoPackageSlide() {
+            if (isPackageSelected) return;
+            currentPackageSlide = (currentPackageSlide + 1) % totalPackages;
+            updatePackageCarousel();
+        }
+
+        function resetPackageAutoSlide() {
+            if (isPackageSelected) return;
+            clearInterval(packageAutoSlideInterval);
+            packageAutoSlideInterval = setInterval(autoPackageSlide, 5000);
+        }
+
+        // Initialize auto-slide
+        packageAutoSlideInterval = setInterval(autoPackageSlide, 5000);
+
+        // Pause on hover
+        const packagesContainer = document.querySelector('.packages-container');
+        if (packagesContainer) {
+            packagesContainer.addEventListener('mouseenter', () => {
+                if (!isPackageSelected) clearInterval(packageAutoSlideInterval);
+            });
+            packagesContainer.addEventListener('mouseleave', resetPackageAutoSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', e => {
+            if (isDeploymentOptionSelected) return;
+            if (e.key === 'ArrowLeft') changePackageSlide(-1);
+            if (e.key === 'ArrowRight') changePackageSlide(1);
+        });
+
+        // Package selection
+        packageItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (isDeploymentOptionSelected) return;
+                // Remove previous selection
+                packageItems.forEach(p => p.classList.remove('selected'));
+
+                // Add selection
+                this.classList.add('selected');
+
+                selectedPackage = {
+                    name: this.dataset.package,
+                    fullName: this.dataset.packageName,
+                    price: this.dataset.price,
+                    officers: this.dataset.officers
+                };
+
+                // Stop auto-slide permanently
+                isPackageSelected = true;
+                clearInterval(packageAutoSlideInterval);
+
+                // Hide custom package button when any package is selected
+                const customPackageBtn = document.querySelector('.btn-custom-package');
+                if (customPackageBtn) {
+                    customPackageBtn.style.display = 'none';
+                }
+
+                // Show options in right container
+                const emptyState = document.getElementById('emptyState');
+                const optionCards = document.getElementById('optionCards');
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+                const createNewSiteCard = document.getElementById('createNewSite');
+
+                if (emptyState && optionCards) {
+                    emptyState.style.display = 'none';
+                    optionCards.style.display = 'grid';
+
+                    // Update header
+                    const packageName = this.querySelector('.package-name').textContent;
+                    headerTitle.textContent = packageName;
+                    headerDesc.textContent = 'Choose your deployment option';
+
+                    // Hide "Create New Site" button for packages with "extra" in the name
+                    if (createNewSiteCard) {
+                        const packageFullName = selectedPackage.fullName || '';
+                        if (packageFullName.toLowerCase().includes('extra')) {
+                            createNewSiteCard.style.display = 'none';
+                        } else {
+                            createNewSiteCard.style.display = 'block';
+                        }
+                    }
+                }
+            });
+        });
+
+        // Add to existing site
+        addToExistingBtn.addEventListener('click', function() {
+            if (selectedPackage) {
+                showSitesList();
+            }
+        });
+
+        // Show sites list
+        function showSitesList() {
             const optionCards = document.getElementById('optionCards');
-            const headerTitle = document.getElementById('formHeaderTitle');
+            const sitesListContainer = document.getElementById('sitesListContainer');
+
+            optionCards.style.display = 'none';
+            sitesListContainer.style.display = 'block';
+
+            // Update header
             const headerDesc = document.getElementById('formHeaderDesc');
+            headerDesc.textContent = 'Select a site to adjust personnel';
+
+            // Disable package container and hide navigation
+            isDeploymentOptionSelected = true;
+            const packagesContainer = document.querySelector('.packages-container');
+            if (packagesContainer) {
+                packagesContainer.classList.add('disabled');
+            }
+
+            // Hide arrow buttons and indicators
+            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
+            document.getElementById('packageCarouselIndicators').classList.add('hidden');
+
+            // Fetch and display sites
+            fetchClientSites();
+        }
+
+        // Back to options
+        window.backToOptions = function() {
+            const optionCards = document.getElementById('optionCards');
+            const sitesListContainer = document.getElementById('sitesListContainer');
+            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+            const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
             const createNewSiteCard = document.getElementById('createNewSite');
-            
-            if (emptyState && optionCards) {
-                emptyState.style.display = 'none';
-                optionCards.style.display = 'grid';
-                
-                // Update header
-                const packageName = this.querySelector('.package-name').textContent;
-                headerTitle.textContent = packageName;
-                headerDesc.textContent = 'Choose your deployment option';
-                
-                // Hide "Create New Site" button for packages with "extra" in the name
-                if (createNewSiteCard) {
-                    const packageFullName = selectedPackage.fullName || '';
-                    if (packageFullName.toLowerCase().includes('extra')) {
-                        createNewSiteCard.style.display = 'none';
+
+            optionCards.style.display = 'grid';
+            sitesListContainer.style.display = 'none';
+            assignmentFormContainer.style.display = 'none';
+            packageConfirmationContainer.style.display = 'none';
+
+            // Update header
+            const headerDesc = document.getElementById('formHeaderDesc');
+            headerDesc.textContent = 'Choose your deployment option';
+
+            // Re-enable package container and show navigation
+            isDeploymentOptionSelected = false;
+            const packagesContainer = document.querySelector('.packages-container');
+            if (packagesContainer) {
+                packagesContainer.classList.remove('disabled');
+            }
+
+            // Show arrow buttons and indicators
+            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+            document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+
+            // Restore Create New Site button visibility based on package type
+            if (createNewSiteCard && selectedPackage) {
+                const packageFullName = selectedPackage.fullName || '';
+                if (packageFullName.toLowerCase().includes('extra')) {
+                    createNewSiteCard.style.display = 'none';
+                } else {
+                    createNewSiteCard.style.display = 'block';
+                }
+            }
+
+            // Clear selection
+            selectedSiteId = null;
+            newSiteData = null;
+            document.getElementById('confirmSiteBtn').disabled = true;
+        };
+
+        // Fetch client sites
+        let selectedSiteId = null;
+        let selectedSiteData = null;
+
+        // Counter management
+        let officersCount = 0;
+        let supervisorsCount = 0;
+        let caretakersCount = 0;
+        let pricePerOfficer = 0;
+        let pricePerSupervisor = 0;
+        let pricePerCaretaker = 0;
+
+        // Track initial/existing counts for sites
+        let initialOfficersCount = 0;
+        let initialSupervisorsCount = 0;
+        let initialCaretakersCount = 0;
+
+        // Track if we're creating a new site (requires minimum 1 officer + 1 supervisor)
+        let isNewSiteMode = false;
+
+        // Initialize counter displays
+        function updateCounterDisplays() {
+            document.getElementById('officersCount').textContent = officersCount;
+            document.getElementById('caretakersCount').textContent = caretakersCount;
+            document.getElementById('supervisorsCount').textContent = supervisorsCount;
+
+            // Calculate minimum required supervisors (1 per 5 officers, round up)
+            const minRequiredSupervisors = Math.ceil(officersCount / 5);
+
+            // For new sites, ensure at least 1 supervisor
+            const actualMinSupervisors = Math.max(minRequiredSupervisors, isNewSiteMode ? 1 : 0);
+
+            // Ensure we have at least the minimum required supervisors
+            if (supervisorsCount < actualMinSupervisors) {
+                supervisorsCount = actualMinSupervisors;
+                document.getElementById('supervisorsCount').textContent = supervisorsCount;
+            }
+
+            // Update supervisor requirement text
+            const supervisorReq = document.getElementById('supervisorRequirement');
+            if (supervisorReq) {
+                if (isNewSiteMode) {
+                    if (supervisorsCount > actualMinSupervisors) {
+                        supervisorReq.textContent = `Minimum: ${actualMinSupervisors} (New site requires at least 1)`;
                     } else {
-                        createNewSiteCard.style.display = 'block';
+                        supervisorReq.textContent = `Required: At least 1 supervisor for new sites (Minimum: ${actualMinSupervisors})`;
+                    }
+                } else {
+                    if (supervisorsCount > minRequiredSupervisors) {
+                        supervisorReq.textContent = `Minimum: ${minRequiredSupervisors} (You have ${supervisorsCount - minRequiredSupervisors} extra)`;
+                    } else {
+                        supervisorReq.textContent = `Required: 1 supervisor per 5 officers (Minimum: ${minRequiredSupervisors})`;
                     }
                 }
             }
-        });
-    });
 
-    // Add to existing site
-    addToExistingBtn.addEventListener('click', function() {
-        if (selectedPackage) {
-            showSitesList();
-        }
-    });
+            // Enable/disable decrement buttons
+            // All sites must have minimum 1 officer and required supervisors
+            const minOfficers = 1;
+            const minSupervisorsRequired = Math.max(minRequiredSupervisors, 1);
 
-    // Show sites list
-    function showSitesList() {
-        const optionCards = document.getElementById('optionCards');
-        const sitesListContainer = document.getElementById('sitesListContainer');
-        
-        optionCards.style.display = 'none';
-        sitesListContainer.style.display = 'block';
-        
-        // Update header
-        const headerDesc = document.getElementById('formHeaderDesc');
-        headerDesc.textContent = 'Select a site to adjust personnel';
-        
-        // Disable package container and hide navigation
-        isDeploymentOptionSelected = true;
-        const packagesContainer = document.querySelector('.packages-container');
-        if (packagesContainer) {
-            packagesContainer.classList.add('disabled');
-        }
-        
-        // Hide arrow buttons and indicators
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
-        document.getElementById('packageCarouselIndicators').classList.add('hidden');
-        
-        // Fetch and display sites
-        fetchClientSites();
-    }
+            document.getElementById('decrementOfficersBtn').disabled = officersCount <= minOfficers;
+            document.getElementById('decrementSupervisorsBtn').disabled = supervisorsCount <= minSupervisorsRequired;
+            document.getElementById('decrementCaretakersBtn').disabled = caretakersCount === 0;
 
-    // Back to options
-    window.backToOptions = function() {
-        const optionCards = document.getElementById('optionCards');
-        const sitesListContainer = document.getElementById('sitesListContainer');
-        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
-        const createNewSiteCard = document.getElementById('createNewSite');
-        
-        optionCards.style.display = 'grid';
-        sitesListContainer.style.display = 'none';
-        assignmentFormContainer.style.display = 'none';
-        packageConfirmationContainer.style.display = 'none';
-        
-        // Update header
-        const headerDesc = document.getElementById('formHeaderDesc');
-        headerDesc.textContent = 'Choose your deployment option';
-        
-        // Re-enable package container and show navigation
-        isDeploymentOptionSelected = false;
-        const packagesContainer = document.querySelector('.packages-container');
-        if (packagesContainer) {
-            packagesContainer.classList.remove('disabled');
+            // Update pricing summary
+            updatePricingSummary();
         }
-        
-        // Show arrow buttons and indicators
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
-        document.getElementById('packageCarouselIndicators').classList.remove('hidden');
-        
-        // Restore Create New Site button visibility based on package type
-        if (createNewSiteCard && selectedPackage) {
-            const packageFullName = selectedPackage.fullName || '';
-            if (packageFullName.toLowerCase().includes('extra')) {
-                createNewSiteCard.style.display = 'none';
-            } else {
-                createNewSiteCard.style.display = 'block';
+
+        function updatePricingSummary() {
+            // Calculate personnel changes (can be positive or negative)
+            const officersChange = officersCount - initialOfficersCount;
+            const supervisorsChange = supervisorsCount - initialSupervisorsCount;
+            const caretakersChange = caretakersCount - initialCaretakersCount;
+
+            const officersCost = officersChange * pricePerOfficer;
+            const supervisorsCost = supervisorsChange * pricePerSupervisor;
+            const caretakersCost = caretakersChange * pricePerCaretaker;
+            const totalCost = officersCost + supervisorsCost + caretakersCost;
+
+            let breakdownHTML = '';
+            if (officersChange !== 0) {
+                const prefix = officersChange > 0 ? '+' : '';
+                const label = officersChange > 0 ? 'New' : 'Removed';
+                breakdownHTML += `<div>${prefix}${officersChange} ${label} Officer${Math.abs(officersChange) !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>${officersCost > 0 ? '+' : ''}LKR ${officersCost.toLocaleString()}</strong></div>`;
+            }
+            if (supervisorsChange !== 0) {
+                const prefix = supervisorsChange > 0 ? '+' : '';
+                const label = supervisorsChange > 0 ? 'New' : 'Removed';
+                breakdownHTML += `<div>${prefix}${supervisorsChange} ${label} Supervisor${Math.abs(supervisorsChange) !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>${supervisorsCost > 0 ? '+' : ''}LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
+            }
+            if (caretakersChange !== 0) {
+                const prefix = caretakersChange > 0 ? '+' : '';
+                const label = caretakersChange > 0 ? 'New' : 'Removed';
+                breakdownHTML += `<div>${prefix}${caretakersChange} ${label} Caretaker${Math.abs(caretakersChange) !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>${caretakersCost > 0 ? '+' : ''}LKR ${caretakersCost.toLocaleString()}</strong></div>`;
+            }
+
+            if (breakdownHTML === '') {
+                breakdownHTML = '<div style="color: #999; font-style: italic;">Adjust personnel numbers to see pricing changes</div>';
+            }
+
+            document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
+            document.getElementById('totalAmount').textContent = `${totalCost > 0 ? '+' : ''}LKR ${totalCost.toLocaleString()}`;
+        }
+
+        // Initialize on page load
+        updateCounterDisplays();
+
+        // Error message helper functions
+        function showErrorMessage(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">warning</span>' + message;
+                errorElement.classList.add('show');
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    hideErrorMessage(elementId);
+                }, 5000);
             }
         }
-        
-        // Clear selection
-        selectedSiteId = null;
-        newSiteData = null;
-        document.getElementById('confirmSiteBtn').disabled = true;
-    };
 
-    // Fetch client sites
-    let selectedSiteId = null;
-    let selectedSiteData = null;
-    
-    // Counter management
-    let officersCount = 0;
-    let supervisorsCount = 0;
-    let caretakersCount = 0;
-    let pricePerOfficer = 0;
-    let pricePerSupervisor = 0;
-    let pricePerCaretaker = 0;
-    
-    // Track initial/existing counts for sites
-    let initialOfficersCount = 0;
-    let initialSupervisorsCount = 0;
-    let initialCaretakersCount = 0;
-    
-    // Track if we're creating a new site (requires minimum 1 officer + 1 supervisor)
-    let isNewSiteMode = false;
-
-    // Initialize counter displays
-    function updateCounterDisplays() {
-        document.getElementById('officersCount').textContent = officersCount;
-        document.getElementById('caretakersCount').textContent = caretakersCount;
-        document.getElementById('supervisorsCount').textContent = supervisorsCount;
-        
-        // Calculate minimum required supervisors (1 per 5 officers, round up)
-        const minRequiredSupervisors = Math.ceil(officersCount / 5);
-        
-        // For new sites, ensure at least 1 supervisor
-        const actualMinSupervisors = Math.max(minRequiredSupervisors, isNewSiteMode ? 1 : 0);
-        
-        // Ensure we have at least the minimum required supervisors
-        if (supervisorsCount < actualMinSupervisors) {
-            supervisorsCount = actualMinSupervisors;
-            document.getElementById('supervisorsCount').textContent = supervisorsCount;
-        }
-        
-        // Update supervisor requirement text
-        const supervisorReq = document.getElementById('supervisorRequirement');
-        if (supervisorReq) {
-            if (isNewSiteMode) {
-                if (supervisorsCount > actualMinSupervisors) {
-                    supervisorReq.textContent = `Minimum: ${actualMinSupervisors} (New site requires at least 1)`;
-                } else {
-                    supervisorReq.textContent = `Required: At least 1 supervisor for new sites (Minimum: ${actualMinSupervisors})`;
-                }
-            } else {
-                if (supervisorsCount > minRequiredSupervisors) {
-                    supervisorReq.textContent = `Minimum: ${minRequiredSupervisors} (You have ${supervisorsCount - minRequiredSupervisors} extra)`;
-                } else {
-                    supervisorReq.textContent = `Required: 1 supervisor per 5 officers (Minimum: ${minRequiredSupervisors})`;
-                }
+        function hideErrorMessage(elementId) {
+            const errorElement = document.getElementById(elementId);
+            if (errorElement) {
+                errorElement.classList.remove('show');
             }
         }
-        
-        // Enable/disable decrement buttons
-        // All sites must have minimum 1 officer and required supervisors
-        const minOfficers = 1;
-        const minSupervisorsRequired = Math.max(minRequiredSupervisors, 1);
-        
-        document.getElementById('decrementOfficersBtn').disabled = officersCount <= minOfficers;
-        document.getElementById('decrementSupervisorsBtn').disabled = supervisorsCount <= minSupervisorsRequired;
-        document.getElementById('decrementCaretakersBtn').disabled = caretakersCount === 0;
-        
-        // Update pricing summary
-        updatePricingSummary();
-    }
-    
-    function updatePricingSummary() {
-        // Calculate personnel changes (can be positive or negative)
-        const officersChange = officersCount - initialOfficersCount;
-        const supervisorsChange = supervisorsCount - initialSupervisorsCount;
-        const caretakersChange = caretakersCount - initialCaretakersCount;
-        
-        const officersCost = officersChange * pricePerOfficer;
-        const supervisorsCost = supervisorsChange * pricePerSupervisor;
-        const caretakersCost = caretakersChange * pricePerCaretaker;
-        const totalCost = officersCost + supervisorsCost + caretakersCost;
-        
-        let breakdownHTML = '';
-        if (officersChange !== 0) {
-            const prefix = officersChange > 0 ? '+' : '';
-            const label = officersChange > 0 ? 'New' : 'Removed';
-            breakdownHTML += `<div>${prefix}${officersChange} ${label} Officer${Math.abs(officersChange) !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>${officersCost > 0 ? '+' : ''}LKR ${officersCost.toLocaleString()}</strong></div>`;
-        }
-        if (supervisorsChange !== 0) {
-            const prefix = supervisorsChange > 0 ? '+' : '';
-            const label = supervisorsChange > 0 ? 'New' : 'Removed';
-            breakdownHTML += `<div>${prefix}${supervisorsChange} ${label} Supervisor${Math.abs(supervisorsChange) !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>${supervisorsCost > 0 ? '+' : ''}LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
-        }
-        if (caretakersChange !== 0) {
-            const prefix = caretakersChange > 0 ? '+' : '';
-            const label = caretakersChange > 0 ? 'New' : 'Removed';
-            breakdownHTML += `<div>${prefix}${caretakersChange} ${label} Caretaker${Math.abs(caretakersChange) !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>${caretakersCost > 0 ? '+' : ''}LKR ${caretakersCost.toLocaleString()}</strong></div>`;
-        }
-        
-        if (breakdownHTML === '') {
-            breakdownHTML = '<div style="color: #999; font-style: italic;">Adjust personnel numbers to see pricing changes</div>';
-        }
-        
-        document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
-        document.getElementById('totalAmount').textContent = `${totalCost > 0 ? '+' : ''}LKR ${totalCost.toLocaleString()}`;
-    }
 
-    // Initialize on page load
-    updateCounterDisplays();
-    
-    // Error message helper functions
-    function showErrorMessage(elementId, message) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">warning</span>' + message;
-            errorElement.classList.add('show');
-            // Auto-hide after 5 seconds
-            setTimeout(() => {
-                hideErrorMessage(elementId);
-            }, 5000);
-        }
-    }
-    
-    function hideErrorMessage(elementId) {
-        const errorElement = document.getElementById(elementId);
-        if (errorElement) {
-            errorElement.classList.remove('show');
-        }
-    }
-    
-    function fetchClientSites() {
-        fetch('<?php echo URL_ROOT; ?>/client/getSites')
-            .then(response => response.json())
-            .then(data => {
-                displaySites(data.sites || []);
-            })
-            .catch(error => {
-                console.error('Error fetching sites:', error);
-                document.getElementById('sitesGrid').innerHTML = `
+        function fetchClientSites() {
+            fetch('<?php echo URL_ROOT; ?>/client/getSites')
+                .then(response => response.json())
+                .then(data => {
+                    displaySites(data.sites || []);
+                })
+                .catch(error => {
+                    console.error('Error fetching sites:', error);
+                    document.getElementById('sitesGrid').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #999;">
                         <span class="material-symbols-outlined" style="font-size: 48px; color: #ddd;">error</span>
                         <p style="margin-top: 12px;">Unable to load sites. Please try again.</p>
                     </div>
                 `;
-            });
-    }
+                });
+        }
 
-    // Store sites data globally
-    let allSites = [];
-    
-    function displaySites(sites) {
-        const sitesGrid = document.getElementById('sitesGrid');
-        allSites = sites; // Store for later use
-        
-        if (sites.length === 0) {
-            sitesGrid.innerHTML = `
+        // Store sites data globally
+        let allSites = [];
+
+        function displaySites(sites) {
+            const sitesGrid = document.getElementById('sitesGrid');
+            allSites = sites; // Store for later use
+
+            if (sites.length === 0) {
+                sitesGrid.innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #999;">
                     <span class="material-symbols-outlined" style="font-size: 48px; color: #ddd;">location_off</span>
                     <p style="margin-top: 12px;">You don't have any sites yet.</p>
                     <p style="font-size: 14px;">Please create a new site to continue.</p>
                 </div>
             `;
-            return;
-        }
-        
-        sitesGrid.innerHTML = sites.map(site => `
+                return;
+            }
+
+            sitesGrid.innerHTML = sites.map(site => `
             <div class="site-card" data-site-id="${site.id}" onclick="selectSite(${site.id})">
                 <div class="site-card-header">
                     <div class="site-icon">
@@ -1995,966 +2001,362 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
         `).join('');
-    }
+        }
 
-    window.selectSite = function(siteId) {
-        selectedSiteId = siteId;
-        
-        // Find and store the selected site's data
-        selectedSiteData = allSites.find(site => site.id == siteId);
-        
-        // Update UI
-        document.querySelectorAll('.site-card').forEach(card => {
-            card.classList.remove('selected');
-        });
-        document.querySelector(`[data-site-id="${siteId}"]`).classList.add('selected');
-        
-        // Enable confirm button
-        document.getElementById('confirmSiteBtn').disabled = false;
-    };
+        window.selectSite = function(siteId) {
+            selectedSiteId = siteId;
 
-    window.confirmSiteSelection = function() {
-        if (selectedPackage && selectedSiteId) {
-            // Only custom package can adjust personnel via assignment form
-            if (selectedPackage.officers === 'custom') {
-                // Load pricing data for custom package
-                const customPackageItem = document.querySelector('.package-item[data-officers="custom"]');
-                if (customPackageItem) {
-                    pricePerOfficer = parseFloat(customPackageItem.dataset.priceOfficer) || 0;
-                    pricePerSupervisor = parseFloat(customPackageItem.dataset.priceSupervisor) || 0;
-                    pricePerCaretaker = parseFloat(customPackageItem.dataset.priceCaretaker) || 0;
-                }
-                
-                // Initialize counters with existing site personnel
-                if (selectedSiteData) {
-                    officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
-                    supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
-                    caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
-                    
-                    // Store initial counts to track changes (additions or reductions)
-                    initialOfficersCount = officersCount;
-                    initialSupervisorsCount = supervisorsCount;
-                    initialCaretakersCount = caretakersCount;
+            // Find and store the selected site's data
+            selectedSiteData = allSites.find(site => site.id == siteId);
+
+            // Update UI
+            document.querySelectorAll('.site-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-site-id="${siteId}"]`).classList.add('selected');
+
+            // Enable confirm button
+            document.getElementById('confirmSiteBtn').disabled = false;
+        };
+
+        window.confirmSiteSelection = function() {
+            if (selectedPackage && selectedSiteId) {
+                // Only custom package can adjust personnel via assignment form
+                if (selectedPackage.officers === 'custom') {
+                    // Load pricing data for custom package
+                    const customPackageItem = document.querySelector('.package-item[data-officers="custom"]');
+                    if (customPackageItem) {
+                        pricePerOfficer = parseFloat(customPackageItem.dataset.priceOfficer) || 0;
+                        pricePerSupervisor = parseFloat(customPackageItem.dataset.priceSupervisor) || 0;
+                        pricePerCaretaker = parseFloat(customPackageItem.dataset.priceCaretaker) || 0;
+                    }
+
+                    // Initialize counters with existing site personnel
+                    if (selectedSiteData) {
+                        officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
+                        supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
+                        caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
+
+                        // Store initial counts to track changes (additions or reductions)
+                        initialOfficersCount = officersCount;
+                        initialSupervisorsCount = supervisorsCount;
+                        initialCaretakersCount = caretakersCount;
+                    } else {
+                        // Reset initial counts for new sites
+                        initialOfficersCount = 0;
+                        initialSupervisorsCount = 0;
+                        initialCaretakersCount = 0;
+                    }
+
+                    // Hide sites list, show assignment form
+                    const sitesListContainer = document.getElementById('sitesListContainer');
+                    const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+
+                    sitesListContainer.style.display = 'none';
+                    assignmentFormContainer.style.display = 'block';
+
+                    // Update header
+                    const headerTitle = document.getElementById('formHeaderTitle');
+                    const headerDesc = document.getElementById('formHeaderDesc');
+                    const selectedSiteCard = document.querySelector(`[data-site-id="${selectedSiteId}"]`);
+                    const siteName = selectedSiteCard ? selectedSiteCard.querySelector('.site-info h4').textContent : 'Selected Site';
+
+                    headerTitle.textContent = siteName;
+                    headerDesc.textContent = 'Adjust the number of personnel for this site (Minimum: 1 officer + 1 supervisor)';
+
+                    // Update display with current values
+                    updateCounterDisplays();
                 } else {
-                    // Reset initial counts for new sites
-                    initialOfficersCount = 0;
-                    initialSupervisorsCount = 0;
-                    initialCaretakersCount = 0;
+                    // For predefined packages, show confirmation page with price
+                    showPackageConfirmation(false);
                 }
-                
-                // Hide sites list, show assignment form
-                const sitesListContainer = document.getElementById('sitesListContainer');
-                const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-                
-                sitesListContainer.style.display = 'none';
-                assignmentFormContainer.style.display = 'block';
-                
-                // Update header
-                const headerTitle = document.getElementById('formHeaderTitle');
-                const headerDesc = document.getElementById('formHeaderDesc');
-                const selectedSiteCard = document.querySelector(`[data-site-id="${selectedSiteId}"]`);
-                const siteName = selectedSiteCard ? selectedSiteCard.querySelector('.site-info h4').textContent : 'Selected Site';
-                
-                headerTitle.textContent = siteName;
-                headerDesc.textContent = 'Adjust the number of personnel for this site (Minimum: 1 officer + 1 supervisor)';
-                
-                // Update display with current values
-                updateCounterDisplays();
-            } else {
-                // For predefined packages, show confirmation page with price
-                showPackageConfirmation(false);
             }
-        }
-    };
+        };
 
-    // Back to sites list
-    window.backToSitesList = function() {
-        // Check if we came from new site form
-        if (newSiteData) {
-            backToNewSiteForm();
-            return;
-        }
-        
-        const sitesListContainer = document.getElementById('sitesListContainer');
-        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-        const optionCards = document.getElementById('optionCards');
-        
-        sitesListContainer.style.display = 'block';
-        assignmentFormContainer.style.display = 'none';
-        optionCards.style.display = 'none';
-        
-        // Hide any error messages
-        hideErrorMessage('assignmentErrorMessage');
-        
-        // Package container remains disabled - we're still in deployment flow
-        
-        // Reset new site mode flag
-        isNewSiteMode = false;
-        
-        // Reset counters
-        officersCount = 0;
-        supervisorsCount = 0;
-        caretakersCount = 0;
-        initialOfficersCount = 0;
-        initialSupervisorsCount = 0;
-        initialCaretakersCount = 0;
-        updateCounterDisplays();
-        
-        // Update header back to site selection
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const packageName = document.querySelector('.package-item.selected .package-name').textContent;
-        
-        headerTitle.textContent = packageName;
-        headerDesc.textContent = 'Select a site to adjust personnel';
-    };
-    
-    function backToNewSiteForm() {
-        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-        
-        assignmentFormContainer.style.display = 'none';
-        newSiteFormContainer.style.display = 'block';
-        
-        // Make sure we're on step 2 (where we were)
-        goToStep2();
-        
-        // Update header
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const packageName = document.querySelector('.package-item.selected .package-name').textContent;
-        
-        headerTitle.textContent = packageName;
-        headerDesc.textContent = 'Complete your new site details';
-        
-        // Reset counters
-        officersCount = 0;
-        supervisorsCount = 0;
-        caretakersCount = 0;
-        initialOfficersCount = 0;
-        initialSupervisorsCount = 0;
-        initialCaretakersCount = 0;
-        updateCounterDisplays();
-    }
-
-    window.incrementOfficers = function() {
-        officersCount++;
-        updateCounterDisplays();
-    };
-
-    window.decrementOfficers = function() {
-        const minOfficers = 1; // All sites must have at least 1 officer
-        if (officersCount > minOfficers) {
-            officersCount--;
-            updateCounterDisplays();
-        }
-    };
-
-    window.incrementSupervisors = function() {
-        supervisorsCount++;
-        updateCounterDisplays();
-    };
-
-    window.decrementSupervisors = function() {
-        const minRequired = Math.ceil(officersCount / 5);
-        const minSupervisors = Math.max(minRequired, 1); // All sites must have at least 1 supervisor
-        if (supervisorsCount > minSupervisors) {
-            supervisorsCount--;
-            updateCounterDisplays();
-        }
-    };
-
-    window.incrementCaretakers = function() {
-        caretakersCount++;
-        updateCounterDisplays();
-    };
-
-    window.decrementCaretakers = function() {
-        if (caretakersCount > 0) {
-            caretakersCount--;
-            updateCounterDisplays();
-        }
-    };
-
-    window.submitAssignment = function() {
-        // Calculate personnel changes (can be positive or negative)
-        const officersChange = officersCount - initialOfficersCount;
-        const supervisorsChange = supervisorsCount - initialSupervisorsCount;
-        const caretakersChange = caretakersCount - initialCaretakersCount;
-        
-        // All sites must have at least 1 officer and 1 supervisor
-        if (officersCount < 1) {
-            showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 officer');
-            return;
-        }
-        if (supervisorsCount < 1) {
-            showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 supervisor');
-            return;
-        }
-        
-        // Special validation for new sites - must have at least 1 officer and 1 supervisor
-        if (isNewSiteMode) {
-            if (officersCount < 1) {
-                showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 security officer.');
-                return;
-            }
-            if (supervisorsCount < 1) {
-                showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 supervisor.');
-                return;
-            }
-        } else {
-            // Validate some change is made for existing sites
-            if (officersChange === 0 && supervisorsChange === 0 && caretakersChange === 0) {
-                showErrorMessage('assignmentErrorMessage', 'Please make changes to personnel numbers');
-                return;
-            }
-        }
-        
-        hideErrorMessage('assignmentErrorMessage');
-        
-        if (selectedPackage) {
-            // Check if this is for a new site or existing site
+        // Back to sites list
+        window.backToSitesList = function() {
+            // Check if we came from new site form
             if (newSiteData) {
-                // Submit with new site data
-                const formData = new FormData();
-                formData.append('mode', 'new');
-                formData.append('package_name', 'Custom Package');
-                formData.append('site_name', newSiteData.site_name);
-                formData.append('site_address', newSiteData.site_address);
-                formData.append('district', newSiteData.district);
-                formData.append('city', newSiteData.city || newSiteData.district);
-                formData.append('phone_number', newSiteData.phone_number);
-                formData.append('latitude', newSiteData.latitude);
-                formData.append('longitude', newSiteData.longitude);
-                formData.append('number_of_officers', officersChange);
-                formData.append('number_of_supervisors', supervisorsChange);
-                formData.append('number_of_caretakers', caretakersChange);
-                
-                // Calculate package price based on personnel changes
-                const totalPrice = (officersChange * pricePerOfficer) + 
-                                  (supervisorsChange * pricePerSupervisor) + 
-                                  (caretakersChange * pricePerCaretaker);
-                formData.append('package_price', totalPrice);
-                
-                if (newSiteData.image) {
-                    formData.append('image', newSiteData.image);
-                }
-                
-                // Submit via AJAX
-                submitPackageRequestAjax(formData);
-            } else if (selectedSiteId) {
-                // Submit with existing site (backend will handle deleting old pending requests)
-                const formData = new FormData();
-                formData.append('mode', 'existing');
-                formData.append('site_id', selectedSiteId);
-                formData.append('package_name', 'Custom Package');
-                formData.append('site_name', selectedSiteData.site_name);
-                formData.append('site_address', selectedSiteData.address);
-                formData.append('district', selectedSiteData.district || '');
-                formData.append('city', selectedSiteData.city || selectedSiteData.district);
-                formData.append('number_of_officers', officersChange);
-                formData.append('number_of_supervisors', supervisorsChange);
-                formData.append('number_of_caretakers', caretakersChange);
-                
-                // Calculate package price based on personnel changes (can be negative)
-                const totalPrice = (officersChange * pricePerOfficer) + 
-                                  (supervisorsChange * pricePerSupervisor) + 
-                                  (caretakersChange * pricePerCaretaker);
-                formData.append('package_price', totalPrice);
-                
-                // Submit via AJAX
-                submitPackageRequestAjax(formData);
-            }
-        }
-    };
-
-    // Create new site
-    createNewSiteBtn.addEventListener('click', function() {
-        if (selectedPackage) {
-            // Check if package name contains "extra" - these can only be added to existing sites
-            const packageFullName = selectedPackage.fullName || '';
-            if (packageFullName.toLowerCase().includes('extra')) {
-                // Silently prevent - extra packages are for existing sites only
+                backToNewSiteForm();
                 return;
             }
-            
-            // For other packages, show new site form
-            showNewSiteForm();
-        }
-    });
 
-    // New Site Form Functions
-    let siteImageFile = null;
-    let siteMap = null;
-    let siteMarker = null;
-    let newSiteData = null; // Store new site data temporarily
-
-    function showNewSiteForm() {
-        const optionCards = document.getElementById('optionCards');
-        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-        
-        // Clear any error messages
-        hideErrorMessage('step1ErrorMessage');
-        hideErrorMessage('step2ErrorMessage');
-        
-        // Clear any previous new site data
-        newSiteData = null;
-        
-        // Disable package container and hide navigation (same as existing site flow)
-        isDeploymentOptionSelected = true;
-        const packagesContainer = document.querySelector('.packages-container');
-        if (packagesContainer) {
-            packagesContainer.classList.add('disabled');
-        }
-        
-        // Hide arrow buttons and indicators
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
-        document.getElementById('packageCarouselIndicators').classList.add('hidden');
-        
-        optionCards.style.display = 'none';
-        newSiteFormContainer.style.display = 'block';
-        
-        // Update header
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
-        
-        headerTitle.textContent = 'New Site - ' + packageName;
-        headerDesc.textContent = 'Step 1: Enter site details';
-        
-        // Initialize step 1
-        goToStep1();
-    }
-
-    window.backToOptionsFromNewSite = function() {
-        const optionCards = document.getElementById('optionCards');
-        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-        const createNewSiteCard = document.getElementById('createNewSite');
-        
-        // Clear any error messages
-        hideErrorMessage('step1ErrorMessage');
-        hideErrorMessage('step2ErrorMessage');
-        
-        newSiteFormContainer.style.display = 'none';
-        optionCards.style.display = 'grid';
-        
-        // Re-enable package container and show navigation (same as backToOptions)
-        isDeploymentOptionSelected = false;
-        const packagesContainer = document.querySelector('.packages-container');
-        if (packagesContainer) {
-            packagesContainer.classList.remove('disabled');
-        }
-        
-        // Show arrow buttons and indicators
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
-        document.getElementById('packageCarouselIndicators').classList.remove('hidden');
-        
-        // Restore Create New Site button visibility based on package type
-        if (createNewSiteCard && selectedPackage) {
-            const packageFullName = selectedPackage.fullName || '';
-            if (packageFullName.toLowerCase().includes('extra')) {
-                createNewSiteCard.style.display = 'none';
-            } else {
-                createNewSiteCard.style.display = 'block';
-            }
-        }
-        
-        // Clear new site data
-        newSiteData = null;
-        
-        // Reset form
-        document.getElementById('newSiteName').value = '';
-        document.getElementById('newSiteAddress').value = '';
-        document.getElementById('district').value = '';
-        document.getElementById('city').value = '';
-        document.getElementById('newSitePhone').value = '';
-        removeSiteImage();
-        
-        // Update header
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
-        
-        headerTitle.textContent = packageName;
-        headerDesc.textContent = 'Choose your deployment option';
-    };
-
-    window.goToStep1 = function() {
-        // Hide any error messages when going back
-        hideErrorMessage('step2ErrorMessage');
-        
-        document.getElementById('step1').classList.add('active');
-        document.getElementById('step2').classList.remove('active');
-        document.getElementById('step1Indicator').classList.add('active');
-        document.getElementById('step1Indicator').classList.remove('completed');
-        document.getElementById('step2Indicator').classList.remove('active');
-        
-        const headerDesc = document.getElementById('formHeaderDesc');
-        headerDesc.textContent = 'Step 1: Enter site details';
-    };
-
-    window.goToStep2 = function() {
-        // Hide any previous error messages
-        hideErrorMessage('step1ErrorMessage');
-        
-        // Validate step 1 fields
-        const siteName = document.getElementById('newSiteName').value.trim();
-        const siteDistrict = document.getElementById('district').value.trim();
-        const siteCity = document.getElementById('city').value.trim();
-        const sitePhone = document.getElementById('newSitePhone').value.trim();
-        const photoFrame = document.getElementById('sitePhotoFrame');
-        
-        // Check if image is uploaded
-        if (!siteImageFile) {
-            showErrorMessage('step1ErrorMessage', 'Please upload a site image');
-            // Highlight the photo frame
-            photoFrame.style.borderColor = '#ff9800';
-            photoFrame.style.borderWidth = '3px';
-            setTimeout(() => {
-                photoFrame.style.borderColor = '#e0e0e0';
-                photoFrame.style.borderWidth = '2px';
-            }, 3000);
-            return;
-        }
-        
-        if (!siteName || !siteDistrict || !sitePhone) {
-            showErrorMessage('step1ErrorMessage', 'Please fill in all required fields (Site Name, District, and Phone Number)');
-            return;
-        }
-        
-        // Validate phone number format
-        if (!/^[0-9]{10}$/.test(sitePhone)) {
-            showErrorMessage('step1ErrorMessage', 'Phone number must be exactly 10 digits (numbers only)');
-            return;
-        }
-        
-        // Validate city if city field is visible
-        const cityField = document.getElementById('city-field');
-        if (cityField && cityField.style.display !== 'none' && !siteCity) {
-            showErrorMessage('step1ErrorMessage', 'Please enter the city');
-            return;
-        }
-        
-        document.getElementById('step1').classList.remove('active');
-        document.getElementById('step2').classList.add('active');
-        document.getElementById('step1Indicator').classList.remove('active');
-        document.getElementById('step1Indicator').classList.add('completed');
-        document.getElementById('step2Indicator').classList.add('active');
-        
-        const headerDesc = document.getElementById('formHeaderDesc');
-        headerDesc.textContent = 'Step 2: Select location on map';
-        
-        // Initialize map if not already done
-        if (!siteMap) {
-            initSiteMap();
-        }
-    };
-
-    // Package Confirmation Functions (for non-custom packages)
-    function showPackageConfirmation(isNewSite) {
-        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
-        const sitesListContainer = document.getElementById('sitesListContainer');
-        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-        
-        // Hide previous containers
-        sitesListContainer.style.display = 'none';
-        newSiteFormContainer.style.display = 'none';
-        
-        // Show confirmation
-        packageConfirmationContainer.style.display = 'block';
-        
-        // Get package details
-        const selectedItem = document.querySelector('.package-item.selected');
-        const packageName = selectedItem ? selectedItem.querySelector('.package-name').textContent : 'Package';
-        const packageOfficers = selectedItem ? selectedItem.querySelector('.package-officers').textContent : '';
-        const packagePrice = selectedPackage.price;
-        
-        // Update package info
-        document.getElementById('confirmPackageName').textContent = packageName;
-        document.getElementById('confirmPackageDetails').textContent = packageOfficers;
-        document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
-        
-        // Update site info
-        if (isNewSite && newSiteData) {
-            document.getElementById('confirmSiteName').textContent = newSiteData.site_name;
-            document.getElementById('confirmSiteAddress').textContent = newSiteData.site_address;
-        } else if (selectedSiteData) {
-            document.getElementById('confirmSiteName').textContent = selectedSiteData.site_name;
-            document.getElementById('confirmSiteAddress').textContent = selectedSiteData.site_address;
-        }
-        
-        // Update header
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        headerTitle.textContent = 'Review Your Request';
-        headerDesc.textContent = 'Please confirm the details before proceeding';
-    }
-    
-    window.backFromConfirmation = function() {
-        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
-        
-        // Check if we came from new site or existing site
-        if (newSiteData) {
-            // Go back to new site form (Step 2)
-            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-            packageConfirmationContainer.style.display = 'none';
-            newSiteFormContainer.style.display = 'block';
-            goToStep2();
-            
-            const headerTitle = document.getElementById('formHeaderTitle');
-            const headerDesc = document.getElementById('formHeaderDesc');
-            const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Package';
-            headerTitle.textContent = 'New Site - ' + packageName;
-            headerDesc.textContent = 'Step 2: Location details';
-        } else {
-            // Go back to sites list
             const sitesListContainer = document.getElementById('sitesListContainer');
-            packageConfirmationContainer.style.display = 'none';
+            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+            const optionCards = document.getElementById('optionCards');
+
             sitesListContainer.style.display = 'block';
-            
+            assignmentFormContainer.style.display = 'none';
+            optionCards.style.display = 'none';
+
+            // Hide any error messages
+            hideErrorMessage('assignmentErrorMessage');
+
+            // Package container remains disabled - we're still in deployment flow
+
+            // Reset new site mode flag
+            isNewSiteMode = false;
+
+            // Reset counters
+            officersCount = 0;
+            supervisorsCount = 0;
+            caretakersCount = 0;
+            initialOfficersCount = 0;
+            initialSupervisorsCount = 0;
+            initialCaretakersCount = 0;
+            updateCounterDisplays();
+
+            // Update header back to site selection
             const headerTitle = document.getElementById('formHeaderTitle');
             const headerDesc = document.getElementById('formHeaderDesc');
             const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+
             headerTitle.textContent = packageName;
             headerDesc.textContent = 'Select a site to adjust personnel';
-        }
-    };
-    
-    window.proceedWithPackage = function() {
-        if (selectedPackage) {
-            if (newSiteData) {
-                // Proceed with new site
-                const formData = new FormData();
-                formData.append('mode', 'new');
-                formData.append('package_name', selectedPackage.name);
-                formData.append('site_name', newSiteData.site_name);
-                formData.append('site_address', newSiteData.site_address);
-                formData.append('district', newSiteData.district);
-                formData.append('city', newSiteData.city || newSiteData.district);
-                formData.append('phone_number', newSiteData.phone_number);
-                formData.append('latitude', newSiteData.latitude);
-                formData.append('longitude', newSiteData.longitude);
-                formData.append('number_of_officers', selectedPackage.officers || 0);
-                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
-                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
-                formData.append('package_price', selectedPackage.price);
-                
-                if (newSiteData.image) {
-                    formData.append('image', newSiteData.image);
-                }
-                
-                // Submit via AJAX
-                submitPackageRequestAjax(formData);
-            } else if (selectedSiteId) {
-                // Submit with existing site (backend will handle deleting old pending requests)
-                const formData = new FormData();
-                formData.append('mode', 'existing');
-                formData.append('site_id', selectedSiteId);
-                formData.append('package_name', selectedPackage.name);
-                formData.append('site_name', selectedSiteData.site_name);
-                formData.append('site_address', selectedSiteData.address);
-                formData.append('district', selectedSiteData.district || '');
-                formData.append('city', selectedSiteData.city || selectedSiteData.district);
-                formData.append('number_of_officers', selectedPackage.officers || 0);
-                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
-                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
-                formData.append('package_price', selectedPackage.price);
-                
-                // Submit via AJAX
-                submitPackageRequestAjax(formData);
-            }
-        }
-    };
-
-    function initSiteMap() {
-        const mapElement = document.getElementById('siteMap');
-        if (!mapElement) return;
-        
-        // Default to Colombo, Sri Lanka
-        const defaultLocation = { lat: 6.9271, lng: 79.8612 };
-        
-        siteMap = new google.maps.Map(mapElement, {
-            center: defaultLocation,
-            zoom: 12,
-            mapTypeControl: true,
-            streetViewControl: true,
-            fullscreenControl: true
-        });
-        
-        // Add click listener to place marker
-        siteMap.addListener('click', function(event) {
-            placeMarker(event.latLng);
-        });
-        
-        // Initialize location search box
-        initNewSiteLocationSearch();
-        
-        // Try to get user's current location
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                function(position) {
-                    const pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-                    siteMap.setCenter(pos);
-                },
-                function() {
-                    console.log('Geolocation service failed or denied');
-                }
-            );
-        }
-    }
-
-    function initNewSiteLocationSearch() {
-        const searchInput = document.getElementById('newSiteLocationSearch');
-        if (!searchInput) return;
-        
-        // Create SearchBox
-        const searchBox = new google.maps.places.SearchBox(searchInput);
-        
-        // Bias the SearchBox results towards current map's viewport
-        siteMap.addListener('bounds_changed', function() {
-            searchBox.setBounds(siteMap.getBounds());
-        });
-        
-        // Listen for when user selects a prediction
-        searchBox.addListener('places_changed', function() {
-            const places = searchBox.getPlaces();
-            
-            if (places.length === 0) {
-                return;
-            }
-            
-            // Get the first place
-            const place = places[0];
-            
-            if (!place.geometry || !place.geometry.location) {
-                console.log('Place has no geometry');
-                return;
-            }
-            
-            // Add marker at the selected location
-            placeMarker(place.geometry.location);
-            
-            // Update address field with the place's formatted address
-            const addressInput = document.getElementById('newSiteAddress');
-            if (place.formatted_address && addressInput) {
-                addressInput.value = place.formatted_address;
-            }
-            
-            // Update site name if empty
-            const siteNameInput = document.getElementById('newSiteName');
-            if (siteNameInput && !siteNameInput.value && place.name) {
-                siteNameInput.value = place.name;
-            }
-            
-            // Adjust map to show the place
-            if (place.geometry.viewport) {
-                siteMap.fitBounds(place.geometry.viewport);
-            } else {
-                siteMap.setCenter(place.geometry.location);
-                siteMap.setZoom(17);
-            }
-            
-            // Clear the search box
-            searchInput.value = '';
-        });
-    }
-
-    function placeMarker(location) {
-        if (siteMarker) {
-            siteMarker.setMap(null);
-        }
-        
-        siteMarker = new google.maps.Marker({
-            position: location,
-            map: siteMap,
-            animation: google.maps.Animation.DROP,
-            draggable: true
-        });
-        
-        document.getElementById('newSiteLatitude').value = location.lat();
-        document.getElementById('newSiteLongitude').value = location.lng();
-        
-        // Reverse geocode to get address
-        getAddressFromLocation(location);
-        
-        siteMarker.addListener('dragend', function(event) {
-            document.getElementById('newSiteLatitude').value = event.latLng.lat();
-            document.getElementById('newSiteLongitude').value = event.latLng.lng();
-            // Update address when marker is dragged
-            getAddressFromLocation(event.latLng);
-        });
-    }
-
-    function getAddressFromLocation(location) {
-        const geocoder = new google.maps.Geocoder();
-        
-        geocoder.geocode({ location: location }, function(results, status) {
-            if (status === 'OK') {
-                if (results[0]) {
-                    // Set the formatted address
-                    document.getElementById('newSiteAddress').value = results[0].formatted_address;
-                } else {
-                    console.log('No address found for this location');
-                    document.getElementById('newSiteAddress').value = 'Address not found';
-                }
-            } else {
-                console.log('Geocoder failed: ' + status);
-                document.getElementById('newSiteAddress').value = 'Unable to retrieve address';
-            }
-        });
-    }
-
-    // Phone number validation - only allow numbers
-    const phoneInput = document.getElementById('newSitePhone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', function(e) {
-            // Remove any non-digit characters
-            this.value = this.value.replace(/[^0-9]/g, '');
-            
-            // Update visual feedback
-            if (this.value.length === 10) {
-                this.style.borderColor = '#4caf50';
-            } else if (this.value.length > 0) {
-                this.style.borderColor = '#ff9800';
-            } else {
-                this.style.borderColor = '#e0e0e0';
-            }
-        });
-        
-        phoneInput.addEventListener('keypress', function(e) {
-            // Prevent non-numeric input
-            if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
-                e.preventDefault();
-            }
-        });
-    }
-
-    // Site image handling
-    document.getElementById('siteImageInput').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-            if (!validTypes.includes(file.type)) {
-                showErrorMessage('step1ErrorMessage', 'Please select a valid image file (JPG, JPEG, or PNG)');
-                e.target.value = '';
-                return;
-            }
-            
-            siteImageFile = file;
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const photoFrame = document.getElementById('sitePhotoFrame');
-                document.getElementById('siteImagePreview').src = event.target.result;
-                document.getElementById('addSitePhotoBtn').style.display = 'none';
-                document.getElementById('removeSitePhotoBtn').style.display = 'inline-block';
-                
-                // Add green border to indicate image is uploaded
-                photoFrame.style.borderColor = '#4caf50';
-                photoFrame.style.borderStyle = 'solid';
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-
-    window.removeSiteImage = function() {
-        siteImageFile = null;
-        const photoFrame = document.getElementById('sitePhotoFrame');
-        document.getElementById('siteImageInput').value = '';
-        document.getElementById('siteImagePreview').src = '<?php echo URL_ROOT; ?>/img/photo.png';
-        document.getElementById('addSitePhotoBtn').style.display = 'inline-block';
-        document.getElementById('removeSitePhotoBtn').style.display = 'none';
-        
-        // Reset border color to default
-        photoFrame.style.borderColor = '#e0e0e0';
-        photoFrame.style.borderStyle = 'dashed';
-    };
-
-    window.submitNewSiteWithPackage = function() {
-        // Hide any previous error messages
-        hideErrorMessage('step2ErrorMessage');
-        
-        const latitude = document.getElementById('newSiteLatitude').value;
-        const longitude = document.getElementById('newSiteLongitude').value;
-        const address = document.getElementById('newSiteAddress').value.trim();
-        
-        // Validate image is uploaded
-        if (!siteImageFile) {
-            showErrorMessage('step2ErrorMessage', 'Site photo is required. Please go back to Step 1 and upload an image.');
-            return;
-        }
-        
-        if (!latitude || !longitude) {
-            showErrorMessage('step2ErrorMessage', 'Please select a location on the map');
-            return;
-        }
-        
-        if (!address) {
-            showErrorMessage('step2ErrorMessage', 'Address is required. Please select a location on the map or enter address manually.');
-            return;
-        }
-        
-        // Store new site data temporarily
-        newSiteData = {
-            site_name: document.getElementById('newSiteName').value,
-            site_address: address,
-            district: document.getElementById('district').value,
-            city: document.getElementById('city').value,
-            phone_number: document.getElementById('newSitePhone').value,
-            latitude: latitude,
-            longitude: longitude,
-            image: siteImageFile
         };
-        
-        // Check if custom package or regular package
-        if (selectedPackage.officers === 'custom') {
-            // Show assignment form (Add Security Personnel) for custom package
-            showAssignmentFormForNewSite();
-        } else {
-            // Show confirmation page for predefined packages
-            showPackageConfirmation(true);
-        }
-    };
-    
-    function showAssignmentFormForNewSite() {
-        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
-        const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-        
-        newSiteFormContainer.style.display = 'none';
-        assignmentFormContainer.style.display = 'block';
-        
-        // Update header
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const packageName = document.querySelector('.package-item.selected .package-name').textContent;
-        
-        headerTitle.textContent = packageName;
-        headerDesc.textContent = 'Add security personnel for new site (Minimum: 1 officer + 1 supervisor)';
-        
-        // Set new site mode flag
-        isNewSiteMode = true;
-        
-        // Initialize counters with minimum requirements for new sites
-        // New sites must have at least 1 officer and 1 supervisor
-        officersCount = 1;
-        supervisorsCount = 1;
-        caretakersCount = 0;
-        initialOfficersCount = 0;
-        initialSupervisorsCount = 0;
-        initialCaretakersCount = 0;
-        
-        // Set pricing from selected package
-        const selectedItem = document.querySelector('.package-item.selected');
-        if (selectedItem) {
-            pricePerOfficer = parseFloat(selectedItem.dataset.priceOfficer || 0);
-            pricePerSupervisor = parseFloat(selectedItem.dataset.priceSupervisor || 0);
-            pricePerCaretaker = parseFloat(selectedItem.dataset.priceCaretaker || 0);
-        }
-        
-        updateCounterDisplays();
-    }
 
-    // Helper function to submit package request via AJAX
-    function submitPackageRequestAjax(formData) {
-        // Disable submit button to prevent double submission
-        const submitBtns = document.querySelectorAll('.btn-submit-assignment, .btn-proceed-package');
-        submitBtns.forEach(btn => btn.disabled = true);
-        
-        fetch('<?php echo URL_ROOT; ?>/client/submitPackageRequest', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Redirect to payment page with cache-busting parameter to ensure fresh data
-                window.location.href = '<?php echo URL_ROOT; ?>/client/payments?refresh=' + Date.now();
-            } else {
-                // Show error message in the appropriate container
-                const errorMsg = data.message || 'Failed to submit request. Please try again.';
-                if (document.getElementById('assignmentErrorMessage')) {
-                    showErrorMessage('assignmentErrorMessage', errorMsg);
-                } else if (document.getElementById('step2ErrorMessage')) {
-                    showErrorMessage('step2ErrorMessage', errorMsg);
-                }
-                submitBtns.forEach(btn => btn.disabled = false);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Show error message in the appropriate container
-            const errorMsg = 'Failed to submit request. Please try again.';
-            if (document.getElementById('assignmentErrorMessage')) {
-                showErrorMessage('assignmentErrorMessage', errorMsg);
-            } else if (document.getElementById('step2ErrorMessage')) {
-                showErrorMessage('step2ErrorMessage', errorMsg);
-            }
-            submitBtns.forEach(btn => btn.disabled = false);
-        });
-    }
+        function backToNewSiteForm() {
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
 
-    // Custom package button
-    window.selectCustomPackage = function() {
-        // Navigate to custom package slide
-        if (customPackageIndex !== -1) {
-            currentPackageSlide = customPackageIndex;
-        } else {
-            // If no custom package found, default to last package
-            currentPackageSlide = totalPackages - 1;
-        }
-        updatePackageCarousel();
-        
-        // Select the custom package
-        packageItems.forEach(p => p.classList.remove('selected'));
-        const customPackageItem = customPackageIndex !== -1 ? packageItems[customPackageIndex] : packageItems[totalPackages - 1];
-        if (customPackageItem) {
-            customPackageItem.classList.add('selected');
-            
-            selectedPackage = {
-                name: customPackageItem.dataset.package,
-                fullName: customPackageItem.dataset.packageName,
-                price: customPackageItem.dataset.price,
-                officers: customPackageItem.dataset.officers
-            };
-        } else {
-            selectedPackage = {
-                name: 'custom',
-                fullName: 'Custom Package',
-                price: '0',
-                officers: 'custom'
-            };
-        }
-        
-        // Stop auto-slide
-        isPackageSelected = true;
-        clearInterval(packageAutoSlideInterval);
-        
-        // Hide the custom package button
-        const customPackageBtn = document.querySelector('.btn-custom-package');
-        if (customPackageBtn) {
-            customPackageBtn.style.display = 'none';
-        }
-        
-        // Show options in right container
-        const emptyState = document.getElementById('emptyState');
-        const optionCards = document.getElementById('optionCards');
-        const headerTitle = document.getElementById('formHeaderTitle');
-        const headerDesc = document.getElementById('formHeaderDesc');
-        const createNewSiteCard = document.getElementById('createNewSite');
-        
-        if (emptyState && optionCards && customPackageItem) {
-            emptyState.style.display = 'none';
-            optionCards.style.display = 'grid';
-            
-            // Update header with actual package name
-            const packageName = customPackageItem.querySelector('.package-name') ? customPackageItem.querySelector('.package-name').textContent : 'Custom Package';
+            assignmentFormContainer.style.display = 'none';
+            newSiteFormContainer.style.display = 'block';
+
+            // Make sure we're on step 2 (where we were)
+            goToStep2();
+
+            // Update header
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+
             headerTitle.textContent = packageName;
-            headerDesc.textContent = 'Choose your deployment option';
-            
-            // Hide "Create New Site" button if package name contains "extra"
-            if (createNewSiteCard) {
+            headerDesc.textContent = 'Complete your new site details';
+
+            // Reset counters
+            officersCount = 0;
+            supervisorsCount = 0;
+            caretakersCount = 0;
+            initialOfficersCount = 0;
+            initialSupervisorsCount = 0;
+            initialCaretakersCount = 0;
+            updateCounterDisplays();
+        }
+
+        window.incrementOfficers = function() {
+            officersCount++;
+            updateCounterDisplays();
+        };
+
+        window.decrementOfficers = function() {
+            const minOfficers = 1; // All sites must have at least 1 officer
+            if (officersCount > minOfficers) {
+                officersCount--;
+                updateCounterDisplays();
+            }
+        };
+
+        window.incrementSupervisors = function() {
+            supervisorsCount++;
+            updateCounterDisplays();
+        };
+
+        window.decrementSupervisors = function() {
+            const minRequired = Math.ceil(officersCount / 5);
+            const minSupervisors = Math.max(minRequired, 1); // All sites must have at least 1 supervisor
+            if (supervisorsCount > minSupervisors) {
+                supervisorsCount--;
+                updateCounterDisplays();
+            }
+        };
+
+        window.incrementCaretakers = function() {
+            caretakersCount++;
+            updateCounterDisplays();
+        };
+
+        window.decrementCaretakers = function() {
+            if (caretakersCount > 0) {
+                caretakersCount--;
+                updateCounterDisplays();
+            }
+        };
+
+        window.submitAssignment = function() {
+            // Calculate personnel changes (can be positive or negative)
+            const officersChange = officersCount - initialOfficersCount;
+            const supervisorsChange = supervisorsCount - initialSupervisorsCount;
+            const caretakersChange = caretakersCount - initialCaretakersCount;
+
+            // All sites must have at least 1 officer and 1 supervisor
+            if (officersCount < 1) {
+                showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 officer');
+                return;
+            }
+            if (supervisorsCount < 1) {
+                showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 supervisor');
+                return;
+            }
+
+            // Special validation for new sites - must have at least 1 officer and 1 supervisor
+            if (isNewSiteMode) {
+                if (officersCount < 1) {
+                    showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 security officer.');
+                    return;
+                }
+                if (supervisorsCount < 1) {
+                    showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 supervisor.');
+                    return;
+                }
+            } else {
+                // Validate some change is made for existing sites
+                if (officersChange === 0 && supervisorsChange === 0 && caretakersChange === 0) {
+                    showErrorMessage('assignmentErrorMessage', 'Please make changes to personnel numbers');
+                    return;
+                }
+            }
+
+            hideErrorMessage('assignmentErrorMessage');
+
+            if (selectedPackage) {
+                // Check if this is for a new site or existing site
+                if (newSiteData) {
+                    // Submit with new site data
+                    const formData = new FormData();
+                    formData.append('mode', 'new');
+                    formData.append('package_name', 'Custom Package');
+                    formData.append('site_name', newSiteData.site_name);
+                    formData.append('site_address', newSiteData.site_address);
+                    formData.append('district', newSiteData.district);
+                    formData.append('city', newSiteData.city || newSiteData.district);
+                    formData.append('phone_number', newSiteData.phone_number);
+                    formData.append('latitude', newSiteData.latitude);
+                    formData.append('longitude', newSiteData.longitude);
+                    formData.append('number_of_officers', officersChange);
+                    formData.append('number_of_supervisors', supervisorsChange);
+                    formData.append('number_of_caretakers', caretakersChange);
+
+                    // Calculate package price based on personnel changes
+                    const totalPrice = (officersChange * pricePerOfficer) +
+                        (supervisorsChange * pricePerSupervisor) +
+                        (caretakersChange * pricePerCaretaker);
+                    formData.append('package_price', totalPrice);
+
+                    if (newSiteData.image) {
+                        formData.append('image', newSiteData.image);
+                    }
+
+                    // Submit via AJAX
+                    submitPackageRequestAjax(formData);
+                } else if (selectedSiteId) {
+                    // Submit with existing site (backend will handle deleting old pending requests)
+                    const formData = new FormData();
+                    formData.append('mode', 'existing');
+                    formData.append('site_id', selectedSiteId);
+                    formData.append('package_name', 'Custom Package');
+                    formData.append('site_name', selectedSiteData.site_name);
+                    formData.append('site_address', selectedSiteData.address);
+                    formData.append('district', selectedSiteData.district || '');
+                    formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                    formData.append('number_of_officers', officersChange);
+                    formData.append('number_of_supervisors', supervisorsChange);
+                    formData.append('number_of_caretakers', caretakersChange);
+
+                    // Calculate package price based on personnel changes (can be negative)
+                    const totalPrice = (officersChange * pricePerOfficer) +
+                        (supervisorsChange * pricePerSupervisor) +
+                        (caretakersChange * pricePerCaretaker);
+                    formData.append('package_price', totalPrice);
+
+                    // Submit via AJAX
+                    submitPackageRequestAjax(formData);
+                }
+            }
+        };
+
+        // Create new site
+        createNewSiteBtn.addEventListener('click', function() {
+            if (selectedPackage) {
+                // Check if package name contains "extra" - these can only be added to existing sites
+                const packageFullName = selectedPackage.fullName || '';
+                if (packageFullName.toLowerCase().includes('extra')) {
+                    // Silently prevent - extra packages are for existing sites only
+                    return;
+                }
+
+                // For other packages, show new site form
+                showNewSiteForm();
+            }
+        });
+
+        // New Site Form Functions
+        let siteImageFile = null;
+        let siteMap = null;
+        let siteMarker = null;
+        let newSiteData = null; // Store new site data temporarily
+
+        function showNewSiteForm() {
+            const optionCards = document.getElementById('optionCards');
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+
+            // Clear any error messages
+            hideErrorMessage('step1ErrorMessage');
+            hideErrorMessage('step2ErrorMessage');
+
+            // Clear any previous new site data
+            newSiteData = null;
+
+            // Disable package container and hide navigation (same as existing site flow)
+            isDeploymentOptionSelected = true;
+            const packagesContainer = document.querySelector('.packages-container');
+            if (packagesContainer) {
+                packagesContainer.classList.add('disabled');
+            }
+
+            // Hide arrow buttons and indicators
+            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
+            document.getElementById('packageCarouselIndicators').classList.add('hidden');
+
+            optionCards.style.display = 'none';
+            newSiteFormContainer.style.display = 'block';
+
+            // Update header
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+
+            headerTitle.textContent = 'New Site - ' + packageName;
+            headerDesc.textContent = 'Step 1: Enter site details';
+
+            // Initialize step 1
+            goToStep1();
+        }
+
+        window.backToOptionsFromNewSite = function() {
+            const optionCards = document.getElementById('optionCards');
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+            const createNewSiteCard = document.getElementById('createNewSite');
+
+            // Clear any error messages
+            hideErrorMessage('step1ErrorMessage');
+            hideErrorMessage('step2ErrorMessage');
+
+            newSiteFormContainer.style.display = 'none';
+            optionCards.style.display = 'grid';
+
+            // Re-enable package container and show navigation (same as backToOptions)
+            isDeploymentOptionSelected = false;
+            const packagesContainer = document.querySelector('.packages-container');
+            if (packagesContainer) {
+                packagesContainer.classList.remove('disabled');
+            }
+
+            // Show arrow buttons and indicators
+            document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+            document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+
+            // Restore Create New Site button visibility based on package type
+            if (createNewSiteCard && selectedPackage) {
                 const packageFullName = selectedPackage.fullName || '';
                 if (packageFullName.toLowerCase().includes('extra')) {
                     createNewSiteCard.style.display = 'none';
@@ -2962,9 +2364,618 @@ document.addEventListener('DOMContentLoaded', function() {
                     createNewSiteCard.style.display = 'block';
                 }
             }
+
+            // Clear new site data
+            newSiteData = null;
+
+            // Reset form
+            document.getElementById('newSiteName').value = '';
+            document.getElementById('newSiteAddress').value = '';
+            document.getElementById('district').value = '';
+            document.getElementById('city').value = '';
+            document.getElementById('newSitePhone').value = '';
+            removeSiteImage();
+
+            // Update header
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+
+            headerTitle.textContent = packageName;
+            headerDesc.textContent = 'Choose your deployment option';
+        };
+
+        window.goToStep1 = function() {
+            // Hide any error messages when going back
+            hideErrorMessage('step2ErrorMessage');
+
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1Indicator').classList.add('active');
+            document.getElementById('step1Indicator').classList.remove('completed');
+            document.getElementById('step2Indicator').classList.remove('active');
+
+            const headerDesc = document.getElementById('formHeaderDesc');
+            headerDesc.textContent = 'Step 1: Enter site details';
+        };
+
+        window.goToStep2 = function() {
+            // Hide any previous error messages
+            hideErrorMessage('step1ErrorMessage');
+
+            // Validate step 1 fields
+            const siteName = document.getElementById('newSiteName').value.trim();
+            const siteDistrict = document.getElementById('district').value.trim();
+            const siteCity = document.getElementById('city').value.trim();
+            const sitePhone = document.getElementById('newSitePhone').value.trim();
+            const photoFrame = document.getElementById('sitePhotoFrame');
+
+            // Check if image is uploaded
+            if (!siteImageFile) {
+                showErrorMessage('step1ErrorMessage', 'Please upload a site image');
+                // Highlight the photo frame
+                photoFrame.style.borderColor = '#ff9800';
+                photoFrame.style.borderWidth = '3px';
+                setTimeout(() => {
+                    photoFrame.style.borderColor = '#e0e0e0';
+                    photoFrame.style.borderWidth = '2px';
+                }, 3000);
+                return;
+            }
+
+            if (!siteName || !siteDistrict || !sitePhone) {
+                showErrorMessage('step1ErrorMessage', 'Please fill in all required fields (Site Name, District, and Phone Number)');
+                return;
+            }
+
+            // Validate phone number format
+            if (!/^[0-9]{10}$/.test(sitePhone)) {
+                showErrorMessage('step1ErrorMessage', 'Phone number must be exactly 10 digits (numbers only)');
+                return;
+            }
+
+            // Validate city if city field is visible
+            const cityField = document.getElementById('city-field');
+            if (cityField && cityField.style.display !== 'none' && !siteCity) {
+                showErrorMessage('step1ErrorMessage', 'Please enter the city');
+                return;
+            }
+
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step2').classList.add('active');
+            document.getElementById('step1Indicator').classList.remove('active');
+            document.getElementById('step1Indicator').classList.add('completed');
+            document.getElementById('step2Indicator').classList.add('active');
+
+            const headerDesc = document.getElementById('formHeaderDesc');
+            headerDesc.textContent = 'Step 2: Select location on map';
+
+            // Initialize map if not already done
+            if (!siteMap) {
+                initSiteMap();
+            }
+        };
+
+        // Package Confirmation Functions (for non-custom packages)
+        function showPackageConfirmation(isNewSite) {
+            const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+            const sitesListContainer = document.getElementById('sitesListContainer');
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+
+            // Hide previous containers
+            sitesListContainer.style.display = 'none';
+            newSiteFormContainer.style.display = 'none';
+
+            // Show confirmation
+            packageConfirmationContainer.style.display = 'block';
+
+            // Get package details
+            const selectedItem = document.querySelector('.package-item.selected');
+            const packageName = selectedItem ? selectedItem.querySelector('.package-name').textContent : 'Package';
+            const packageOfficers = selectedItem ? selectedItem.querySelector('.package-officers').textContent : '';
+            const packagePrice = selectedPackage.price;
+
+            // Update package info
+            document.getElementById('confirmPackageName').textContent = packageName;
+            document.getElementById('confirmPackageDetails').textContent = packageOfficers;
+            document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
+
+            // Update site info
+            if (isNewSite && newSiteData) {
+                document.getElementById('confirmSiteName').textContent = newSiteData.site_name;
+                document.getElementById('confirmSiteAddress').textContent = newSiteData.site_address;
+            } else if (selectedSiteData) {
+                document.getElementById('confirmSiteName').textContent = selectedSiteData.site_name;
+                document.getElementById('confirmSiteAddress').textContent = selectedSiteData.site_address;
+            }
+
+            // Update header
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            headerTitle.textContent = 'Review Your Request';
+            headerDesc.textContent = 'Please confirm the details before proceeding';
         }
-    };
-});
+
+        window.backFromConfirmation = function() {
+            const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+
+            // Check if we came from new site or existing site
+            if (newSiteData) {
+                // Go back to new site form (Step 2)
+                const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+                packageConfirmationContainer.style.display = 'none';
+                newSiteFormContainer.style.display = 'block';
+                goToStep2();
+
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+                const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Package';
+                headerTitle.textContent = 'New Site - ' + packageName;
+                headerDesc.textContent = 'Step 2: Location details';
+            } else {
+                // Go back to sites list
+                const sitesListContainer = document.getElementById('sitesListContainer');
+                packageConfirmationContainer.style.display = 'none';
+                sitesListContainer.style.display = 'block';
+
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+                const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+                headerTitle.textContent = packageName;
+                headerDesc.textContent = 'Select a site to adjust personnel';
+            }
+        };
+
+        window.proceedWithPackage = function() {
+            if (selectedPackage) {
+                if (newSiteData) {
+                    // Proceed with new site
+                    const formData = new FormData();
+                    formData.append('mode', 'new');
+                    formData.append('package_name', selectedPackage.name);
+                    formData.append('site_name', newSiteData.site_name);
+                    formData.append('site_address', newSiteData.site_address);
+                    formData.append('district', newSiteData.district);
+                    formData.append('city', newSiteData.city || newSiteData.district);
+                    formData.append('phone_number', newSiteData.phone_number);
+                    formData.append('latitude', newSiteData.latitude);
+                    formData.append('longitude', newSiteData.longitude);
+                    formData.append('number_of_officers', selectedPackage.officers || 0);
+                    formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                    formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                    formData.append('package_price', selectedPackage.price);
+
+                    if (newSiteData.image) {
+                        formData.append('image', newSiteData.image);
+                    }
+
+                    // Submit via AJAX
+                    submitPackageRequestAjax(formData);
+                } else if (selectedSiteId) {
+                    // Submit with existing site (backend will handle deleting old pending requests)
+                    const formData = new FormData();
+                    formData.append('mode', 'existing');
+                    formData.append('site_id', selectedSiteId);
+                    formData.append('package_name', selectedPackage.name);
+                    formData.append('site_name', selectedSiteData.site_name);
+                    formData.append('site_address', selectedSiteData.address);
+                    formData.append('district', selectedSiteData.district || '');
+                    formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                    formData.append('number_of_officers', selectedPackage.officers || 0);
+                    formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                    formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                    formData.append('package_price', selectedPackage.price);
+
+                    // Submit via AJAX
+                    submitPackageRequestAjax(formData);
+                }
+            }
+        };
+
+        function initSiteMap() {
+            const mapElement = document.getElementById('siteMap');
+            if (!mapElement) return;
+
+            // Default to Colombo, Sri Lanka
+            const defaultLocation = {
+                lat: 6.9271,
+                lng: 79.8612
+            };
+
+            siteMap = new google.maps.Map(mapElement, {
+                center: defaultLocation,
+                zoom: 12,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
+            });
+
+            // Add click listener to place marker
+            siteMap.addListener('click', function(event) {
+                placeMarker(event.latLng);
+            });
+
+            // Initialize location search box
+            initNewSiteLocationSearch();
+
+            // Try to get user's current location
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        siteMap.setCenter(pos);
+                    },
+                    function() {
+                        console.log('Geolocation service failed or denied');
+                    }
+                );
+            }
+        }
+
+        function initNewSiteLocationSearch() {
+            const searchInput = document.getElementById('newSiteLocationSearch');
+            if (!searchInput) return;
+
+            // Create SearchBox
+            const searchBox = new google.maps.places.SearchBox(searchInput);
+
+            // Bias the SearchBox results towards current map's viewport
+            siteMap.addListener('bounds_changed', function() {
+                searchBox.setBounds(siteMap.getBounds());
+            });
+
+            // Listen for when user selects a prediction
+            searchBox.addListener('places_changed', function() {
+                const places = searchBox.getPlaces();
+
+                if (places.length === 0) {
+                    return;
+                }
+
+                // Get the first place
+                const place = places[0];
+
+                if (!place.geometry || !place.geometry.location) {
+                    console.log('Place has no geometry');
+                    return;
+                }
+
+                // Add marker at the selected location
+                placeMarker(place.geometry.location);
+
+                // Update address field with the place's formatted address
+                const addressInput = document.getElementById('newSiteAddress');
+                if (place.formatted_address && addressInput) {
+                    addressInput.value = place.formatted_address;
+                }
+
+                // Update site name if empty
+                const siteNameInput = document.getElementById('newSiteName');
+                if (siteNameInput && !siteNameInput.value && place.name) {
+                    siteNameInput.value = place.name;
+                }
+
+                // Adjust map to show the place
+                if (place.geometry.viewport) {
+                    siteMap.fitBounds(place.geometry.viewport);
+                } else {
+                    siteMap.setCenter(place.geometry.location);
+                    siteMap.setZoom(17);
+                }
+
+                // Clear the search box
+                searchInput.value = '';
+            });
+        }
+
+        function placeMarker(location) {
+            if (siteMarker) {
+                siteMarker.setMap(null);
+            }
+
+            siteMarker = new google.maps.Marker({
+                position: location,
+                map: siteMap,
+                animation: google.maps.Animation.DROP,
+                draggable: true
+            });
+
+            document.getElementById('newSiteLatitude').value = location.lat();
+            document.getElementById('newSiteLongitude').value = location.lng();
+
+            // Reverse geocode to get address
+            getAddressFromLocation(location);
+
+            siteMarker.addListener('dragend', function(event) {
+                document.getElementById('newSiteLatitude').value = event.latLng.lat();
+                document.getElementById('newSiteLongitude').value = event.latLng.lng();
+                // Update address when marker is dragged
+                getAddressFromLocation(event.latLng);
+            });
+        }
+
+        function getAddressFromLocation(location) {
+            const geocoder = new google.maps.Geocoder();
+
+            geocoder.geocode({
+                location: location
+            }, function(results, status) {
+                if (status === 'OK') {
+                    if (results[0]) {
+                        // Set the formatted address
+                        document.getElementById('newSiteAddress').value = results[0].formatted_address;
+                    } else {
+                        console.log('No address found for this location');
+                        document.getElementById('newSiteAddress').value = 'Address not found';
+                    }
+                } else {
+                    console.log('Geocoder failed: ' + status);
+                    document.getElementById('newSiteAddress').value = 'Unable to retrieve address';
+                }
+            });
+        }
+
+        // Phone number validation - only allow numbers
+        const phoneInput = document.getElementById('newSitePhone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function(e) {
+                // Remove any non-digit characters
+                this.value = this.value.replace(/[^0-9]/g, '');
+
+                // Update visual feedback
+                if (this.value.length === 10) {
+                    this.style.borderColor = '#4caf50';
+                } else if (this.value.length > 0) {
+                    this.style.borderColor = '#ff9800';
+                } else {
+                    this.style.borderColor = '#e0e0e0';
+                }
+            });
+
+            phoneInput.addEventListener('keypress', function(e) {
+                // Prevent non-numeric input
+                if (!/[0-9]/.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab' && e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Site image handling
+        document.getElementById('siteImageInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                if (!validTypes.includes(file.type)) {
+                    showErrorMessage('step1ErrorMessage', 'Please select a valid image file (JPG, JPEG, or PNG)');
+                    e.target.value = '';
+                    return;
+                }
+
+                siteImageFile = file;
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const photoFrame = document.getElementById('sitePhotoFrame');
+                    document.getElementById('siteImagePreview').src = event.target.result;
+                    document.getElementById('addSitePhotoBtn').style.display = 'none';
+                    document.getElementById('removeSitePhotoBtn').style.display = 'inline-block';
+
+                    // Add green border to indicate image is uploaded
+                    photoFrame.style.borderColor = '#4caf50';
+                    photoFrame.style.borderStyle = 'solid';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        window.removeSiteImage = function() {
+            siteImageFile = null;
+            const photoFrame = document.getElementById('sitePhotoFrame');
+            document.getElementById('siteImageInput').value = '';
+            document.getElementById('siteImagePreview').src = '<?php echo URL_ROOT; ?>/img/photo.png';
+            document.getElementById('addSitePhotoBtn').style.display = 'inline-block';
+            document.getElementById('removeSitePhotoBtn').style.display = 'none';
+
+            // Reset border color to default
+            photoFrame.style.borderColor = '#e0e0e0';
+            photoFrame.style.borderStyle = 'dashed';
+        };
+
+        window.submitNewSiteWithPackage = function() {
+            // Hide any previous error messages
+            hideErrorMessage('step2ErrorMessage');
+
+            const latitude = document.getElementById('newSiteLatitude').value;
+            const longitude = document.getElementById('newSiteLongitude').value;
+            const address = document.getElementById('newSiteAddress').value.trim();
+
+            // Validate image is uploaded
+            if (!siteImageFile) {
+                showErrorMessage('step2ErrorMessage', 'Site photo is required. Please go back to Step 1 and upload an image.');
+                return;
+            }
+
+            if (!latitude || !longitude) {
+                showErrorMessage('step2ErrorMessage', 'Please select a location on the map');
+                return;
+            }
+
+            if (!address) {
+                showErrorMessage('step2ErrorMessage', 'Address is required. Please select a location on the map or enter address manually.');
+                return;
+            }
+
+            // Store new site data temporarily
+            newSiteData = {
+                site_name: document.getElementById('newSiteName').value,
+                site_address: address,
+                district: document.getElementById('district').value,
+                city: document.getElementById('city').value,
+                phone_number: document.getElementById('newSitePhone').value,
+                latitude: latitude,
+                longitude: longitude,
+                image: siteImageFile
+            };
+
+            // Check if custom package or regular package
+            if (selectedPackage.officers === 'custom') {
+                // Show assignment form (Add Security Personnel) for custom package
+                showAssignmentFormForNewSite();
+            } else {
+                // Show confirmation page for predefined packages
+                showPackageConfirmation(true);
+            }
+        };
+
+        function showAssignmentFormForNewSite() {
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+            const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+
+            newSiteFormContainer.style.display = 'none';
+            assignmentFormContainer.style.display = 'block';
+
+            // Update header
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name').textContent;
+
+            headerTitle.textContent = packageName;
+            headerDesc.textContent = 'Add security personnel for new site (Minimum: 1 officer + 1 supervisor)';
+
+            // Set new site mode flag
+            isNewSiteMode = true;
+
+            // Initialize counters with minimum requirements for new sites
+            // New sites must have at least 1 officer and 1 supervisor
+            officersCount = 1;
+            supervisorsCount = 1;
+            caretakersCount = 0;
+            initialOfficersCount = 0;
+            initialSupervisorsCount = 0;
+            initialCaretakersCount = 0;
+
+            // Set pricing from selected package
+            const selectedItem = document.querySelector('.package-item.selected');
+            if (selectedItem) {
+                pricePerOfficer = parseFloat(selectedItem.dataset.priceOfficer || 0);
+                pricePerSupervisor = parseFloat(selectedItem.dataset.priceSupervisor || 0);
+                pricePerCaretaker = parseFloat(selectedItem.dataset.priceCaretaker || 0);
+            }
+
+            updateCounterDisplays();
+        }
+
+        // Helper function to submit package request via AJAX
+        function submitPackageRequestAjax(formData) {
+            // Disable submit button to prevent double submission
+            const submitBtns = document.querySelectorAll('.btn-submit-assignment, .btn-proceed-package');
+            submitBtns.forEach(btn => btn.disabled = true);
+
+            fetch('<?php echo URL_ROOT; ?>/client/submitPackageRequest', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to payment page with cache-busting parameter to ensure fresh data
+                        window.location.href = '<?php echo URL_ROOT; ?>/client/payments?refresh=' + Date.now();
+                    } else {
+                        // Show error message in the appropriate container
+                        const errorMsg = data.message || 'Failed to submit request. Please try again.';
+                        if (document.getElementById('assignmentErrorMessage')) {
+                            showErrorMessage('assignmentErrorMessage', errorMsg);
+                        } else if (document.getElementById('step2ErrorMessage')) {
+                            showErrorMessage('step2ErrorMessage', errorMsg);
+                        }
+                        submitBtns.forEach(btn => btn.disabled = false);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Show error message in the appropriate container
+                    const errorMsg = 'Failed to submit request. Please try again.';
+                    if (document.getElementById('assignmentErrorMessage')) {
+                        showErrorMessage('assignmentErrorMessage', errorMsg);
+                    } else if (document.getElementById('step2ErrorMessage')) {
+                        showErrorMessage('step2ErrorMessage', errorMsg);
+                    }
+                    submitBtns.forEach(btn => btn.disabled = false);
+                });
+        }
+
+        // Custom package button
+        window.selectCustomPackage = function() {
+            // Navigate to custom package slide
+            if (customPackageIndex !== -1) {
+                currentPackageSlide = customPackageIndex;
+            } else {
+                // If no custom package found, default to last package
+                currentPackageSlide = totalPackages - 1;
+            }
+            updatePackageCarousel();
+
+            // Select the custom package
+            packageItems.forEach(p => p.classList.remove('selected'));
+            const customPackageItem = customPackageIndex !== -1 ? packageItems[customPackageIndex] : packageItems[totalPackages - 1];
+            if (customPackageItem) {
+                customPackageItem.classList.add('selected');
+
+                selectedPackage = {
+                    name: customPackageItem.dataset.package,
+                    fullName: customPackageItem.dataset.packageName,
+                    price: customPackageItem.dataset.price,
+                    officers: customPackageItem.dataset.officers
+                };
+            } else {
+                selectedPackage = {
+                    name: 'custom',
+                    fullName: 'Custom Package',
+                    price: '0',
+                    officers: 'custom'
+                };
+            }
+
+            // Stop auto-slide
+            isPackageSelected = true;
+            clearInterval(packageAutoSlideInterval);
+
+            // Hide the custom package button
+            const customPackageBtn = document.querySelector('.btn-custom-package');
+            if (customPackageBtn) {
+                customPackageBtn.style.display = 'none';
+            }
+
+            // Show options in right container
+            const emptyState = document.getElementById('emptyState');
+            const optionCards = document.getElementById('optionCards');
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const createNewSiteCard = document.getElementById('createNewSite');
+
+            if (emptyState && optionCards && customPackageItem) {
+                emptyState.style.display = 'none';
+                optionCards.style.display = 'grid';
+
+                // Update header with actual package name
+                const packageName = customPackageItem.querySelector('.package-name') ? customPackageItem.querySelector('.package-name').textContent : 'Custom Package';
+                headerTitle.textContent = packageName;
+                headerDesc.textContent = 'Choose your deployment option';
+
+                // Hide "Create New Site" button if package name contains "extra"
+                if (createNewSiteCard) {
+                    const packageFullName = selectedPackage.fullName || '';
+                    if (packageFullName.toLowerCase().includes('extra')) {
+                        createNewSiteCard.style.display = 'none';
+                    } else {
+                        createNewSiteCard.style.display = 'block';
+                    }
+                }
+            }
+        };
+    });
 </script>
 
 <!-- Google Maps API for Site Location -->
