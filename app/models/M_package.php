@@ -1,6 +1,9 @@
 <?php
 class M_package {
     private $db;
+    private const DEFAULT_CUSTOM_PRICE_PER_OFFICER = 20000.00;
+    private const DEFAULT_CUSTOM_PRICE_PER_SUPERVISOR = 20000.00;
+    private const DEFAULT_CUSTOM_PRICE_PER_CARETAKER = 12000.00;
 
     public function __construct() {
         $this->db = new Database();
@@ -10,7 +13,35 @@ class M_package {
      * Get all packages
      */
     public function getAllPackages() {
-        $this->db->query('SELECT * FROM packages WHERE status = :status ORDER BY created_at DESC');
+        $this->db->query("SELECT
+                            id,
+                            package_name,
+                            description,
+                            number_of_officers,
+                            number_of_supervisors,
+                            number_of_caretakers,
+                            package_price,
+                            background_image,
+                            status,
+                            created_by,
+                            created_at,
+                            updated_at,
+                            is_default,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_officer, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_OFFICER . "
+                                ELSE COALESCE(price_per_officer, 0)
+                            END AS price_per_officer,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_supervisor, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_SUPERVISOR . "
+                                ELSE COALESCE(price_per_supervisor, 0)
+                            END AS price_per_supervisor,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_caretaker, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_CARETAKER . "
+                                ELSE COALESCE(price_per_caretaker, 0)
+                            END AS price_per_caretaker
+                         FROM packages
+                         WHERE status = :status
+                         ORDER BY created_at DESC");
         $this->db->bind(':status', 'Active');
         
         return $this->db->resultSet();
@@ -21,7 +52,33 @@ class M_package {
      * Custom Package first, then default packages, then others
      */
     public function getAllPackagesForAdmin() {
-        $this->db->query("SELECT * FROM packages 
+        $this->db->query("SELECT
+                            id,
+                            package_name,
+                            description,
+                            number_of_officers,
+                            number_of_supervisors,
+                            number_of_caretakers,
+                            package_price,
+                            background_image,
+                            status,
+                            created_by,
+                            created_at,
+                            updated_at,
+                            is_default,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_officer, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_OFFICER . "
+                                ELSE COALESCE(price_per_officer, 0)
+                            END AS price_per_officer,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_supervisor, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_SUPERVISOR . "
+                                ELSE COALESCE(price_per_supervisor, 0)
+                            END AS price_per_supervisor,
+                            CASE
+                                WHEN package_name = 'Custom Package' AND COALESCE(price_per_caretaker, 0) <= 0 THEN " . self::DEFAULT_CUSTOM_PRICE_PER_CARETAKER . "
+                                ELSE COALESCE(price_per_caretaker, 0)
+                            END AS price_per_caretaker
+                         FROM packages 
                          ORDER BY 
                          CASE WHEN package_name = 'Custom Package' THEN 0 ELSE 1 END,
                          is_default DESC, 
@@ -221,19 +278,14 @@ class M_package {
         $result = $this->db->single();
         
         if ($result) {
-            return [
+            return $this->normalizeCustomPricing([
                 'price_per_officer' => floatval($result->price_per_officer),
                 'price_per_supervisor' => floatval($result->price_per_supervisor),
                 'price_per_caretaker' => floatval($result->price_per_caretaker)
-            ];
+            ]);
         }
         
-        // Return default values if Custom Package not found
-        return [
-            'price_per_officer' => 0.00,
-            'price_per_supervisor' => 0.00,
-            'price_per_caretaker' => 0.00
-        ];
+        return $this->defaultCustomPricing();
     }
 
     /**
@@ -245,14 +297,44 @@ class M_package {
         $row = $this->db->single();
 
         if ($row) {
-            return [
+            $pricing = [
                 'price_per_officer' => floatval($row->price_per_officer ?? 0),
                 'price_per_supervisor' => floatval($row->price_per_supervisor ?? 0),
                 'price_per_caretaker' => floatval($row->price_per_caretaker ?? 0)
             ];
+
+            if (strcasecmp((string)$packageName, 'Custom Package') === 0) {
+                return $this->normalizeCustomPricing($pricing);
+            }
+
+            return $pricing;
         }
 
         return $this->getCustomPackagePricing();
+    }
+
+    private function defaultCustomPricing() {
+        return [
+            'price_per_officer' => self::DEFAULT_CUSTOM_PRICE_PER_OFFICER,
+            'price_per_supervisor' => self::DEFAULT_CUSTOM_PRICE_PER_SUPERVISOR,
+            'price_per_caretaker' => self::DEFAULT_CUSTOM_PRICE_PER_CARETAKER
+        ];
+    }
+
+    private function normalizeCustomPricing(array $pricing) {
+        $defaults = $this->defaultCustomPricing();
+
+        if (($pricing['price_per_officer'] ?? 0) <= 0) {
+            $pricing['price_per_officer'] = $defaults['price_per_officer'];
+        }
+        if (($pricing['price_per_supervisor'] ?? 0) <= 0) {
+            $pricing['price_per_supervisor'] = $defaults['price_per_supervisor'];
+        }
+        if (($pricing['price_per_caretaker'] ?? 0) <= 0) {
+            $pricing['price_per_caretaker'] = $defaults['price_per_caretaker'];
+        }
+
+        return $pricing;
     }
 
     /**

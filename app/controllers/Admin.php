@@ -1093,7 +1093,7 @@ class Admin extends Controller {
     }
     
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
-    $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
+    $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
     $result = $this->adminModel->acceptClient($clientId, $adminId);
     
@@ -1978,7 +1978,7 @@ public function editSite($site_id){
         require_once APP_ROOT . '/helpers/image_upload_helper.php';
 
         // Sanitize POST data
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
 
         // Init data
         $data = [
@@ -1993,7 +1993,7 @@ public function editSite($site_id){
             'price_per_caretaker' => floatval($_POST['price_per_caretaker'] ?? 0),
             'background_image' => null,
             'status' => 'Active',
-            'created_by' => $_SESSION['user_userID'],
+            'created_by' => isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
             'package_name_err' => '',
             'number_of_officers_err' => '',
             'package_price_err' => '',
@@ -2132,7 +2132,7 @@ public function editSite($site_id){
         require_once APP_ROOT . '/helpers/image_upload_helper.php';
 
         // Sanitize POST data
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
 
         // Init data
         $data = [
@@ -2753,7 +2753,7 @@ public function editSite($site_id){
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Sanitize POST data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
             
             $data = [
                 'amount' => trim($_POST['amount']),

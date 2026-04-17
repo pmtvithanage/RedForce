@@ -275,10 +275,11 @@ class M_premiseofficer {
                                 s.site_name,
                                 s.address,
                                 s.city,
-                                c.contact_person_name
+                                                                COALESCE(c.contact_person_name, cu.name) AS contact_person_name
                               FROM caretaker_site_assignments csa
                               INNER JOIN sites s ON csa.site_id = s.id
-                              LEFT JOIN Users c ON s.client_id = c.id
+                                                            LEFT JOIN Clients c ON s.client_id = c.id
+                                                            LEFT JOIN Users cu ON c.user_id = cu.id
                               WHERE csa.caretaker_id = :user_id
                                 AND csa.status = 'Active'
                                 AND s.is_draft = 0
@@ -320,10 +321,11 @@ class M_premiseofficer {
                                 s.address,
                                 s.city,
                                 s.phone_number,
-                                c.contact_person_name
+                                                                COALESCE(c.contact_person_name, cu.name) AS contact_person_name
                               FROM caretaker_site_assignments csa
                               INNER JOIN sites s ON csa.site_id = s.id
-                              LEFT JOIN Users c ON s.client_id = c.id
+                                                            LEFT JOIN Clients c ON s.client_id = c.id
+                                                            LEFT JOIN Users cu ON c.user_id = cu.id
                               WHERE csa.caretaker_id = :user_id
                                 AND csa.status = 'Active'
                                 AND s.is_draft = 0
