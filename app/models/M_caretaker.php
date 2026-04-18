@@ -1,44 +1,50 @@
 <?php
-class M_caretaker {
+class M_caretaker
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
     // ==================== LEAVE REQUESTS ====================
 
     // CREATE - Add new leave request
-    public function addLeaveRequest($data) {
+    public function addLeaveRequest($data)
+    {
         $this->db->query('INSERT INTO leave_requests (caretaker_id, leave_type, reason, start_date, end_date, proof_file) 
                           VALUES (:caretaker_id, :leave_type, :reason, :start_date, :end_date, :proof_file)');
-        
+
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':leave_type', $data['leave_type']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file']);
-        
+
         return $this->db->execute();
     }
 
     // READ - Get all leave requests
-    public function getLeaveRequests($caretaker_id) {
+    public function getLeaveRequests($caretaker_id)
+    {
         $this->db->query('SELECT * FROM leave_requests WHERE caretaker_id = :caretaker_id ORDER BY created_at DESC');
         $this->db->bind(':caretaker_id', $caretaker_id);
         return $this->db->resultSet();
     }
 
     // READ - Get single leave request
-    public function getLeaveRequestById($id) {
+    public function getLeaveRequestById($id)
+    {
         $this->db->query('SELECT * FROM leave_requests WHERE id = :id');
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
 
     // UPDATE - Leave request
-    public function updateLeaveRequest($data) {
+    public function updateLeaveRequest($data)
+    {
         $this->db->query('UPDATE leave_requests 
                           SET leave_type = :leave_type, 
                               reason = :reason, 
@@ -46,7 +52,7 @@ class M_caretaker {
                               end_date = :end_date, 
                               proof_file = :proof_file 
                           WHERE id = :id AND caretaker_id = :caretaker_id');
-        
+
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':leave_type', $data['leave_type']);
@@ -54,12 +60,13 @@ class M_caretaker {
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file']);
-        
+
         return $this->db->execute();
     }
 
     // DELETE - Leave request
-    public function deleteLeaveRequest($id, $caretaker_id) {
+    public function deleteLeaveRequest($id, $caretaker_id)
+    {
         $this->db->query('DELETE FROM leave_requests WHERE id = :id AND caretaker_id = :caretaker_id');
         $this->db->bind(':id', $id);
         $this->db->bind(':caretaker_id', $caretaker_id);
@@ -68,9 +75,10 @@ class M_caretaker {
 
     // ==================== NOTES METHODS (RDFC-71) ====================
 
-    public function getNotes($caretaker_id, $filters = []) {
+    public function getNotes($caretaker_id, $filters = [])
+    {
         $query = 'SELECT * FROM caretaker_notes WHERE caretaker_id = :caretaker_id';
-        
+
         if (!empty($filters['category']) && $filters['category'] !== 'All') {
             $query .= ' AND category = :category';
         }
@@ -80,12 +88,12 @@ class M_caretaker {
         if (!empty($filters['search'])) {
             $query .= ' AND (title LIKE :search OR note_content LIKE :search)';
         }
-        
+
         $query .= ' ORDER BY is_pinned DESC, created_at DESC';
-        
+
         $this->db->query($query);
         $this->db->bind(':caretaker_id', $caretaker_id);
-        
+
         if (!empty($filters['category']) && $filters['category'] !== 'All') {
             $this->db->bind(':category', $filters['category']);
         }
@@ -95,17 +103,19 @@ class M_caretaker {
         if (!empty($filters['search'])) {
             $this->db->bind(':search', '%' . $filters['search'] . '%');
         }
-        
+
         return $this->db->resultSet();
     }
 
-    public function getNoteById($id) {
+    public function getNoteById($id)
+    {
         $this->db->query('SELECT * FROM caretaker_notes WHERE id = :id');
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
 
-    public function getNotesStats($caretaker_id) {
+    public function getNotesStats($caretaker_id)
+    {
         $this->db->query('
             SELECT 
                 COUNT(*) as total,
@@ -120,7 +130,8 @@ class M_caretaker {
     }
 
     // Get today's reminders
-    public function getTodayReminders($caretaker_id) {
+    public function getTodayReminders($caretaker_id)
+    {
         $this->db->query('
             SELECT * FROM caretaker_notes 
             WHERE caretaker_id = :caretaker_id 
@@ -133,7 +144,8 @@ class M_caretaker {
     }
 
     // Get overdue reminders (missed)
-    public function getOverdueReminders($caretaker_id) {
+    public function getOverdueReminders($caretaker_id)
+    {
         $this->db->query('
             SELECT * FROM caretaker_notes 
             WHERE caretaker_id = :caretaker_id 
@@ -146,7 +158,8 @@ class M_caretaker {
     }
 
     // Mark reminder as completed
-    public function completeReminder($note_id, $caretaker_id) {
+    public function completeReminder($note_id, $caretaker_id)
+    {
         $this->db->query('
             UPDATE caretaker_notes 
             SET is_completed = 1 
@@ -157,25 +170,27 @@ class M_caretaker {
         return $this->db->execute();
     }
 
-    public function addNote($data) {
+    public function addNote($data)
+    {
         $this->db->query('
             INSERT INTO caretaker_notes 
             (caretaker_id, title, note_content, category, priority, reminder_date) 
             VALUES 
             (:caretaker_id, :title, :note_content, :category, :priority, :reminder_date)
         ');
-        
+
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':title', $data['title']);
         $this->db->bind(':note_content', $data['note_content']);
         $this->db->bind(':category', $data['category']);
         $this->db->bind(':priority', $data['priority']);
         $this->db->bind(':reminder_date', $data['reminder_date'] ?? null);
-        
+
         return $this->db->execute();
     }
 
-    public function updateNote($data) {
+    public function updateNote($data)
+    {
         $this->db->query('
             UPDATE caretaker_notes 
             SET title = :title,
@@ -185,7 +200,7 @@ class M_caretaker {
                 reminder_date = :reminder_date
             WHERE id = :id AND caretaker_id = :caretaker_id
         ');
-        
+
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':title', $data['title']);
@@ -193,18 +208,20 @@ class M_caretaker {
         $this->db->bind(':category', $data['category']);
         $this->db->bind(':priority', $data['priority']);
         $this->db->bind(':reminder_date', $data['reminder_date'] ?? null);
-        
+
         return $this->db->execute();
     }
 
-    public function deleteNote($id, $caretaker_id) {
+    public function deleteNote($id, $caretaker_id)
+    {
         $this->db->query('DELETE FROM caretaker_notes WHERE id = :id AND caretaker_id = :caretaker_id');
         $this->db->bind(':id', $id);
         $this->db->bind(':caretaker_id', $caretaker_id);
         return $this->db->execute();
     }
 
-    public function togglePin($id, $caretaker_id) {
+    public function togglePin($id, $caretaker_id)
+    {
         $this->db->query('
             UPDATE caretaker_notes 
             SET is_pinned = NOT is_pinned 
@@ -217,14 +234,15 @@ class M_caretaker {
 
     // ==================== EQUIPMENT REQUESTS (dev branch) ====================
 
-    public function addEquipmentRequest($data) {
+    public function addEquipmentRequest($data)
+    {
         $this->db->query('
             INSERT INTO equipment_requests 
             (caretaker_id, equipment_name, quantity, estimated_cost, reason, priority, requested_date, status) 
             VALUES 
             (:caretaker_id, :equipment_name, :quantity, :estimated_cost, :reason, :priority, :requested_date, "Pending")
         ');
-        
+
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':equipment_name', $data['equipment_name']);
         $this->db->bind(':quantity', $data['quantity']);
@@ -232,11 +250,12 @@ class M_caretaker {
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':priority', $data['priority']);
         $this->db->bind(':requested_date', $data['requested_date']);
-        
+
         return $this->db->execute();
     }
 
-    public function getEquipmentRequests($caretaker_id) {
+    public function getEquipmentRequests($caretaker_id)
+    {
         $this->db->query('
             SELECT * FROM equipment_requests 
             WHERE caretaker_id = :caretaker_id 
@@ -246,13 +265,15 @@ class M_caretaker {
         return $this->db->resultSet();
     }
 
-    public function getEquipmentRequestById($id) {
+    public function getEquipmentRequestById($id)
+    {
         $this->db->query('SELECT * FROM equipment_requests WHERE id = :id');
         $this->db->bind(':id', $id);
         return $this->db->single();
     }
 
-    public function getEquipmentStats($caretaker_id) {
+    public function getEquipmentStats($caretaker_id)
+    {
         $this->db->query('
             SELECT 
                 COUNT(*) as total,
@@ -268,7 +289,8 @@ class M_caretaker {
         return $this->db->single();
     }
 
-    public function updateEquipmentRequest($data) {
+    public function updateEquipmentRequest($data)
+    {
         $this->db->query('
             UPDATE equipment_requests 
             SET equipment_name = :equipment_name,
@@ -278,18 +300,19 @@ class M_caretaker {
                 priority = :priority
             WHERE id = :id AND status = "Pending"
         ');
-        
+
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':equipment_name', $data['equipment_name']);
         $this->db->bind(':quantity', $data['quantity']);
         $this->db->bind(':estimated_cost', $data['estimated_cost']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':priority', $data['priority']);
-        
+
         return $this->db->execute();
     }
 
-    public function deleteEquipmentRequest($id) {
+    public function deleteEquipmentRequest($id)
+    {
         $this->db->query('DELETE FROM equipment_requests WHERE id = :id AND status = "Pending"');
         $this->db->bind(':id', $id);
         return $this->db->execute();
@@ -301,10 +324,11 @@ class M_caretaker {
      * Get dashboard statistics for caretaker
      * Returns total officers, on duty today, active status, and incidents
      */
-    public function getDashboardStats($caretaker_id = null) {
+    public function getDashboardStats($caretaker_id = null)
+    {
         // Get today's date
         $today = date('Y-m-d');
-        
+
         // Total officers assigned to this caretaker (or all if no caretaker_id)
         $this->db->query('
             SELECT COUNT(DISTINCT officer_id) as total_officers
@@ -356,7 +380,8 @@ class M_caretaker {
     }
 
     // Get recent activities for caretaker dashboard
-    public function getRecentActivities($caretaker_id = null, $limit = 10) {
+    public function getRecentActivities($caretaker_id = null, $limit = 10)
+    {
         $query = '
             SELECT 
                 activity_type,
@@ -368,7 +393,7 @@ class M_caretaker {
             ORDER BY created_at DESC
             LIMIT :limit
         ';
-        
+
         $this->db->query($query);
         $this->db->bind(':user_id', $caretaker_id, PDO::PARAM_INT);
         $this->db->bind(':limit', $limit, PDO::PARAM_INT);
@@ -376,17 +401,18 @@ class M_caretaker {
     }
 
     // Insert recent activity for caretaker
-    public function insertRecentActivity($userId, $title, $description, $type) {
+    public function insertRecentActivity($userId, $title, $description, $type)
+    {
         $this->db->query('
             INSERT INTO recent_activities (user_id, activity_titel, activity_details, activity_type) 
             VALUES (:user_id, :title, :description, :type)
         ');
-        
+
         $this->db->bind(':user_id', $userId);
         $this->db->bind(':title', $title);
         $this->db->bind(':description', $description);
         $this->db->bind(':type', $type);
-        
+
         return $this->db->execute();
     }
 
@@ -396,7 +422,8 @@ class M_caretaker {
      * Get assigned site information for caretaker
      * Returns site details with client information
      */
-    public function getAssignedSite($caretaker_id) {
+    public function getAssignedSite($caretaker_id)
+    {
         $this->db->query('
             SELECT 
                 s.*,
@@ -424,7 +451,8 @@ class M_caretaker {
      * Get assigned supervisors for a site
      * Returns list of supervisors assigned to the site
      */
-    public function getAssignedSupervisors($site_id) {
+    public function getAssignedSupervisors($site_id)
+    {
         $this->db->query('
             SELECT 
                 u.id,
@@ -450,19 +478,21 @@ class M_caretaker {
     }
 
     // ======================================================================== //
-// =======================      profile       ====================== //
-// ======================================================================== //
-    public function getCaretakerById($userID) {
+    // =======================      profile       ====================== //
+    // ======================================================================== //
+    public function getCaretakerById($userID)
+    {
         $this->db->query("SELECT * FROM Users WHERE userID = :userID");
         $this->db->bind(':userID', $userID);
         return $this->db->single();
     }
-    
 
-     public function updateCaretakerProfile($user_id, $data) {
+
+    public function updateCaretakerProfile($user_id, $data)
+    {
         $fields = [];
         $bindings = [];
-        
+
         // Only update fields that are provided
         if (isset($data['name'])) {
             $fields[] = 'name = :name';
@@ -484,19 +514,19 @@ class M_caretaker {
             $fields[] = 'password = :password';
             $bindings[':password'] = $data['password'];
         }
-        
+
         if (empty($fields)) {
             return false; // Nothing to update
         }
-        
+
         $query = 'UPDATE Users SET ' . implode(', ', $fields) . ' WHERE id = :user_id';
         $this->db->query($query);
-        
+
         $this->db->bind(':user_id', $user_id);
         foreach ($bindings as $key => $value) {
             $this->db->bind($key, $value);
         }
-        
+
         return $this->db->execute();
     }
 }
