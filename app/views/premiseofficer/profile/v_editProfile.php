@@ -446,7 +446,7 @@
           }, 100);
       }
   });
-</script>200413101997
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>       
