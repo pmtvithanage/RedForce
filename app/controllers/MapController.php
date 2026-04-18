@@ -8,7 +8,7 @@ class MapController {
     
     public function index() {
         $locations = $this->locationModel->getAllLocations();
-        $apiKey = 'AIzaSyCGwijY64zQTmizwDN6omOoI9nzxb1MQog'; // Google Maps API Key
+        $apiKey = 'AIzaSyBUc91mpWQzeFwZB8byhyY0GBGSS35XjW0'; // Google Maps API Key
         
         require_once '../app/views/map/index.php';
     }
