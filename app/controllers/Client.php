@@ -660,10 +660,6 @@ class Client extends Controller {
                     }
                 }
                 
-                // Set default dates - request starts from next month
-                $startDate = date('Y-m-d', strtotime('first day of next month'));
-                $endDate = date('Y-m-d', strtotime('last day of next month'));
-                
                 $requestData = [
                     'client_id' => $_SESSION['user_id'],
                     'package_name' => $_POST['package_name'],
@@ -675,8 +671,8 @@ class Client extends Controller {
                     'longitude' => $_POST['longitude'] ?? null,
                     'phone_number' => trim($_POST['phone_number'] ?? ''),
                     'image_name' => $imageName,
-                    'start_date' => $startDate,
-                    'end_date' => $endDate,
+                    'start_date' => date('Y-m-d', strtotime('first day of next month')),
+                    'end_date' => date('Y-m-d', strtotime('last day of next month')),
                     'number_of_officers' => (int)($_POST['number_of_officers'] ?? 0),
                     'number_of_supervisors' => (int)($_POST['number_of_supervisors'] ?? 0),
                     'number_of_caretakers' => (int)($_POST['number_of_caretakers'] ?? 0),

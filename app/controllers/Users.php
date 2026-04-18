@@ -28,6 +28,11 @@
                     'password_err' => ''
                 ];
 
+                // Restore previous password automatically if the temporary password already expired.
+                if (!empty($data['userID'])) {
+                    $this->userModel->restoreExpiredTemporaryPasswordByUserID($data['userID']);
+                }
+
                 //Validate userID
                 if(empty($data['userID'])){
                     $data['userID_err'] = 'Please enter User ID';
@@ -50,6 +55,8 @@
                     $loggedInUser = $this->userModel->login($data['userID'], $data['password']);
 
                     if($loggedInUser){
+                        $isTemporaryPasswordLogin = $this->userModel->consumeTemporaryPasswordLogin($loggedInUser->id, $password);
+
                         // Prevent session fixation
                         if (session_status() !== PHP_SESSION_ACTIVE) {
                             session_start();
@@ -67,31 +74,10 @@
                         //Create session and redirect to appropriate dashboard
                         $this->createUserSession($loggedInUser);
                         
-                        // Check if user logged in with default password '0000'
-                        if ($password === '0000') {
-                            // Redirect to edit profile with password change prompt based on role
-                            $role = strtolower($loggedInUser->role);
-                            switch($role) {
-                                case 'admin':
-                                    redirect('admin/editProfile?show=password');
-                                    break;
-                                case 'supervisor':
-                                    redirect('supervisor/editProfile?show=password');
-                                    break;
-                                case 'premise officer':
-                                    redirect('premiseOfficer/editProfile?show=password');
-                                    break;
-                                case 'mobile rider':
-                                    redirect('MobileRider/editProfile?show=password');
-                                    break;
-                                case 'caretaker':
-                                    redirect('caretaker/editProfile?show=password');
-                                    break;
-                                case 'client':
-                                default:
-                                    redirect('client/editProfile?show=password');
-                                    break;
-                            }
+                        // Force a password change for default-password and temporary-password login.
+                        if ($password === '0000' || $isTemporaryPasswordLogin) {
+                            flash('forgot_password', 'Please change your password now.', 'alert alert-success');
+                            $this->redirectToPasswordChange($loggedInUser->role);
                         } else {
                             $this->redirectToDashboard();
                         }
@@ -157,6 +143,74 @@
             redirect('users/login');
         }
 
+        public function forgotPassword() {
+            if($_SERVER['REQUEST_METHOD'] == 'POST') {
+                $userID = isset($_POST['userID']) ? trim(htmlspecialchars($_POST['userID'])) : '';
+
+                $data = [
+                    'userID' => $userID,
+                    'userID_err' => '',
+                    'email_err' => ''
+                ];
+
+                if (empty($data['userID'])) {
+                    $data['userID_err'] = 'Please enter User ID';
+                } elseif (!$this->userModel->findUserByUserID($data['userID'])) {
+                    $data['userID_err'] = 'No user found';
+                }
+
+                $user = null;
+                if (empty($data['userID_err'])) {
+                    $user = $this->userModel->getUserByUserID($data['userID']);
+                    if (!$user || empty($user->email) || !filter_var($user->email, FILTER_VALIDATE_EMAIL)) {
+                        $data['email_err'] = 'No valid email found for this user account';
+                    }
+                }
+
+                if (empty($data['userID_err']) && empty($data['email_err'])) {
+                    $temporaryPassword = $this->generateTemporaryPassword();
+                    $resetIssued = $this->userModel->issueTemporaryPasswordReset($user, $temporaryPassword, 60);
+
+                    if (!$resetIssued) {
+                        $data['userID_err'] = 'Could not create reset password. Please try again.';
+                        $this->view('users/v_forgot_password', $data);
+                        return;
+                    }
+
+                    $emailVars = [
+                        'name' => $user->name ?? $user->userID,
+                        'userID' => $user->userID,
+                        'temporaryPassword' => $temporaryPassword,
+                        'expiresInMinutes' => 1
+                    ];
+
+                    $subject = 'Red Force Password Reset (Valid for 1 minute)';
+                    $emailResult = send_templated_email($user->email, 'password_reset_temporary', $emailVars, $subject);
+
+                    if (!$emailResult['success']) {
+                        $this->userModel->revertLatestPendingReset($user->id);
+                        $data['email_err'] = 'Failed to send reset email. Please try again.';
+                        $this->view('users/v_forgot_password', $data);
+                        return;
+                    }
+
+                    flash('forgot_password', 'A temporary password was sent to your email. It is valid for 1 minute. Log in with it, then change your password immediately.', 'alert alert-success');
+                    redirect('users/login');
+                }
+
+                $this->view('users/v_forgot_password', $data);
+                return;
+            }
+
+            $data = [
+                'userID' => '',
+                'userID_err' => '',
+                'email_err' => ''
+            ];
+
+            $this->view('users/v_forgot_password', $data);
+        }
+
         private function createUserSession($user) {
             if (session_status() !== PHP_SESSION_ACTIVE) {
                 session_start();
@@ -195,6 +249,42 @@
                     redirect('admin/dashboard');
                     break;
             }
+        }
+
+        private function redirectToPasswordChange($role) {
+            switch(strtolower($role)) {
+                case 'admin':
+                    redirect('admin/editProfile?show=password');
+                    break;
+                case 'supervisor':
+                    redirect('supervisor/editProfile?show=password');
+                    break;
+                case 'premise officer':
+                    redirect('premiseOfficer/editProfile?show=password');
+                    break;
+                case 'mobile rider':
+                    redirect('MobileRider/editProfile?show=password');
+                    break;
+                case 'caretaker':
+                    redirect('caretaker/editProfile?show=password');
+                    break;
+                case 'client':
+                default:
+                    redirect('client/editProfile?show=password');
+                    break;
+            }
+        }
+
+        private function generateTemporaryPassword($length = 8) {
+            $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+            $maxIndex = strlen($alphabet) - 1;
+            $temp = '';
+
+            for ($i = 0; $i < $length; $i++) {
+                $temp .= $alphabet[random_int(0, $maxIndex)];
+            }
+
+            return $temp;
         }
 
         public function about() {
@@ -257,5 +347,4 @@
         }
     }
 ?>
-
 
