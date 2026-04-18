@@ -3405,6 +3405,19 @@ public function rejectLeaveRequest($id) {
                 if (uploadImage($_FILES['image']['tmp_name'], $unique_filename, $upload_dir)) {
                     // Image path to store in database
                     $image_path = $upload_dir . $unique_filename;
+
+                    // advertisements.created_by is a FK to Users.id (numeric), not Users.userID.
+                    $createdBy = (int)($_SESSION['user_id'] ?? 0);
+                    if ($createdBy <= 0 && !empty($_SESSION['user_userID'])) {
+                        $sessionUser = $this->userModel->getUserByUserID($_SESSION['user_userID']);
+                        $createdBy = !empty($sessionUser->id) ? (int)$sessionUser->id : 0;
+                    }
+
+                    if ($createdBy <= 0) {
+                        $data['image_err'] = 'Unable to identify the current user. Please log in again.';
+                        $this->view('admin/advertisements/v_create_advertisement', $data);
+                        return;
+                    }
                     
                     // Convert roles array to comma-separated string
                     $target_roles = implode(',', $data['target_roles']);
@@ -3415,7 +3428,7 @@ public function rejectLeaveRequest($id) {
                         'description' => $data['description_value'],
                         'image_path' => $image_path,
                         'target_roles' => $target_roles,
-                        'created_by' => $_SESSION['user_userID'],
+                        'created_by' => $createdBy,
                         'status' => 'active'
                     ];
                     
