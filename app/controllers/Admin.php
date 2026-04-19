@@ -919,7 +919,7 @@ class Admin extends Controller {
         elseif($role == 'ct') $role_name = "Care Taker";
         
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
-        $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
+        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
         $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
         
@@ -3428,7 +3428,7 @@ public function rejectLeaveRequest($id) {
                         'description' => $data['description_value'],
                         'image_path' => $image_path,
                         'target_roles' => $target_roles,
-                        'created_by' => $createdBy,
+                        'created_by' => $_SESSION['user_id'],
                         'status' => 'active'
                     ];
                     

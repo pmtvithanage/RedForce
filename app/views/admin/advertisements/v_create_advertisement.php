@@ -98,6 +98,8 @@
         font-size: 14px;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 120px;
+        margin: 5px auto;
     }
 
     .btn-upload:hover {
@@ -259,7 +261,7 @@
     <form class="form-and-photo" action="<?php echo URL_ROOT; ?>/admin/createAdvertisement" method="POST" enctype="multipart/form-data">
         
         <!-- Left Side: Preview -->
-        <div class="preview-section">
+       <!-- <div class="preview-section">
             <h3>Advertisement Preview</h3>
             <div class="preview-content">
                 <img id="previewImage" class="preview-image" 
@@ -271,7 +273,7 @@
                     <span class="role-badge">No roles selected</span>
                 </div>
             </div>
-        </div>
+        </div>-->
 
         <!-- Right Side: Input Form -->
         <div class="application-form" style="flex: 2 1 500px;">
@@ -343,42 +345,79 @@
 </main>
 
 <script>
-// Image upload functionality
-function toggleBrowse() {
-    document.getElementById('image').click();
-}
+const addImageBtn = document.getElementById("addImageBtn");
+  const removeImageBtn = document.getElementById("removeImageBtn");
+  const imagePlaceholder = document.getElementById("imagePlaceholder");
 
-function removeImage() {
-    const imagePlaceholder = document.getElementById('imagePlaceholder');
-    const previewImage = document.getElementById('previewImage');
-    const defaultSrc = imagePlaceholder.getAttribute('data-default-src');
-    
-    imagePlaceholder.src = defaultSrc;
-    previewImage.src = defaultSrc;
-    document.getElementById('image').value = '';
-    document.getElementById('addImageBtn').style.display = 'block';
-    document.getElementById('removeImageBtn').style.display = 'none';
-}
+  let inputPath = document.querySelector("#image");
+  let file;
 
-// Handle image selection
-document.getElementById('image').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const imagePlaceholder = document.getElementById('imagePlaceholder');
-            const previewImage = document.getElementById('previewImage');
-            imagePlaceholder.src = e.target.result;
-            previewImage.src = e.target.result;
-            document.getElementById('addImageBtn').style.display = 'none';
-            document.getElementById('removeImageBtn').style.display = 'block';
-        }
-        reader.readAsDataURL(file);
-    }
-});
+  // Get the default image path from data attribute
+  const defaultImagePath = imagePlaceholder.getAttribute('data-default-src');
+
+  function toggleBrowse(){
+      inputPath.click();
+  }
+
+  function removeImage(){
+      addImageBtn.style.display = "block";
+      removeImageBtn.style.display = "none";
+      imagePlaceholder.style.display = "block"; // Changed to "block" to show default image
+
+      // Reset to default image
+      imagePlaceholder.setAttribute('src', defaultImagePath);
+
+      inputPath.value = null;
+      file = null;
+  }
+
+  inputPath.addEventListener('change', function(){
+      file = this.files[0];
+
+      if (file) {
+          addImageBtn.style.display = "none";
+          removeImageBtn.style.display = "block";
+          imagePlaceholder.style.display = "block";
+          showImage();
+      } else {
+          // If user cancels file selection, reset to default
+          removeImage();
+      }
+  });
+
+  function showImage(){
+      let fileType = file.type;
+      let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
+
+      if(validExtensions.includes(fileType)){
+          let fileReader = new FileReader();
+
+          fileReader.onload = () => {
+              let fileURL = fileReader.result;
+              imagePlaceholder.setAttribute('src', fileURL);
+          }
+
+          fileReader.onerror = () => {
+              alert('Error reading file');
+              removeImage();
+          }
+
+          fileReader.readAsDataURL(file);
+      }
+      else{
+          alert('This is not a valid image file'); // Fixed typo
+          removeImage();
+      }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      // Initialize with default image visible
+      imagePlaceholder.style.display = "block";
+      imagePlaceholder.setAttribute('src', defaultImagePath);
+  });
 
 // Live preview for title
-document.getElementById('title').addEventListener('input', function(e) {
+/*document.getElementById('title').addEventListener('input', function(e) {
     const previewTitle = document.getElementById('previewTitle');
     previewTitle.textContent = e.target.value || 'Advertisement Title';
 });
@@ -408,7 +447,7 @@ function updateRolesPreview() {
             .map(role => `<span class="role-badge">${role}</span>`)
             .join('');
     }
-}
+}*/
 </script>
 
 <?php flash('msg')?>
