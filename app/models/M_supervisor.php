@@ -294,8 +294,6 @@ class M_supervisor
 
     public function isValidDutyPointForSupervisor($supervisor_id, $duty_point_id) {
 
-    {
-
         $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
         if (!$siteId || !$duty_point_id) {
             return null;
