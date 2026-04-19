@@ -88,26 +88,46 @@
                     <?php if (!empty($data['dutyPoints'])): ?>
                         <div class="duty-points-list">
                             <?php foreach ($data['dutyPoints'] as $point): ?>
-                                <div class="duty-point-item">
+                                <div class="duty-point-item" id="dutyPointItem-<?php echo (int)$point->id; ?>">
                                     <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
-                                    <div class="action-buttons duty-point-actions">
+                                    <div class="duty-point-actions">
                                         <button
                                             type="button"
-                                            class="btn-edit"
-                                            data-id="<?php echo (int)$point->id; ?>"
-                                            data-name="<?php echo htmlspecialchars($point->duty_point_name, ENT_QUOTES, 'UTF-8'); ?>"
-                                            title="Edit"
-                                            onclick="openDutyPointEdit(this)">
-                                            <i class="fa-regular fa-pen-to-square"></i>
+                                            class="btn-chip-action btn-chip-edit"
+                                            onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, true)"
+                                            title="Edit duty point">
+                                            <i class="fa-solid fa-pen"></i>
                                         </button>
-
-                                        <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint/<?php echo (int)$point->id; ?>" onsubmit="return confirmDutyPointDelete('<?php echo htmlspecialchars($point->duty_point_name, ENT_QUOTES, 'UTF-8'); ?>');">
-                                            <button type="submit" class="btn-delete" title="Delete">
-                                                <i class="fa-regular fa-trash-can"></i>
+                                        <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint/<?php echo (int)$point->id; ?>" onsubmit="return confirm('Delete this duty point?');">
+                                            <button type="submit" class="btn-chip-action btn-chip-delete" title="Delete duty point">
+                                                <i class="fa-solid fa-trash"></i>
                                             </button>
                                         </form>
                                     </div>
                                 </div>
+
+                                <form
+                                    method="POST"
+                                    action="<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint/<?php echo (int)$point->id; ?>"
+                                    class="duty-point-edit-form"
+                                    id="dutyPointEditForm-<?php echo (int)$point->id; ?>">
+                                    <input
+                                        type="text"
+                                        name="duty_point_name"
+                                        value="<?php echo htmlspecialchars($point->duty_point_name); ?>"
+                                        required
+                                        maxlength="120">
+                                    <button type="submit" class="btn-chip-action btn-chip-save" title="Save changes">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn-chip-action btn-chip-cancel"
+                                        onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, false)"
+                                        title="Cancel">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
@@ -242,50 +262,35 @@
     updateDateTime();
     setInterval(updateDateTime, 1000);
 
-    function openDutyPointEdit(button) {
-        const dutyPointId = button.getAttribute('data-id');
-        const currentName = button.getAttribute('data-name') || '';
-        const newName = window.prompt('Edit duty point name:', currentName);
-
-        if (newName === null) {
-            return;
-        }
-
-        const trimmedName = newName.trim();
-        if (!trimmedName) {
-            alert('Duty point name is required.');
-            return;
-        }
-
-        if (trimmedName.length > 120) {
-            alert('Duty point name is too long. Max 120 characters.');
-            return;
-        }
-
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint/' + dutyPointId;
-
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'duty_point_name';
-        input.value = trimmedName;
-
-        form.appendChild(input);
-        document.body.appendChild(form);
-        form.submit();
-    }
-
-    function confirmDutyPointDelete(name) {
-        return window.confirm('Delete duty point "' + name + '"?');
-    }
-
     setTimeout(() => {
         const flashMessages = document.querySelectorAll('.flash-message');
         flashMessages.forEach((msg) => {
             msg.style.display = 'none';
         });
     }, 5000);
+
+    function toggleDutyPointEdit(id, showEdit) {
+        const item = document.getElementById(`dutyPointItem-${id}`);
+        const form = document.getElementById(`dutyPointEditForm-${id}`);
+
+        if (!item || !form) {
+            return;
+        }
+
+        if (showEdit) {
+            item.style.display = 'none';
+            form.classList.add('is-visible');
+            const input = form.querySelector('input[name="duty_point_name"]');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+            return;
+        }
+
+        form.classList.remove('is-visible');
+        item.style.display = 'inline-flex';
+    }
 </script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
