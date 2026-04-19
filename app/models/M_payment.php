@@ -1,8 +1,10 @@
 <?php
-class M_payment {
+class M_payment
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
@@ -11,7 +13,8 @@ class M_payment {
      * @param int $client_id
      * @return array
      */
-    public function getClientPayments($client_id) {
+    public function getClientPayments($client_id)
+    {
         $this->db->query('
             SELECT 
                 p.*,
@@ -22,9 +25,9 @@ class M_payment {
             WHERE p.client_id = :client_id
             ORDER BY p.payment_date DESC, p.created_at DESC
         ');
-        
+
         $this->db->bind(':client_id', $client_id);
-        
+
         $results = $this->db->resultSet();
         return $results ? $results : [];
     }
@@ -35,7 +38,8 @@ class M_payment {
      * @param int $client_id
      * @return object|false
      */
-    public function getPaymentDetails($payment_id, $client_id) {
+    public function getPaymentDetails($payment_id, $client_id)
+    {
         $this->db->query('
             SELECT 
                 p.*,
@@ -51,10 +55,10 @@ class M_payment {
             WHERE p.id = :payment_id 
             AND p.client_id = :client_id
         ');
-        
+
         $this->db->bind(':payment_id', $payment_id);
         $this->db->bind(':client_id', $client_id);
-        
+
         return $this->db->single();
     }
 
@@ -63,7 +67,8 @@ class M_payment {
      * @param int $client_id
      * @return object
      */
-    public function getPaymentStats($client_id) {
+    public function getPaymentStats($client_id)
+    {
         $this->db->query('
             SELECT 
                 COUNT(*) as total_payments,
@@ -80,11 +85,11 @@ class M_payment {
             FROM payments
             WHERE client_id = :client_id
         ');
-        
+
         $this->db->bind(':client_id', $client_id);
-        
+
         $result = $this->db->single();
-        
+
         // Ensure all numeric values are properly formatted
         if ($result) {
             $result->total_paid = floatval($result->total_paid ?? 0);
@@ -98,7 +103,7 @@ class M_payment {
             $result->total_payments = intval($result->total_payments ?? 0);
             $result->this_month_count = intval($result->this_month_count ?? 0);
         }
-        
+
         return $result;
     }
 
@@ -108,7 +113,8 @@ class M_payment {
      * @param string $status
      * @return array
      */
-    public function getPaymentsByStatus($client_id, $status) {
+    public function getPaymentsByStatus($client_id, $status)
+    {
         $this->db->query('
             SELECT 
                 p.*,
@@ -120,10 +126,10 @@ class M_payment {
             AND p.status = :status
             ORDER BY p.payment_date DESC, p.created_at DESC
         ');
-        
+
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':status', $status);
-        
+
         $results = $this->db->resultSet();
         return $results ? $results : [];
     }
@@ -134,7 +140,8 @@ class M_payment {
      * @param int $client_id
      * @return array
      */
-    public function getSitePayments($site_id, $client_id) {
+    public function getSitePayments($site_id, $client_id)
+    {
         $this->db->query('
             SELECT 
                 p.*,
@@ -146,10 +153,10 @@ class M_payment {
             AND p.client_id = :client_id
             ORDER BY p.payment_date DESC, p.created_at DESC
         ');
-        
+
         $this->db->bind(':site_id', $site_id);
         $this->db->bind(':client_id', $client_id);
-        
+
         $results = $this->db->resultSet();
         return $results ? $results : [];
     }
@@ -159,7 +166,8 @@ class M_payment {
      * @param array $data
      * @return bool
      */
-    public function createPayment($data) {
+    public function createPayment($data)
+    {
         $this->db->query('
             INSERT INTO payments (
                 client_id,
@@ -215,7 +223,8 @@ class M_payment {
      * @param string $status
      * @return bool
      */
-    public function updatePaymentStatus($payment_id, $status) {
+    public function updatePaymentStatus($payment_id, $status)
+    {
         $this->db->query('
             UPDATE payments 
             SET status = :status,
@@ -235,7 +244,8 @@ class M_payment {
      * @param array $data
      * @return bool
      */
-    public function recordPaymentTransaction($payment_id, $data) {
+    public function recordPaymentTransaction($payment_id, $data)
+    {
         $this->db->query('
             UPDATE payments 
             SET status = "paid",
@@ -259,7 +269,8 @@ class M_payment {
      * @param int $client_id
      * @return array
      */
-    public function getOverduePayments($client_id) {
+    public function getOverduePayments($client_id)
+    {
         $this->db->query('
             SELECT 
                 p.*,
@@ -272,9 +283,9 @@ class M_payment {
             AND p.due_date < CURDATE()
             ORDER BY p.due_date ASC
         ');
-        
+
         $this->db->bind(':client_id', $client_id);
-        
+
         $results = $this->db->resultSet();
         return $results ? $results : [];
     }
@@ -286,7 +297,8 @@ class M_payment {
      * @param int $month
      * @return float
      */
-    public function getMonthlyPaymentTotal($client_id, $year, $month) {
+    public function getMonthlyPaymentTotal($client_id, $year, $month)
+    {
         $this->db->query('
             SELECT SUM(amount) as total
             FROM payments
@@ -295,12 +307,83 @@ class M_payment {
             AND MONTH(payment_date) = :month
             AND status = "paid"
         ');
-        
+
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':year', $year);
         $this->db->bind(':month', $month);
-        
+
         $result = $this->db->single();
         return $result ? (float)$result->total : 0.0;
+    }
+
+    public function extendSiteServicePeriodByOneMonth($site_id, $client_id)
+    {
+        $this->db->query('
+            SELECT pr.id, pr.start_date, pr.end_date
+            FROM package_requests pr
+            INNER JOIN sites s ON (pr.id = s.package_request_id OR pr.draft_site_id = s.id)
+            WHERE s.id = :site_id
+              AND s.is_draft = 0
+              AND LOWER(COALESCE(pr.status, "")) = "approved"
+              AND (
+                    s.client_id = :client_id
+                    OR EXISTS (
+                        SELECT 1
+                        FROM Clients c
+                        WHERE c.id = s.client_id
+                          AND c.user_id = :client_user_id
+                    )
+              )
+            ORDER BY COALESCE(pr.approved_at, pr.updated_at, pr.submitted_date) DESC, pr.id DESC
+            LIMIT 1
+        ');
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        $request = $this->db->single();
+
+        if (!$request) {
+            return false;
+        }
+
+        $today = date('Y-m-d');
+        $currentEnd = !empty($request->end_date) ? $request->end_date : $today;
+        $baseEnd = (strtotime($currentEnd) < strtotime($today)) ? $today : $currentEnd;
+        $newEnd = date('Y-m-d', strtotime($baseEnd . ' +1 month'));
+        $newStart = !empty($request->start_date) ? $request->start_date : $today;
+
+        $this->db->query('
+            UPDATE package_requests
+            SET start_date = COALESCE(start_date, :new_start),
+                end_date = :new_end,
+                updated_at = NOW()
+            WHERE id = :request_id
+        ');
+        $this->db->bind(':new_start', $newStart);
+        $this->db->bind(':new_end', $newEnd);
+        $this->db->bind(':request_id', $request->id);
+        $this->db->execute();
+
+        $this->db->query('
+            UPDATE officer_site_assignments
+            SET assignment_end = :new_end
+            WHERE site_id = :site_id
+              AND status = "Active"
+        ');
+        $this->db->bind(':new_end', $newEnd);
+        $this->db->bind(':site_id', $site_id);
+        $this->db->execute();
+
+        $this->db->query('
+            UPDATE caretaker_site_assignments
+            SET assignment_end = :new_end
+            WHERE site_id = :site_id
+              AND status = "Active"
+        ');
+        $this->db->bind(':new_end', $newEnd);
+        $this->db->bind(':site_id', $site_id);
+        $this->db->execute();
+
+        return $newEnd;
     }
 }

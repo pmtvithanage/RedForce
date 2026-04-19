@@ -1,15 +1,18 @@
 <?php
-class M_client {
+class M_client
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
     // Create a new service request
-    public function createServiceRequest($data) {
+    public function createServiceRequest($data)
+    {
         $this->db->query('INSERT INTO service_requests (client_id, event_name, event_description, start_date, end_date, start_time, end_time, location, number_of_guards, comments) VALUES (:client_id, :event_name, :event_description, :start_date, :end_date, :start_time, :end_time, :location, :number_of_guards, :comments)');
-        
+
         // Bind values
         $this->db->bind(':client_id', $data['client_id']);
         $this->db->bind(':event_name', $data['event_name']);
@@ -21,7 +24,7 @@ class M_client {
         $this->db->bind(':location', $data['location']);
         $this->db->bind(':number_of_guards', $data['number_of_guards']);
         $this->db->bind(':comments', $data['comments']);
-        
+
         // Execute
         if ($this->db->execute()) {
             return $this->db->lastInsertId();
@@ -31,50 +34,55 @@ class M_client {
     }
 
     // Get all requests for a specific client
-    public function getClientServiceRequests($client_id) {
+    public function getClientServiceRequests($client_id)
+    {
         $this->db->query('SELECT * FROM service_requests WHERE client_id = :client_id ORDER BY submitted_date DESC');
         $this->db->bind(':client_id', $client_id);
-        
+
         return $this->db->resultSet();
     }
 
     // Get a single request by ID
-    public function getServiceRequestById($id) {
+    public function getServiceRequestById($id)
+    {
         $this->db->query('SELECT * FROM service_requests WHERE id = :id');
         $this->db->bind(':id', $id);
-        
+
         return $this->db->single();
     }
 
     // Get all requests (for admin)
-    public function getAllServiceRequests() {
+    public function getAllServiceRequests()
+    {
         $this->db->query('
             SELECT sr.*, u.username, u.email 
             FROM service_requests sr 
             JOIN users u ON sr.client_id = u.id 
             ORDER BY sr.submitted_date DESC
         ');
-        
+
         return $this->db->resultSet();
     }
 
     // Delete a service request
-    public function deleteServiceRequest($request_id, $client_id) {
+    public function deleteServiceRequest($request_id, $client_id)
+    {
         $this->db->query('DELETE FROM service_requests WHERE id = :request_id AND client_id = :client_id');
-        
+
         $this->db->bind(':request_id', $request_id);
         $this->db->bind(':client_id', $client_id);
-        
+
         return $this->db->execute();
     }
 
     // Package request methods
-    public function createPackageRequest($data) {
+    public function createPackageRequest($data)
+    {
         // Map new personnel fields to existing database columns
         // number_of_officers -> number_of_guards
         // number_of_supervisors -> day_guards
         // number_of_caretakers -> night_guards
-        
+
         $this->db->query('INSERT INTO package_requests (client_id, package_name, site_name, district, city, site_address, latitude, longitude, phone_number, image_name, start_date, end_date, number_of_guards, day_guards, night_guards, package_price, comments, status, draft_site_id) 
             VALUES (:client_id, :package_name, :site_name, :district, :city, :site_address, :latitude, :longitude, :phone_number, :image_name, :start_date, :end_date, :number_of_guards, :day_guards, :night_guards, :package_price, :comments, :status, :draft_site_id)');
         $this->db->bind(':client_id', $data['client_id']);
@@ -100,13 +108,15 @@ class M_client {
         return $this->db->execute();
     }
 
-    public function getClientPackageRequests($client_id) {
+    public function getClientPackageRequests($client_id)
+    {
         $this->db->query('SELECT * FROM package_requests WHERE client_id = :client_id ORDER BY submitted_date DESC');
         $this->db->bind(':client_id', $client_id);
         return $this->db->resultSet();
     }
-    
-    public function getPendingPackageRequests($client_id) {
+
+    public function getPendingPackageRequests($client_id)
+    {
         // Get pending package requests with mapped personnel fields
         // Uses pr.payment_status and pr.payment_id directly from package_requests table
         // (these columns are updated by Payment::notify() when PayHere confirms payment)
@@ -129,30 +139,31 @@ class M_client {
         return $this->db->resultSet();
     }
 
-    public function deletePackageRequest($id, $client_id) {
+    public function deletePackageRequest($id, $client_id)
+    {
         // Only allow deletion of pending requests that haven't been paid
         // Check both the package_requests.payment_status column AND payments table
         $this->db->query('SELECT payment_status FROM package_requests WHERE id = :id AND client_id = :client_id');
         $this->db->bind(':id', $id);
         $this->db->bind(':client_id', $client_id);
         $pkgResult = $this->db->single();
-        
+
         if ($pkgResult && $pkgResult->payment_status === 'paid') {
             // Request is marked as paid in package_requests table
             return false;
         }
-        
+
         // Also check payments table as a fallback
         $this->db->query('SELECT COUNT(*) as count FROM payments WHERE package_request_id = :id AND status = :paid_status');
         $this->db->bind(':id', $id);
         $this->db->bind(':paid_status', 'paid');
         $result = $this->db->single();
-        
+
         if ($result->count > 0) {
             // Request has been paid, don't allow deletion
             return false;
         }
-        
+
         // Delete only pending requests without paid payments
         $this->db->query('DELETE FROM package_requests WHERE id = :id AND client_id = :client_id AND status = :status');
         $this->db->bind(':id', $id);
@@ -161,7 +172,8 @@ class M_client {
         return $this->db->execute();
     }
 
-    public function getPendingRequestsForSite($siteName, $client_id) {
+    public function getPendingRequestsForSite($siteName, $client_id)
+    {
         // Get all pending package requests for a specific site by site name
         $this->db->query('
             SELECT * FROM package_requests 
@@ -175,7 +187,8 @@ class M_client {
         return $this->db->resultSet();
     }
 
-    public function deletePendingRequestsForSite($siteName, $client_id) {
+    public function deletePendingRequestsForSite($siteName, $client_id)
+    {
         // Delete all pending package requests for a specific site by site name
         $this->db->query('
             DELETE FROM package_requests 
@@ -186,14 +199,15 @@ class M_client {
         $this->db->bind(':site_name', $siteName);
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':status', 'pending');
-        
+
         return $this->db->execute();
     }
 
     // ==================== EQUIPMENT REQUESTS METHODS ====================
 
     // Get all equipment requests for client's caretakers with filters
-    public function getAllEquipmentRequests($client_id, $filters = []) {
+    public function getAllEquipmentRequests($client_id, $filters = [])
+    {
         $query = '
             SELECT er.*, 
                    u.name as caretaker_name, 
@@ -215,7 +229,7 @@ class M_client {
             AND s.is_draft = 0
             AND er.status != "Pending"
         ';
-        
+
         // Add filters
         if (!empty($filters['status'])) {
             $query .= ' AND er.status = :status';
@@ -232,7 +246,7 @@ class M_client {
         if (!empty($filters['date_to'])) {
             $query .= ' AND er.requested_date <= :date_to';
         }
-        
+
         $query .= ' ORDER BY 
                     CASE er.status
                         WHEN "Supervisor Approved" THEN 1
@@ -246,13 +260,13 @@ class M_client {
                         WHEN "Low" THEN 3 
                     END,
                     er.requested_date DESC';
-        
+
         $this->db->query($query);
-        
+
         // Bind client_id first
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':client_user_id', $client_id);
-        
+
         if (!empty($filters['status'])) {
             $this->db->bind(':status', $filters['status']);
         }
@@ -268,12 +282,13 @@ class M_client {
         if (!empty($filters['date_to'])) {
             $this->db->bind(':date_to', $filters['date_to']);
         }
-        
+
         return $this->db->resultSet();
     }
 
     // Get equipment request details by ID for client
-    public function getEquipmentRequestDetails($id, $client_id) {
+    public function getEquipmentRequestDetails($id, $client_id)
+    {
         $this->db->query('
             SELECT er.*, 
                    u.name as caretaker_name, 
@@ -293,7 +308,8 @@ class M_client {
     }
 
     // Approve equipment request (as client)
-    public function approveEquipmentRequest($data) {
+    public function approveEquipmentRequest($data)
+    {
         $this->db->query('
             UPDATE equipment_requests 
             SET status = "Approved",
@@ -301,15 +317,16 @@ class M_client {
                 approved_date = CURDATE()
             WHERE id = :id AND status = "Supervisor Approved"
         ');
-        
+
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':client_notes', $data['client_notes'] ?? '');
-        
+
         return $this->db->execute();
     }
 
     // Reject equipment request (as client)
-    public function rejectEquipmentRequest($data) {
+    public function rejectEquipmentRequest($data)
+    {
         $this->db->query('
             UPDATE equipment_requests 
             SET status = "Rejected",
@@ -317,16 +334,17 @@ class M_client {
                 approved_date = CURDATE()
             WHERE id = :id AND status = "Supervisor Approved"
         ');
-        
+
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':client_notes', $data['client_notes'] ?? '');
         $this->db->bind(':client_id', $data['client_id'] ?? null);
-        
+
         return $this->db->execute();
     }
 
     // Get equipment request statistics for client
-    public function getEquipmentRequestStats($client_id) {
+    public function getEquipmentRequestStats($client_id)
+    {
         $this->db->query('
             SELECT 
                 COUNT(*) as total_requests,
@@ -351,12 +369,13 @@ class M_client {
         ');
         $this->db->bind(':client_id', $client_id);
         $this->db->bind(':client_user_id', $client_id);
-        
+
         return $this->db->single();
     }
 
     // Get all caretakers for this client (for filter dropdown)
-    public function getCaretakersForClient($client_id) {
+    public function getCaretakersForClient($client_id)
+    {
         $this->db->query('
             SELECT DISTINCT u.id, u.name 
             FROM Users u
@@ -380,7 +399,8 @@ class M_client {
     }
 
     // Get all sites for a specific client
-    public function getClientSites($client_id) {
+    public function getClientSites($client_id)
+    {
         $this->db->query('
             SELECT s.*, 
                    COUNT(DISTINCT CASE WHEN osa.shift_type != "Supervisor" THEN osa.officer_id END) as assigned_officers,
@@ -409,7 +429,8 @@ class M_client {
     }
 
     // Get single site details for a client
-    public function getSiteDetails($site_id, $client_id) {
+    public function getSiteDetails($site_id, $client_id)
+    {
         $this->db->query('
             SELECT s.*, 
                                      (
@@ -451,7 +472,8 @@ class M_client {
     }
 
     // Get officers assigned to a site (excluding supervisors)
-    public function getSiteOfficers($site_id) {
+    public function getSiteOfficers($site_id)
+    {
         $this->db->query('
             SELECT u.*, osa.assignment_start, osa.assignment_end, osa.shift_type,
                    po.officerID
@@ -468,7 +490,8 @@ class M_client {
     }
 
     // Get caretakers assigned to a site
-    public function getSiteCaretakers($site_id) {
+    public function getSiteCaretakers($site_id)
+    {
         $this->db->query('
             SELECT u.*, csa.assignment_start, csa.assignment_end,
                    ct.caretakerID
@@ -484,7 +507,8 @@ class M_client {
     }
 
     // Get supervisors assigned to a site
-    public function getSiteSupervisors($site_id) {
+    public function getSiteSupervisors($site_id)
+    {
         $this->db->query('
             SELECT u.*, osa.assignment_start, osa.assignment_end, osa.shift_type,
                    po.officerID
@@ -504,7 +528,8 @@ class M_client {
      * Validate that a client can rate a premise officer assigned to the given site.
      * When ratingDate is provided, officer must be on an active assignment for that date.
      */
-    public function canClientRateOfficerInSite($client_id, $site_id, $officer_user_id, $ratingDate = null) {
+    public function canClientRateOfficerInSite($client_id, $site_id, $officer_user_id, $ratingDate = null)
+    {
         $query = '
             SELECT osa.id
             FROM sites s
@@ -539,7 +564,8 @@ class M_client {
         return (bool)$this->db->single();
     }
 
-    public function getClientOfficerRatingForDate($client_id, $site_id, $officer_user_id, $ratingDate) {
+    public function getClientOfficerRatingForDate($client_id, $site_id, $officer_user_id, $ratingDate)
+    {
         $this->db->query('
             SELECT opr.id, opr.rating_value, opr.description, opr.rating_date, opr.updated_at
             FROM officer_performance_ratings opr
@@ -563,7 +589,8 @@ class M_client {
         return $this->db->single();
     }
 
-    public function saveClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate, $ratingValue, $description) {
+    public function saveClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate, $ratingValue, $description)
+    {
         $this->db->query('
             INSERT INTO officer_performance_ratings
                 (site_id, officer_user_id, reviewer_user_id, reviewer_role, rating_date, rating_value, description)
@@ -583,7 +610,8 @@ class M_client {
         return $this->db->execute();
     }
 
-    public function deleteClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate) {
+    public function deleteClientOfficerRating($client_id, $site_id, $officer_user_id, $ratingDate)
+    {
         $this->db->query('
             DELETE opr FROM officer_performance_ratings opr
             INNER JOIN sites s ON s.id = opr.site_id
@@ -605,7 +633,8 @@ class M_client {
         return $this->db->execute();
     }
 
-    public function getClientSiteOfficerRatings($client_id, $site_id) {
+    public function getClientSiteOfficerRatings($client_id, $site_id)
+    {
         $this->db->query('
             SELECT
                 opr.officer_user_id,
@@ -630,11 +659,12 @@ class M_client {
         return $this->db->resultSet();
     }
 
-        /**
-         * Get active officer/supervisor/caretaker counts for a client site.
-         */
-        public function getActiveSitePersonnelCounts($site_id, $client_id) {
-                $this->db->query('
+    /**
+     * Get active officer/supervisor/caretaker counts for a client site.
+     */
+    public function getActiveSitePersonnelCounts($site_id, $client_id)
+    {
+        $this->db->query('
                         SELECT
                                 (SELECT COUNT(*)
                                  FROM officer_site_assignments osa
@@ -665,19 +695,36 @@ class M_client {
                             AND s.is_draft = 0
                         LIMIT 1
                 ');
-                $this->db->bind(':site_id', $site_id);
-                $this->db->bind(':client_id', $client_id);
-                $this->db->bind(':client_user_id', $client_id);
-                return $this->db->single();
-        }
+        $this->db->bind(':site_id', $site_id);
+        $this->db->bind(':client_id', $client_id);
+        $this->db->bind(':client_user_id', $client_id);
+        return $this->db->single();
+    }
 
     /**
      * Get active sites with package information for next payment
      */
-    public function getActiveSitesWithPackages($client_id) {
+    public function getActiveSitesWithPackages($client_id)
+    {
         $this->db->query('
             SELECT s.id, s.site_name, s.address, s.district,
                    pr.package_name, pr.package_price,
+                                     (
+                                             SELECT pr2.start_date
+                                             FROM package_requests pr2
+                                             WHERE (pr2.id = s.package_request_id OR pr2.draft_site_id = s.id)
+                                                 AND LOWER(COALESCE(pr2.status, "")) = "approved"
+                                             ORDER BY COALESCE(pr2.approved_at, pr2.submitted_date) DESC
+                                             LIMIT 1
+                                     ) as service_start_date,
+                                     (
+                                             SELECT pr2.end_date
+                                             FROM package_requests pr2
+                                             WHERE (pr2.id = s.package_request_id OR pr2.draft_site_id = s.id)
+                                                 AND LOWER(COALESCE(pr2.status, "")) = "approved"
+                                             ORDER BY COALESCE(pr2.approved_at, pr2.submitted_date) DESC
+                                             LIMIT 1
+                                     ) as service_end_date,
                    -- Count actual assigned personnel
                    (SELECT COUNT(*) FROM officer_site_assignments osa 
                     WHERE osa.site_id = s.id 
@@ -711,13 +758,14 @@ class M_client {
         $this->db->bind(':client_user_id', $client_id);
         return $this->db->resultSet();
     }
-    
+
     /**
      * Approve a package request
      * @param int $request_id
      * @return bool
      */
-    public function approvePackageRequest($request_id) {
+    public function approvePackageRequest($request_id)
+    {
         $this->db->query('
             UPDATE package_requests 
             SET status = "approved",
@@ -729,19 +777,21 @@ class M_client {
     }
 
     // ======================================================================== //
-// =======================      profile       ====================== //
-// ======================================================================== //
-    public function getclientById($userID) {
+    // =======================      profile       ====================== //
+    // ======================================================================== //
+    public function getclientById($userID)
+    {
         $this->db->query("SELECT * FROM Users WHERE userID = :userID");
         $this->db->bind(':userID', $userID);
         return $this->db->single();
     }
-    
 
-     public function updateClientProfile($user_id, $data) {
+
+    public function updateClientProfile($user_id, $data)
+    {
         $fields = [];
         $bindings = [];
-        
+
         // Only update fields that are provided
         if (isset($data['name'])) {
             $fields[] = 'name = :name';
@@ -763,19 +813,19 @@ class M_client {
             $fields[] = 'password = :password';
             $bindings[':password'] = $data['password'];
         }
-        
+
         if (empty($fields)) {
             return false; // Nothing to update
         }
-        
+
         $query = 'UPDATE Users SET ' . implode(', ', $fields) . ' WHERE id = :user_id';
         $this->db->query($query);
-        
+
         $this->db->bind(':user_id', $user_id);
         foreach ($bindings as $key => $value) {
             $this->db->bind($key, $value);
         }
-        
+
         return $this->db->execute();
     }
 }

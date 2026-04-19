@@ -370,16 +370,127 @@
         font-size: 28px;
     }
 
-    .due-date-badge {
-        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        display: flex;
+    .site-due-date {
+        margin-top: 8px;
+        display: inline-flex;
         align-items: center;
         gap: 6px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        background: #f3f4f6;
+        color: #374151;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .site-due-date .material-symbols-outlined {
+        font-size: 16px;
+        color: #6b7280;
+    }
+
+    .site-pay-btn {
+        width: 100%;
+        margin-top: 12px;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+    }
+
+    .site-pay-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+    }
+
+    .site-select-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 10px;
+        background: #f3f4f6;
+        border-radius: 8px;
+    }
+
+    .site-select-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    .site-select-checkbox {
+        width: 16px;
+        height: 16px;
+        accent-color: #a40000;
+    }
+
+    .selected-sites-pay-wrap {
+        margin-top: 16px;
+        padding: 14px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .selected-sites-pay-summary {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .btn-pay-selected {
+        width: 100%;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+
+    .btn-pay-selected:disabled {
+        background: #cbd5e1;
+        cursor: not-allowed;
+    }
+
+    .btn-pay-change {
+        margin-top: 8px;
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
     }
 
     .sites-grid {
@@ -932,6 +1043,14 @@
 
         <!-- Pending Package Requests -->
         <?php if (!empty($data['pending_requests'])): ?>
+            <?php
+            $siteDueDateMap = [];
+            if (!empty($data['active_sites'])) {
+                foreach ($data['active_sites'] as $activeSiteRow) {
+                    $siteDueDateMap[(int)($activeSiteRow->id ?? 0)] = $activeSiteRow->service_end_date ?? null;
+                }
+            }
+            ?>
             <div class="pending-requests-section">
                 <div class="pending-requests-header" onclick="toggleSection('pendingRequests')">
                     <h3>
@@ -947,6 +1066,16 @@
 
                 <div class="section-content" id="pendingRequestsContent">
                     <?php foreach ($data['pending_requests'] as $request): ?>
+                        <?php
+                        $requestMultiplier = 1;
+                        $linkedSiteId = (int)($request->draft_site_id ?? 0);
+                        $linkedDueDate = $linkedSiteId > 0 ? ($siteDueDateMap[$linkedSiteId] ?? null) : null;
+                        if (!empty($linkedDueDate) && strtotime($linkedDueDate) > strtotime(date('Y-m-d'))) {
+                            $daysUntilDue = (strtotime($linkedDueDate) - strtotime(date('Y-m-d'))) / 86400;
+                            $requestMultiplier = max(1, (int)ceil($daysUntilDue / 30));
+                        }
+                        $requestPayableAmount = (float)($request->package_price ?? 0) * $requestMultiplier;
+                        ?>
                         <div class="request-card" style="<?php echo !empty($request->payment_status) && $request->payment_status == 'paid' ? 'background: #e8f5e9; border-color: #4caf50;' : ''; ?>">
                             <div class="request-card-header">
                                 <div class="request-info">
@@ -998,6 +1127,22 @@
                                     </span>
                                     <span class="request-details-value request-price" style="color: <?php echo $request->package_price >= 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $request->package_price > 0 ? '+' : ''; ?>LKR <?php echo number_format($request->package_price, 2); ?></span>
                                 </div>
+                                <?php if ($requestMultiplier > 1): ?>
+                                    <div class="request-details-row">
+                                        <span class="request-details-label">
+                                            <span class="material-symbols-outlined">schedule</span>
+                                            Multiplier to Site Due Date
+                                        </span>
+                                        <span class="request-details-value"><?php echo $requestMultiplier; ?> month(s)</span>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="request-details-row">
+                                    <span class="request-details-label">
+                                        <span class="material-symbols-outlined">receipt_long</span>
+                                        Payable for This Change
+                                    </span>
+                                    <span class="request-details-value request-price" style="color: <?php echo $requestPayableAmount >= 0 ? '#4caf50' : '#c62828'; ?>;"><?php echo $requestPayableAmount > 0 ? '+' : ''; ?>LKR <?php echo number_format($requestPayableAmount, 2); ?></span>
+                                </div>
                             </div>
 
                             <div class="request-footer">
@@ -1012,10 +1157,13 @@
                                     </div>
                                 </div>
                                 <?php if (empty($request->payment_status) || $request->payment_status != 'paid'): ?>
-                                    <button class="btn-delete-request" onclick="deletePackageRequest(<?php echo $request->id; ?>, '<?php echo htmlspecialchars($request->site_name ?? '', ENT_QUOTES); ?>')">
-                                        <span class="material-symbols-outlined">delete</span>
-                                        Delete Request
-                                    </button>
+                                    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                                        <button class="btn-delete-request" onclick="deletePackageRequest(<?php echo $request->id; ?>, '<?php echo htmlspecialchars($request->site_name ?? '', ENT_QUOTES); ?>')">
+                                            <span class="material-symbols-outlined">delete</span>
+                                            Delete Request
+                                        </button>
+                                        <span style="font-size:12px;color:#666;">Payment can be made from Next Payment Due section.</span>
+                                    </div>
                                 <?php else: ?>
                                     <div style="display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #e8f5e9; color: #2e7d32; border-radius: 6px; font-size: 13px; font-weight: 600;">
                                         <span class="material-symbols-outlined" style="font-size: 18px;">lock</span>
@@ -1037,10 +1185,6 @@
                     Next Payment Due
                     <span class="material-symbols-outlined section-toggle-icon" id="nextPaymentIcon">expand_more</span>
                 </h3>
-                <div class="due-date-badge">
-                    <span class="material-symbols-outlined">schedule</span>
-                    Due: <?php echo date('M d, Y', strtotime('first day of next month')); ?>
-                </div>
             </div>
 
             <div class="section-content" id="nextPaymentContent">
@@ -1051,11 +1195,20 @@
                 $pendingBySite = [];
                 if (!empty($data['pending_requests'])) {
                     foreach ($data['pending_requests'] as $request) {
-                        $siteKey = $request->site_id ?? $request->site_name;
+                        $siteKey = !empty($request->draft_site_id) ? (int)$request->draft_site_id : (!empty($request->site_id) ? (int)$request->site_id : ($request->site_name ?? ''));
                         if (!isset($pendingBySite[$siteKey])) {
                             $pendingBySite[$siteKey] = [];
                         }
                         $pendingBySite[$siteKey][] = $request;
+                    }
+                }
+
+                $activeSiteKeys = [];
+                if (!empty($data['active_sites'])) {
+                    foreach ($data['active_sites'] as $activeSite) {
+                        if (isset($activeSite->id)) {
+                            $activeSiteKeys[(int)$activeSite->id] = true;
+                        }
                     }
                 }
                 ?>
@@ -1080,20 +1233,21 @@
 
                             $siteSubtotal += $existingCost;
 
+                            $serviceDueDateRaw = $site->service_end_date ?? null;
+                            $serviceDueDateLabel = !empty($serviceDueDateRaw) ? date('M d, Y', strtotime($serviceDueDateRaw)) : 'Not set';
+
                             // Check for pending requests for this site
                             $siteKey = $site->id ?? $site->site_name;
                             $sitePendingRequests = $pendingBySite[$siteKey] ?? [];
-                            $pendingTotal = 0;
-                            foreach ($sitePendingRequests as $pending) {
-                                // Only include unpaid requests in the payment calculation
-                                if (empty($pending->payment_status) || $pending->payment_status != 'paid') {
-                                    $pendingTotal += $pending->package_price ?? 0;
-                                }
-                            }
-                            $siteSubtotal += $pendingTotal;
                             $grandTotal += $siteSubtotal;
                         ?>
-                            <div class="site-payment-card">
+                            <div class="site-payment-card" data-site-id="<?php echo (int)($site->id ?? 0); ?>" data-site-name="<?php echo htmlspecialchars($site->site_name ?? '', ENT_QUOTES); ?>" data-site-amount="<?php echo number_format((float)$siteSubtotal, 2, '.', ''); ?>">
+                                <div class="site-select-row">
+                                    <label class="site-select-label">
+                                        <input type="checkbox" class="site-select-checkbox js-site-select">
+                                        Select this site for combined payment
+                                    </label>
+                                </div>
                                 <div class="site-payment-header">
                                     <div class="site-icon">
                                         <span class="material-symbols-outlined">location_on</span>
@@ -1101,6 +1255,10 @@
                                     <div class="site-details">
                                         <h4><?php echo htmlspecialchars($site->site_name ?? ''); ?></h4>
                                         <p><?php echo htmlspecialchars($site->address ?? ''); ?></p>
+                                        <div class="site-due-date">
+                                            <span class="material-symbols-outlined">event</span>
+                                            Payment Due Date: <?php echo $serviceDueDateLabel; ?>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1224,7 +1382,21 @@
                                             <?php
                                             $pendingItemsTotal = 0;
                                             foreach ($unpaidRequests as $pending):
+                                                $pendingMultiplier = 1;
+                                                if (!empty($pending->draft_site_id) && (int)$pending->draft_site_id === (int)($site->id ?? 0) && !empty($serviceDueDateRaw) && strtotime($serviceDueDateRaw) > strtotime(date('Y-m-d'))) {
+                                                    $daysUntilDue = (strtotime($serviceDueDateRaw) - strtotime(date('Y-m-d'))) / 86400;
+                                                    $pendingMultiplier = max(1, (int)ceil($daysUntilDue / 30));
+                                                }
                                                 $hasPendingDetailedPricing = isset($pending->officer_price) || isset($pending->supervisor_price) || isset($pending->caretaker_price);
+
+                                                $pendingBaseAmount = (float)($pending->package_price ?? 0);
+                                                if ($hasPendingDetailedPricing) {
+                                                    $pendingBaseAmount =
+                                                        ((float)($pending->number_of_officers ?? 0) * (float)($pending->officer_price ?? 0)) +
+                                                        ((float)($pending->number_of_supervisors ?? 0) * (float)($pending->supervisor_price ?? 0)) +
+                                                        ((float)($pending->number_of_caretakers ?? 0) * (float)($pending->caretaker_price ?? 0));
+                                                }
+                                                $pendingPayableAmount = $pendingBaseAmount * $pendingMultiplier;
                                             ?>
                                                 <?php if ($hasPendingDetailedPricing): ?>
                                                     <!-- Detailed breakdown for pending request -->
@@ -1239,7 +1411,8 @@
                                                             </div>
                                                             <div class="invoice-value" style="color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                                 <?php
-                                                                $cost = isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0;
+                                                                $baseCost = isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0;
+                                                                $cost = $baseCost * $pendingMultiplier;
                                                                 $pendingItemsTotal += $cost;
                                                                 echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                                 ?>
@@ -1258,7 +1431,8 @@
                                                             </div>
                                                             <div class="invoice-value" style="color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                                 <?php
-                                                                $cost = isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0;
+                                                                $baseCost = isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0;
+                                                                $cost = $baseCost * $pendingMultiplier;
                                                                 $pendingItemsTotal += $cost;
                                                                 echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                                 ?>
@@ -1277,7 +1451,8 @@
                                                             </div>
                                                             <div class="invoice-value" style="color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                                 <?php
-                                                                $cost = isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0;
+                                                                $baseCost = isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0;
+                                                                $cost = $baseCost * $pendingMultiplier;
                                                                 $pendingItemsTotal += $cost;
                                                                 echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                                 ?>
@@ -1304,13 +1479,35 @@
                                                         </div>
                                                         <div class="invoice-value" style="color: <?php echo ($pending->package_price ?? 0) >= 0 ? '#ff9800' : '#c62828'; ?>;">
                                                             <?php
-                                                            $cost = $pending->package_price ?? 0;
+                                                            $cost = (float)($pending->package_price ?? 0) * $pendingMultiplier;
                                                             $pendingItemsTotal += $cost;
                                                             echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                             ?>
                                                         </div>
                                                     </div>
                                                 <?php endif; ?>
+
+                                                <?php if ($pendingMultiplier > 1): ?>
+                                                    <div class="invoice-row" style="font-size:12px; color:#6b7280; padding-top:6px;">
+                                                        <div class="invoice-label" style="padding-left:22px;">Prorated to site due date</div>
+                                                        <div class="invoice-value">x <?php echo $pendingMultiplier; ?> month(s)</div>
+                                                    </div>
+                                                <?php endif; ?>
+
+                                                <div class="invoice-row" style="font-size:12px; color:#1d4ed8; padding-top:6px;">
+                                                    <div class="invoice-label" style="padding-left:22px;">Payable for this change</div>
+                                                    <div class="invoice-value" style="font-weight:700;">LKR <?php echo number_format((float)$pendingPayableAmount, 2); ?></div>
+                                                </div>
+
+                                                <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                                                    <button
+                                                        type="button"
+                                                        class="btn-pay-change"
+                                                        onclick="initiateRequestPayment(this, <?php echo (int)$pending->id; ?>, '<?php echo addslashes($pending->package_name ?? 'Package Change'); ?>', '<?php echo addslashes($pending->site_name ?? $site->site_name ?? 'Site'); ?>', <?php echo !empty($pending->draft_site_id) ? (int)$pending->draft_site_id : 'null'; ?>, <?php echo number_format((float)$pendingPayableAmount, 2, '.', ''); ?>)">
+                                                        <span class="material-symbols-outlined">credit_card</span>
+                                                        Pay This Change - LKR <?php echo number_format((float)$pendingPayableAmount, 2); ?>
+                                                    </button>
+                                                </div>
                                             <?php endforeach; ?>
 
                                             <!-- Pending Changes Total -->
@@ -1357,6 +1554,23 @@
                                         <span class="invoice-subtotal-label">Site Subtotal:</span>
                                         <span class="invoice-subtotal-value" style="color: <?php echo $siteSubtotal >= 0 ? 'var(--accent)' : '#c62828'; ?>;"><?php echo ($siteSubtotal > 0 ? '+' : ''); ?>LKR <?php echo number_format($siteSubtotal, 2); ?></span>
                                     </div>
+
+                                    <?php
+                                    $dueNowAmount = 0;
+                                    if (!empty($serviceDueDateRaw) && strtotime(date('Y-m-d')) > strtotime($serviceDueDateRaw)) {
+                                        $dueNowAmount = $siteSubtotal;
+                                    }
+                                    ?>
+                                    <div class="invoice-row" style="margin-top: 12px; border-bottom: 0; padding-bottom: 0;">
+                                        <div class="invoice-label" style="font-weight: 700;">Amount Due Now</div>
+                                        <div class="invoice-value" style="font-weight: 700; color: <?php echo $dueNowAmount > 0 ? '#c62828' : '#2e7d32'; ?>;">
+                                            LKR <?php echo number_format($dueNowAmount, 2); ?>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top:10px; font-size:12px; color:#64748b; font-weight:600;">
+                                        Select this site for renewal payment. Pending changes must be paid separately.
+                                    </div>
                                 </div>
                             </div>
                         <?php
@@ -1369,6 +1583,7 @@
                         // Process any remaining pending requests for new sites
                         foreach ($pendingBySite as $siteKey => $pendingRequests):
                             if (empty($pendingRequests)) continue;
+                            if (isset($activeSiteKeys[$siteKey])) continue;
 
                             // Check if all requests for this site are paid
                             $hasUnpaidRequests = false;
@@ -1407,6 +1622,16 @@
                                         if (!empty($pending->payment_status) && $pending->payment_status == 'paid') continue;
 
                                         $hasPendingDetailedPricing = isset($pending->officer_price) || isset($pending->supervisor_price) || isset($pending->caretaker_price);
+                                        $pendingMultiplier = 1;
+
+                                        $pendingBaseAmount = (float)($pending->package_price ?? 0);
+                                        if ($hasPendingDetailedPricing) {
+                                            $pendingBaseAmount =
+                                                ((float)($pending->number_of_officers ?? 0) * (float)($pending->officer_price ?? 0)) +
+                                                ((float)($pending->number_of_supervisors ?? 0) * (float)($pending->supervisor_price ?? 0)) +
+                                                ((float)($pending->number_of_caretakers ?? 0) * (float)($pending->caretaker_price ?? 0));
+                                        }
+                                        $pendingPayableAmount = $pendingBaseAmount * $pendingMultiplier;
                                     ?>
                                         <?php if ($hasPendingDetailedPricing): ?>
                                             <!-- Detailed breakdown for pending request -->
@@ -1421,7 +1646,7 @@
                                                     </div>
                                                     <div class="invoice-value" style="color: <?php echo $pending->number_of_officers > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                         <?php
-                                                        $cost = isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0;
+                                                        $cost = (isset($pending->officer_price) ? ($pending->number_of_officers * $pending->officer_price) : 0) * $pendingMultiplier;
                                                         $siteSubtotal += $cost;
                                                         echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                         ?>
@@ -1440,7 +1665,7 @@
                                                     </div>
                                                     <div class="invoice-value" style="color: <?php echo $pending->number_of_supervisors > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                         <?php
-                                                        $cost = isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0;
+                                                        $cost = (isset($pending->supervisor_price) ? ($pending->number_of_supervisors * $pending->supervisor_price) : 0) * $pendingMultiplier;
                                                         $siteSubtotal += $cost;
                                                         echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                         ?>
@@ -1459,7 +1684,7 @@
                                                     </div>
                                                     <div class="invoice-value" style="color: <?php echo $pending->number_of_caretakers > 0 ? '#ff9800' : '#c62828'; ?>;">
                                                         <?php
-                                                        $cost = isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0;
+                                                        $cost = (isset($pending->caretaker_price) ? ($pending->number_of_caretakers * $pending->caretaker_price) : 0) * $pendingMultiplier;
                                                         $siteSubtotal += $cost;
                                                         echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                         ?>
@@ -1486,13 +1711,28 @@
                                                 </div>
                                                 <div class="invoice-value" style="color: <?php echo ($pending->package_price ?? 0) >= 0 ? '#ff9800' : '#c62828'; ?>;">
                                                     <?php
-                                                    $cost = $pending->package_price ?? 0;
+                                                    $cost = (float)($pending->package_price ?? 0) * $pendingMultiplier;
                                                     $siteSubtotal += $cost;
                                                     echo ($cost > 0 ? '+' : '') . 'LKR ' . number_format($cost, 2);
                                                     ?>
                                                 </div>
                                             </div>
                                         <?php endif; ?>
+
+                                        <div class="invoice-row" style="font-size:12px; color:#1d4ed8; padding-top:6px;">
+                                            <div class="invoice-label" style="padding-left:22px;">Payable for this change</div>
+                                            <div class="invoice-value" style="font-weight:700;">LKR <?php echo number_format((float)$pendingPayableAmount, 2); ?></div>
+                                        </div>
+
+                                        <div style="display:flex; justify-content:flex-end; margin-top:8px;">
+                                            <button
+                                                type="button"
+                                                class="btn-pay-change"
+                                                onclick="initiateRequestPayment(this, <?php echo (int)$pending->id; ?>, '<?php echo addslashes($pending->package_name ?? 'Package Change'); ?>', '<?php echo addslashes($pending->site_name ?? 'Site'); ?>', <?php echo !empty($pending->draft_site_id) ? (int)$pending->draft_site_id : 'null'; ?>, <?php echo number_format((float)$pendingPayableAmount, 2, '.', ''); ?>)">
+                                                <span class="material-symbols-outlined">credit_card</span>
+                                                Pay This Change - LKR <?php echo number_format((float)$pendingPayableAmount, 2); ?>
+                                            </button>
+                                        </div>
                                     <?php endforeach; ?>
                                     <?php $grandTotal += $siteSubtotal; ?>
 
@@ -1506,24 +1746,20 @@
                         <?php endforeach; ?>
                     </div>
 
-                    <!-- Grand Total -->
-                    <div class="total-next-payment" style="background: linear-gradient(135deg, <?php echo $grandTotal >= 0 ? 'var(--accent) 0%, var(--accent-light) 100%' : '#c62828 0%, #d32f2f 100%'; ?>);">
-                        <div class="total-next-payment-label">
-                            <span class="material-symbols-outlined">payment</span>
-                            Total Amount Due
+                    <div class="selected-sites-pay-wrap">
+                        <div class="selected-sites-pay-summary">
+                            <span id="selectedSitesCount">0 site(s) selected</span>
+                            <span id="selectedSitesTotal">LKR 0.00</span>
                         </div>
-                        <div class="total-next-payment-value">
-                            LKR <?php echo number_format($grandTotal, 2); ?>
-                        </div>
+                        <button class="btn-pay-selected" id="paySelectedSitesBtn" onclick="initiateSelectedSitesPayment()" disabled>
+                            <span class="material-symbols-outlined">playlist_add_check_circle</span>
+                            Pay Selected Sites
+                        </button>
                     </div>
 
-                    <!-- Pay Now Button -->
-                    <?php if ($grandTotal > 0): ?>
-                        <button class="btn-pay-now" onclick="initiatePayment()" id="payNowBtn">
-                            <span class="material-symbols-outlined">credit_card</span>
-                            Pay Now - LKR <?php echo number_format($grandTotal, 2); ?>
-                        </button>
-                    <?php endif; ?>
+                    <div style="margin-top: 18px; padding: 12px 14px; border-radius: 8px; background: #f8f9fa; color: #555; font-size: 13px;">
+                        Each site now has its own payment due date and separate payment action.
+                    </div>
                 <?php else: ?>
                     <div class="empty-state">
                         <span class="material-symbols-outlined">info</span>
@@ -1804,99 +2040,63 @@
             });
     }
 
-    // PayHere Payment Integration
-    function initiatePayment() {
-        const btn = document.getElementById('payNowBtn');
-        const originalContent = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Processing...';
-        btn.disabled = true;
+    function startPayHereCheckout(config) {
+        const clickedBtn = config.clickedBtn || null;
+        const originalContent = clickedBtn ? clickedBtn.innerHTML : null;
 
-        const totalAmount = <?php echo $grandTotal; ?>;
+        if (clickedBtn) {
+            clickedBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Processing...';
+            clickedBtn.disabled = true;
+        }
 
-        // Collect site data
-        const siteData = [];
-        <?php if (!empty($data['active_sites'])): ?>
-            <?php foreach ($data['active_sites'] as $site):
-                $siteSubtotal = 0;
-                if (isset($site->officer_price) && isset($site->number_of_officers)) {
-                    $siteSubtotal += ($site->number_of_officers * $site->officer_price);
-                    $siteSubtotal += (($site->number_of_supervisors ?? 0) * ($site->supervisor_price ?? 0));
-                    $siteSubtotal += (($site->number_of_caretakers ?? 0) * ($site->caretaker_price ?? 0));
-                } else {
-                    $siteSubtotal = $site->package_price ?? 0;
-                }
-            ?>
-                siteData.push({
-                    site_id: <?php echo $site->id ?? 0; ?>,
-                    site_name: "<?php echo addslashes($site->site_name ?? ''); ?>",
-                    amount: <?php echo $siteSubtotal; ?>
-                });
-            <?php endforeach; ?>
-        <?php endif; ?>
+        const totalAmount = Number(config.totalAmount || 0);
+        if (totalAmount <= 0) {
+            if (clickedBtn) {
+                clickedBtn.innerHTML = originalContent;
+                clickedBtn.disabled = false;
+            }
+            alert('Invalid payment amount.');
+            return;
+        }
 
-        // Collect pending request data (only unpaid requests)
-        const requestData = [];
-        <?php if (!empty($data['pending_requests'])): ?>
-            <?php foreach ($data['pending_requests'] as $request): ?>
-                <?php if (empty($request->payment_status) || $request->payment_status != 'paid'): ?>
-                    requestData.push({
-                        request_id: <?php echo $request->id; ?>,
-                        package_name: "<?php echo addslashes($request->package_name ?? ''); ?>",
-                        site_name: "<?php echo addslashes($request->site_name ?? ''); ?>",
-                        site_id: <?php echo $request->draft_site_id ?? 'null'; ?>,
-                        amount: <?php echo $request->package_price ?? 0; ?>
-                    });
-                <?php endif; ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
-
-        // Prepare data
         const formData = new FormData();
+        formData.append('mode', config.mode || 'site_renewal');
         formData.append('amount', totalAmount);
-        formData.append('item_name', 'Monthly Security Service Payment');
-        formData.append('site_data', JSON.stringify(siteData));
-        formData.append('request_data', JSON.stringify(requestData));
+        formData.append('item_name', config.itemName || 'Security Service Payment');
+        formData.append('site_data', JSON.stringify(config.siteData || []));
+        formData.append('request_data', JSON.stringify(config.requestData || []));
 
-        // Fetch payment hash from backend
         fetch('<?php echo URL_ROOT; ?>/payment/generatePaymentHash', {
                 method: 'POST',
                 body: formData
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
+                if (!response.ok) throw new Error('Network response was not ok');
                 return response.json();
             })
             .then(data => {
-                // Check for error in response
-                if (data.error) {
-                    throw new Error(data.message || 'Failed to generate payment hash');
-                }
+                if (data.error) throw new Error(data.message || 'Failed to generate payment hash');
 
-                // Define PayHere event handlers
                 payhere.onCompleted = function onCompleted(orderId) {
-                    console.log("Payment completed. OrderID:" + orderId);
-                    // Update button to show processing
-                    btn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying Payment...';
-                    btn.disabled = true;
-                    // Redirect to complete handler which updates DB and notifies admin
+                    if (clickedBtn) {
+                        clickedBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_top</span> Verifying Payment...';
+                        clickedBtn.disabled = true;
+                    }
                     window.location.href = '<?php echo URL_ROOT; ?>/payment/complete?order_id=' + orderId;
                 };
 
                 payhere.onDismissed = function onDismissed() {
-                    console.log("Payment dismissed");
-                    btn.innerHTML = originalContent;
-                    btn.disabled = false;
+                    if (clickedBtn) {
+                        clickedBtn.innerHTML = originalContent;
+                        clickedBtn.disabled = false;
+                    }
                 };
 
                 payhere.onError = function onError(error) {
-                    console.log("Error:" + error);
-                    // Redirect with error flash message
+                    console.log('PayHere error:', error);
                     window.location.href = '<?php echo URL_ROOT; ?>/client/payments?error=payment_failed';
                 };
 
-                // Payment Object
                 var payment = {
                     sandbox: <?php echo PAYMENT_SANDBOX ? 'true' : 'false'; ?>,
                     merchant_id: data.merchant_id,
@@ -1917,15 +2117,100 @@
                     country: "Sri Lanka"
                 };
 
-                // Launch PayHere Popup
                 payhere.startPayment(payment);
             })
             .catch(error => {
                 console.error('Error fetching payment hash:', error);
-                // Redirect with error message
+                if (clickedBtn) {
+                    clickedBtn.innerHTML = originalContent;
+                    clickedBtn.disabled = false;
+                }
                 window.location.href = '<?php echo URL_ROOT; ?>/client/payments?error=payment_init_failed';
             });
     }
+
+    function initiateRequestPayment(buttonEl, requestId, packageName, siteName, siteId, amount) {
+        startPayHereCheckout({
+            mode: 'request_adjustment',
+            totalAmount: Number(amount || 0),
+            itemName: 'Package Change Payment - ' + String(packageName || 'Package Change') + ' (' + String(siteName || 'Site') + ')',
+            siteData: [],
+            requestData: [{
+                request_id: Number(requestId || 0),
+                package_name: String(packageName || 'Package Change'),
+                site_name: String(siteName || 'Site'),
+                site_id: siteId !== null ? Number(siteId) : null,
+                amount: Number(amount || 0)
+            }],
+            clickedBtn: buttonEl || null
+        });
+    }
+
+    function updateSelectedSitesSummary() {
+        const selectedSites = Array.from(document.querySelectorAll('.js-site-select:checked'));
+        let total = 0;
+
+        selectedSites.forEach((checkbox) => {
+            const card = checkbox.closest('.site-payment-card');
+            if (!card) return;
+            total += Number(card.getAttribute('data-site-amount') || 0);
+        });
+
+        const countEl = document.getElementById('selectedSitesCount');
+        const totalEl = document.getElementById('selectedSitesTotal');
+        const payBtn = document.getElementById('paySelectedSitesBtn');
+
+        const selectedCount = selectedSites.length;
+
+        if (countEl) countEl.textContent = selectedCount + ' site(s) selected';
+        if (totalEl) totalEl.textContent = 'LKR ' + total.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        if (payBtn) payBtn.disabled = selectedCount === 0 || total <= 0;
+    }
+
+    function initiateSelectedSitesPayment() {
+        const selectedSites = Array.from(document.querySelectorAll('.js-site-select:checked'));
+        const siteData = [];
+        let total = 0;
+
+        selectedSites.forEach((checkbox) => {
+            const card = checkbox.closest('.site-payment-card');
+            if (!card) return;
+            const amount = Number(card.getAttribute('data-site-amount') || 0);
+            if (amount <= 0) return;
+            siteData.push({
+                site_id: Number(card.getAttribute('data-site-id') || 0),
+                site_name: String(card.getAttribute('data-site-name') || 'Site'),
+                amount: amount
+            });
+            total += amount;
+        });
+
+        if (!siteData.length || total <= 0) {
+            alert('Select at least one site with payable amount.');
+            return;
+        }
+
+        const payBtn = document.getElementById('paySelectedSitesBtn');
+        startPayHereCheckout({
+            mode: 'site_renewal',
+            totalAmount: total,
+            itemName: 'Selected Sites Payment (' + siteData.length + ' site' + (siteData.length > 1 ? 's' : '') + ')',
+            siteData: siteData,
+            requestData: [],
+            clickedBtn: payBtn
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.js-site-select').forEach((checkbox) => {
+            checkbox.addEventListener('change', updateSelectedSitesSummary);
+        });
+
+        updateSelectedSitesSummary();
+    });
 </script>
 
 <!-- PayHere SDK -->
