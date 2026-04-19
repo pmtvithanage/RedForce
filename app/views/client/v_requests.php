@@ -1064,12 +1064,37 @@ $packages = $packageModel->getAllPackages();
                                 $displayPersonnel = !empty($personnelText) ? implode(', ', $personnelText) : 'Security Package';
                             }
                         ?>
-                            <div class="package-item"
-                                data-package="<?php echo htmlspecialchars($packageSlug); ?>"
-                                data-package-id="<?php echo $package->id; ?>"
-                                data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
-                                data-price="<?php echo $package->package_price; ?>"
-                                data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
+                        <div class="package-item" 
+                             data-package="<?php echo htmlspecialchars($packageSlug); ?>" 
+                             data-package-id="<?php echo $package->id; ?>"
+                             data-package-name="<?php echo htmlspecialchars($package->package_name); ?>"
+                             data-price="<?php echo $package->package_price; ?>" 
+                             data-officers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_officers; ?>"
+                             data-supervisors="<?php echo $isCustomPackage ? 'custom' : $package->number_of_supervisors; ?>"
+                             data-caretakers="<?php echo $isCustomPackage ? 'custom' : $package->number_of_caretakers; ?>"
+                             <?php if ($isCustomPackage): ?>
+                             data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
+                             data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
+                             data-price-caretaker="<?php echo $package->price_per_caretaker ?? 0; ?>"
+                             <?php endif; ?>
+                             <?php if (!empty($package->background_image)): ?>
+                                style="background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5)), url('<?php echo URL_ROOT; ?>/uploads/packages/<?php echo $package->background_image; ?>'); background-size: cover; background-position: center;"
+                             <?php endif; ?>>
+                            <?php if (empty($package->background_image)): ?>
+                            <style>
+                                .package-item[data-package="<?php echo htmlspecialchars($packageSlug); ?>"]::before {
+                                    background: url('<?php echo URL_ROOT; ?>/img/SecurityOfficer.png') no-repeat center;
+                                    background-size: cover;
+                                    filter: grayscale(30%) brightness(0.7);
+                                }
+                            </style>
+                            <?php endif; ?>
+                            <div class="package-name"><?php echo htmlspecialchars($package->package_name); ?></div>
+                            <?php if (!empty($package->description)): ?>
+                            <div class="package-description"><?php echo htmlspecialchars($package->description); ?></div>
+                            <?php endif; ?>
+                            <div class="package-officers"><?php echo $displayPersonnel; ?></div>
+                            <div class="package-price">
                                 <?php if ($isCustomPackage): ?>
                                 data-price-officer="<?php echo $package->price_per_officer ?? 0; ?>"
                                 data-price-supervisor="<?php echo $package->price_per_supervisor ?? 0; ?>"
@@ -1838,8 +1863,24 @@ $packages = $packageModel->getAllPackages();
             document.getElementById('caretakersCount').textContent = caretakersCount;
             document.getElementById('supervisorsCount').textContent = supervisorsCount;
 
-            // Calculate minimum required supervisors (1 per 5 officers, round up)
-            const minRequiredSupervisors = Math.ceil(officersCount / 5);
+    // Package selection
+    packageItems.forEach(item => {
+        item.addEventListener('click', function() {
+            if (isDeploymentOptionSelected) return;
+            // Remove previous selection
+            packageItems.forEach(p => p.classList.remove('selected'));
+            
+            // Add selection
+            this.classList.add('selected');
+            
+            selectedPackage = {
+                name: this.dataset.package,
+                fullName: this.dataset.packageName,
+                price: this.dataset.price,
+                officers: this.dataset.officers,
+                supervisors: this.dataset.supervisors,
+                caretakers: this.dataset.caretakers
+            };
 
             // For new sites, ensure at least 1 supervisor
             const actualMinSupervisors = Math.max(minRequiredSupervisors, isNewSiteMode ? 1 : 0);
@@ -1916,21 +1957,69 @@ $packages = $packageModel->getAllPackages();
             document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
             document.getElementById('totalAmount').textContent = `${totalCost > 0 ? '+' : ''}LKR ${totalCost.toLocaleString()}`;
         }
+        
+        // Enable/disable decrement buttons
+        // All sites must have minimum 1 officer and required supervisors
+        const minOfficers = 1;
+        const minSupervisorsRequired = Math.max(minRequiredSupervisors, 1);
+        
+        document.getElementById('decrementOfficersBtn').disabled = officersCount <= minOfficers;
+        document.getElementById('decrementSupervisorsBtn').disabled = supervisorsCount <= minSupervisorsRequired;
+        document.getElementById('decrementCaretakersBtn').disabled = caretakersCount === 0;
+        
+        // Update pricing summary
+        updatePricingSummary();
+    }
+    
+    function updatePricingSummary() {
+        // Calculate personnel changes (can be positive or negative)
+        const officersChange = officersCount - initialOfficersCount;
+        const supervisorsChange = supervisorsCount - initialSupervisorsCount;
+        const caretakersChange = caretakersCount - initialCaretakersCount;
+        
+        const officersCost = officersChange * pricePerOfficer;
+        const supervisorsCost = supervisorsChange * pricePerSupervisor;
+        const caretakersCost = caretakersChange * pricePerCaretaker;
+        const totalCost = officersCost + supervisorsCost + caretakersCost;
+        
+        let breakdownHTML = '';
+        if (officersChange !== 0) {
+            const prefix = officersChange > 0 ? '+' : '';
+            const label = officersChange > 0 ? 'New' : 'Removed';
+            breakdownHTML += `<div>${prefix}${officersChange} ${label} Officer${Math.abs(officersChange) !== 1 ? 's' : ''} × LKR ${pricePerOfficer.toLocaleString()} = <strong>${officersCost > 0 ? '+' : ''}LKR ${officersCost.toLocaleString()}</strong></div>`;
+        }
+        if (supervisorsChange !== 0) {
+            const prefix = supervisorsChange > 0 ? '+' : '';
+            const label = supervisorsChange > 0 ? 'New' : 'Removed';
+            breakdownHTML += `<div>${prefix}${supervisorsChange} ${label} Supervisor${Math.abs(supervisorsChange) !== 1 ? 's' : ''} × LKR ${pricePerSupervisor.toLocaleString()} = <strong>${supervisorsCost > 0 ? '+' : ''}LKR ${supervisorsCost.toLocaleString()}</strong></div>`;
+        }
+        if (caretakersChange !== 0) {
+            const prefix = caretakersChange > 0 ? '+' : '';
+            const label = caretakersChange > 0 ? 'New' : 'Removed';
+            breakdownHTML += `<div>${prefix}${caretakersChange} ${label} Caretaker${Math.abs(caretakersChange) !== 1 ? 's' : ''} × LKR ${pricePerCaretaker.toLocaleString()} = <strong>${caretakersCost > 0 ? '+' : ''}LKR ${caretakersCost.toLocaleString()}</strong></div>`;
+        }
+        
+        if (breakdownHTML === '') {
+            breakdownHTML = '<div style="color: #999; font-style: italic;">Adjust personnel numbers to see pricing changes</div>';
+        }
+        
+        document.getElementById('priceBreakdown').innerHTML = breakdownHTML;
+        document.getElementById('totalAmount').textContent = `${totalCost > 0 ? '+' : ''}LKR ${totalCost.toLocaleString()}`;
+    }
 
-        // Initialize on page load
-        updateCounterDisplays();
+    // Initialize on page load
+    updateCounterDisplays();
 
-        // Error message helper functions
-        function showErrorMessage(elementId, message) {
-            const errorElement = document.getElementById(elementId);
-            if (errorElement) {
-                errorElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">warning</span>' + message;
-                errorElement.classList.add('show');
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    hideErrorMessage(elementId);
-                }, 5000);
-            }
+    // Error message helper functions
+    function showErrorMessage(elementId, message) {
+        const errorElement = document.getElementById(elementId);
+        if (errorElement) {
+            errorElement.innerHTML = '<span class="material-symbols-outlined" style="font-size: 16px; vertical-align: middle; margin-right: 6px;">warning</span>' + message;
+            errorElement.classList.add('show');
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideErrorMessage(elementId);
+            }, 5000);
         }
 
         function hideErrorMessage(elementId) {
@@ -2001,6 +2090,75 @@ $packages = $packageModel->getAllPackages();
                 </div>
             </div>
         `).join('');
+    }
+
+    window.selectSite = function(siteId) {
+        selectedSiteId = siteId;
+        
+        // Find and store the selected site's data
+        selectedSiteData = allSites.find(site => site.id == siteId);
+        
+        // Update UI
+        document.querySelectorAll('.site-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+        document.querySelector(`[data-site-id="${siteId}"]`).classList.add('selected');
+        
+        // Enable confirm button
+        document.getElementById('confirmSiteBtn').disabled = false;
+    };
+
+    window.confirmSiteSelection = function() {
+        if (selectedPackage && selectedSiteId) {
+            // Only custom package can adjust personnel via assignment form
+            if (selectedPackage.officers === 'custom') {
+                // Load pricing data for custom package
+                const customPackageItem = document.querySelector('.package-item[data-officers="custom"]');
+                if (customPackageItem) {
+                    pricePerOfficer = parseFloat(customPackageItem.dataset.priceOfficer) || 0;
+                    pricePerSupervisor = parseFloat(customPackageItem.dataset.priceSupervisor) || 0;
+                    pricePerCaretaker = parseFloat(customPackageItem.dataset.priceCaretaker) || 0;
+                }
+                
+                // Initialize counters with existing site personnel
+                if (selectedSiteData) {
+                    officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
+                    supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
+                    caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
+                    
+                    // Store initial counts to track changes (additions or reductions)
+                    initialOfficersCount = officersCount;
+                    initialSupervisorsCount = supervisorsCount;
+                    initialCaretakersCount = caretakersCount;
+                } else {
+                    // Reset initial counts for new sites
+                    initialOfficersCount = 0;
+                    initialSupervisorsCount = 0;
+                    initialCaretakersCount = 0;
+                }
+                
+                // Hide sites list, show assignment form
+                const sitesListContainer = document.getElementById('sitesListContainer');
+                const assignmentFormContainer = document.getElementById('assignmentFormContainer');
+                
+                sitesListContainer.style.display = 'none';
+                assignmentFormContainer.style.display = 'block';
+                
+                // Update header
+                const headerTitle = document.getElementById('formHeaderTitle');
+                const headerDesc = document.getElementById('formHeaderDesc');
+                const selectedSiteCard = document.querySelector(`[data-site-id="${selectedSiteId}"]`);
+                const siteName = selectedSiteCard ? selectedSiteCard.querySelector('.site-info h4').textContent : 'Selected Site';
+                
+                headerTitle.textContent = siteName;
+                headerDesc.textContent = 'Adjust the number of personnel for this site (Minimum: 1 officer + 1 supervisor)';
+
+                // Update display with current values
+                updateCounterDisplays();
+            } else {
+                // For predefined packages, show confirmation page with price
+                showPackageConfirmation(false);
+            }
         }
 
         window.selectSite = function(siteId) {
@@ -2031,45 +2189,99 @@ $packages = $packageModel->getAllPackages();
                         pricePerCaretaker = parseFloat(customPackageItem.dataset.priceCaretaker) || 0;
                     }
 
-                    // Initialize counters with existing site personnel
-                    if (selectedSiteData) {
-                        officersCount = parseInt(selectedSiteData.assigned_officers) || 0;
-                        supervisorsCount = parseInt(selectedSiteData.assigned_supervisors) || 0;
-                        caretakersCount = parseInt(selectedSiteData.assigned_caretakers) || 0;
+    window.decrementCaretakers = function() {
+        if (caretakersCount > 0) {
+            caretakersCount--;
+            updateCounterDisplays();
+        }
+    };
 
-                        // Store initial counts to track changes (additions or reductions)
-                        initialOfficersCount = officersCount;
-                        initialSupervisorsCount = supervisorsCount;
-                        initialCaretakersCount = caretakersCount;
-                    } else {
-                        // Reset initial counts for new sites
-                        initialOfficersCount = 0;
-                        initialSupervisorsCount = 0;
-                        initialCaretakersCount = 0;
-                    }
+    window.submitAssignment = function() {
+        // Calculate personnel changes (can be positive or negative)
+        const officersChange = officersCount - initialOfficersCount;
+        const supervisorsChange = supervisorsCount - initialSupervisorsCount;
+        const caretakersChange = caretakersCount - initialCaretakersCount;
+        
+        // All sites must have at least 1 officer and 1 supervisor
+        if (officersCount < 1) {
+            showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 officer');
+            return;
+        }
+        if (supervisorsCount < 1) {
+            showErrorMessage('assignmentErrorMessage', 'Site must have at least 1 supervisor');
+            return;
+        }
+        
+        // Special validation for new sites - must have at least 1 officer and 1 supervisor
+        if (isNewSiteMode) {
+            if (officersCount < 1) {
+                showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 security officer.');
+                return;
+            }
+            if (supervisorsCount < 1) {
+                showErrorMessage('assignmentErrorMessage', 'New sites must have at least 1 supervisor.');
+                return;
+            }
+        } else {
+            // Validate some change is made for existing sites
+            if (officersChange === 0 && supervisorsChange === 0 && caretakersChange === 0) {
+                showErrorMessage('assignmentErrorMessage', 'Please make changes to personnel numbers');
+                return;
+            }
+        }
+        
+        hideErrorMessage('assignmentErrorMessage');
 
-                    // Hide sites list, show assignment form
-                    const sitesListContainer = document.getElementById('sitesListContainer');
-                    const assignmentFormContainer = document.getElementById('assignmentFormContainer');
-
-                    sitesListContainer.style.display = 'none';
-                    assignmentFormContainer.style.display = 'block';
-
-                    // Update header
-                    const headerTitle = document.getElementById('formHeaderTitle');
-                    const headerDesc = document.getElementById('formHeaderDesc');
-                    const selectedSiteCard = document.querySelector(`[data-site-id="${selectedSiteId}"]`);
-                    const siteName = selectedSiteCard ? selectedSiteCard.querySelector('.site-info h4').textContent : 'Selected Site';
-
-                    headerTitle.textContent = siteName;
-                    headerDesc.textContent = 'Adjust the number of personnel for this site (Minimum: 1 officer + 1 supervisor)';
-
-                    // Update display with current values
-                    updateCounterDisplays();
-                } else {
-                    // For predefined packages, show confirmation page with price
-                    showPackageConfirmation(false);
+        if (selectedPackage) {
+            // Check if this is for a new site or existing site
+            if (newSiteData) {
+                // Submit with new site data
+                const formData = new FormData();
+                formData.append('mode', 'new');
+                formData.append('package_name', 'Custom Package');
+                formData.append('site_name', newSiteData.site_name);
+                formData.append('site_address', newSiteData.site_address);
+                formData.append('district', newSiteData.district);
+                formData.append('city', newSiteData.city || newSiteData.district);
+                formData.append('phone_number', newSiteData.phone_number);
+                formData.append('latitude', newSiteData.latitude);
+                formData.append('longitude', newSiteData.longitude);
+                formData.append('number_of_officers', officersChange);
+                formData.append('number_of_supervisors', supervisorsChange);
+                formData.append('number_of_caretakers', caretakersChange);
+                // Calculate package price based on personnel changes
+                const totalPrice = (officersChange * pricePerOfficer) + 
+                                  (supervisorsChange * pricePerSupervisor) + 
+                                  (caretakersChange * pricePerCaretaker);
+                formData.append('package_price', totalPrice);
+                
+                if (newSiteData.image) {
+                    formData.append('image', newSiteData.image);
                 }
+                
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
+            } else if (selectedSiteId) {
+                // Submit with existing site (backend will handle deleting old pending requests)
+                const formData = new FormData();
+                formData.append('mode', 'existing');
+                formData.append('site_id', selectedSiteId);
+                formData.append('package_name', 'Custom Package');
+                formData.append('site_name', selectedSiteData.site_name);
+                formData.append('site_address', selectedSiteData.address);
+                formData.append('district', selectedSiteData.district || '');
+                formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                formData.append('number_of_officers', officersChange);
+                formData.append('number_of_supervisors', supervisorsChange);
+                formData.append('number_of_caretakers', caretakersChange);
+                // Calculate package price based on personnel changes (can be negative)
+                const totalPrice = (officersChange * pricePerOfficer) + 
+                                  (supervisorsChange * pricePerSupervisor) + 
+                                  (caretakersChange * pricePerCaretaker);
+                formData.append('package_price', totalPrice);
+                
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             }
         };
 
@@ -2081,6 +2293,230 @@ $packages = $packageModel->getAllPackages();
                 return;
             }
 
+    // New Site Form Functions
+    let siteImageFile = null;
+    let siteMap = null;
+    let siteMarker = null;
+    let newSiteData = null; // Store new site data temporarily
+
+    function showNewSiteForm() {
+        const optionCards = document.getElementById('optionCards');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        
+        // Clear any error messages
+        hideErrorMessage('step1ErrorMessage');
+        hideErrorMessage('step2ErrorMessage');
+        
+        // Clear any previous new site data
+        newSiteData = null;
+        
+        // Disable package container and hide navigation (same as existing site flow)
+        isDeploymentOptionSelected = true;
+        const packagesContainer = document.querySelector('.packages-container');
+        if (packagesContainer) {
+            packagesContainer.classList.add('disabled');
+        }
+        
+        // Hide arrow buttons and indicators
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.add('hidden'));
+        document.getElementById('packageCarouselIndicators').classList.add('hidden');
+        
+        optionCards.style.display = 'none';
+        newSiteFormContainer.style.display = 'block';
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+        
+        headerTitle.textContent = 'New Site - ' + packageName;
+        headerDesc.textContent = 'Step 1: Enter site details';
+        
+        // Initialize step 1
+        goToStep1();
+    }
+
+    window.backToOptionsFromNewSite = function() {
+        const optionCards = document.getElementById('optionCards');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        const createNewSiteCard = document.getElementById('createNewSite');
+        
+        // Clear any error messages
+        hideErrorMessage('step1ErrorMessage');
+        hideErrorMessage('step2ErrorMessage');
+        
+        newSiteFormContainer.style.display = 'none';
+        optionCards.style.display = 'grid';
+        
+        // Re-enable package container and show navigation (same as backToOptions)
+        isDeploymentOptionSelected = false;
+        const packagesContainer = document.querySelector('.packages-container');
+        if (packagesContainer) {
+            packagesContainer.classList.remove('disabled');
+        }
+        
+        // Show arrow buttons and indicators
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.classList.remove('hidden'));
+        document.getElementById('packageCarouselIndicators').classList.remove('hidden');
+        
+        // Restore Create New Site button visibility based on package type
+        if (createNewSiteCard && selectedPackage) {
+            const packageFullName = selectedPackage.fullName || '';
+            if (packageFullName.toLowerCase().includes('extra')) {
+                createNewSiteCard.style.display = 'none';
+            } else {
+                createNewSiteCard.style.display = 'block';
+            }
+        }
+        
+        // Clear new site data
+        newSiteData = null;
+        
+        // Reset form
+        document.getElementById('newSiteName').value = '';
+        document.getElementById('newSiteAddress').value = '';
+        document.getElementById('district').value = '';
+        document.getElementById('city').value = '';
+        document.getElementById('newSitePhone').value = '';
+        removeSiteImage();
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Custom Package';
+        
+        headerTitle.textContent = packageName;
+        headerDesc.textContent = 'Choose your deployment option';
+    };
+
+    window.goToStep1 = function() {
+        // Hide any error messages when going back
+        hideErrorMessage('step2ErrorMessage');
+        
+        document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        document.getElementById('step1Indicator').classList.add('active');
+        document.getElementById('step1Indicator').classList.remove('completed');
+        document.getElementById('step2Indicator').classList.remove('active');
+        
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerDesc.textContent = 'Step 1: Enter site details';
+    };
+
+    window.goToStep2 = function() {
+        // Hide any previous error messages
+        hideErrorMessage('step1ErrorMessage');
+        
+        // Validate step 1 fields
+        const siteName = document.getElementById('newSiteName').value.trim();
+        const siteDistrict = document.getElementById('district').value.trim();
+        const siteCity = document.getElementById('city').value.trim();
+        const sitePhone = document.getElementById('newSitePhone').value.trim();
+        const photoFrame = document.getElementById('sitePhotoFrame');
+        
+        // Check if image is uploaded
+        if (!siteImageFile) {
+            showErrorMessage('step1ErrorMessage', 'Please upload a site image');
+            // Highlight the photo frame
+            photoFrame.style.borderColor = '#ff9800';
+            photoFrame.style.borderWidth = '3px';
+            setTimeout(() => {
+                photoFrame.style.borderColor = '#e0e0e0';
+                photoFrame.style.borderWidth = '2px';
+            }, 3000);
+            return;
+        }
+        
+        if (!siteName || !siteDistrict || !sitePhone) {
+            showErrorMessage('step1ErrorMessage', 'Please fill in all required fields (Site Name, District, and Phone Number)');
+            return;
+        }
+        
+        // Validate phone number format
+        if (!/^[0-9]{10}$/.test(sitePhone)) {
+            showErrorMessage('step1ErrorMessage', 'Phone number must be exactly 10 digits (numbers only)');
+            return;
+        }
+        
+        // Validate city if city field is visible
+        const cityField = document.getElementById('city-field');
+        if (cityField && cityField.style.display !== 'none' && !siteCity) {
+            showErrorMessage('step1ErrorMessage', 'Please enter the city');
+            return;
+        }
+        
+        document.getElementById('step1').classList.remove('active');
+        document.getElementById('step2').classList.add('active');
+        document.getElementById('step1Indicator').classList.remove('active');
+        document.getElementById('step1Indicator').classList.add('completed');
+        document.getElementById('step2Indicator').classList.add('active');
+        
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerDesc.textContent = 'Step 2: Select location on map';
+        
+        // Initialize map if not already done
+        if (!siteMap) {
+            initSiteMap();
+        }
+    };
+
+    // Package Confirmation Functions (for non-custom packages)
+    function showPackageConfirmation(isNewSite) {
+        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+        const sitesListContainer = document.getElementById('sitesListContainer');
+        const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+        
+        // Hide previous containers
+        sitesListContainer.style.display = 'none';
+        newSiteFormContainer.style.display = 'none';
+        
+        // Show confirmation
+        packageConfirmationContainer.style.display = 'block';
+        
+        // Get package details
+        const selectedItem = document.querySelector('.package-item.selected');
+        const packageName = selectedItem ? selectedItem.querySelector('.package-name').textContent : 'Package';
+        const packageOfficers = selectedItem ? selectedItem.querySelector('.package-officers').textContent : '';
+        const packagePrice = selectedPackage.price;
+        
+        // Update package info
+        document.getElementById('confirmPackageName').textContent = packageName;
+        document.getElementById('confirmPackageDetails').textContent = packageOfficers;
+        document.getElementById('confirmPrice').textContent = `LKR ${parseFloat(packagePrice).toLocaleString()}`;
+        // Update site info
+        if (isNewSite && newSiteData) {
+            document.getElementById('confirmSiteName').textContent = newSiteData.site_name;
+            document.getElementById('confirmSiteAddress').textContent = newSiteData.site_address;
+        } else if (selectedSiteData) {
+            document.getElementById('confirmSiteName').textContent = selectedSiteData.site_name;
+            document.getElementById('confirmSiteAddress').textContent = selectedSiteData.site_address;
+        }
+        
+        // Update header
+        const headerTitle = document.getElementById('formHeaderTitle');
+        const headerDesc = document.getElementById('formHeaderDesc');
+        headerTitle.textContent = 'Review Your Request';
+        headerDesc.textContent = 'Please confirm the details before proceeding';
+    }
+    
+    window.backFromConfirmation = function() {
+        const packageConfirmationContainer = document.getElementById('packageConfirmationContainer');
+        
+        // Check if we came from new site or existing site
+        if (newSiteData) {
+            // Go back to new site form (Step 2)
+            const newSiteFormContainer = document.getElementById('newSiteFormContainer');
+            packageConfirmationContainer.style.display = 'none';
+            newSiteFormContainer.style.display = 'block';
+            goToStep2();
+            
+            const headerTitle = document.getElementById('formHeaderTitle');
+            const headerDesc = document.getElementById('formHeaderDesc');
+            const packageName = document.querySelector('.package-item.selected .package-name')?.textContent || 'Package';
+            headerTitle.textContent = 'New Site - ' + packageName;
+            headerDesc.textContent = 'Step 2: Location details';
+        } else {
+            // Go back to sites list
             const sitesListContainer = document.getElementById('sitesListContainer');
             const assignmentFormContainer = document.getElementById('assignmentFormContainer');
             const optionCards = document.getElementById('optionCards');
@@ -2142,17 +2578,48 @@ $packages = $packageModel->getAllPackages();
             initialCaretakersCount = 0;
             updateCounterDisplays();
         }
-
-        window.incrementOfficers = function() {
-            officersCount++;
-            updateCounterDisplays();
-        };
-
-        window.decrementOfficers = function() {
-            const minOfficers = 1; // All sites must have at least 1 officer
-            if (officersCount > minOfficers) {
-                officersCount--;
-                updateCounterDisplays();
+    };
+    
+    window.proceedWithPackage = function() {
+        if (selectedPackage) {
+            if (newSiteData) {
+                // Proceed with new site
+                const formData = new FormData();
+                formData.append('mode', 'new');
+                formData.append('package_name', selectedPackage.fullName || selectedPackage.name);
+                formData.append('site_name', newSiteData.site_name);
+                formData.append('site_address', newSiteData.site_address);
+                formData.append('district', newSiteData.district);
+                formData.append('city', newSiteData.city || newSiteData.district);
+                formData.append('phone_number', newSiteData.phone_number);
+                formData.append('latitude', newSiteData.latitude);
+                formData.append('longitude', newSiteData.longitude);
+                formData.append('number_of_officers', selectedPackage.officers || 0);
+                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                formData.append('package_price', selectedPackage.price);
+                if (newSiteData.image) {
+                    formData.append('image', newSiteData.image);
+                }
+                
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
+            } else if (selectedSiteId) {
+                // Submit with existing site (backend will handle deleting old pending requests)
+                const formData = new FormData();
+                formData.append('mode', 'existing');
+                formData.append('site_id', selectedSiteId);
+                formData.append('package_name', selectedPackage.fullName || selectedPackage.name);
+                formData.append('site_name', selectedSiteData.site_name);
+                formData.append('site_address', selectedSiteData.address);
+                formData.append('district', selectedSiteData.district || '');
+                formData.append('city', selectedSiteData.city || selectedSiteData.district);
+                formData.append('number_of_officers', selectedPackage.officers || 0);
+                formData.append('number_of_supervisors', selectedPackage.supervisors || 0);
+                formData.append('number_of_caretakers', selectedPackage.caretakers || 0);
+                formData.append('package_price', selectedPackage.price);
+                // Submit via AJAX
+                submitPackageRequestAjax(formData);
             }
         };
 
@@ -2742,6 +3209,9 @@ $packages = $packageModel->getAllPackages();
                 }
             });
         }
+
+        updateCounterDisplays();
+    }
 
         // Site image handling
         document.getElementById('siteImageInput').addEventListener('change', function(e) {

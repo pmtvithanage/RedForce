@@ -31,6 +31,7 @@
             
             <?php flash('login_error'); ?>
             <?php flash('access_error'); ?>
+            <?php flash('forgot_password'); ?>
             
             <form class="login-form" method="POST" action="<?php echo URL_ROOT; ?>/Users/login">
                 <div class="form-group">
@@ -48,6 +49,8 @@
                         <span class="error-text"><?php echo $data['password_err']; ?></span>
                     <?php endif; ?>
                 </div>
+
+                <a href="<?php echo URL_ROOT; ?>/Users/forgotPassword" class="forgot-password-link">Forgot Password?</a>
                 
                 <button type="submit" class="login-button">login</button>
             </form>

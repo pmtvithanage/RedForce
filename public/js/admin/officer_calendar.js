@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Process leave data to create leave day mappings
     const leaveDays = new Set();
     const leaveInfo = {};
+    const attendanceByDate = {};
     
     if (typeof leaveDatesData !== 'undefined' && leaveDatesData) {
         leaveDatesData.forEach(leave => {
@@ -73,6 +74,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+
+    if (typeof attendanceData !== 'undefined' && attendanceData) {
+        attendanceData.forEach((row) => {
+            if (row.attendance_date) {
+                attendanceByDate[String(row.attendance_date)] = String(row.status || '').toLowerCase();
+            }
+        });
+    }
     
     // Helper function to format date as YYYY-MM-DD
     function formatDateForKey(date) {
@@ -80,6 +89,27 @@ document.addEventListener('DOMContentLoaded', function() {
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
+    }
+
+    function isPastDate(dateString) {
+        const todayKey = formatDateForKey(new Date());
+        return dateString < todayKey;
+    }
+
+    function getAttendanceBadgeMarkup(attendanceStatus) {
+        if (!attendanceStatus) {
+            return '';
+        }
+
+        const normalized = String(attendanceStatus).toLowerCase();
+        if (normalized === 'present') {
+            return '<span class="status-badge attendance-badge attendance-present">Present</span>';
+        }
+        if (normalized === 'absent') {
+            return '<span class="status-badge attendance-badge attendance-absent">Absent</span>';
+        }
+
+        return '';
     }
     
     // Generate calendar for a specific month and year
@@ -130,7 +160,13 @@ document.addEventListener('DOMContentLoaded', function() {
             } 
             // Check if it's a work day (green)
             else if (workDays.has(dateString)) {
-                dayElement.classList.add('work-day');
+                const attendanceStatus = attendanceByDate[dateString] || null;
+                const inferredAbsent = isPastDate(dateString) && attendanceStatus !== 'present';
+                if (inferredAbsent) {
+                    dayElement.classList.add('absent-day');
+                } else {
+                    dayElement.classList.add('work-day');
+                }
             }
             
             // Add click event to show shift details
@@ -228,7 +264,7 @@ document.addEventListener('DOMContentLoaded', function() {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
-            body: 'date=' + encodeURIComponent(dateString) + '&officer_id=' + encodeURIComponent(officerId)
+            body: 'date=' + encodeURIComponent(dateString) + '&officer_id=' + encodeURIComponent(officerId) + '&role=' + encodeURIComponent(officerRole || '')
         })
         .then(response => {
             console.log('Response status:', response.status);
@@ -245,11 +281,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 if (data.isLeave) {
                     showLeaveDetails(data);
+                } else if (data.noShift) {
+                    showNoShift(data);
                 } else {
                     showShiftDetails(data);
                 }
             } else {
-                showNoShift();
+                showNoShift(data);
             }
         })
         .catch(error => {
@@ -260,10 +298,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show shift details
     function showShiftDetails(data) {
+        const attendanceBadge = getAttendanceBadgeMarkup(data.attendance_status);
         shiftContent.innerHTML = `
             <div class="shift-card">
                 <div class="shift-status">
                     <span class="status-badge work-badge">Scheduled Work Day</span>
+                    ${attendanceBadge}
                 </div>
                 
                 <div class="shift-details-grid">
@@ -325,10 +365,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Show leave details
     function showLeaveDetails(data) {
+        const attendanceBadge = getAttendanceBadgeMarkup(data.attendance_status);
         shiftContent.innerHTML = `
             <div class="leave-card">
                 <div class="leave-status">
                     <span class="status-badge leave-badge">Approved Leave</span>
+                    ${attendanceBadge}
                 </div>
                 
                 <div class="leave-icon-container">
@@ -361,12 +403,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Show no shift message
-    function showNoShift() {
+    function showNoShift(data = null) {
+        const attendanceBadge = getAttendanceBadgeMarkup(data?.attendance_status);
         shiftContent.innerHTML = `
             <div class="no-shift-card">
                 <span class="material-icons no-shift-icon">free_breakfast</span>
                 <h4>No Shift Scheduled</h4>
                 <p>No scheduled shifts for this date.</p>
+                ${attendanceBadge ? `<div style="margin-bottom:10px;">${attendanceBadge}</div>` : ''}
                 <div class="day-off-badge">
                     <span class="material-icons">beach_access</span>
                     Day Off

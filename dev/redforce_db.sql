@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Mar 31, 2026 at 11:45 AM
+-- Host: 127.0.0.1
+-- Generation Time: Apr 17, 2026 at 09:45 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -48,8 +48,7 @@ INSERT INTO `advertisements` (`id`, `title`, `description`, `image_path`, `targe
 (3, 'dgdffdg dfgdf dfdfdg dfgfdg', 'dsvkjsdnjskjsdd fsfdsfdsfdsfsfsdgfdgfdsgsfdgfdgdgdgfdgfdgfdgfdgfdgfdf fdgdgdsfgfds dfgdfgdf fdgdfgdfs fdgfdg gfdgfd fdgdfg fdgfdg dgdf gfdgfd dfgdf fdgegtesg fdgdfg fdsgfd gtgtegfd fdgfd gdfgfdgdfsgfdgfd dgdffdgdg', '/uploads/advertisements/ad_1770490457_69878a5928cf8.png', 'premise officer,caretaker,mobile rider,supervisor', 1, 'active', '2026-02-07 18:54:17', '2026-02-08 15:12:32'),
 (5, 'GVH', 'GC FV', '/uploads/advertisements/ad_1770594780_698921dca34fa.jpg', 'all', 1, 'active', '2026-02-08 23:53:00', '2026-02-08 23:53:00'),
 (6, 'dsvdvd', 'sdvssvsvsd', '/uploads/advertisements/ad_1770597500_69892c7c7439b.jpeg', 'all', 1, 'active', '2026-02-09 00:38:20', '2026-03-31 08:22:27'),
-(7, 'dsafasg', 'ergresgagg', '/uploads/advertisements/ad_1770597603_69892ce36f1a2.png', 'all', 33, 'inactive', '2026-02-09 00:40:03', '2026-02-16 02:35:16'),
-(8, 'dfvdfv', 'fvdfdvdv', '/uploads/advertisements/ad_1770598596_698930c4b6758.jpeg', 'caretaker', 33, 'active', '2026-02-09 00:56:36', '2026-03-09 09:41:36');
+(7, 'dsafasg', 'ergresgagg', '/uploads/advertisements/ad_1770597603_69892ce36f1a2.png', 'all', 33, 'inactive', '2026-02-09 00:40:03', '2026-02-16 02:35:16');
 
 -- --------------------------------------------------------
 
@@ -124,7 +123,8 @@ CREATE TABLE `caretaker_site_assignments` (
 INSERT INTO `caretaker_site_assignments` (`id`, `site_id`, `caretaker_id`, `assignment_start`, `assignment_end`, `status`, `assigned_by`, `assigned_at`, `notes`, `created_at`, `updated_at`) VALUES
 (1, 5, 54, '2026-02-04', '2026-02-04', 'Completed', 1, '2026-02-04 16:05:38', NULL, '2026-02-04 10:35:38', '2026-02-04 10:42:31'),
 (2, 5, 25, '2026-02-04', NULL, 'Active', 1, '2026-02-04 16:12:47', NULL, '2026-02-04 10:42:47', '2026-02-04 10:42:47'),
-(3, 5, 27, '2026-02-04', NULL, 'Active', 1, '2026-02-04 16:18:02', NULL, '2026-02-04 10:48:02', '2026-02-04 10:48:02');
+(3, 5, 27, '2026-02-04', NULL, 'Active', 1, '2026-02-04 16:18:02', NULL, '2026-02-04 10:48:02', '2026-02-04 10:48:02'),
+(4, 28, 54, '2026-04-06', NULL, 'Active', 1, '2026-04-06 10:29:46', NULL, '2026-04-06 04:59:46', '2026-04-06 04:59:46');
 
 -- --------------------------------------------------------
 
@@ -199,20 +199,20 @@ CREATE TABLE `care_taker_full_details` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Clients`
+-- Table structure for table `clients`
 --
 
-CREATE TABLE `Clients` (
+CREATE TABLE `clients` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `contact_person_name` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `Clients`
+-- Dumping data for table `clients`
 --
 
-INSERT INTO `Clients` (`id`, `user_id`, `contact_person_name`) VALUES
+INSERT INTO `clients` (`id`, `user_id`, `contact_person_name`) VALUES
 (1, 10, 'P.M.T Vithanage'),
 (2, 28, 'P.M.T Vithanage'),
 (5, 32, 'P.M.T Vithanage'),
@@ -425,10 +425,10 @@ INSERT INTO `incident_reviews` (`id`, `incident_id`, `user_id`, `reviewer_name`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `jobApplication`
+-- Table structure for table `jobapplication`
 --
 
-CREATE TABLE `jobApplication` (
+CREATE TABLE `jobapplication` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `role` varchar(100) NOT NULL,
   `description` text NOT NULL,
@@ -439,15 +439,6 @@ CREATE TABLE `jobApplication` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `completed` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `jobApplication`
---
-
-INSERT INTO `jobApplication` (`id`, `role`, `description`, `qualifications`, `due_date`, `status`, `created_at`, `updated_at`, `completed`) VALUES
-(1, 'po', 'The Premise Officer is responsible for providing a visible security presence at a fixed client site (e.g., corporate office, warehouse, residential complex, construction site). Their primary role is to deter unauthorized activity, protect assets, and ensure the safety and security of the premises and its occupants.', '- Mandatory: A valid Security Officer license/certification as required by state/country law.\r\n- High school diploma or equivalent.\r\n- Proven experience as a security guard or in a similar role is preferred.\r\n- Ability to remain alert and vigilant for extended periods.\r\n- Strong observation and communication skills (verbal and written).\r\n- Basic computer skills for report writing and operating monitoring systems.\r\n- Physical fitness to conduct patrols and stand for long hours.\r\n- Clean criminal background check as per industry standards.\r\n- Customer service-oriented attitude.\r\n- First Aid/CPR certification is often required or highly desirable.', '2026-06-20', 'closed', '2025-12-21 04:28:48', '2026-03-28 01:36:40', 'true'),
-(2, 'mr', 'The Mobile Patrol Officer performs security checks at multiple client locations within a designated area, using a company-provided vehicle (car, scooter, or bicycle). They provide a dynamic security presence, respond to alarms, and conduct inspections at sites that do not require a permanent static guard.', '- Mandatory: A valid Security Officer license and a clean, valid driver&apos;s license for the relevant vehicle class.\r\n- High school diploma or equivalent.\r\n- Previous experience in mobile patrol or static security is advantageous.\r\n- Excellent driving record and knowledge of the local area.\r\n- Strong independent judgment and problem-solving skills.\r\n- Ability to work alone and be self-motivated.\r\n- Proficient with smartphone apps or handheld devices for reporting.\r\n- Excellent time management to complete patrol routes efficiently.\r\n- Good physical condition for entering/exiting vehicles and conducting foot checks.\r\n- Strong communication skills for clear radio and report communication.', '2026-08-13', 'open', '2025-12-21 08:47:10', '2026-03-28 01:37:19', 'true'),
-(4, 'ct', 'dvdsfv', 'dvdvsfv', '2026-07-03', 'closed', '2026-01-21 12:00:12', '2026-03-28 01:37:14', 'true');
 
 -- --------------------------------------------------------
 
@@ -487,7 +478,12 @@ INSERT INTO `leave_requests` (`id`, `caretaker_id`, `supervisor_id`, `mobileride
 (6, 25, NULL, NULL, NULL, 'Maternity Leave', 'egeg', '2026-02-12', '2026-02-18', '/uploads/leave_proofs/proof_1770623928_698993b8e22f8.png', 'Rejected', 'fvfv', 1, '2026-02-09 07:59:17', '2026-02-09 13:28:48', '2026-02-09 07:59:17'),
 (7, NULL, NULL, NULL, 26, 'Paternity Leave', 'vcccccvdvfdvfdsfdfdsdffdgdsgdgdsgsgdsfvdv', '2026-02-11', '2026-02-13', '/uploads/leave_proofs/proof_1770690748_698a98bcea3ac.png', 'Pending', NULL, NULL, NULL, '2026-02-10 08:02:28', '2026-02-10 02:32:28'),
 (8, NULL, NULL, 5, NULL, 'Annual Leave', 'dcscd', '2026-02-13', '2026-02-14', NULL, 'Pending', NULL, NULL, NULL, '2026-02-12 22:26:15', '2026-02-12 16:56:15'),
-(9, 54, NULL, NULL, NULL, 'Sick Leave', 'dvfdsbsfddsdsdfvfdvfdvfdsvddsfdv', '2026-02-13', '2026-02-25', NULL, 'Pending', NULL, NULL, NULL, '2026-02-12 23:14:36', '2026-02-12 17:44:36');
+(9, 54, NULL, NULL, NULL, 'Sick Leave', 'dvfdsbsfddsdsdfvfdvfdvfdsvddsfdv', '2026-02-13', '2026-02-25', NULL, 'Pending', NULL, NULL, NULL, '2026-02-12 23:14:36', '2026-02-12 17:44:36'),
+(10, NULL, NULL, NULL, 60, 'Sick Leave', 'vomitting', '2026-04-08', '2026-04-10', '/uploads/leave_proofs/proof_1775452599_69d341b7899a7.jpg', 'Approved', NULL, 1, '2026-04-06 05:19:51', '2026-04-06 10:46:39', '2026-04-06 05:19:51'),
+(11, NULL, NULL, NULL, 60, 'Sick Leave', 'sick', '2026-05-14', '2026-05-15', '/uploads/leave_proofs/proof_1775455363_69d34c831f5b1.jpg', 'Approved', NULL, 1, '2026-04-06 06:03:19', '2026-04-06 11:32:43', '2026-04-06 06:03:19'),
+(12, NULL, NULL, NULL, 60, 'Sick Leave', 'stomach', '2026-05-20', '2026-05-21', '/uploads/leave_proofs/proof_1775457474_69d354c2793d0.jpg', 'Approved', 'Approved with replacement officer assignment for leave period', 1, '2026-04-06 06:50:56', '2026-04-06 12:07:54', '2026-04-06 06:50:56'),
+(13, NULL, NULL, NULL, 60, 'Sick Leave', 'ache', '2026-05-24', '2026-05-26', '/uploads/leave_proofs/proof_1775458907_69d35a5bd9541.jpg', 'Approved', 'Approved with replacement officer assignment for leave period', 1, '2026-04-06 07:02:36', '2026-04-06 12:31:47', '2026-04-06 07:02:36'),
+(14, NULL, NULL, NULL, 60, 'Sick Leave', 'fever', '2026-04-29', '2026-04-30', '/uploads/leave_proofs/proof_1775918561_69da5de1a34f9.jpg', 'Approved', 'Approved with replacement officer assignment for leave period', 1, '2026-04-11 14:43:52', '2026-04-11 20:12:41', '2026-04-11 14:43:52');
 
 -- --------------------------------------------------------
 
@@ -600,7 +596,9 @@ INSERT INTO `messages` (`id`, `sender_id`, `recipient_id`, `message`, `is_read`,
 (86, 1, 41, 'fvfdvd', 1, '2026-02-12 20:39:10', 0, 0, '2026-02-12 15:09:09', '2026-02-12 15:09:10'),
 (87, 1, 41, 'dfvfv', 1, '2026-02-12 20:39:13', 0, 0, '2026-02-12 15:09:13', '2026-02-12 15:09:13'),
 (88, 41, 1, 'ererge', 1, '2026-02-16 14:40:27', 0, 0, '2026-02-16 09:10:26', '2026-02-16 09:10:27'),
-(89, 1, 41, 'ffff', 1, NULL, 0, 0, '2026-03-28 01:38:43', '2026-03-28 01:38:43');
+(89, 1, 41, 'ffff', 1, NULL, 0, 0, '2026-03-28 01:38:43', '2026-03-28 01:38:43'),
+(90, 1, 26, 'hi', 1, NULL, 0, 0, '2026-04-16 18:30:14', '2026-04-16 18:30:14'),
+(91, 1, 26, 'hiD', 1, NULL, 0, 0, '2026-04-16 18:32:00', '2026-04-16 18:32:01');
 
 -- --------------------------------------------------------
 
@@ -699,10 +697,10 @@ CREATE TABLE `mobile_rider_full_details` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Notes`
+-- Table structure for table `notes`
 --
 
-CREATE TABLE `Notes` (
+CREATE TABLE `notes` (
   `id` int(11) NOT NULL,
   `userID` varchar(50) NOT NULL,
   `title` varchar(255) NOT NULL,
@@ -822,7 +820,111 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `link`
 (94, 34, 'success', 'Payment Received', 'Company Example 2 has made a payment of LKR 1,710.00. Order: ORD_69ad6e55c5f2d_1772973653', '/admin/clients_payments', 'payments', 0, '2026-03-08 12:41:25', '2026-03-08 12:41:25', 41, NULL),
 (95, 33, 'success', 'Payment Received', 'Company Example 2 has made a payment of LKR 1,710.00. Order: ORD_69ad6e55c5f2d_1772973653', '/admin/clients_payments', 'payments', 0, '2026-03-08 12:41:25', '2026-03-08 12:41:25', 41, NULL),
 (96, 1, 'success', 'Payment Received', 'Company Example 2 has made a payment of LKR 1,710.00. Order: ORD_69ad6e55c5f2d_1772973653', '/admin/clients_payments', 'payments', 1, '2026-03-08 12:41:25', '2026-03-30 09:23:04', 41, NULL),
-(97, 41, 'info', 'New Message from System Administrator', 'ffff', 'http://localhost/RedForce/Client/messages', 'message', 0, '2026-03-28 01:38:43', '2026-03-28 01:38:43', 1, NULL);
+(97, 41, 'info', 'New Message from System Administrator', 'ffff', 'http://localhost/RedForce/Client/messages', 'message', 0, '2026-03-28 01:38:43', '2026-03-28 01:38:43', 1, NULL),
+(98, 34, 'success', 'Payment Received', 'System Administrator has made a payment of LKR 850.00. Order: ORD_69cccb0b4d464_1775029003', '/admin/clients_payments', 'payments', 0, '2026-04-01 07:43:18', '2026-04-01 07:43:18', 1, NULL),
+(99, 33, 'success', 'Payment Received', 'System Administrator has made a payment of LKR 850.00. Order: ORD_69cccb0b4d464_1775029003', '/admin/clients_payments', 'payments', 0, '2026-04-01 07:43:18', '2026-04-01 07:43:18', 1, NULL),
+(100, 1, 'success', 'Payment Received', 'System Administrator has made a payment of LKR 850.00. Order: ORD_69cccb0b4d464_1775029003', '/admin/clients_payments', 'payments', 0, '2026-04-01 07:43:18', '2026-04-01 07:43:18', 1, NULL),
+(101, 57, 'assignment', 'New Site Assignment', 'You have been assigned to alvaroo alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 08:10:49', '2026-04-01 08:10:49', 1, NULL),
+(102, 58, 'assignment', 'New Site Assignment', 'You have been assigned to alvaroo alto (Night).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 08:11:15', '2026-04-01 08:11:15', 1, NULL),
+(103, 59, 'assignment', 'New Site Assignment', 'You have been assigned to alvaroo alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 08:11:29', '2026-04-01 08:11:29', 1, NULL),
+(104, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccef073b9e2_1775038215', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:10:47', '2026-04-01 10:10:47', 40, NULL),
+(105, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccef073b9e2_1775038215', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:10:47', '2026-04-01 10:10:47', 40, NULL),
+(106, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccef073b9e2_1775038215', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:10:47', '2026-04-01 10:10:47', 40, NULL),
+(107, 60, 'assignment', 'New Site Assignment', 'You have been assigned to University of Ruhuna (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 10:11:31', '2026-04-01 10:11:31', 1, NULL),
+(108, 61, 'assignment', 'New Site Assignment', 'You have been assigned to University of Ruhuna (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 10:11:48', '2026-04-01 10:11:48', 1, NULL),
+(109, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccf3a56cb81_1775039397', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:30:17', '2026-04-01 10:30:17', 40, NULL),
+(110, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccf3a56cb81_1775039397', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:30:17', '2026-04-01 10:30:17', 40, NULL),
+(111, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 650.00. Order: ORD_69ccf3a56cb81_1775039397', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:30:17', '2026-04-01 10:30:17', 40, NULL),
+(112, 60, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 10:30:47', '2026-04-01 10:30:47', 1, NULL),
+(113, 61, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 10:30:59', '2026-04-01 10:30:59', 1, NULL),
+(114, 62, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-01 10:35:30', '2026-04-01 10:35:30', 1, NULL),
+(115, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccf8d8c3034_1775040728', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:52:37', '2026-04-01 10:52:37', 40, NULL),
+(116, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccf8d8c3034_1775040728', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:52:37', '2026-04-01 10:52:37', 40, NULL),
+(117, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccf8d8c3034_1775040728', '/admin/clients_payments', 'payments', 0, '2026-04-01 10:52:37', '2026-04-01 10:52:37', 40, NULL),
+(118, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccfcb20f15f_1775041714', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:09:00', '2026-04-01 11:09:00', 40, NULL),
+(119, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccfcb20f15f_1775041714', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:09:00', '2026-04-01 11:09:00', 40, NULL),
+(120, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69ccfcb20f15f_1775041714', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:09:00', '2026-04-01 11:09:00', 40, NULL),
+(121, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cd00cc6b2e9_1775042764', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:26:33', '2026-04-01 11:26:33', 40, NULL),
+(122, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cd00cc6b2e9_1775042764', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:26:33', '2026-04-01 11:26:33', 40, NULL),
+(123, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cd00cc6b2e9_1775042764', '/admin/clients_payments', 'payments', 0, '2026-04-01 11:26:33', '2026-04-01 11:26:33', 40, NULL),
+(124, 63, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-01 11:44:47', '2026-04-01 11:44:47', 1, NULL),
+(125, 69, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 11:47:15', '2026-04-01 11:47:15', 1, NULL),
+(126, 70, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 11:47:28', '2026-04-01 11:47:28', 1, NULL),
+(127, 67, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 11:47:39', '2026-04-01 11:47:39', 1, NULL),
+(128, 68, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-01 11:47:50', '2026-04-01 11:47:50', 1, NULL),
+(129, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69ce0017ad976_1775108119', '/admin/clients_payments', 'payments', 0, '2026-04-02 05:36:03', '2026-04-02 05:36:03', 40, NULL),
+(130, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69ce0017ad976_1775108119', '/admin/clients_payments', 'payments', 0, '2026-04-02 05:36:03', '2026-04-02 05:36:03', 40, NULL),
+(131, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69ce0017ad976_1775108119', '/admin/clients_payments', 'payments', 0, '2026-04-02 05:36:03', '2026-04-02 05:36:03', 40, NULL),
+(132, 71, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-02 05:36:42', '2026-04-02 05:36:42', 1, NULL),
+(133, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cf64314a66b_1775199281', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:55:23', '2026-04-03 06:55:23', 40, NULL),
+(134, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cf64314a66b_1775199281', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:55:23', '2026-04-03 06:55:23', 40, NULL),
+(135, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,300.00. Order: ORD_69cf64314a66b_1775199281', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:55:23', '2026-04-03 06:55:23', 40, NULL),
+(136, 60, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-03 06:55:51', '2026-04-03 06:55:51', 1, NULL),
+(137, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf6512716fc_1775199506', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:58:46', '2026-04-03 06:58:46', 40, NULL),
+(138, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf6512716fc_1775199506', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:58:46', '2026-04-03 06:58:46', 40, NULL),
+(139, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf6512716fc_1775199506', '/admin/clients_payments', 'payments', 0, '2026-04-03 06:58:46', '2026-04-03 06:58:46', 40, NULL),
+(140, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7364a08cc_1775203172', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:00:16', '2026-04-03 08:00:16', 40, NULL),
+(141, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7364a08cc_1775203172', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:00:16', '2026-04-03 08:00:16', 40, NULL),
+(142, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7364a08cc_1775203172', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:00:16', '2026-04-03 08:00:16', 40, NULL),
+(143, 71, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-03 08:00:49', '2026-04-03 08:00:49', 1, NULL),
+(144, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7450346be_1775203408', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:03:47', '2026-04-03 08:03:47', 40, NULL),
+(145, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7450346be_1775203408', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:03:47', '2026-04-03 08:03:47', 40, NULL),
+(146, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7450346be_1775203408', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:03:47', '2026-04-03 08:03:47', 40, NULL),
+(147, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf782ad7b29_1775204394', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:20:20', '2026-04-03 08:20:20', 40, NULL),
+(148, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf782ad7b29_1775204394', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:20:20', '2026-04-03 08:20:20', 40, NULL),
+(149, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf782ad7b29_1775204394', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:20:20', '2026-04-03 08:20:20', 40, NULL),
+(150, 64, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-03 08:20:50', '2026-04-03 08:20:50', 1, NULL),
+(151, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7c0416ba3_1775205380', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:36:49', '2026-04-03 08:36:49', 40, NULL),
+(152, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7c0416ba3_1775205380', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:36:49', '2026-04-03 08:36:49', 40, NULL),
+(153, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,500.00. Order: ORD_69cf7c0416ba3_1775205380', '/admin/clients_payments', 'payments', 0, '2026-04-03 08:36:49', '2026-04-03 08:36:49', 40, NULL),
+(154, 63, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-03 08:48:34', '2026-04-03 08:48:34', 1, NULL),
+(155, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,750.00. Order: ORD_69cf90fc5b5a3_1775210748', '/admin/clients_payments', 'payments', 0, '2026-04-03 10:06:20', '2026-04-03 10:06:20', 40, NULL),
+(156, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,750.00. Order: ORD_69cf90fc5b5a3_1775210748', '/admin/clients_payments', 'payments', 0, '2026-04-03 10:06:20', '2026-04-03 10:06:20', 40, NULL),
+(157, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 2,750.00. Order: ORD_69cf90fc5b5a3_1775210748', '/admin/clients_payments', 'payments', 0, '2026-04-03 10:06:20', '2026-04-03 10:06:20', 40, NULL),
+(158, 65, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-03 10:06:52', '2026-04-03 10:06:52', 1, NULL),
+(159, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,000.00. Order: ORD_69d33d5aebcd2_1775451482', '/admin/clients_payments', 'payments', 0, '2026-04-06 04:58:51', '2026-04-06 04:58:51', 40, NULL),
+(160, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,000.00. Order: ORD_69d33d5aebcd2_1775451482', '/admin/clients_payments', 'payments', 0, '2026-04-06 04:58:51', '2026-04-06 04:58:51', 40, NULL),
+(161, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,000.00. Order: ORD_69d33d5aebcd2_1775451482', '/admin/clients_payments', 'payments', 0, '2026-04-06 04:58:51', '2026-04-06 04:58:51', 40, NULL),
+(162, 54, 'assignment', 'New Site Assignment', 'You have been assigned as caretaker to alto.', '/caretaker/dashboard', 'location_on', 0, '2026-04-06 04:59:46', '2026-04-06 04:59:46', 1, NULL),
+(163, 34, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-08 to 2026-04-10', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 05:16:39', '2026-04-06 05:16:39', 60, NULL),
+(164, 33, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-08 to 2026-04-10', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 05:16:39', '2026-04-06 05:16:39', 60, NULL),
+(165, 1, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-08 to 2026-04-10', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 05:16:39', '2026-04-06 05:16:39', 60, NULL),
+(166, 60, 'success', 'Leave Request Approved', 'Your Sick Leave leave request from 2026-04-08 to 2026-04-10 has been approved.', 'http://localhost/RedForce/premiseOfficer/leaverequests', 'check_circle', 0, '2026-04-06 05:19:51', '2026-04-06 05:19:51', 1, NULL),
+(167, 34, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-14 to 2026-05-15', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:02:43', '2026-04-06 06:02:43', 60, NULL),
+(168, 33, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-14 to 2026-05-15', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:02:43', '2026-04-06 06:02:43', 60, NULL),
+(169, 1, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-14 to 2026-05-15', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:02:43', '2026-04-06 06:02:43', 60, NULL),
+(170, 60, 'success', 'Leave Request Approved', 'Your Sick Leave leave request from 2026-05-14 to 2026-05-15 has been approved.', 'http://localhost/RedForce/premiseOfficer/leaverequests', 'check_circle', 0, '2026-04-06 06:03:19', '2026-04-06 06:03:19', 1, NULL),
+(171, 34, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-20 to 2026-05-21', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:37:54', '2026-04-06 06:37:54', 60, NULL),
+(172, 33, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-20 to 2026-05-21', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:37:54', '2026-04-06 06:37:54', 60, NULL),
+(173, 1, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-20 to 2026-05-21', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 06:37:54', '2026-04-06 06:37:54', 60, NULL),
+(174, 60, 'success', 'Leave Request Approved', 'Your Sick Leave request from 2026-05-20 to 2026-05-21 has been approved with replacement coverage.', 'http://localhost/RedForce/premiseOfficer/leaverequests', 'check_circle', 0, '2026-04-06 06:50:56', '2026-04-06 06:50:56', 1, NULL),
+(175, 77, 'assignment', 'Temporary Leave Coverage Assigned', 'You have been assigned to cover alto from 2026-05-20 to 2026-05-21.', 'http://localhost/RedForce/premiseOfficer/schedule', 'calendar_today', 0, '2026-04-06 06:50:56', '2026-04-06 06:50:56', 1, NULL),
+(176, 34, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-24 to 2026-05-26', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 07:01:47', '2026-04-06 07:01:47', 60, NULL),
+(177, 33, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-24 to 2026-05-26', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 07:01:47', '2026-04-06 07:01:47', 60, NULL),
+(178, 1, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-05-24 to 2026-05-26', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-06 07:01:47', '2026-04-06 07:01:47', 60, NULL),
+(179, 60, 'success', 'Leave Request Approved', 'Your Sick Leave request from 2026-05-24 to 2026-05-26 has been approved with replacement coverage.', 'http://localhost/RedForce/premiseOfficer/leaverequests', 'check_circle', 0, '2026-04-06 07:02:36', '2026-04-06 07:02:36', 1, NULL),
+(180, 78, 'assignment', 'Temporary Leave Coverage Assigned', 'You have been assigned to cover alto from 2026-05-24 to 2026-05-26.', 'http://localhost/RedForce/premiseOfficer/schedule', 'calendar_today', 0, '2026-04-06 07:02:36', '2026-04-06 07:02:36', 1, NULL),
+(181, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,980.00. Order: ORD_69da5cf9c9b42_1775918329', '/admin/clients_payments', 'payments', 0, '2026-04-11 14:39:09', '2026-04-11 14:39:09', 40, NULL),
+(182, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,980.00. Order: ORD_69da5cf9c9b42_1775918329', '/admin/clients_payments', 'payments', 0, '2026-04-11 14:39:09', '2026-04-11 14:39:09', 40, NULL),
+(183, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 3,980.00. Order: ORD_69da5cf9c9b42_1775918329', '/admin/clients_payments', 'payments', 0, '2026-04-11 14:39:09', '2026-04-11 14:39:09', 40, NULL),
+(184, 79, 'assignment', 'New Site Assignment', 'You have been assigned to alto (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-11 14:40:37', '2026-04-11 14:40:37', 1, NULL),
+(185, 19, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to alto.', '/supervisor/dashboard', 'location_on', 0, '2026-04-11 14:40:51', '2026-04-11 14:40:51', 1, NULL),
+(186, 34, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-29 to 2026-04-30', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-11 14:42:41', '2026-04-11 14:42:41', 60, NULL),
+(187, 33, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-29 to 2026-04-30', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-11 14:42:41', '2026-04-11 14:42:41', 60, NULL),
+(188, 1, 'info', 'New Leave Request', 'Test PO 04 (Premise Officer) submitted a leave request for Sick Leave from 2026-04-29 to 2026-04-30', 'http://localhost/RedForce/admin/pendings', 'calendar_today', 0, '2026-04-11 14:42:41', '2026-04-11 14:42:41', 60, NULL),
+(189, 60, 'success', 'Leave Request Approved', 'Your Sick Leave request from 2026-04-29 to 2026-04-30 has been approved with replacement coverage.', 'http://localhost/RedForce/premiseOfficer/leaverequests', 'check_circle', 0, '2026-04-11 14:43:52', '2026-04-11 14:43:52', 1, NULL),
+(190, 80, 'assignment', 'Temporary Leave Coverage Assigned', 'You have been assigned to cover alto from 2026-04-29 to 2026-04-30.', 'http://localhost/RedForce/premiseOfficer/schedule', 'calendar_today', 0, '2026-04-11 14:43:52', '2026-04-11 14:43:52', 1, NULL),
+(191, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,030.00. Order: ORD_69dd2e3979cd7_1776102969', '/admin/clients_payments', 'payments', 0, '2026-04-13 17:56:44', '2026-04-13 17:56:44', 40, NULL),
+(192, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,030.00. Order: ORD_69dd2e3979cd7_1776102969', '/admin/clients_payments', 'payments', 0, '2026-04-13 17:56:44', '2026-04-13 17:56:44', 40, NULL),
+(193, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,030.00. Order: ORD_69dd2e3979cd7_1776102969', '/admin/clients_payments', 'payments', 0, '2026-04-13 17:56:44', '2026-04-13 17:56:44', 40, NULL),
+(194, 79, 'assignment', 'New Site Assignment', 'You have been assigned to Final test (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-13 18:07:44', '2026-04-13 18:07:44', 1, NULL),
+(195, 81, 'assignment', 'New Site Assignment', 'You have been assigned to Final test (Day).', '/premiseofficer/dashboard', 'location_on', 0, '2026-04-13 18:07:57', '2026-04-13 18:07:57', 1, NULL),
+(196, 65, 'assignment', 'New Site Assignment', 'You have been assigned as supervisor to Final test.', '/supervisor/dashboard', 'location_on', 0, '2026-04-13 18:08:10', '2026-04-13 18:08:10', 1, NULL),
+(197, 34, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,080.00. Order: ORD_69e12782608b5_1776363394', '/admin/clients_payments', 'payments', 0, '2026-04-16 18:17:36', '2026-04-16 18:17:36', 40, NULL),
+(198, 33, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,080.00. Order: ORD_69e12782608b5_1776363394', '/admin/clients_payments', 'payments', 0, '2026-04-16 18:17:36', '2026-04-16 18:17:36', 40, NULL),
+(199, 1, 'success', 'Payment Received', 'Example Company has made a payment of LKR 5,080.00. Order: ORD_69e12782608b5_1776363394', '/admin/clients_payments', 'payments', 0, '2026-04-16 18:17:36', '2026-04-16 18:17:36', 40, NULL),
+(200, 26, 'info', 'New Message from System Administrator', 'hi', 'http://localhost/RedForce/PremiseOfficer/messages', 'message', 0, '2026-04-16 18:30:14', '2026-04-16 18:30:14', 1, NULL),
+(201, 26, 'info', 'New Message from System Administrator', 'hiD', 'http://localhost/RedForce/PremiseOfficer/messages', 'message', 0, '2026-04-16 18:32:00', '2026-04-16 18:32:00', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -840,9 +942,50 @@ CREATE TABLE `officer_attendance` (
   `check_out_time` time DEFAULT NULL,
   `status` enum('Present','Absent','Late','Half Day') NOT NULL DEFAULT 'Present',
   `notes` text DEFAULT NULL,
+  `duty_point` varchar(120) DEFAULT NULL,
+  `staff_role` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `officer_attendance`
+--
+
+INSERT INTO `officer_attendance` (`id`, `supervisor_id`, `officer_id`, `officer_name`, `attendance_date`, `check_in_time`, `check_out_time`, `status`, `notes`, `duty_point`, `staff_role`, `created_at`, `updated_at`) VALUES
+(2, 63, 'PO914', 'Test PO 05', '2026-04-13', NULL, NULL, 'Present', '', 'Main Gate', 'Premise Officer', '2026-04-13 15:43:23', '2026-04-13 15:43:23'),
+(3, 63, 'PO903', 'Test PO 903', '2026-04-13', NULL, NULL, 'Absent', 'bkjbkj', 'Back gate', 'Premise Officer', '2026-04-13 15:47:08', '2026-04-13 15:47:08'),
+(4, 63, 'PO920', 'Test PO 92', '2026-04-13', NULL, NULL, 'Present', '', 'Back gate', 'Premise Officer', '2026-04-13 16:25:06', '2026-04-13 16:25:06'),
+(5, 65, 'PO903', 'Test PO 903', '2026-05-14', NULL, NULL, 'Present', '', 'Main Gate', 'Premise Officer', '2026-04-13 18:13:50', '2026-04-13 18:13:50');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `officer_performance_ratings`
+--
+
+CREATE TABLE `officer_performance_ratings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `site_id` bigint(20) UNSIGNED NOT NULL,
+  `officer_user_id` int(11) NOT NULL,
+  `reviewer_user_id` int(11) NOT NULL,
+  `reviewer_role` enum('client','supervisor') NOT NULL,
+  `rating_date` date NOT NULL,
+  `rating_value` tinyint(3) UNSIGNED NOT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ;
+
+--
+-- Dumping data for table `officer_performance_ratings`
+--
+
+INSERT INTO `officer_performance_ratings` (`id`, `site_id`, `officer_user_id`, `reviewer_user_id`, `reviewer_role`, `rating_date`, `rating_value`, `description`, `created_at`, `updated_at`) VALUES
+(1, 31, 79, 40, 'client', '2026-05-01', 5, 'good', '2026-04-15 18:02:46', '2026-04-15 18:02:46'),
+(3, 28, 61, 63, 'supervisor', '2026-04-15', 3, '', '2026-04-15 18:04:47', '2026-04-15 18:04:47'),
+(4, 28, 68, 63, 'supervisor', '2026-04-15', 3, '', '2026-04-15 18:05:41', '2026-04-15 18:05:41'),
+(5, 31, 81, 40, 'client', '2026-05-01', 5, 'b b', '2026-04-17 05:08:44', '2026-04-17 05:08:44');
 
 -- --------------------------------------------------------
 
@@ -872,7 +1015,7 @@ CREATE TABLE `officer_site_assignments` (
 INSERT INTO `officer_site_assignments` (`id`, `site_id`, `officer_id`, `shift_type`, `assignment_start`, `assignment_end`, `status`, `assigned_by`, `assigned_at`, `notes`, `created_at`, `updated_at`) VALUES
 (1, 8, 20, 'Night', '2026-01-27', '2026-01-27', 'Completed', 1, '2026-01-27 10:55:39', NULL, '2026-01-27 05:25:39', '2026-01-27 05:25:54'),
 (2, 5, 17, 'Day', '2026-01-27', '2026-01-27', 'Completed', 1, '2026-01-27 11:05:19', NULL, '2026-01-27 05:35:19', '2026-01-27 08:35:55'),
-(3, 15, 19, 'Day', '2026-01-27', NULL, 'Active', 1, '2026-01-27 14:00:03', NULL, '2026-01-27 08:30:03', '2026-01-27 08:30:03'),
+(3, 15, 19, 'Day', '2026-01-27', '2026-04-06', 'Completed', 1, '2026-01-27 14:00:03', NULL, '2026-01-27 08:30:03', '2026-04-06 06:39:10'),
 (4, 5, 17, 'Supervisor', '2026-01-27', '2026-01-27', 'Completed', 1, '2026-01-27 14:11:25', NULL, '2026-01-27 08:41:25', '2026-01-27 08:53:57'),
 (5, 5, 18, 'Day', '2026-01-27', '2026-01-27', 'Completed', 1, '2026-01-27 14:20:15', NULL, '2026-01-27 08:50:15', '2026-01-27 08:57:57'),
 (6, 5, 20, 'Supervisor', '2026-01-27', '2026-01-27', 'Completed', 1, '2026-01-27 14:23:42', NULL, '2026-01-27 08:53:42', '2026-01-27 08:54:06'),
@@ -893,7 +1036,35 @@ INSERT INTO `officer_site_assignments` (`id`, `site_id`, `officer_id`, `shift_ty
 (21, 5, 26, 'Day', '2026-01-29', '2026-01-30', 'Completed', 1, '2026-01-29 11:20:24', NULL, '2026-01-29 05:50:24', '2026-01-30 03:51:27'),
 (22, 5, 17, 'Supervisor', '2026-01-30', NULL, 'Active', 1, '2026-01-30 09:20:47', NULL, '2026-01-30 03:50:47', '2026-01-30 03:50:47'),
 (23, 5, 26, 'Day', '2026-01-30', NULL, 'Active', 1, '2026-01-30 09:21:39', NULL, '2026-01-30 03:51:39', '2026-01-30 03:51:39'),
-(24, 17, 18, 'Supervisor', '2026-01-30', NULL, 'Active', 1, '2026-01-30 12:33:23', NULL, '2026-01-30 07:03:23', '2026-01-30 07:03:23');
+(24, 17, 18, 'Supervisor', '2026-01-30', NULL, 'Active', 1, '2026-01-30 12:33:23', NULL, '2026-01-30 07:03:23', '2026-01-30 07:03:23'),
+(25, 26, 57, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 13:40:49', NULL, '2026-04-01 08:10:49', '2026-04-01 08:10:49'),
+(26, 26, 58, 'Night', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 13:41:15', NULL, '2026-04-01 08:11:15', '2026-04-01 08:11:15'),
+(27, 26, 59, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 13:41:29', NULL, '2026-04-01 08:11:29', '2026-04-01 08:11:29'),
+(30, 28, 60, 'Day', '2026-04-01', '2026-04-02', 'Completed', 1, '2026-04-01 16:00:47', NULL, '2026-04-01 10:30:47', '2026-04-02 05:58:04'),
+(31, 28, 61, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 16:00:59', NULL, '2026-04-01 10:30:59', '2026-04-01 10:30:59'),
+(32, 28, 62, 'Supervisor', '2026-04-01', NULL, 'Active', 1, '2026-04-01 16:05:30', NULL, '2026-04-01 10:35:30', '2026-04-01 10:35:30'),
+(33, 28, 63, 'Supervisor', '2026-04-01', '2026-04-03', 'Completed', 1, '2026-04-01 17:14:47', NULL, '2026-04-01 11:44:47', '2026-04-03 08:32:35'),
+(34, 28, 69, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 17:17:15', NULL, '2026-04-01 11:47:15', '2026-04-01 11:47:15'),
+(35, 28, 70, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 17:17:28', NULL, '2026-04-01 11:47:28', '2026-04-01 11:47:28'),
+(36, 28, 67, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 17:17:39', NULL, '2026-04-01 11:47:39', '2026-04-01 11:47:39'),
+(37, 28, 68, 'Day', '2026-04-01', '2026-05-31', 'Active', 1, '2026-04-01 17:17:50', NULL, '2026-04-01 11:47:50', '2026-04-01 11:47:50'),
+(38, 28, 71, 'Day', '2026-04-02', '2026-04-02', 'Completed', 1, '2026-04-02 11:06:42', NULL, '2026-04-02 05:36:42', '2026-04-02 05:57:59'),
+(39, 28, 60, 'Day', '2026-04-03', '2026-04-28', 'Active', 1, '2026-04-03 12:25:51', NULL, '2026-04-03 06:55:51', '2026-04-11 14:43:52'),
+(41, 28, 71, 'Day', '2026-04-03', '2026-05-31', 'Active', 1, '2026-04-03 13:30:49', NULL, '2026-04-03 08:00:49', '2026-04-03 08:00:49'),
+(44, 28, 64, 'Supervisor', '2026-04-03', NULL, 'Active', 1, '2026-04-03 13:50:50', NULL, '2026-04-03 08:20:50', '2026-04-03 08:20:50'),
+(45, 28, 63, 'Supervisor', '2026-04-03', NULL, 'Active', 1, '2026-04-03 14:18:34', NULL, '2026-04-03 08:48:34', '2026-04-03 08:48:34'),
+(46, 28, 65, 'Supervisor', '2026-04-03', '2026-04-11', 'Completed', 1, '2026-04-03 15:36:52', NULL, '2026-04-03 10:06:52', '2026-04-11 14:06:04'),
+(47, 28, 77, 'Day', '2026-05-20', '2026-05-21', 'Active', 1, '2026-04-06 12:20:56', 'Temporary leave cover for leave request #12', '2026-04-06 06:50:56', '2026-04-06 06:50:56'),
+(48, 28, 60, 'Day', '2026-05-22', '2026-04-11', 'Completed', 1, '2026-04-06 12:20:56', 'Reassignment after leave request #12', '2026-04-06 06:50:56', '2026-04-11 14:05:57'),
+(49, 28, 78, 'Day', '2026-05-24', '2026-05-26', 'Active', 1, '2026-04-06 12:32:36', 'Temporary leave cover for leave request #13', '2026-04-06 07:02:36', '2026-04-06 07:02:36'),
+(50, 28, 60, 'Day', '2026-05-27', '2026-05-31', 'Active', 1, '2026-04-06 12:32:36', 'Reassignment after leave request #13', '2026-04-06 07:02:36', '2026-04-06 07:02:36'),
+(51, 28, 79, 'Day', '2026-04-11', '2026-04-13', 'Completed', 1, '2026-04-11 20:10:37', NULL, '2026-04-11 14:40:37', '2026-04-13 18:07:05'),
+(52, 28, 19, 'Supervisor', '2026-04-11', NULL, 'Active', 1, '2026-04-11 20:10:51', NULL, '2026-04-11 14:40:51', '2026-04-11 14:40:51'),
+(53, 28, 80, 'Day', '2026-04-29', '2026-04-30', 'Active', 1, '2026-04-11 20:13:52', 'Temporary leave cover for leave request #14', '2026-04-11 14:43:52', '2026-04-11 14:43:52'),
+(54, 28, 60, 'Day', '2026-05-01', '2026-04-13', 'Completed', 1, '2026-04-11 20:13:52', 'Reassignment after leave request #14', '2026-04-11 14:43:52', '2026-04-13 18:07:01'),
+(55, 31, 79, 'Day', '2026-04-13', '2026-05-31', 'Active', 1, '2026-04-13 23:37:44', NULL, '2026-04-13 18:07:44', '2026-04-13 18:07:44'),
+(56, 31, 81, 'Day', '2026-04-13', '2026-05-31', 'Active', 1, '2026-04-13 23:37:57', NULL, '2026-04-13 18:07:57', '2026-04-13 18:07:57'),
+(57, 31, 65, 'Supervisor', '2026-04-13', NULL, 'Active', 1, '2026-04-13 23:38:10', NULL, '2026-04-13 18:08:10', '2026-04-13 18:08:10');
 
 -- --------------------------------------------------------
 
@@ -975,8 +1146,25 @@ CREATE TABLE `package_requests` (
 --
 
 INSERT INTO `package_requests` (`id`, `client_id`, `package_name`, `site_name`, `city`, `district`, `site_address`, `latitude`, `longitude`, `phone_number`, `image_name`, `start_date`, `end_date`, `number_of_guards`, `day_guards`, `night_guards`, `package_price`, `comments`, `status`, `payment_status`, `payment_id`, `admin_notes`, `approved_by`, `approved_at`, `submitted_date`, `updated_at`, `draft_site_id`) VALUES
-(38, 41, 'Business Package', 'Test Site B', 'Colombo', 'Colombo', '456 Park Rd, Colombo', NULL, NULL, NULL, NULL, '2026-02-23', '2026-03-25', 3, 1, 1, 7500.00, 'Paid - should show green locked', 'Pending', 'paid', 63, NULL, NULL, NULL, '2026-02-16 11:09:20', '2026-02-16 11:25:45', NULL),
-(45, 41, 'standardpackage', 'Darley Road', 'colombo', '', 'Darley Rd, Colombo, Sri Lanka', NULL, NULL, '', NULL, '2026-04-01', '2026-04-30', 3, 0, 0, 850.00, NULL, 'Pending', 'unpaid', NULL, NULL, NULL, NULL, '2026-03-09 15:16:29', '2026-03-09 15:16:29', NULL);
+(38, 41, 'Business Package', 'Test Site B', 'Colombo', 'Colombo', '456 Park Rd, Colombo', NULL, NULL, NULL, NULL, '2026-02-23', '2026-03-25', 3, 1, 1, 7500.00, 'Paid - should show green locked', 'Pending', 'paid', 63, NULL, NULL, NULL, '2026-02-16 11:09:20', '2026-04-03 15:39:57', 30),
+(45, 41, 'standardpackage', 'Darley Road', 'colombo', '', 'Darley Rd, Colombo, Sri Lanka', NULL, NULL, '', NULL, '2026-04-01', '2026-04-30', 3, 0, 0, 850.00, NULL, 'Pending', 'unpaid', NULL, NULL, NULL, NULL, '2026-03-09 15:16:29', '2026-03-09 15:16:29', NULL),
+(46, 40, 'standardpackage', 'alvaroo alto', 'Colombo 12', 'Colombo', '30b Welikadawatte, Sri Jayawardenepura Kotte, Sri Lanka', 6.90393810, 79.89816441, '0743476508', '1775028872_Alvaro Aalto.jpg', '2026-05-01', '2026-05-31', 3, 0, 0, 850.00, 'Newly added site', 'Approved', 'paid', 150, NULL, 1, '2026-04-01 13:47:17', '2026-04-01 13:04:32', '2026-04-01 13:47:17', 26),
+(47, 40, 'basicpackage', 'University of Ruhuna', 'Mathara', '', 'A2, Matara, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 2, 1, 0, 650.00, NULL, 'Rejected', 'paid', 151, NULL, 1, '2026-04-01 15:58:15', '2026-04-01 15:39:30', '2026-04-01 15:58:15', NULL),
+(48, 40, 'basicpackage', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', 6.92866681, 79.86726537, '0743476508', '1775039384_Alvaro Aalto.jpg', '2026-05-01', '2026-05-31', 2, 1, 0, 650.00, 'Newly added site', 'Approved', 'paid', 152, NULL, 1, '2026-04-01 16:05:37', '2026-04-01 15:59:44', '2026-04-01 16:05:37', 28),
+(49, 40, 'Custom Package', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 4, 1, 0, 1050.00, NULL, 'Approved', 'paid', 155, NULL, 1, '2026-04-01 16:36:22', '2026-04-01 16:21:58', '2026-04-01 16:36:22', 28),
+(50, 40, 'Custom Package', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 4, 1, 0, 1050.00, NULL, 'Approved', 'paid', 161, NULL, 1, '2026-04-01 16:39:37', '2026-04-01 16:37:14', '2026-04-01 16:39:37', 28),
+(51, 40, 'Custom Package', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 4, 1, 0, 1050.00, NULL, 'Approved', 'paid', 164, NULL, 1, '2026-04-01 17:17:55', '2026-04-01 16:56:00', '2026-04-01 17:17:55', 28),
+(52, 40, 'extrasecurityofficer', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 1, 0, 0, 200.00, NULL, 'Approved', 'paid', 167, NULL, 1, '2026-04-02 11:07:00', '2026-04-02 11:02:01', '2026-04-02 11:07:00', 28),
+(53, 40, 'extrasecurityofficer', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 1, 0, 0, 200.00, NULL, 'Approved', 'paid', 170, NULL, 1, '2026-04-03 12:25:56', '2026-04-03 12:24:33', '2026-04-03 12:25:56', 28),
+(55, 40, 'extrasecurityofficer', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 1, 0, 0, 200.00, NULL, 'Approved', 'paid', 176, NULL, 1, '2026-04-03 13:31:04', '2026-04-03 13:29:27', '2026-04-03 13:31:04', 28),
+(56, 40, 'extrasupervisor', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 0, 0, 0, 0.00, NULL, 'Rejected', 'paid', 179, NULL, 1, '2026-04-03 13:42:11', '2026-04-03 13:33:23', '2026-04-03 13:42:11', NULL),
+(57, 40, 'extrasupervisor', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 0, 0, 0, 0.00, NULL, 'Rejected', 'paid', 182, NULL, 1, '2026-04-03 14:05:56', '2026-04-03 13:49:51', '2026-04-03 14:05:56', NULL),
+(58, 40, 'extrasupervisor', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 0, 0, 0, 0.00, NULL, 'Approved', 'paid', 185, NULL, 1, '2026-04-03 14:18:38', '2026-04-03 14:06:16', '2026-04-03 14:18:38', 28),
+(59, 40, 'extrasupervisor', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 0, 0, 0, 0.00, NULL, 'Approved', 'paid', 188, NULL, 1, '2026-04-03 15:38:04', '2026-04-03 15:35:45', '2026-04-03 15:38:04', 28),
+(60, 40, 'extracaretaker', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 0, 0, 0, 0.00, NULL, 'Approved', 'paid', 191, NULL, 1, '2026-04-06 10:29:51', '2026-04-06 10:27:48', '2026-04-06 10:29:51', 28),
+(61, 40, 'Custom Package', 'alto', 'Colombo 8', 'Colombo', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', NULL, NULL, '', NULL, '2026-05-01', '2026-05-31', 1, 1, 0, 450.00, NULL, 'Approved', 'paid', 200, NULL, 1, '2026-04-11 20:11:00', '2026-04-11 20:06:08', '2026-04-11 20:11:00', 28),
+(62, 40, 'basicpackage', 'Final test', 'Colombo 10', 'Colombo', 'WVFH+HP7, Colombo 01000, Sri Lanka', 6.92464082, 79.87953918, '0743476508', '1776102960_9 - Image-Led Storytelling.jpg', '2026-05-01', '2026-05-31', 2, 1, 0, 650.00, 'Newly added site', 'Approved', 'paid', 203, NULL, 1, '2026-04-13 23:41:57', '2026-04-13 23:26:00', '2026-04-13 23:41:57', 31),
+(63, 40, 'Custom Package', 'Hello', 'Colombo 10', 'Colombo', 'WRQP+32 Port City Colombo, Sri Lanka', 6.93769767, 79.83504229, '0743476508', '1776363377_9 - Image-Led Storytelling.jpg', '2026-05-01', '2026-05-31', 1, 1, 0, 450.00, 'Newly added site', 'Pending', 'paid', 207, NULL, NULL, NULL, '2026-04-16 23:46:17', '2026-04-16 23:47:52', 32);
 
 -- --------------------------------------------------------
 
@@ -1021,7 +1209,56 @@ INSERT INTO `payments` (`id`, `client_id`, `site_id`, `package_request_id`, `inv
 (146, 41, 17, NULL, 'ORD_69ae97cd0605c_1773049805-SITE-17', 250.00, 'Monthly Security Service Payment - Colombo City Centre Mall and Residences', '2026-03-09', '2026-04-08', 'pending', 'PayHere Online', 'ORD_69ae97cd0605c_1773049805', '2026-03-09 09:50:05', '2026-03-09 09:50:05'),
 (147, 41, 5, NULL, 'ORD_69ae97cd0605c_1773049805-SITE-5', 1060.00, 'Monthly Security Service Payment - Darley Road', '2026-03-09', '2026-04-08', 'pending', 'PayHere Online', 'ORD_69ae97cd0605c_1773049805', '2026-03-09 09:50:05', '2026-03-09 09:50:05'),
 (148, 41, 15, NULL, 'ORD_69ae97cd0605c_1773049805-SITE-15', 200.00, 'Monthly Security Service Payment - Jafferjee Brothers', '2026-03-09', '2026-04-08', 'pending', 'PayHere Online', 'ORD_69ae97cd0605c_1773049805', '2026-03-09 09:50:05', '2026-03-09 09:50:05'),
-(149, 41, NULL, 45, 'ORD_69ae97cd0605c_1773049805-REQ-45', 850.00, 'Package Request Payment - standardpackage for Darley Road', '2026-03-09', '2026-04-08', 'pending', 'PayHere Online', 'ORD_69ae97cd0605c_1773049805', '2026-03-09 09:50:05', '2026-03-09 09:50:05');
+(149, 41, NULL, 45, 'ORD_69ae97cd0605c_1773049805-REQ-45', 850.00, 'Package Request Payment - standardpackage for Darley Road', '2026-03-09', '2026-04-08', 'pending', 'PayHere Online', 'ORD_69ae97cd0605c_1773049805', '2026-03-09 09:50:05', '2026-03-09 09:50:05'),
+(150, 1, NULL, 46, 'ORD_69cccb0b4d464_1775029003-REQ-46', 850.00, 'Package Request Payment - standardpackage for alvaroo alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69cccb0b4d464_1775029003', '2026-04-01 07:36:43', '2026-04-01 07:43:18'),
+(151, 40, NULL, 47, 'ORD_69ccef073b9e2_1775038215-REQ-47', 650.00, 'Package Request Payment - basicpackage for University of Ruhuna', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccef073b9e2_1775038215', '2026-04-01 10:10:15', '2026-04-01 10:10:47'),
+(152, 40, NULL, 48, 'ORD_69ccf3a56cb81_1775039397-REQ-48', 650.00, 'Package Request Payment - basicpackage for alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccf3a56cb81_1775039397', '2026-04-01 10:29:57', '2026-04-01 10:30:17'),
+(153, 40, 28, NULL, 'ORD_69ccf8d8c3034_1775040728-SITE-28', 650.00, 'Monthly Security Service Payment - alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccf8d8c3034_1775040728', '2026-04-01 10:52:08', '2026-04-01 10:52:37'),
+(154, 40, 26, NULL, 'ORD_69ccf8d8c3034_1775040728-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccf8d8c3034_1775040728', '2026-04-01 10:52:08', '2026-04-01 10:52:37'),
+(155, 40, NULL, 49, 'ORD_69ccf8d8c3034_1775040728-REQ-49', 1050.00, 'Package Request Payment - Custom Package for alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccf8d8c3034_1775040728', '2026-04-01 10:52:08', '2026-04-01 10:52:37'),
+(159, 40, 28, NULL, 'ORD_69ccfcb20f15f_1775041714-SITE-28', 650.00, 'Monthly Security Service Payment - alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccfcb20f15f_1775041714', '2026-04-01 11:08:34', '2026-04-01 11:09:00'),
+(160, 40, 26, NULL, 'ORD_69ccfcb20f15f_1775041714-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccfcb20f15f_1775041714', '2026-04-01 11:08:34', '2026-04-01 11:09:00'),
+(161, 40, 28, 50, 'ORD_69ccfcb20f15f_1775041714-REQ-50', 1050.00, 'Package Request Payment - Custom Package for alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69ccfcb20f15f_1775041714', '2026-04-01 11:08:34', '2026-04-01 11:09:00'),
+(162, 40, 28, NULL, 'ORD_69cd00cc6b2e9_1775042764-SITE-28', 650.00, 'Monthly Security Service Payment - alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69cd00cc6b2e9_1775042764', '2026-04-01 11:26:04', '2026-04-01 11:26:33'),
+(163, 40, 26, NULL, 'ORD_69cd00cc6b2e9_1775042764-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69cd00cc6b2e9_1775042764', '2026-04-01 11:26:04', '2026-04-01 11:26:33'),
+(164, 40, 28, 51, 'ORD_69cd00cc6b2e9_1775042764-REQ-51', 1050.00, 'Package Request Payment - Custom Package for alto', '2026-04-01', '2026-05-01', 'paid', 'PayHere Online', 'ORD_69cd00cc6b2e9_1775042764', '2026-04-01 11:26:04', '2026-04-01 11:26:33'),
+(165, 40, 28, NULL, 'ORD_69ce0017ad976_1775108119-SITE-28', 1700.00, 'Monthly Security Service Payment - alto', '2026-04-02', '2026-05-02', 'paid', 'PayHere Online', 'ORD_69ce0017ad976_1775108119', '2026-04-02 05:35:19', '2026-04-02 05:36:03'),
+(166, 40, 26, NULL, 'ORD_69ce0017ad976_1775108119-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-02', '2026-05-02', 'paid', 'PayHere Online', 'ORD_69ce0017ad976_1775108119', '2026-04-02 05:35:19', '2026-04-02 05:36:03'),
+(167, 40, 28, 52, 'ORD_69ce0017ad976_1775108119-REQ-52', 200.00, 'Package Request Payment - extrasecurityofficer for alto', '2026-04-02', '2026-05-02', 'paid', 'PayHere Online', 'ORD_69ce0017ad976_1775108119', '2026-04-02 05:35:19', '2026-04-02 05:36:03'),
+(168, 40, 28, NULL, 'ORD_69cf64314a66b_1775199281-SITE-28', 1500.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf64314a66b_1775199281', '2026-04-03 06:54:41', '2026-04-03 06:55:23'),
+(169, 40, 26, NULL, 'ORD_69cf64314a66b_1775199281-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf64314a66b_1775199281', '2026-04-03 06:54:41', '2026-04-03 06:55:23'),
+(170, 40, 28, 53, 'ORD_69cf64314a66b_1775199281-REQ-53', 200.00, 'Package Request Payment - extrasecurityofficer for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf64314a66b_1775199281', '2026-04-03 06:54:41', '2026-04-03 06:55:23'),
+(171, 40, 28, NULL, 'ORD_69cf6512716fc_1775199506-SITE-28', 1700.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf6512716fc_1775199506', '2026-04-03 06:58:26', '2026-04-03 06:58:46'),
+(172, 40, 26, NULL, 'ORD_69cf6512716fc_1775199506-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf6512716fc_1775199506', '2026-04-03 06:58:26', '2026-04-03 06:58:46'),
+(173, 40, 28, 54, 'ORD_69cf6512716fc_1775199506-REQ-54', 200.00, 'Package Request Payment - extrasecurityofficer for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf6512716fc_1775199506', '2026-04-03 06:58:26', '2026-04-03 06:58:46'),
+(174, 40, 28, NULL, 'ORD_69cf7364a08cc_1775203172-SITE-28', 1700.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7364a08cc_1775203172', '2026-04-03 07:59:32', '2026-04-03 08:00:16'),
+(175, 40, 26, NULL, 'ORD_69cf7364a08cc_1775203172-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7364a08cc_1775203172', '2026-04-03 07:59:32', '2026-04-03 08:00:16'),
+(176, 40, 28, 55, 'ORD_69cf7364a08cc_1775203172-REQ-55', 200.00, 'Package Request Payment - extrasecurityofficer for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7364a08cc_1775203172', '2026-04-03 07:59:32', '2026-04-03 08:00:16'),
+(177, 40, 28, NULL, 'ORD_69cf7450346be_1775203408-SITE-28', 1900.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7450346be_1775203408', '2026-04-03 08:03:28', '2026-04-03 08:03:47'),
+(178, 40, 26, NULL, 'ORD_69cf7450346be_1775203408-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7450346be_1775203408', '2026-04-03 08:03:28', '2026-04-03 08:03:47'),
+(179, 40, 28, 56, 'ORD_69cf7450346be_1775203408-REQ-56', 0.00, 'Package Request Payment - extrasupervisor for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7450346be_1775203408', '2026-04-03 08:03:28', '2026-04-03 08:03:47'),
+(180, 40, 28, NULL, 'ORD_69cf782ad7b29_1775204394-SITE-28', 1900.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf782ad7b29_1775204394', '2026-04-03 08:19:54', '2026-04-03 08:20:20'),
+(181, 40, 26, NULL, 'ORD_69cf782ad7b29_1775204394-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf782ad7b29_1775204394', '2026-04-03 08:19:54', '2026-04-03 08:20:20'),
+(182, 40, 28, 57, 'ORD_69cf782ad7b29_1775204394-REQ-57', 0.00, 'Package Request Payment - extrasupervisor for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf782ad7b29_1775204394', '2026-04-03 08:19:54', '2026-04-03 08:20:20'),
+(183, 40, 28, NULL, 'ORD_69cf7c0416ba3_1775205380-SITE-28', 1900.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7c0416ba3_1775205380', '2026-04-03 08:36:20', '2026-04-03 08:36:49'),
+(184, 40, 26, NULL, 'ORD_69cf7c0416ba3_1775205380-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7c0416ba3_1775205380', '2026-04-03 08:36:20', '2026-04-03 08:36:49'),
+(185, 40, 28, 58, 'ORD_69cf7c0416ba3_1775205380-REQ-58', 0.00, 'Package Request Payment - extrasupervisor for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf7c0416ba3_1775205380', '2026-04-03 08:36:20', '2026-04-03 08:36:49'),
+(186, 40, 28, NULL, 'ORD_69cf90fc5b5a3_1775210748-SITE-28', 2150.00, 'Monthly Security Service Payment - alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf90fc5b5a3_1775210748', '2026-04-03 10:05:48', '2026-04-03 10:06:20'),
+(187, 40, 26, NULL, 'ORD_69cf90fc5b5a3_1775210748-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf90fc5b5a3_1775210748', '2026-04-03 10:05:48', '2026-04-03 10:06:20'),
+(188, 40, 28, 59, 'ORD_69cf90fc5b5a3_1775210748-REQ-59', 0.00, 'Package Request Payment - extrasupervisor for alto', '2026-04-03', '2026-05-03', 'paid', 'PayHere Online', 'ORD_69cf90fc5b5a3_1775210748', '2026-04-03 10:05:48', '2026-04-03 10:06:20'),
+(189, 40, 28, NULL, 'ORD_69d33d5aebcd2_1775451482-SITE-28', 2400.00, 'Monthly Security Service Payment - alto', '2026-04-06', '2026-05-06', 'paid', 'PayHere Online', 'ORD_69d33d5aebcd2_1775451482', '2026-04-06 04:58:02', '2026-04-06 04:58:51'),
+(190, 40, 26, NULL, 'ORD_69d33d5aebcd2_1775451482-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-06', '2026-05-06', 'paid', 'PayHere Online', 'ORD_69d33d5aebcd2_1775451482', '2026-04-06 04:58:02', '2026-04-06 04:58:51'),
+(191, 40, 28, 60, 'ORD_69d33d5aebcd2_1775451482-REQ-60', 0.00, 'Package Request Payment - extracaretaker for alto', '2026-04-06', '2026-05-06', 'paid', 'PayHere Online', 'ORD_69d33d5aebcd2_1775451482', '2026-04-06 04:58:02', '2026-04-06 04:58:51'),
+(198, 40, 28, NULL, 'ORD_69da5cf9c9b42_1775918329-SITE-28', 2930.00, 'Monthly Security Service Payment - alto', '2026-04-11', '2026-05-11', 'paid', 'PayHere Online', 'ORD_69da5cf9c9b42_1775918329', '2026-04-11 14:38:49', '2026-04-11 14:39:09'),
+(199, 40, 26, NULL, 'ORD_69da5cf9c9b42_1775918329-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-11', '2026-05-11', 'paid', 'PayHere Online', 'ORD_69da5cf9c9b42_1775918329', '2026-04-11 14:38:49', '2026-04-11 14:39:09'),
+(200, 40, 28, 61, 'ORD_69da5cf9c9b42_1775918329-REQ-61', 450.00, 'Package Request Payment - Custom Package for alto', '2026-04-11', '2026-05-11', 'paid', 'PayHere Online', 'ORD_69da5cf9c9b42_1775918329', '2026-04-11 14:38:49', '2026-04-11 14:39:09'),
+(201, 40, 28, NULL, 'ORD_69dd2e3979cd7_1776102969-SITE-28', 3780.00, 'Monthly Security Service Payment - alto', '2026-04-13', '2026-05-13', 'paid', 'PayHere Online', 'ORD_69dd2e3979cd7_1776102969', '2026-04-13 17:56:09', '2026-04-13 17:56:44'),
+(202, 40, 26, NULL, 'ORD_69dd2e3979cd7_1776102969-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-13', '2026-05-13', 'paid', 'PayHere Online', 'ORD_69dd2e3979cd7_1776102969', '2026-04-13 17:56:09', '2026-04-13 17:56:44'),
+(203, 40, NULL, 62, 'ORD_69dd2e3979cd7_1776102969-REQ-62', 650.00, 'Package Request Payment - basicpackage for Final test', '2026-04-13', '2026-05-13', 'paid', 'PayHere Online', 'ORD_69dd2e3979cd7_1776102969', '2026-04-13 17:56:09', '2026-04-13 17:56:44'),
+(204, 40, 28, NULL, 'ORD_69e12782608b5_1776363394-SITE-28', 3380.00, 'Monthly Security Service Payment - alto', '2026-04-16', '2026-05-16', 'paid', 'PayHere Online', 'ORD_69e12782608b5_1776363394', '2026-04-16 18:16:34', '2026-04-16 18:17:36'),
+(205, 40, 26, NULL, 'ORD_69e12782608b5_1776363394-SITE-26', 600.00, 'Monthly Security Service Payment - alvaroo alto', '2026-04-16', '2026-05-16', 'paid', 'PayHere Online', 'ORD_69e12782608b5_1776363394', '2026-04-16 18:16:34', '2026-04-16 18:17:36'),
+(206, 40, 31, NULL, 'ORD_69e12782608b5_1776363394-SITE-31', 650.00, 'Monthly Security Service Payment - Final test', '2026-04-16', '2026-05-16', 'paid', 'PayHere Online', 'ORD_69e12782608b5_1776363394', '2026-04-16 18:16:34', '2026-04-16 18:17:36'),
+(207, 40, NULL, 63, 'ORD_69e12782608b5_1776363394-REQ-63', 450.00, 'Package Request Payment - Custom Package for Hello', '2026-04-16', '2026-05-16', 'paid', 'PayHere Online', 'ORD_69e12782608b5_1776363394', '2026-04-16 18:16:34', '2026-04-16 18:17:36');
 
 -- --------------------------------------------------------
 
@@ -1058,7 +1295,32 @@ INSERT INTO `premise_officers` (`id`, `userID`, `officerID`, `date_of_birth`, `N
 (2, 18, 'PO004', '2002-06-11', '200227901779', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Galle', 'Yakkalamulla', '2025-12-29', 'Active', 'Supervisor', NULL, NULL, NULL, '2025-12-29 04:00:07', '2026-01-27 08:42:21'),
 (3, 19, 'PO005', '2010-06-23', '901234567', 'Male', 'No. 45, Galle Road, Colombo 03', 'Colombo', 'Colombo 3', '2025-12-29', 'Active', 'Supervisor', NULL, NULL, NULL, '2025-12-29 06:26:25', '2026-02-01 15:28:27'),
 (4, 20, 'PO006', '2025-12-24', '199612782449', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Trincomalee', 'Eachchilampattai', '2025-12-30', 'Active', 'Supervisor', NULL, NULL, NULL, '2025-12-30 08:37:51', '2026-01-27 08:53:13'),
-(5, 26, 'PO007', '2026-01-15', '198022786336', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Trincomalee', 'Kanniya', '2026-01-02', 'Active', 'Junior', NULL, NULL, NULL, '2026-01-02 01:51:07', '2026-01-02 01:51:07');
+(5, 26, 'PO007', '2026-01-15', '198022786336', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Trincomalee', 'Kanniya', '2026-01-02', 'Active', 'Junior', NULL, NULL, NULL, '2026-01-02 01:51:07', '2026-01-02 01:51:07'),
+(6, 57, 'PO910', '1995-01-10', '951001910V', 'Male', 'No 10, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Junior', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(7, 58, 'PO911', '1994-02-11', '941001911V', 'Female', 'No 11, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Senior', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(8, 59, 'PO912', '1993-03-12', '931001912V', 'Male', 'No 12, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Junior', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(9, 60, 'PO913', '1992-04-13', '921001913V', 'Female', 'No 13, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Senior', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(10, 61, 'PO914', '1991-05-14', '911001914V', 'Male', 'No 14, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Junior', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(11, 62, 'PO915', '1989-06-15', '891001915V', 'Male', 'No 15, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(12, 63, 'PO916', '1988-07-16', '881001916V', 'Female', 'No 16, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(13, 64, 'PO917', '1987-08-17', '871001917V', 'Male', 'No 17, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(14, 65, 'PO918', '1986-09-18', '861001918V', 'Female', 'No 18, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(15, 66, 'PO919', '1985-10-19', '851001919V', 'Male', 'No 19, Test Road', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', NULL, NULL, NULL, '2026-04-01 08:10:22', '2026-04-01 08:10:22'),
+(16, 67, 'PO920', '1995-01-01', 'TESTNIC920.00', 'Male', 'Test Address 1', 'Galle', 'Galle', '2026-04-01', 'Active', 'Junior', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(17, 68, 'PO921', '1995-01-01', 'TESTNIC921.00', 'Male', 'Test Address 2', 'Galle', 'Galle', '2026-04-01', 'Active', 'Junior', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(18, 69, 'PO922', '1995-01-01', 'TESTNIC922.00', 'Male', 'Test Address 3', 'Colombo', 'Colombo', '2026-04-01', 'Active', 'Junior', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(19, 70, 'PO923', '1995-01-01', 'TESTNIC923.00', 'Male', 'Test Address 4', 'Colombo', 'Colombo', '2026-04-01', 'Active', 'Junior', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(20, 71, 'PO924', '1995-01-01', 'TESTNIC924.00', 'Male', 'Test Address 5', 'Kandy', 'Kandy', '2026-04-01', 'Active', 'Junior', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(21, 72, 'PO925', '1995-01-01', 'TESTNIC925.00', 'Male', 'Test Address 6', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(22, 73, 'PO926', '1995-01-01', 'TESTNIC926.00', 'Male', 'Test Address 7', 'Galle', 'Galle', '2026-04-01', 'Active', 'Supervisor', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(23, 74, 'PO927', '1995-01-01', 'TESTNIC927.00', 'Male', 'Test Address 8', 'Colombo', 'Colombo', '2026-04-01', 'Active', 'Supervisor', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(24, 75, 'PO928', '1995-01-01', 'TESTNIC928.00', 'Male', 'Test Address 9', 'Colombo', 'Colombo', '2026-04-01', 'Active', 'Supervisor', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(25, 76, 'PO929', '1995-01-01', 'TESTNIC929.00', 'Male', 'Test Address 10', 'Kandy', 'Kandy', '2026-04-01', 'Active', 'Supervisor', 4.50, 'Full Time', NULL, '2026-04-01 11:46:58', '2026-04-01 11:46:58'),
+(26, 77, 'PO901', '1998-01-11', '199801110901', 'Male', 'No 101, Test Lane', 'Colombo', 'Colombo 3', '2026-04-06', 'Active', 'Junior', NULL, 'Day', NULL, '2026-04-06 06:49:57', '2026-04-06 06:49:57'),
+(27, 78, 'PO902', '1997-03-14', '199703140902', 'Female', 'No 102, Test Lane', 'Colombo', 'Nugegoda', '2026-04-06', 'Active', 'Junior', NULL, 'Day', NULL, '2026-04-06 06:49:57', '2026-04-06 06:49:57'),
+(28, 79, 'PO903', '1999-05-21', '199905210903', 'Male', 'No 103, Test Lane', 'Gampaha', 'Negombo', '2026-04-06', 'Active', 'Junior', NULL, 'Day', NULL, '2026-04-06 06:49:57', '2026-04-06 06:49:57'),
+(29, 80, 'PO904', '1996-08-09', '199608090904', 'Female', 'No 104, Test Lane', 'Kandy', 'Kandy', '2026-04-06', 'Active', 'Junior', NULL, 'Day', NULL, '2026-04-06 06:49:57', '2026-04-06 06:49:57'),
+(30, 81, 'PO905', '2000-11-30', '200011300905', 'Male', 'No 105, Test Lane', 'Kalutara', 'Panadura', '2026-04-06', 'Active', 'Junior', NULL, 'Day', NULL, '2026-04-06 06:49:57', '2026-04-06 06:49:57');
 
 -- --------------------------------------------------------
 
@@ -1501,7 +1763,28 @@ INSERT INTO `recent_activities` (`id`, `user_id`, `activity_type`, `activity_tit
 INSERT INTO `recent_activities` (`id`, `user_id`, `activity_type`, `activity_titel`, `activity_details`, `created_at`) VALUES
 (394, 1, 'update', 'Job Application Updated', 'Updated Mobile Rider job application created with due date: 2026-08-13', '2026-03-28 01:37:18'),
 (395, 1, 'message', 'Job Application Status Changed', 'Mobile Rider job application status changed to: open', '2026-03-28 01:37:19'),
-(396, 1, 'update', 'Job Application Updated', 'Updated Mobile Rider job application created with due date: 2026-08-13', '2026-03-28 01:37:19');
+(396, 1, 'update', 'Job Application Updated', 'Updated Mobile Rider job application created with due date: 2026-08-13', '2026-03-28 01:37:19'),
+(397, 60, 'leave_request', 'Leave Request Submitted', 'Submitted Sick Leave leave request from 2026-04-08 to 2026-04-10', '2026-04-06 05:16:39'),
+(398, 60, 'leave_approved', 'Leave Request Approved', 'Your Sick Leave leave request from 2026-04-08 to 2026-04-10 was approved', '2026-04-06 05:19:51'),
+(399, 1, 'leave_approval', 'Leave Request Approved', 'Approved Test PO 04\'s (Premise Officer) Sick Leave leave request from 2026-04-08 to 2026-04-10', '2026-04-06 05:19:51'),
+(400, 60, 'leave_request', 'Leave Request Submitted', 'Submitted Sick Leave leave request from 2026-05-14 to 2026-05-15', '2026-04-06 06:02:43'),
+(401, 60, 'leave_approved', 'Leave Request Approved', 'Your Sick Leave leave request from 2026-05-14 to 2026-05-15 was approved', '2026-04-06 06:03:19'),
+(402, 1, 'leave_approval', 'Leave Request Approved', 'Approved Test PO 04\'s (Premise Officer) Sick Leave leave request from 2026-05-14 to 2026-05-15', '2026-04-06 06:03:19'),
+(403, 60, 'leave_request', 'Leave Request Submitted', 'Submitted Sick Leave leave request from 2026-05-20 to 2026-05-21', '2026-04-06 06:37:54'),
+(404, 60, 'leave_request', 'Leave Request Submitted', 'Submitted Sick Leave leave request from 2026-05-24 to 2026-05-26', '2026-04-06 07:01:47'),
+(405, 60, 'leave_request', 'Leave Request Submitted', 'Submitted Sick Leave leave request from 2026-04-29 to 2026-04-30', '2026-04-11 14:42:41'),
+(406, 1, 'message', 'Job Application Status Changed', 'Premise Officer job application status changed to: open', '2026-04-16 16:53:56'),
+(407, 1, 'alert', 'Job Application Updated', 'Updated Premise Officer job application created with due date: 2026-06-20 (Not Completed)', '2026-04-16 16:53:56'),
+(408, 1, 'alert', 'Job Application Updated', 'Updated Premise Officer job application created with due date: 2026-06-20 (Not Completed)', '2026-04-16 16:54:04'),
+(409, 1, 'alert', 'Job Application Updated', 'Updated Premise Officer job application created with due date: 2026-06-16 (Not Completed)', '2026-04-16 16:55:06'),
+(410, 1, 'alert', 'Job Application Removed', 'The Premise Officer job application was removed.', '2026-04-16 17:00:44'),
+(411, 1, 'alert', 'Job Application Removed', 'The Mobile Rider job application was removed.', '2026-04-16 17:01:15'),
+(412, 1, 'alert', 'Job Application Removed', 'The Mobile Rider job application was removed.', '2026-04-16 17:02:25'),
+(413, 1, 'alert', 'Job Application Removed', 'The Care Taker job application was removed.', '2026-04-16 17:04:00'),
+(414, 1, 'alert', 'Officer Application Deleted', 'Officer application #18 was permanently deleted', '2026-04-16 17:10:38'),
+(415, 1, 'alert', 'Site Deleted', 'Site \'Highland Milk Bar - National Hospital Galle\' (ID: 9) was deleted', '2026-04-16 18:13:39'),
+(416, 1, 'shift', 'New Admin Added', 'Admin \'Haritha Gamage\' added', '2026-04-17 05:14:45'),
+(417, 1, 'shift', 'New Admin Added', 'Admin \'Haritha Gamage\' added', '2026-04-17 07:00:49');
 
 -- --------------------------------------------------------
 
@@ -1553,7 +1836,6 @@ CREATE TABLE `route_sites` (
 
 INSERT INTO `route_sites` (`route_id`, `site_id`) VALUES
 ('R007', 8),
-('R007', 9),
 ('R007', 14),
 ('R008', 10),
 ('R008', 12),
@@ -1641,7 +1923,6 @@ INSERT INTO `sites` (`id`, `client_id`, `site_name`, `address`, `district`, `cit
 (6, 41, 'University of Sri Jayewardenepura', 'ගංගොඩවිල, Sri Soratha Mawatha, Nugegoda, Sri Lanka', NULL, 'Colombo', '0912277345', '2026-01-22 09:08:25', '2026-01-22 09:08:25', '1769072905_s2.jpeg', 6.85276700, 79.90358460, 0, NULL),
 (7, 10, 'Peoples Bank ATM', 'WV5Q+VGF, Colombo, Sri Lanka', NULL, 'Colombo', '0771188234', '2026-01-22 09:41:20', '2026-01-22 09:41:20', '1769074880_s3.jpeg', 6.90969190, 79.88878550, 0, NULL),
 (8, 41, 'National Hospital Galle', 'Galle 80000, Sri Lanka', NULL, 'karapitiy', '0912234567', '2026-01-22 12:58:57', '2026-01-22 12:58:57', '1769086737_s1.jpeg', 6.06707280, 80.22607360, 0, NULL),
-(9, 40, 'Highland Milk Bar - National Hospital Galle', '368G+CJC, Galle 80000, Sri Lanka', NULL, 'Karapitiya', '0917722345', '2026-01-22 16:03:00', '2026-01-22 16:03:00', '1769097780_s2.jpeg', 6.06605230, 80.22652620, 0, NULL),
 (10, 40, 'University of Ruhuna', 'A2, Matara, Sri Lanka', NULL, 'Mathara', '0912233665', '2026-01-22 16:06:22', '2026-01-22 16:06:22', '1769097982_s3.jpeg', 5.93809210, 80.57613440, 0, NULL),
 (12, 41, 'Faculty of Management and Finance, University of Ruhuna', 'Wellamadama, Matara 81000, Sri Lanka', NULL, 'mathara', '0917788923', '2026-01-22 16:09:23', '2026-01-22 16:09:23', '1769098163_s2.jpeg', 5.93698990, 80.57852060, 0, NULL),
 (13, 41, 'Thotte house', 'WHRJ+WR8, Matara, Sri Lanka', NULL, 'wdwdew', '0912233456', '2026-01-22 16:11:01', '2026-01-22 16:11:01', '1769098261_s3.jpeg', 5.94290210, 80.58218150, 0, NULL),
@@ -1653,7 +1934,12 @@ INSERT INTO `sites` (`id`, `client_id`, `site_name`, `address`, `district`, `cit
 (19, 46, 'Hampden Lane', 'Hampden Ln, Colombo, Sri Lanka', 'Hambantota', 'Nonagama', '0712233456', '2026-02-02 02:50:59', '2026-02-02 02:50:59', '1770000659_Activity 02.png', 6.87427700, 79.86604680, 0, NULL),
 (20, 41, 'VFS Global Visa Application Centre in Colombo', '1st Floor- 5th Floor, 675 Dr Danister De Silva Mawatha, Colombo 00900, Sri Lanka', 'Colombo', 'Colombo 9', '0912233459', '2026-02-10 11:35:54', '2026-02-10 11:35:54', '1770723354_Screenshot from 2025-12-24 19-37-23.png', 6.93937150, 79.87781750, 0, NULL),
 (21, 9, 'Suvinlan Resort Inn', 'VWCH+V7F, Sri Jayawardenepura Kotte, Sri Lanka', 'Mannar', 'Adampan', '', '2026-02-12 08:25:44', '2026-02-12 08:25:44', NULL, NULL, NULL, 1, 1),
-(22, 9, 'Darley Road', 'Darley Rd, Colombo, Sri Lanka', '', 'colombo', '', '2026-02-12 14:23:20', '2026-02-12 14:23:20', NULL, NULL, NULL, 1, 18);
+(22, 9, 'Darley Road', 'Darley Rd, Colombo, Sri Lanka', '', 'colombo', '', '2026-02-12 14:23:20', '2026-02-12 14:23:20', NULL, NULL, NULL, 1, 18),
+(26, 8, 'alvaroo alto', '30b Welikadawatte, Sri Jayawardenepura Kotte, Sri Lanka', 'Colombo', 'Colombo 12', '0743476508', '2026-04-01 07:43:27', '2026-04-01 07:43:27', '1775028872_Alvaro Aalto.jpg', 6.90393810, 79.89816441, 0, 46),
+(28, 8, 'alto', 'WVH8+GXC, 115 Sri Vajiragnana Mawatha, Colombo 01000, Sri Lanka', 'Colombo', 'Colombo 8', '0743476508', '2026-04-01 10:30:31', '2026-04-01 10:30:31', '1775039384_Alvaro Aalto.jpg', 6.92866681, 79.86726537, 0, 48),
+(30, 9, 'Test Site B', '456 Park Rd, Colombo', 'Colombo', 'Colombo', '0776523874', '2026-04-03 10:09:57', '2026-04-03 10:09:57', NULL, NULL, NULL, 1, 38),
+(31, 8, 'Final test', 'WVFH+HP7, Colombo 01000, Sri Lanka', 'Colombo', 'Colombo 10', '0743476508', '2026-04-13 17:57:47', '2026-04-13 17:57:47', '1776102960_9 - Image-Led Storytelling.jpg', 6.92464082, 79.87953918, 0, 62),
+(32, 8, 'Hello', 'WRQP+32 Port City Colombo, Sri Lanka', 'Colombo', 'Colombo 10', '0743476508', '2026-04-16 18:17:52', '2026-04-16 18:17:52', '1776363377_9 - Image-Led Storytelling.jpg', 6.93769767, 79.83504229, 1, 63);
 
 -- --------------------------------------------------------
 
@@ -1687,16 +1973,15 @@ INSERT INTO `site_visits` (`id`, `site_id`, `user_id`, `visit_time`, `officer_at
 (11, 10, 37, '2026-01-27 21:26:02', 1, 'Patrolling', 'Good', NULL, NULL, '2026-01-27 15:56:02'),
 (12, 4, 29, '2026-01-27 21:50:09', 1, 'Patrolling', 'Good', NULL, NULL, '2026-01-27 16:20:09'),
 (13, 4, 29, '2026-01-31 20:11:09', 1, 'Patrolling', 'Good', NULL, NULL, '2026-01-31 14:41:09'),
-(14, 9, 24, '2026-02-06 07:21:34', 1, 'Patrolling', 'Good', NULL, NULL, '2026-02-06 01:51:34'),
 (15, 12, 37, '2026-02-13 12:28:41', 1, 'Monitoring entrance', 'Good', NULL, NULL, '2026-02-13 06:58:41');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `submittedApplications`
+-- Table structure for table `submittedapplications`
 --
 
-CREATE TABLE `submittedApplications` (
+CREATE TABLE `submittedapplications` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
@@ -1717,10 +2002,10 @@ CREATE TABLE `submittedApplications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `submittedApplications`
+-- Dumping data for table `submittedapplications`
 --
 
-INSERT INTO `submittedApplications` (`id`, `name`, `email`, `phone_number`, `date_of_birth`, `NIC`, `gender`, `address`, `district`, `city`, `cv`, `photo`, `submitted_at`, `role`, `status`, `approved_by`, `approved_at`) VALUES
+INSERT INTO `submittedapplications` (`id`, `name`, `email`, `phone_number`, `date_of_birth`, `NIC`, `gender`, `address`, `district`, `city`, `cv`, `photo`, `submitted_at`, `role`, `status`, `approved_by`, `approved_at`) VALUES
 (2, 'Kamal Gunarathne', 'Kamal@gmail.com', '0778912134', NULL, NULL, 'Male', NULL, NULL, NULL, '1766307460_SCS2312 T2.pdf', '1766307460_p1.jpg', '2025-12-21 08:57:40', 'po', 'rejected', NULL, NULL),
 (3, 'Jagath Kulathunga', 'Jamath@gmail.com', '0781122353', NULL, NULL, 'Male', NULL, NULL, NULL, '1766307579_SCS2312 T2.pdf', '1766307579_p2.jpg', '2025-12-21 08:59:39', 'ct', 'rejected', NULL, NULL),
 (6, 'Sarath Madushanka', 'sarathmadushanka@gamil.com', '0772134123', '1996-02-03', '199612782449', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Ampara', 'Damana', '1766486503_SCS2312 T2.pdf', '1766486503_p6.png', '2025-12-23 10:41:43', 'po', 'approved', 1, '2025-12-24 05:16:13'),
@@ -1734,8 +2019,33 @@ INSERT INTO `submittedApplications` (`id`, `name`, `email`, `phone_number`, `dat
 (15, 'Chandrakumara', 'chandra@gmail.com', '0912287623', '2026-01-16', '112233445566', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Mullaitivu', 'Alampil East', '1767327601_SCS2312 T2.pdf', '1767327601_p5.png', '2026-01-02 04:20:01', 'ct', 'approved', 1, '2026-01-02 04:20:24'),
 (16, 'Kulathunga', 'kula@gmail.com', '0917723654', '2026-01-15', '299226773997', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Matara', 'Handiya', '1767335484_SCS2312 T2.pdf', '1767335484_p7.jpg', '2026-01-02 06:31:24', 'mr', 'approved', 1, '2026-01-21 12:05:23'),
 (17, 'Gajanayake', 'gse@gmail.com', '0772345127', '2026-01-15', '199612782449', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Ampara', 'Irakkamam', '1767335555_SCS2312 T2.pdf', '1767335555_p4.jpeg', '2026-01-02 06:32:35', 'mr', 'approved', 1, '2026-01-02 06:43:01'),
-(18, 'P.M.T Vitd dhanage', 'pmihirangaa321@gmail.com', '0912287654', '2026-01-13', '901234567', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Trincomalee', 'Kanniya Hot Springs', '1768997084_In-class Assignment 1.pdf', '1768997084_p7.jpg', '2026-01-21 12:04:44', 'po', 'rejected', NULL, NULL),
 (19, 'Kalum Nanayakkara', 'pasanmihiranga04@gmail.com', '0775645234', '2026-02-18', '1122334455', 'Male', 'Kumudu, Addarawatta, Kodagoda,', 'Ampara', 'Thirukkovil', '1769942870_puSubWork (2).pdf', '1769942870_p4.jpeg', '2026-02-01 10:47:50', 'ct', 'approved', 1, '2026-02-01 15:03:05');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `supervisor_duty_points`
+--
+
+CREATE TABLE `supervisor_duty_points` (
+  `id` int(11) NOT NULL,
+  `site_id` bigint(20) UNSIGNED NOT NULL,
+  `created_by` int(11) NOT NULL,
+  `duty_point_name` varchar(120) NOT NULL,
+  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `supervisor_duty_points`
+--
+
+INSERT INTO `supervisor_duty_points` (`id`, `site_id`, `created_by`, `duty_point_name`, `status`, `created_at`, `updated_at`) VALUES
+(1, 28, 63, 'Main Gate', 'Active', '2026-04-13 15:42:43', '2026-04-13 15:42:43'),
+(2, 28, 63, 'Hallway', 'Active', '2026-04-13 15:43:01', '2026-04-13 15:43:01'),
+(3, 28, 63, 'Back gate', 'Active', '2026-04-13 15:46:49', '2026-04-13 15:46:49'),
+(4, 31, 65, 'Main Gate', 'Active', '2026-04-13 18:13:27', '2026-04-13 18:13:27');
 
 -- --------------------------------------------------------
 
@@ -1762,10 +2072,10 @@ CREATE TABLE `supervisor_leave_requests` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Users`
+-- Table structure for table `users`
 --
 
-CREATE TABLE `Users` (
+CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `userID` varchar(50) NOT NULL,
   `name` varchar(255) NOT NULL,
@@ -1778,43 +2088,71 @@ CREATE TABLE `Users` (
   `profile_image` varchar(255) DEFAULT NULL,
   `status` enum('active','inactive','suspended') DEFAULT 'active',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `permissions` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`permissions`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `Users`
+-- Dumping data for table `users`
 --
 
-INSERT INTO `Users` (`id`, `userID`, `name`, `email`, `password`, `is_online`, `last_seen`, `role`, `phone_number`, `profile_image`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'ADMIN001', 'System Administrator', 'admin@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-03-31 15:03:11', 'admin', '+94-11-286-6490', '1767780941_p2jpg', 'active', '2025-12-21 02:43:23', '2026-03-31 09:33:11'),
-(2, 'SUP001', 'John Supervisor', 'supervisor@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 0, '2026-02-09 13:13:00', 'supervisor', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-02-09 07:43:00'),
-(3, 'PO001', 'Nuwan Perera', 'nuwan.perera@redforce.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, '2026-03-09 14:25:51', 'premise officer', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-03-09 08:55:51'),
-(4, 'PO002', 'Kasun Silva', 'kasun.silva@redforce.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 0, NULL, 'premise officer', NULL, NULL, 'active', '2025-12-21 02:43:23', '2025-12-21 02:43:23'),
-(5, 'MR001', 'Sanjaya Peris', 'sanjaya.peris@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-03-09 14:23:16', 'mobile rider', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-03-09 08:53:16'),
-(6, 'MR002', 'Ramesh Nuwan', 'ramesh.nuwan@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 0, NULL, 'mobile rider', NULL, NULL, 'active', '2025-12-21 02:43:23', '2025-12-21 02:43:23'),
-(7, 'CLIENT001', 'Peoples Bank', 'contact@peoplesbank.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, '2026-03-31 15:03:44', 'client', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-03-31 09:33:44'),
-(8, 'CLIENT002', 'Cargills PLC', 'security@cargills.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 0, '2026-02-05 19:28:31', 'client', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-02-05 13:58:31'),
-(9, 'CARETAKER001', 'Michael Johnson', 'johnson.michael@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-02-07 08:03:50', 'caretaker', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-02-07 02:33:50'),
-(10, 'CLIENT003', 'People&apos;s Bank', 'peoplesbank@gmail.com', '$2y$10$8Plkho6K4FtbazY8WJ5iIOTcWHEU8rJ0APRqm4qj75NEe/YFEAxgi', 0, '2026-02-05 19:49:07', 'client', '0113740740', '1766304642_peoples-bank.png', 'active', '2025-12-21 08:26:28', '2026-02-05 14:19:07'),
-(17, 'PO003', 'Sarath Madushanka', 'sarathmadushanka@gamil.com', '$2y$10$CHosfleaY8.iZDJ8CxECmOZDbPdljY4AC.4TZUkUwYcmdqx6U3btG', 0, '2026-03-09 14:29:45', 'premise officer', '0772134123', '1766486503_p6.png', 'active', '2025-12-24 05:16:13', '2026-03-09 08:59:45'),
-(18, 'PO004', 'P.M.T Vithanage', 'pmihirdddangaa321@gmail.com', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 0, NULL, 'premise officer', '0912287654', '1766980785_p7.jpg', 'active', '2025-12-29 04:00:07', '2025-12-29 04:00:07'),
-(19, 'PO005', 'Chamara Perera', 'chamara.perera@example.com', '$2y$10$0aC52xYuZR4pzDOQsUZHreQcI.Pn4s6GcgtRIGs/dZB7DCS1BVnYi', 0, '2026-02-17 17:16:33', 'premise officer', '0771234567', '1766989569_p2.jpg', 'active', '2025-12-29 06:26:25', '2026-02-17 11:46:33'),
-(20, 'PO006', 'P.M.T Vithanage', 'pmihirandfsfgaa321@gmail.com', '$2y$10$QFdVISDTakxQ2b9C2RviX.QbvqHiN2q/95km2BICQWq3.OW7pzrMi', 0, NULL, 'premise officer', '0912287654', '1767083845_p2.jpg', 'active', '2025-12-30 08:37:51', '2025-12-30 08:37:51'),
-(24, 'MR003', 'P.M.T Vithanage', 'pmihirangdsasddssa321@gmail.com', '$2y$10$w0FWbwrHbivQNe2L4gI55OukLMXdOJBq3cXoMog508aF9KQoyf.li', 0, '2026-03-09 14:23:51', 'mobile rider', '0912287654', '1767150518_p1.jpg', 'active', '2025-12-31 03:24:38', '2026-03-09 08:53:51'),
-(25, 'CT001', 'P.M.T Vithanage', 'pmihirangassa321@gmail.com', '$2y$10$qCZqt4aqTfpoUrspa4us9uM.dRuLQOFG4gjFUEHkynWFJu1AdJDa2', 0, '2026-03-09 14:22:52', 'caretaker', '0912287654', '1767148530_p3.jpg', 'active', '2025-12-31 03:35:01', '2026-03-09 08:52:52'),
-(26, 'PO007', 'Wimalasiri', 'wimalasiri@gmail.com', '$2y$10$wZg6UKitWJ7migG1jUxM0uxGz7yGwhwFmk4rlrhEfrsQKRY6k8y/W', 0, '2026-03-31 14:33:09', 'premise officer', '0912287654', '1767316857_p1.jpg', 'active', '2026-01-02 01:51:07', '2026-03-31 09:03:09'),
-(27, 'CT002', 'Chandrakumara', 'chandra@gmail.com', '$2y$10$UAWcuNbaYT2E5Z3/sGd1nufqMUQfE61hmJfxMrdDeyh2JSeToRG7i', 0, NULL, 'caretaker', '0912287623', '1767327601_p5.png', 'active', '2026-01-02 04:20:24', '2026-01-02 04:20:24'),
-(28, 'CLIENT004', 'Company Example', 'company@gmail.com', '$2y$10$uSSYpx0T6ou2MAFDGfmEyeWc5cK4ArdzExciTDIpARCVTXCCMZcF.', 0, NULL, 'client', '0775623123', '1767335768_c1.jpg', 'active', '2026-01-02 06:37:23', '2026-01-02 06:37:23'),
-(29, 'MR004', 'Gajanayake', 'gse@gmail.com', '$2y$10$PZ.o24wBB/UQv3iZ5uSAI.Jl5bO/pgX.ic.02Kyqr.B9B51Ps4zba', 0, '2026-03-31 14:32:49', 'mobile rider', '0772345127', '1767335555_p4.jpeg', 'active', '2026-01-02 06:43:01', '2026-03-31 09:02:49'),
-(32, 'CLIENT005', 'Example', 'manujakaushika@gmail.com', '$2y$10$NFqyEv82g4sec6KKKyh7Re2FpQT/rfOeX4cUnlxikdkA4L4/Wgw0u', 0, NULL, 'client', '0912287654', '1767756375_Peoples-Bank-Galkiriyagama.jpg', 'active', '2026-01-07 04:06:10', '2026-01-07 04:06:10'),
-(33, 'ADMIN002', 'P.M.T Vithanage', 'pmihirwdwedangaa321@gmail.com', '$2y$10$4agfWyKw12IXzIGMHbyOhe1lQr3giGtQk6TXHy1O9V5d.PHnbkpmS', 1, '2026-03-09 14:31:21', 'admin', '0912287654', '1770432419_p4.jpeg', 'inactive', '2026-01-07 10:21:39', '2026-03-09 09:01:21'),
-(34, 'ADMIN003', 'P.M.T Vithanage', 'pmihirdwdwangaa321@gmail.com', '$2y$10$SSSYYIouBJxYoLgTJoOGFuZxqPQbv0utANqGm9ZAXVBP0Um77SOgW', 0, '2026-02-07 08:17:48', 'admin', '0759726372', '1769677203_p7.jpg', 'active', '2026-01-07 10:31:19', '2026-02-07 02:47:48'),
-(37, 'MR005', 'Kulathunga', 'kula@gmail.com', '$2y$10$yz8fW8UKV7yDeC4RhBDL4u88QpITZcyXBs6PePl6OZhj0c5W95auq', 0, '2026-02-13 12:30:25', 'mobile rider', '0917723654', '1767335484_p7.jpg', 'active', '2026-01-21 12:05:23', '2026-02-13 07:00:25'),
-(40, 'CLIENT006', 'Example Company', 'genz48155@gmail.com', '$2y$10$s3VPZijQra9tgQ1rrxxPQe81VpCnfNcRYuUSkWjJDqpVu//LhklVm', 0, NULL, 'client', '0912287654', '1768998330_c3.jpg', 'active', '2026-01-21 12:38:45', '2026-01-21 12:38:45'),
-(41, 'CLIENT007', 'Company Example 2', 'abc@gmail.com', '$2y$10$dRapsenoxYY4tsIUZr0Tk.GLqXn0.6AizDQTIgqvLamJwFeH38g72', 0, '2026-03-09 15:22:56', 'client', '0776523874', '1767335820_c2.jpg', 'active', '2026-01-21 14:18:58', '2026-03-09 09:52:56'),
-(46, 'CLIENT008', 'pasan', 'pmtvithanage@gmail.com', '$2y$10$rXGVaTLya1sioDvBAClge.dFe3PbRDtoyyIoJvtj8UpDlCE80rnKe', 1, '2026-03-31 15:04:46', 'client', '0764465234', '1769943484_s1.jpeg', 'active', '2026-02-01 11:04:23', '2026-03-31 09:34:46'),
-(54, 'CT003', 'Kalum Nanayakkara', 'pasanmihiranga04@gmail.com', '$2y$10$4onEQrYiZH9r8X5W9k.mDe2/p5pMwIip5Gy99lKshjS2Sa4FaN2VG', 0, '2026-02-17 17:13:59', 'caretaker', '0775645234', '1769942870_p4.jpeg', 'active', '2026-02-01 15:03:05', '2026-02-17 11:43:59'),
-(56, 'CLIENT009', 'UCSC', 'UCSC@gmail.com', '$2y$10$TngivJ0FCJdngFWVEsYLgebxG/vdlyU78EKCiPqlZe9lt.GDWfZgO', 0, NULL, 'client', '0921133456', '1770443070_c1.jpg', 'active', '2026-02-07 05:45:06', '2026-02-07 05:45:06');
+INSERT INTO `users` (`id`, `userID`, `name`, `email`, `password`, `is_online`, `last_seen`, `role`, `phone_number`, `profile_image`, `status`, `created_at`, `updated_at`, `permissions`) VALUES
+(1, 'ADMIN001', 'System Administrator', 'admin@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-04-17 12:32:09', 'admin', '0112866490', '1767780941_p2jpg', 'active', '2025-12-21 02:43:23', '2026-04-17 07:02:09', '[\"add_officers\",\"add_clients\",\"accept_client_requests\",\"assign_officers\",\"accept_leave_requests\",\"create_advertisements\",\"view_payments\",\"handle_incidents\",\"create_routes\",\"edit_officer_profiles\"]'),
+(2, 'SUP001', 'John Supervisor', 'supervisor@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 0, '2026-04-15 23:11:09', 'supervisor', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-04-15 17:41:09', NULL),
+(3, 'PO001', 'Nuwan Perera', 'nuwan.perera@redforce.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 1, '2026-04-17 10:36:45', 'premise officer', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-04-17 05:06:45', NULL),
+(4, 'PO002', 'Kasun Silva', 'kasun.silva@redforce.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 0, NULL, 'premise officer', NULL, NULL, 'active', '2025-12-21 02:43:23', '2025-12-21 02:43:23', NULL),
+(5, 'MR001', 'Sanjaya Peris', 'sanjaya.peris@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-03-09 14:23:16', 'mobile rider', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-03-09 08:53:16', NULL),
+(6, 'MR002', 'Ramesh Nuwan', 'ramesh.nuwan@redforce.com', '$2y$12$PLgzkPnfttBkvEgieex87O16vzpxXngoflTqVnTBkVX4PoGDVzB4m', 0, NULL, 'mobile rider', NULL, NULL, 'active', '2025-12-21 02:43:23', '2025-12-21 02:43:23', NULL),
+(7, 'CLIENT001', 'Peoples Bank', 'contact@peoplesbank.com', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, '2026-03-31 15:03:44', 'client', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-03-31 09:33:44', NULL),
+(8, 'CLIENT002', 'Cargills PLC', 'security@cargills.com', '$2y$12$4r.CSggFlKY4paSWCKyrN.7ROgUSJJddZp7rGlVKrDu7dkcS2xO1W', 0, '2026-02-05 19:28:31', 'client', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-02-05 13:58:31', NULL),
+(9, 'CARETAKER001', 'Michael Johnson', 'johnson.michael@redforce.com', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-02-07 08:03:50', 'caretaker', NULL, NULL, 'active', '2025-12-21 02:43:23', '2026-02-07 02:33:50', NULL),
+(10, 'CLIENT003', 'People&apos;s Bank', 'peoplesbank@gmail.com', '$2y$10$8Plkho6K4FtbazY8WJ5iIOTcWHEU8rJ0APRqm4qj75NEe/YFEAxgi', 0, '2026-02-05 19:49:07', 'client', '0113740740', '1766304642_peoples-bank.png', 'active', '2025-12-21 08:26:28', '2026-02-05 14:19:07', NULL),
+(17, 'PO003', 'Sarath Madushanka', 'sarathmadushanka@gamil.com', '$2y$10$CHosfleaY8.iZDJ8CxECmOZDbPdljY4AC.4TZUkUwYcmdqx6U3btG', 0, '2026-04-17 10:36:11', 'premise officer', '0772134123', '1766486503_p6.png', 'active', '2025-12-24 05:16:13', '2026-04-17 05:06:11', NULL),
+(18, 'PO004', 'P.M.T Vithanage', 'pmihirdddangaa321@gmail.com', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 0, NULL, 'premise officer', '0912287654', '1766980785_p7.jpg', 'active', '2025-12-29 04:00:07', '2025-12-29 04:00:07', NULL),
+(19, 'PO005', 'Chamara Perera', 'chamara.perera@example.com', '$2y$10$0aC52xYuZR4pzDOQsUZHreQcI.Pn4s6GcgtRIGs/dZB7DCS1BVnYi', 0, '2026-02-17 17:16:33', 'premise officer', '0771234567', '1766989569_p2.jpg', 'active', '2025-12-29 06:26:25', '2026-02-17 11:46:33', NULL),
+(20, 'PO006', 'P.M.T Vithanage', 'pmihirandfsfgaa321@gmail.com', '$2y$10$QFdVISDTakxQ2b9C2RviX.QbvqHiN2q/95km2BICQWq3.OW7pzrMi', 0, NULL, 'premise officer', '0912287654', '1767083845_p2.jpg', 'active', '2025-12-30 08:37:51', '2025-12-30 08:37:51', NULL),
+(24, 'MR003', 'P.M.T Vithanage', 'pmihirangdsasddssa321@gmail.com', '$2y$10$w0FWbwrHbivQNe2L4gI55OukLMXdOJBq3cXoMog508aF9KQoyf.li', 0, '2026-03-09 14:23:51', 'mobile rider', '0912287654', '1767150518_p1.jpg', 'active', '2025-12-31 03:24:38', '2026-03-09 08:53:51', NULL),
+(25, 'CT001', 'P.M.T Vithanage', 'pmihirangassa321@gmail.com', '$2y$10$qCZqt4aqTfpoUrspa4us9uM.dRuLQOFG4gjFUEHkynWFJu1AdJDa2', 0, '2026-03-09 14:22:52', 'caretaker', '0912287654', '1767148530_p3.jpg', 'active', '2025-12-31 03:35:01', '2026-03-09 08:52:52', NULL),
+(26, 'PO007', 'Wimalasiri', 'wimalasiri@gmail.com', '$2y$10$wZg6UKitWJ7migG1jUxM0uxGz7yGwhwFmk4rlrhEfrsQKRY6k8y/W', 0, '2026-03-31 14:33:09', 'premise officer', '0912287654', '1767316857_p1.jpg', 'active', '2026-01-02 01:51:07', '2026-03-31 09:03:09', NULL),
+(27, 'CT002', 'Chandrakumara', 'chandra@gmail.com', '$2y$10$UAWcuNbaYT2E5Z3/sGd1nufqMUQfE61hmJfxMrdDeyh2JSeToRG7i', 0, NULL, 'caretaker', '0912287623', '1767327601_p5.png', 'active', '2026-01-02 04:20:24', '2026-01-02 04:20:24', NULL),
+(28, 'CLIENT004', 'Company Example', 'company@gmail.com', '$2y$10$uSSYpx0T6ou2MAFDGfmEyeWc5cK4ArdzExciTDIpARCVTXCCMZcF.', 0, NULL, 'client', '0775623123', '1767335768_c1.jpg', 'active', '2026-01-02 06:37:23', '2026-01-02 06:37:23', NULL),
+(29, 'MR004', 'Gajanayake', 'gse@gmail.com', '$2y$10$PZ.o24wBB/UQv3iZ5uSAI.Jl5bO/pgX.ic.02Kyqr.B9B51Ps4zba', 0, '2026-03-31 14:32:49', 'mobile rider', '0772345127', '1767335555_p4.jpeg', 'active', '2026-01-02 06:43:01', '2026-03-31 09:02:49', NULL),
+(32, 'CLIENT005', 'Example', 'manujakaushika@gmail.com', '$2y$10$NFqyEv82g4sec6KKKyh7Re2FpQT/rfOeX4cUnlxikdkA4L4/Wgw0u', 0, NULL, 'client', '0912287654', '1767756375_Peoples-Bank-Galkiriyagama.jpg', 'active', '2026-01-07 04:06:10', '2026-01-07 04:06:10', NULL),
+(33, 'ADMIN002', 'P.M.T Vithanage', 'pmihirwdwedangaa321@gmail.com', '$2y$10$4agfWyKw12IXzIGMHbyOhe1lQr3giGtQk6TXHy1O9V5d.PHnbkpmS', 0, '2026-04-17 11:52:14', 'admin', '0912287654', '69e1d18d78f4a_uwp3164919.jpeg', 'inactive', '2026-01-07 10:21:39', '2026-04-17 06:22:14', NULL),
+(34, 'ADMIN003', 'P.M.T Vithanage', 'pmihirdwdwangaa321@gmail.com', '$2y$10$SSSYYIouBJxYoLgTJoOGFuZxqPQbv0utANqGm9ZAXVBP0Um77SOgW', 0, '2026-02-07 08:17:48', 'admin', '0759726372', '1769677203_p7.jpg', 'active', '2026-01-07 10:31:19', '2026-02-07 02:47:48', NULL),
+(37, 'MR005', 'Kulathunga', 'kula@gmail.com', '$2y$10$yz8fW8UKV7yDeC4RhBDL4u88QpITZcyXBs6PePl6OZhj0c5W95auq', 0, '2026-02-13 12:30:25', 'mobile rider', '0917723654', '1767335484_p7.jpg', 'active', '2026-01-21 12:05:23', '2026-02-13 07:00:25', NULL),
+(40, 'CLIENT006', 'Example Company', 'genz48155@gmail.com', '$2y$10$X97hJUKqmfMfpq9i1ZZBKuTQ4//1elc8gNWuEYJvTQ8EuZBTwTo32', 0, '2026-04-17 11:59:12', 'client', '0912287654', '1768998330_c3.jpg', 'active', '2026-01-21 12:38:45', '2026-04-17 06:29:12', NULL),
+(41, 'CLIENT007', 'Company Example 2', 'abc@gmail.com', '$2y$10$dRapsenoxYY4tsIUZr0Tk.GLqXn0.6AizDQTIgqvLamJwFeH38g72', 0, '2026-03-09 15:22:56', 'client', '0776523874', '1767335820_c2.jpg', 'active', '2026-01-21 14:18:58', '2026-03-09 09:52:56', NULL),
+(46, 'CLIENT008', 'pasan', 'pmtvithanage@gmail.com', '$2y$10$rXGVaTLya1sioDvBAClge.dFe3PbRDtoyyIoJvtj8UpDlCE80rnKe', 1, '2026-03-31 15:04:46', 'client', '0764465234', '1769943484_s1.jpeg', 'active', '2026-02-01 11:04:23', '2026-03-31 09:34:46', NULL),
+(54, 'CT003', 'Kalum Nanayakkara', 'pasanmihiranga04@gmail.com', '$2y$10$4onEQrYiZH9r8X5W9k.mDe2/p5pMwIip5Gy99lKshjS2Sa4FaN2VG', 0, '2026-02-17 17:13:59', 'caretaker', '0775645234', '1769942870_p4.jpeg', 'active', '2026-02-01 15:03:05', '2026-02-17 11:43:59', NULL),
+(56, 'CLIENT009', 'UCSC', 'UCSC@gmail.com', '$2y$10$TngivJ0FCJdngFWVEsYLgebxG/vdlyU78EKCiPqlZe9lt.GDWfZgO', 0, NULL, 'client', '0921133456', '1770443070_c1.jpg', 'active', '2026-02-07 05:45:06', '2026-02-07 05:45:06', NULL),
+(57, 'PO910', 'Test PO 01', 'po910@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111910', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(58, 'PO911', 'Test PO 02', 'po911@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111911', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(59, 'PO912', 'Test PO 03', 'po912@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111912', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(60, 'PO913', 'Test PO 04', 'po913@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 1, '2026-04-17 12:02:31', 'premise officer', '0711111913', NULL, 'active', '2026-04-01 08:10:22', '2026-04-17 06:32:31', NULL),
+(61, 'PO914', 'Test PO 05', 'po914@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 1, '2026-04-13 23:24:32', 'premise officer', '0711111914', NULL, 'active', '2026-04-01 08:10:22', '2026-04-13 17:54:32', NULL),
+(62, 'PO915', 'Test SUP 01', 'po915@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111915', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(63, 'PO916', 'Test SUP 02', 'po916@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 1, '2026-04-17 10:35:51', 'premise officer', '0711111916', NULL, 'active', '2026-04-01 08:10:22', '2026-04-17 05:05:51', NULL),
+(64, 'PO917', 'Test SUP 03', 'po917@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111917', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(65, 'PO918', 'Test SUP 04', 'po918@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, '2026-04-13 23:44:03', 'premise officer', '0711111918', NULL, 'active', '2026-04-01 08:10:22', '2026-04-13 18:14:03', NULL),
+(66, 'PO919', 'Test SUP 05', 'po919@test.local', '$2y$12$HHNqTdJVndZwH74yXKDPsOTQISNg5RyAVe1Il80CQdmP.TBqxknKC', 0, NULL, 'premise officer', '0711111919', NULL, 'active', '2026-04-01 08:10:22', '2026-04-01 08:10:22', NULL),
+(67, 'PO920', 'Test PO 92', 'test.po.920.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077700920.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(68, 'PO921', 'Test PO 92', 'test.po.921.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077700921.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(69, 'PO922', 'Test PO 92', 'test.po.922.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077700922.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(70, 'PO923', 'Test PO 92', 'test.po.923.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077700923.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(71, 'PO924', 'Test PO 92', 'test.po.924.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, '2026-04-01 17:24:01', 'premise officer', '077700924.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:54:01', NULL),
+(72, 'PO925', 'Test SUP 92', 'test.sup.925.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077800925.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(73, 'PO926', 'Test SUP 92', 'test.sup.926.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077800926.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(74, 'PO927', 'Test SUP 92', 'test.sup.927.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077800927.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(75, 'PO928', 'Test SUP 92', 'test.sup.928.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077800928.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(76, 'PO929', 'Test SUP 92', 'test.sup.929.00000000000000000000000000000000000000@redforce.local', '$2y$12$EH037Jls82SuFzQGiggeu.PKPhpNOjdpxI9JNXKzoK5gZJ2XbBiNm', 0, NULL, 'premise officer', '077800929.', NULL, 'active', '2026-04-01 11:46:58', '2026-04-01 11:46:58', NULL),
+(77, 'PO901', 'Test PO 901', 'test.po901@redforce.local', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 1, '2026-04-06 12:27:19', 'premise officer', '0719000001', NULL, 'active', '2026-04-06 06:49:57', '2026-04-06 06:57:19', NULL),
+(78, 'PO902', 'Test PO 902', 'test.po902@redforce.local', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 0, NULL, 'premise officer', '0719000002', NULL, 'active', '2026-04-06 06:49:57', '2026-04-06 06:49:57', NULL),
+(79, 'PO903', 'Test PO 903', 'test.po903@redforce.local', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 1, '2026-04-13 23:45:12', 'premise officer', '0719000003', NULL, 'active', '2026-04-06 06:49:57', '2026-04-13 18:15:12', NULL),
+(80, 'PO904', 'Test PO 904', 'test.po904@redforce.local', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 0, NULL, 'premise officer', '0719000004', NULL, 'active', '2026-04-06 06:49:57', '2026-04-06 06:49:57', NULL),
+(81, 'PO905', 'Test PO 905', 'test.po905@redforce.local', '$2y$10$uHiIYfrduLj6QnL9cHVFpezK/QOsMAL.X.gDRJO0rbgtatv2JNLge', 0, NULL, 'premise officer', '0719000005', NULL, 'active', '2026-04-06 06:49:57', '2026-04-06 06:49:57', NULL),
+(82, 'ADMIN004', 'Haritha Gamage', '1221harwewewfweitha@gmail.com', '$2y$10$94BEJ3upc35zICvq5vVM7.9sz.H2ViOwePDC3Lqm0dFUEbRq6idgm', 0, '2026-04-17 11:52:59', 'admin', '0743476508', '1776402885_Archigram.jpg', 'active', '2026-04-17 05:14:45', '2026-04-17 06:22:59', '[\"add_officers\",\"add_clients\",\"assign_officers\",\"handle_incidents\"]'),
+(83, 'ADMIN005', 'Haritha Gamage', 'm200227901880@gmail.com', '$2y$10$KCafEAXWLRN5g8oPSpbLL.Y2ZMDBOq1Tx4IrgfGbMjLWtr72ffxqO', 1, '2026-04-17 12:51:08', 'admin', '0743476508', '1776409249_Immersive 3D Interaction.jpeg', 'active', '2026-04-17 07:00:49', '2026-04-17 07:21:08', '[]');
 
 -- --------------------------------------------------------
 
@@ -1836,6 +2174,33 @@ CREATE TABLE `user_details` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `user_password_resets`
+--
+
+CREATE TABLE `user_password_resets` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `temp_password_hash` varchar(255) NOT NULL,
+  `old_password_hash` varchar(255) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `used` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL,
+  `used_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_password_resets`
+--
+
+INSERT INTO `user_password_resets` (`id`, `user_id`, `temp_password_hash`, `old_password_hash`, `expires_at`, `used`, `created_at`, `used_at`) VALUES
+(1, 83, '$2y$10$oaYQP69l7Ud6JU6LCVPbTe51JZLYoF5NnwPd1wrcolakKwKA47xV6', '$2y$10$qjUP3UOeqQcUAZFNT2NRZu4TzP.XHudNJ8Ti9hZdjJI.vD2SBCIHe', '2026-04-17 12:34:03', 3, '2026-04-17 12:33:03', '2026-04-17 12:40:07'),
+(3, 83, '$2y$10$evpj93tS3NrBNYoNo062X.96UaFO/l1z1LTe07uc8qjdtGOZltHJW', '$2y$10$qjUP3UOeqQcUAZFNT2NRZu4TzP.XHudNJ8Ti9hZdjJI.vD2SBCIHe', '2026-04-17 12:41:07', 1, '2026-04-17 12:40:07', '2026-04-17 12:41:06'),
+(4, 83, '$2y$10$A7OFae8GONuf7KK.zj3F3uLasjdYLlthsXmbD7f7HLFbAZGZcydhW', '$2y$10$evpj93tS3NrBNYoNo062X.96UaFO/l1z1LTe07uc8qjdtGOZltHJW', '2026-04-17 12:42:30', 2, '2026-04-17 12:41:30', '2026-04-17 12:43:24'),
+(5, 83, '$2y$10$q5AsxP51g1Obn0G3PprMLuBLoC5PJa1wg9vk3RDv/.fHS3ttL0YQi', '$2y$10$evpj93tS3NrBNYoNo062X.96UaFO/l1z1LTe07uc8qjdtGOZltHJW', '2026-04-17 12:44:41', 1, '2026-04-17 12:43:41', '2026-04-17 12:44:19');
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user_permissions`
 --
 
@@ -1853,7 +2218,7 @@ CREATE TABLE `user_permissions` (
 --
 DROP TABLE IF EXISTS `care_taker_full_details`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `care_taker_full_details`  AS SELECT `ct`.`id` AS `care_taker_id`, `ct`.`caretakerID` AS `caretakerID`, `ct`.`date_of_birth` AS `date_of_birth`, `ct`.`NIC` AS `NIC`, `ct`.`gender` AS `gender`, `ct`.`address` AS `address`, `ct`.`district` AS `district`, `ct`.`city` AS `city`, `ct`.`hire_date` AS `hire_date`, `ct`.`employment_status` AS `employment_status`, `ct`.`rank` AS `rank`, `ct`.`rating` AS `rating`, `ct`.`shift_pattern` AS `shift_pattern`, `ct`.`application_id` AS `application_id`, `ct`.`created_at` AS `caretaker_record_created`, `ct`.`updated_at` AS `caretaker_record_updated`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM (`care_taker` `ct` left join `Users` `u` on(`ct`.`userID` = `u`.`id`)) WHERE `u`.`role` = 'care taker' OR `ct`.`userID` is not null ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `care_taker_full_details`  AS SELECT `ct`.`id` AS `care_taker_id`, `ct`.`caretakerID` AS `caretakerID`, `ct`.`date_of_birth` AS `date_of_birth`, `ct`.`NIC` AS `NIC`, `ct`.`gender` AS `gender`, `ct`.`address` AS `address`, `ct`.`district` AS `district`, `ct`.`city` AS `city`, `ct`.`hire_date` AS `hire_date`, `ct`.`employment_status` AS `employment_status`, `ct`.`rank` AS `rank`, `ct`.`rating` AS `rating`, `ct`.`shift_pattern` AS `shift_pattern`, `ct`.`application_id` AS `application_id`, `ct`.`created_at` AS `caretaker_record_created`, `ct`.`updated_at` AS `caretaker_record_updated`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM (`care_taker` `ct` left join `users` `u` on(`ct`.`userID` = `u`.`id`)) WHERE `u`.`role` = 'care taker' OR `ct`.`userID` is not null ;
 
 -- --------------------------------------------------------
 
@@ -1862,7 +2227,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `mobile_rider_full_details`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `mobile_rider_full_details`  AS SELECT `mr`.`id` AS `mobile_rider_id`, `mr`.`riderID` AS `riderID`, `mr`.`date_of_birth` AS `date_of_birth`, `mr`.`NIC` AS `NIC`, `mr`.`gender` AS `gender`, `mr`.`address` AS `address`, `mr`.`district` AS `district`, `mr`.`city` AS `city`, `mr`.`hire_date` AS `hire_date`, `mr`.`employment_status` AS `employment_status`, `mr`.`rank` AS `rank`, `mr`.`rating` AS `rating`, `mr`.`shift_pattern` AS `shift_pattern`, `mr`.`application_id` AS `application_id`, `mr`.`created_at` AS `rider_record_created`, `mr`.`updated_at` AS `rider_record_updated`, `r`.`id` AS `route_id`, `r`.`route_name` AS `route_name`, `r`.`description` AS `route_description`, `r`.`location` AS `location`, `r`.`distance_km` AS `distance_km`, `r`.`difficulty_level` AS `difficulty_level`, `r`.`status` AS `route_status`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM ((`mobile_rider` `mr` left join `Users` `u` on(`mr`.`userID` = `u`.`id`)) left join `routes` `r` on(`mr`.`routeID` = `r`.`id`)) WHERE `u`.`role` = 'mobile rider' OR `mr`.`userID` is not null ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `mobile_rider_full_details`  AS SELECT `mr`.`id` AS `mobile_rider_id`, `mr`.`riderID` AS `riderID`, `mr`.`date_of_birth` AS `date_of_birth`, `mr`.`NIC` AS `NIC`, `mr`.`gender` AS `gender`, `mr`.`address` AS `address`, `mr`.`district` AS `district`, `mr`.`city` AS `city`, `mr`.`hire_date` AS `hire_date`, `mr`.`employment_status` AS `employment_status`, `mr`.`rank` AS `rank`, `mr`.`rating` AS `rating`, `mr`.`shift_pattern` AS `shift_pattern`, `mr`.`application_id` AS `application_id`, `mr`.`created_at` AS `rider_record_created`, `mr`.`updated_at` AS `rider_record_updated`, `r`.`id` AS `route_id`, `r`.`route_name` AS `route_name`, `r`.`description` AS `route_description`, `r`.`location` AS `location`, `r`.`distance_km` AS `distance_km`, `r`.`difficulty_level` AS `difficulty_level`, `r`.`status` AS `route_status`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM ((`mobile_rider` `mr` left join `users` `u` on(`mr`.`userID` = `u`.`id`)) left join `routes` `r` on(`mr`.`routeID` = `r`.`id`)) WHERE `u`.`role` = 'mobile rider' OR `mr`.`userID` is not null ;
 
 -- --------------------------------------------------------
 
@@ -1871,7 +2236,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `premise_officers_full_details`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `premise_officers_full_details`  AS SELECT `po`.`id` AS `premise_officer_id`, `po`.`officerID` AS `officerID`, `po`.`date_of_birth` AS `date_of_birth`, `po`.`NIC` AS `NIC`, `po`.`gender` AS `gender`, `po`.`address` AS `address`, `po`.`district` AS `district`, `po`.`city` AS `city`, `po`.`hire_date` AS `hire_date`, `po`.`employment_status` AS `employment_status`, `po`.`rank` AS `rank`, `po`.`rating` AS `rating`, `po`.`shift_pattern` AS `shift_pattern`, `po`.`application_id` AS `application_id`, `po`.`created_at` AS `officer_record_created`, `po`.`updated_at` AS `officer_record_updated`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM (`premise_officers` `po` left join `Users` `u` on(`po`.`userID` = `u`.`id`)) WHERE `u`.`role` = 'premise officer' OR `po`.`userID` is not null ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `premise_officers_full_details`  AS SELECT `po`.`id` AS `premise_officer_id`, `po`.`officerID` AS `officerID`, `po`.`date_of_birth` AS `date_of_birth`, `po`.`NIC` AS `NIC`, `po`.`gender` AS `gender`, `po`.`address` AS `address`, `po`.`district` AS `district`, `po`.`city` AS `city`, `po`.`hire_date` AS `hire_date`, `po`.`employment_status` AS `employment_status`, `po`.`rank` AS `rank`, `po`.`rating` AS `rating`, `po`.`shift_pattern` AS `shift_pattern`, `po`.`application_id` AS `application_id`, `po`.`created_at` AS `officer_record_created`, `po`.`updated_at` AS `officer_record_updated`, `u`.`id` AS `user_id`, `u`.`userID` AS `user_identifier`, `u`.`name` AS `name`, `u`.`email` AS `email`, `u`.`role` AS `role`, `u`.`phone_number` AS `phone_number`, `u`.`profile_image` AS `profile_image`, `u`.`status` AS `user_status`, `u`.`created_at` AS `user_account_created`, `u`.`updated_at` AS `user_account_updated` FROM (`premise_officers` `po` left join `users` `u` on(`po`.`userID` = `u`.`id`)) WHERE `u`.`role` = 'premise officer' OR `po`.`userID` is not null ;
 
 --
 -- Indexes for dumped tables
@@ -1924,9 +2289,9 @@ ALTER TABLE `care_taker`
   ADD KEY `application_id` (`application_id`);
 
 --
--- Indexes for table `Clients`
+-- Indexes for table `clients`
 --
-ALTER TABLE `Clients`
+ALTER TABLE `clients`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
 
@@ -1978,9 +2343,9 @@ ALTER TABLE `incident_reviews`
   ADD KEY `idx_review_type` (`review_type`);
 
 --
--- Indexes for table `jobApplication`
+-- Indexes for table `jobapplication`
 --
-ALTER TABLE `jobApplication`
+ALTER TABLE `jobapplication`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -2025,9 +2390,9 @@ ALTER TABLE `mobile_rider`
   ADD KEY `application_id` (`application_id`);
 
 --
--- Indexes for table `Notes`
+-- Indexes for table `notes`
 --
-ALTER TABLE `Notes`
+ALTER TABLE `notes`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_notes_user_id` (`userID`);
 
@@ -2051,6 +2416,17 @@ ALTER TABLE `officer_attendance`
   ADD KEY `idx_officer_id` (`officer_id`),
   ADD KEY `idx_attendance_date` (`attendance_date`),
   ADD KEY `idx_status` (`status`);
+
+--
+-- Indexes for table `officer_performance_ratings`
+--
+ALTER TABLE `officer_performance_ratings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_officer_rating` (`site_id`,`officer_user_id`,`reviewer_user_id`,`reviewer_role`,`rating_date`),
+  ADD KEY `idx_rated_officer` (`officer_user_id`),
+  ADD KEY `idx_rating_site` (`site_id`),
+  ADD KEY `idx_rating_reviewer` (`reviewer_user_id`,`reviewer_role`),
+  ADD KEY `idx_rating_date` (`rating_date`);
 
 --
 -- Indexes for table `officer_site_assignments`
@@ -2161,10 +2537,19 @@ ALTER TABLE `site_visits`
   ADD KEY `idx_user_id` (`user_id`);
 
 --
--- Indexes for table `submittedApplications`
+-- Indexes for table `submittedapplications`
 --
-ALTER TABLE `submittedApplications`
+ALTER TABLE `submittedapplications`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `supervisor_duty_points`
+--
+ALTER TABLE `supervisor_duty_points`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_supervisor_duty_points_creator` (`created_by`),
+  ADD KEY `idx_supervisor_duty_points_site` (`site_id`),
+  ADD KEY `idx_supervisor_duty_points_status` (`status`);
 
 --
 -- Indexes for table `supervisor_leave_requests`
@@ -2175,9 +2560,9 @@ ALTER TABLE `supervisor_leave_requests`
   ADD KEY `reviewed_by` (`reviewed_by`);
 
 --
--- Indexes for table `Users`
+-- Indexes for table `users`
 --
-ALTER TABLE `Users`
+ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `userID` (`userID`),
   ADD UNIQUE KEY `email` (`email`),
@@ -2190,6 +2575,14 @@ ALTER TABLE `Users`
 ALTER TABLE `user_details`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`);
+
+--
+-- Indexes for table `user_password_resets`
+--
+ALTER TABLE `user_password_resets`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_user_used` (`user_id`,`used`),
+  ADD KEY `idx_expires` (`expires_at`);
 
 --
 -- Indexes for table `user_permissions`
@@ -2224,7 +2617,7 @@ ALTER TABLE `caretaker_notes`
 -- AUTO_INCREMENT for table `caretaker_site_assignments`
 --
 ALTER TABLE `caretaker_site_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `care_taker`
@@ -2233,9 +2626,9 @@ ALTER TABLE `care_taker`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
--- AUTO_INCREMENT for table `Clients`
+-- AUTO_INCREMENT for table `clients`
 --
-ALTER TABLE `Clients`
+ALTER TABLE `clients`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
@@ -2269,22 +2662,22 @@ ALTER TABLE `incident_reviews`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
--- AUTO_INCREMENT for table `jobApplication`
+-- AUTO_INCREMENT for table `jobapplication`
 --
-ALTER TABLE `jobApplication`
+ALTER TABLE `jobapplication`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `leave_requests`
 --
 ALTER TABLE `leave_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT for table `message_attachments`
@@ -2299,28 +2692,34 @@ ALTER TABLE `mobile_rider`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `Notes`
+-- AUTO_INCREMENT for table `notes`
 --
-ALTER TABLE `Notes`
+ALTER TABLE `notes`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=202;
 
 --
 -- AUTO_INCREMENT for table `officer_attendance`
 --
 ALTER TABLE `officer_attendance`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT for table `officer_performance_ratings`
+--
+ALTER TABLE `officer_performance_ratings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `officer_site_assignments`
 --
 ALTER TABLE `officer_site_assignments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `packages`
@@ -2332,25 +2731,25 @@ ALTER TABLE `packages`
 -- AUTO_INCREMENT for table `package_requests`
 --
 ALTER TABLE `package_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=208;
 
 --
 -- AUTO_INCREMENT for table `premise_officers`
 --
 ALTER TABLE `premise_officers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `recent_activities`
 --
 ALTER TABLE `recent_activities`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=397;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=418;
 
 --
 -- AUTO_INCREMENT for table `sent_emails`
@@ -2368,7 +2767,7 @@ ALTER TABLE `service_requests`
 -- AUTO_INCREMENT for table `sites`
 --
 ALTER TABLE `sites`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `site_visits`
@@ -2377,10 +2776,16 @@ ALTER TABLE `site_visits`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
--- AUTO_INCREMENT for table `submittedApplications`
+-- AUTO_INCREMENT for table `submittedapplications`
 --
-ALTER TABLE `submittedApplications`
+ALTER TABLE `submittedapplications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT for table `supervisor_duty_points`
+--
+ALTER TABLE `supervisor_duty_points`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `supervisor_leave_requests`
@@ -2389,16 +2794,22 @@ ALTER TABLE `supervisor_leave_requests`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `Users`
+-- AUTO_INCREMENT for table `users`
 --
-ALTER TABLE `Users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=84;
 
 --
 -- AUTO_INCREMENT for table `user_details`
 --
 ALTER TABLE `user_details`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `user_password_resets`
+--
+ALTER TABLE `user_password_resets`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `user_permissions`
@@ -2414,90 +2825,90 @@ ALTER TABLE `user_permissions`
 -- Constraints for table `advertisements`
 --
 ALTER TABLE `advertisements`
-  ADD CONSTRAINT `advertisements_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `advertisements_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `attendance`
 --
 ALTER TABLE `attendance`
-  ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `caretaker_notes`
 --
 ALTER TABLE `caretaker_notes`
-  ADD CONSTRAINT `fk_notes_caretaker` FOREIGN KEY (`caretaker_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_notes_caretaker` FOREIGN KEY (`caretaker_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `caretaker_site_assignments`
 --
 ALTER TABLE `caretaker_site_assignments`
   ADD CONSTRAINT `caretaker_site_assignments_ibfk_1` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `caretaker_site_assignments_ibfk_2` FOREIGN KEY (`caretaker_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `caretaker_site_assignments_ibfk_3` FOREIGN KEY (`assigned_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `caretaker_site_assignments_ibfk_2` FOREIGN KEY (`caretaker_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `caretaker_site_assignments_ibfk_3` FOREIGN KEY (`assigned_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `care_taker`
 --
 ALTER TABLE `care_taker`
-  ADD CONSTRAINT `care_taker_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `care_taker_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `submittedApplications` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `care_taker_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `care_taker_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `submittedapplications` (`id`) ON DELETE SET NULL;
 
 --
--- Constraints for table `Clients`
+-- Constraints for table `clients`
 --
-ALTER TABLE `Clients`
-  ADD CONSTRAINT `Clients_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `clients`
+  ADD CONSTRAINT `Clients_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `client_requests`
 --
 ALTER TABLE `client_requests`
-  ADD CONSTRAINT `client_requests_ibfk_1` FOREIGN KEY (`approved_by`) REFERENCES `Users` (`id`);
+  ADD CONSTRAINT `client_requests_ibfk_1` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `conversation_participants`
 --
 ALTER TABLE `conversation_participants`
-  ADD CONSTRAINT `fk_conv_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_conv_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `equipment_requests`
 --
 ALTER TABLE `equipment_requests`
-  ADD CONSTRAINT `equipment_requests_ibfk_1` FOREIGN KEY (`caretaker_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `equipment_requests_ibfk_2` FOREIGN KEY (`approved_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `equipment_requests_ibfk_1` FOREIGN KEY (`caretaker_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `equipment_requests_ibfk_2` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `incident_reports`
 --
 ALTER TABLE `incident_reports`
   ADD CONSTRAINT `fk_incident_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `fk_incident_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `incident_reviews`
 --
 ALTER TABLE `incident_reviews`
   ADD CONSTRAINT `fk_review_incident` FOREIGN KEY (`incident_id`) REFERENCES `incident_reports` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_review_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `leave_requests`
 --
 ALTER TABLE `leave_requests`
-  ADD CONSTRAINT `fk_reviewed_by` FOREIGN KEY (`reviewed_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `leave_requests_ibfk_1` FOREIGN KEY (`caretaker_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `leave_requests_ibfk_2` FOREIGN KEY (`supervisor_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `leave_requests_ibfk_3` FOREIGN KEY (`mobilerider_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `leave_requests_ibfk_4` FOREIGN KEY (`premiseofficer_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_reviewed_by` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `leave_requests_ibfk_1` FOREIGN KEY (`caretaker_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `leave_requests_ibfk_2` FOREIGN KEY (`supervisor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `leave_requests_ibfk_3` FOREIGN KEY (`mobilerider_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `leave_requests_ibfk_4` FOREIGN KEY (`premiseofficer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `messages`
 --
 ALTER TABLE `messages`
-  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `messages_ibfk_1` FOREIGN KEY (`sender_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `messages_ibfk_2` FOREIGN KEY (`recipient_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `message_attachments`
@@ -2509,75 +2920,83 @@ ALTER TABLE `message_attachments`
 -- Constraints for table `mobile_rider`
 --
 ALTER TABLE `mobile_rider`
-  ADD CONSTRAINT `mobile_rider_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `mobile_rider_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `mobile_rider_ibfk_2` FOREIGN KEY (`routeID`) REFERENCES `routes` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `mobile_rider_ibfk_3` FOREIGN KEY (`application_id`) REFERENCES `submittedApplications` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `mobile_rider_ibfk_3` FOREIGN KEY (`application_id`) REFERENCES `submittedapplications` (`id`) ON DELETE SET NULL;
 
 --
--- Constraints for table `Notes`
+-- Constraints for table `notes`
 --
-ALTER TABLE `Notes`
-  ADD CONSTRAINT `fk_notes_user_id` FOREIGN KEY (`userID`) REFERENCES `Users` (`userID`) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE `notes`
+  ADD CONSTRAINT `fk_notes_user_id` FOREIGN KEY (`userID`) REFERENCES `users` (`userID`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `notifications`
 --
 ALTER TABLE `notifications`
-  ADD CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `fk_notification_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `officer_attendance`
 --
 ALTER TABLE `officer_attendance`
-  ADD CONSTRAINT `officer_attendance_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `officer_attendance_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `officer_performance_ratings`
+--
+ALTER TABLE `officer_performance_ratings`
+  ADD CONSTRAINT `fk_officer_ratings_officer` FOREIGN KEY (`officer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_officer_ratings_reviewer` FOREIGN KEY (`reviewer_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_officer_ratings_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `officer_site_assignments`
 --
 ALTER TABLE `officer_site_assignments`
-  ADD CONSTRAINT `fk_officer_assignment_assigner` FOREIGN KEY (`assigned_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `fk_officer_assignment_officer` FOREIGN KEY (`officer_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_officer_assignment_assigner` FOREIGN KEY (`assigned_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_officer_assignment_officer` FOREIGN KEY (`officer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_officer_assignment_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `packages`
 --
 ALTER TABLE `packages`
-  ADD CONSTRAINT `packages_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `packages_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `package_requests`
 --
 ALTER TABLE `package_requests`
-  ADD CONSTRAINT `package_requests_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `package_requests_ibfk_2` FOREIGN KEY (`approved_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `package_requests_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `package_requests_ibfk_2` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `payments`
 --
 ALTER TABLE `payments`
-  ADD CONSTRAINT `fk_payments_client` FOREIGN KEY (`client_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_payments_client` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_payments_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `premise_officers`
 --
 ALTER TABLE `premise_officers`
-  ADD CONSTRAINT `premise_officers_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `premise_officers_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `submittedApplications` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `premise_officers_ibfk_1` FOREIGN KEY (`userID`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `premise_officers_ibfk_2` FOREIGN KEY (`application_id`) REFERENCES `submittedapplications` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `recent_activities`
 --
 ALTER TABLE `recent_activities`
-  ADD CONSTRAINT `recent_activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `recent_activities_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `routes`
 --
 ALTER TABLE `routes`
-  ADD CONSTRAINT `fk_routes_assigned_rider` FOREIGN KEY (`assigned_rider_id`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `routes_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `fk_routes_assigned_rider` FOREIGN KEY (`assigned_rider_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `routes_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `route_sites`
@@ -2590,33 +3009,40 @@ ALTER TABLE `route_sites`
 -- Constraints for table `service_requests`
 --
 ALTER TABLE `service_requests`
-  ADD CONSTRAINT `service_requests_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `service_requests_ibfk_1` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `site_visits`
 --
 ALTER TABLE `site_visits`
   ADD CONSTRAINT `site_visits_ibfk_1` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `site_visits_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `site_visits_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `supervisor_duty_points`
+--
+ALTER TABLE `supervisor_duty_points`
+  ADD CONSTRAINT `fk_supervisor_duty_points_creator` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_supervisor_duty_points_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `supervisor_leave_requests`
 --
 ALTER TABLE `supervisor_leave_requests`
-  ADD CONSTRAINT `supervisor_leave_requests_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `supervisor_leave_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `Users` (`id`) ON DELETE SET NULL;
+  ADD CONSTRAINT `supervisor_leave_requests_ibfk_1` FOREIGN KEY (`supervisor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `supervisor_leave_requests_ibfk_2` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `user_details`
 --
 ALTER TABLE `user_details`
-  ADD CONSTRAINT `user_details_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `user_details_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_permissions`
 --
 ALTER TABLE `user_permissions`
-  ADD CONSTRAINT `user_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `user_permissions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

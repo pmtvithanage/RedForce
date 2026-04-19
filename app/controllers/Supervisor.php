@@ -125,7 +125,13 @@ class Supervisor extends Controller {
 
      public function editProfile() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_id']);
+            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_userID'] ?? '');
+
+            if (!$supervisor) {
+                flash('msg', 'Supervisor profile not found. Please login again.', 'alert-danger');
+                redirect('users/login');
+                return;
+            }
             
             $data = [
                 'title' => 'Profile',
@@ -345,26 +351,96 @@ class Supervisor extends Controller {
             return;
         }
         
+        $selectedDate = $_GET['date'] ?? date('Y-m-d');
+        $officerSearch = trim($_GET['officer_id'] ?? '');
+
         // Get filters from GET request
         $filters = [
-            'date' => $_GET['date'] ?? '',
-            'status' => $_GET['status'] ?? '',
-            'officer_id' => $_GET['officer_id'] ?? ''
+            'date' => $selectedDate,
+            'officer_id' => $officerSearch
         ];
-        
-        // Fetch attendance records with filters
-        $attendanceRecords = $this->supervisorModel->getAttendanceRecords($supervisor_id, $filters);
-        
-        // Get today's statistics
-        $today = date('Y-m-d');
-        $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
+
+        $site = $this->supervisorModel->getSupervisorAttendanceSite($supervisor_id);
+        $eligibleStaff = $this->supervisorModel->getAttendanceEligibleStaff($supervisor_id);
+        $dutyPoints = $this->supervisorModel->getAttendanceDutyPoints($supervisor_id);
+
+        $todayDate = date('Y-m-d');
+        $isPastDate = strtotime($selectedDate) < strtotime($todayDate);
+
+        // Get all marked attendance for selected date and map by staff code.
+        $markedRecords = $this->supervisorModel->getAttendanceRecords($supervisor_id, ['date' => $selectedDate]);
+        $markedByOfficerCode = [];
+        foreach ($markedRecords as $record) {
+            $markedByOfficerCode[(string)$record->officer_id] = $record;
+        }
+
+        // Build visible records from current site staff list.
+        // Rule: only infer absent for past dates (after day has ended).
+        $attendanceRecords = [];
+        foreach ($eligibleStaff as $staff) {
+            $staffCode = !empty($staff->staff_code) ? trim($staff->staff_code) : (string)$staff->staff_user_id;
+            $staffName = trim($staff->staff_name ?? '');
+
+            if ($officerSearch !== '') {
+                $inCode = stripos($staffCode, $officerSearch) !== false;
+                $inName = stripos($staffName, $officerSearch) !== false;
+                if (!$inCode && !$inName) {
+                    continue;
+                }
+            }
+
+            if (isset($markedByOfficerCode[$staffCode])) {
+                $row = $markedByOfficerCode[$staffCode];
+                if (empty($row->staff_role)) {
+                    $row->staff_role = $staff->staff_role;
+                }
+                $attendanceRecords[] = $row;
+                continue;
+            }
+
+            if ($isPastDate) {
+                $absentRow = new stdClass();
+                $absentRow->attendance_date = $selectedDate;
+                $absentRow->officer_id = $staffCode;
+                $absentRow->officer_name = $staffName;
+                $absentRow->staff_role = $staff->staff_role;
+                $absentRow->duty_point = '-';
+                $absentRow->status = 'Absent';
+                $absentRow->notes = 'Not marked';
+                $attendanceRecords[] = $absentRow;
+            }
+        }
+
+        usort($attendanceRecords, function ($a, $b) {
+            return strcmp((string)$a->officer_name, (string)$b->officer_name);
+        });
+
+        $presentCount = 0;
+        $absentCount = 0;
+        foreach ($attendanceRecords as $record) {
+            if (($record->status ?? '') === 'Present') {
+                $presentCount++;
+            } elseif (($record->status ?? '') === 'Absent') {
+                $absentCount++;
+            }
+        }
+
+        $stats = (object)[
+            'total_officers' => count($attendanceRecords),
+            'present' => $presentCount,
+            'absent' => $absentCount
+        ];
         
         $data = [
             'title' => 'Attendance',
-            'pageTitle' => 'Officer Attendance',
+            'pageTitle' => 'Attendance',
             'attendanceRecords' => $attendanceRecords,
             'stats' => $stats,
-            'filters' => $filters
+            'filters' => $filters,
+            'site' => $site,
+            'eligibleStaff' => $eligibleStaff,
+            'dutyPoints' => $dutyPoints,
+            'selectedDate' => $selectedDate
         ];
         
         $this->view('supervisor/v_attendance', $data);
@@ -372,19 +448,45 @@ class Supervisor extends Controller {
 
     // Show mark attendance form page
     public function markAttendancePage() {
+        redirect('supervisor/attendance');
+    }
+
+    // CREATE - Add a duty point in supervisor's assigned site
+    public function addDutyPoint() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
         $supervisor_id = $_SESSION['user_id'] ?? null;
-        
         if (!$supervisor_id) {
+            flash('attendance_error', 'User not authenticated');
             redirect('users/login');
             return;
         }
-        
-        $data = [
-            'title' => 'Mark Attendance',
-            'pageTitle' => 'Mark Attendance'
-        ];
-        
-        $this->view('supervisor/v_mark_attendance', $data);
+
+        $dutyPointName = trim($_POST['duty_point_name'] ?? '');
+        if ($dutyPointName === '') {
+            flash('attendance_error', 'Duty point name is required');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if (strlen($dutyPointName) > 120) {
+            flash('attendance_error', 'Duty point name is too long');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($this->supervisorModel->addAttendanceDutyPoint($supervisor_id, $dutyPointName)) {
+            flash('attendance_success', 'Duty point added successfully');
+        } else {
+            flash('attendance_error', 'Failed to add duty point. Make sure you are assigned as a supervisor to a site.');
+        }
+
+        redirect('supervisor/attendance');
     }
 
     // Show edit attendance form page
@@ -428,34 +530,53 @@ class Supervisor extends Controller {
                 return;
             }
             
-            $data = [
-                'supervisor_id' => $supervisor_id,
-                'officer_id' => trim($_POST['officer_id']),
-                'officer_name' => trim($_POST['officer_name']),
-                'attendance_date' => trim($_POST['attendance_date']),
-                'check_in_time' => !empty($_POST['check_in_time']) ? trim($_POST['check_in_time']) : null,
-                'check_out_time' => !empty($_POST['check_out_time']) ? trim($_POST['check_out_time']) : null,
-                'status' => trim($_POST['status']),
-                'notes' => trim($_POST['notes'])
-            ];
-            
-            // Validate required fields
-            if (empty($data['officer_id']) || empty($data['officer_name']) || 
-                empty($data['attendance_date']) || empty($data['status'])) {
-                flash('attendance_error', 'Please fill all required fields');
-                redirect('supervisor/markAttendancePage');
+            $staffUserId = (int)($_POST['staff_user_id'] ?? 0);
+            $attendanceDate = trim($_POST['attendance_date'] ?? '');
+            $notes = trim($_POST['notes'] ?? '');
+            $dutyPointId = (int)($_POST['duty_point_id'] ?? 0);
+
+            if ($staffUserId <= 0 || $attendanceDate === '' || $dutyPointId <= 0) {
+                flash('attendance_error', 'Please fill all required fields correctly');
+                redirect('supervisor/attendance');
                 return;
             }
+
+            $staff = $this->supervisorModel->getValidAttendanceStaffMember($supervisor_id, $staffUserId);
+            if (!$staff) {
+                flash('attendance_error', 'Invalid staff member. You can only mark attendance for officers/caretakers in your site.');
+                redirect('supervisor/attendance');
+                return;
+            }
+
+            $dutyPoint = $this->supervisorModel->isValidDutyPointForSupervisor($supervisor_id, $dutyPointId);
+            if (!$dutyPoint) {
+                flash('attendance_error', 'Invalid duty point selected');
+                redirect('supervisor/attendance');
+                return;
+            }
+
+            $data = [
+                'supervisor_id' => $supervisor_id,
+                'officer_id' => !empty($staff->staff_code) ? trim($staff->staff_code) : (string)$staff->staff_user_id,
+                'officer_name' => trim($staff->staff_name),
+                'attendance_date' => $attendanceDate,
+                'check_in_time' => null,
+                'check_out_time' => null,
+                'status' => 'Present',
+                'notes' => $notes,
+                'duty_point' => $dutyPoint->duty_point_name,
+                'staff_role' => $staff->staff_role
+            ];
             
             if ($this->supervisorModel->addAttendance($data)) {
                 flash('attendance_success', 'Attendance record added successfully');
             } else {
-                flash('attendance_error', 'Failed to add attendance record. Officer may already have attendance for this date.');
+                flash('attendance_error', 'Failed to add attendance record');
             }
             
-            redirect('supervisor/attendance');
+            redirect('supervisor/attendance?date=' . urlencode($attendanceDate));
         } else {
-            redirect('supervisor/markAttendancePage');
+            redirect('supervisor/attendance');
         }
     }
 
@@ -552,6 +673,13 @@ class Supervisor extends Controller {
         
         // Get caretakers for this site
         $caretakers = $this->supervisorModel->getSiteCaretakers($supervisorId);
+
+        // Get this supervisor's existing officer ratings
+        $officerRatings = $this->supervisorModel->getSupervisorOfficerRatings($supervisorId);
+
+        $ratingSuccess = $_SESSION['supervisor_rating_success'] ?? '';
+        $ratingError = $_SESSION['supervisor_rating_error'] ?? '';
+        unset($_SESSION['supervisor_rating_success'], $_SESSION['supervisor_rating_error']);
         
         $data = [
             'title' => 'Sites',
@@ -560,10 +688,91 @@ class Supervisor extends Controller {
             'supervisors' => $siteData['supervisors'],
             'site' => $siteData['site'],
             'mobile_riders' => $mobileRiders,
-            'caretakers' => $caretakers
+            'caretakers' => $caretakers,
+            'officer_ratings' => $officerRatings,
+            'rating_success' => $ratingSuccess,
+            'rating_error' => $ratingError
         ];
         
         $this->view('supervisor/site/v_site_info', $data);
+    }
+
+    public function saveOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $supervisorId = $_SESSION['user_id'] ?? null;
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingValue = (int)($_POST['rating_value'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+        $description = trim((string)($_POST['description'] ?? ''));
+
+        if (!$supervisorId || $officerUserId <= 0) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid request for officer rating.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid rating date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($ratingValue < 1 || $ratingValue > 5) {
+            $_SESSION['supervisor_rating_error'] = 'Rating must be between 1 and 5.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if (!$this->supervisorModel->canSupervisorRateOfficer($supervisorId, $officerUserId, $ratingDate)) {
+            $_SESSION['supervisor_rating_error'] = 'You can only rate premise officers assigned to your site on that date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($this->supervisorModel->saveSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate, $ratingValue, $description)) {
+            $_SESSION['supervisor_rating_success'] = 'Officer rating saved successfully.';
+        } else {
+            $_SESSION['supervisor_rating_error'] = 'Failed to save officer rating.';
+        }
+
+        redirect('supervisor/site_info');
+    }
+
+    public function deleteOfficerRating() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $supervisorId = $_SESSION['user_id'] ?? null;
+        $officerUserId = (int)($_POST['officer_user_id'] ?? 0);
+        $ratingDate = trim((string)($_POST['rating_date'] ?? ''));
+
+        if (!$supervisorId || $officerUserId <= 0) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid delete request for officer rating.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        $dateObj = DateTime::createFromFormat('Y-m-d', $ratingDate);
+        if (!$dateObj || $dateObj->format('Y-m-d') !== $ratingDate) {
+            $_SESSION['supervisor_rating_error'] = 'Invalid rating date.';
+            redirect('supervisor/site_info');
+            return;
+        }
+
+        if ($this->supervisorModel->deleteSupervisorOfficerRating($supervisorId, $officerUserId, $ratingDate)) {
+            $_SESSION['supervisor_rating_success'] = 'Officer rating deleted successfully.';
+        } else {
+            $_SESSION['supervisor_rating_error'] = 'Failed to delete officer rating.';
+        }
+
+        redirect('supervisor/site_info');
     }
 
     // Incidents - List all incidents

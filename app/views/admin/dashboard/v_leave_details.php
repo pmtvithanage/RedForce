@@ -712,13 +712,110 @@
             </div>
 
             <!-- Action Buttons -->
+            <?php
+            $isPendingPremiseOfficer = (
+                $data['leaveRequest']->status == 'Pending' &&
+                !empty($data['leaveRequest']->premiseofficer_id)
+            );
+            ?>
+
+            <?php if ($isPendingPremiseOfficer): ?>
+            <div style="margin: 20px 0; padding: 16px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fafafa;">
+                <h3 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined">group_add</span>
+                    Replacement Officer Assignment
+                </h3>
+
+                <?php if (!empty($data['replacementContext'])): ?>
+                    <p style="margin: 0 0 12px 0; color: #4b5563;">
+                        Site: <strong><?php echo htmlspecialchars($data['replacementContext']->site_name); ?></strong>
+                        (<?php echo date('M d, Y', strtotime($data['leaveRequest']->start_date)); ?> - <?php echo date('M d, Y', strtotime($data['leaveRequest']->end_date)); ?>)
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: repeat(4, minmax(180px, 1fr)); gap: 10px; margin: 14px 0;">
+                        <div>
+                            <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 6px;">District Filter</label>
+                            <select id="leaveDistrictFilter" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                <option value="same-district">Same District</option>
+                                <option value="any-district">Any District</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 6px;">City Filter</label>
+                            <select id="leaveCityFilter" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                <option value="same-city">Same City</option>
+                                <option value="any-city">Any City</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 6px;">Availability</label>
+                            <select id="leaveAvailabilityFilter" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                <option value="available">Available Only</option>
+                                <option value="assigned">Assigned Only</option>
+                                <option value="all">All Officers</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size: 12px; color: #6b7280; display: block; margin-bottom: 6px;">Employment Status</label>
+                            <select id="leaveStatusFilter" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                <option value="Active">Active</option>
+                                <option value="On Leave">On Leave</option>
+                                <option value="Suspended">Suspended</option>
+                                <option value="all">All</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-bottom: 12px;">
+                        <button type="button" class="btn btn-back" onclick="loadReplacementOfficers()" style="padding: 10px 14px;">
+                            <span class="material-symbols-outlined">search</span>
+                            Search Officers
+                        </button>
+                        <button type="button" class="btn btn-back" onclick="resetReplacementFilters()" style="padding: 10px 14px;">
+                            <span class="material-symbols-outlined">refresh</span>
+                            Reset Filters
+                        </button>
+                    </div>
+
+                    <div id="replacementOfficerResults" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #fff;">
+                        <div style="padding: 14px; color: #6b7280;">Use filters and click <strong>Search Officers</strong> to manually find an officer, then assign before approving.</div>
+                    </div>
+
+                    <?php if (!empty($data['plannedReplacementOfficerId']) && !empty($data['plannedReplacementOfficer'])): ?>
+                        <div style="margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #ecfdf3; color: #065f46; border: 1px solid #a7f3d0;">
+                            Replacement selected: <strong><?php echo htmlspecialchars($data['plannedReplacementOfficer']->name); ?></strong>
+                            (ID: <?php echo htmlspecialchars($data['plannedReplacementOfficer']->userID); ?>)
+                        </div>
+                    <?php else: ?>
+                        <div style="margin-top: 12px; padding: 10px 12px; border-radius: 8px; background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa;">
+                            Select and assign one replacement officer first. Approval is blocked until this step is complete.
+                        </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <div style="padding: 10px 12px; border-radius: 8px; background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa;">
+                        This requesting officer is not currently assigned to a site for the leave start date, so replacement assignment cannot be prepared automatically.
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
             <div class="action-buttons">
                 <button class="btn btn-back" onclick="history.back()">
                     <span class="material-symbols-outlined">arrow_back</span>
                     Back
                 </button>
-                <?php if ($data['leaveRequest']->status == 'Pending'): ?>
+                <?php if ($data['leaveRequest']->status == 'Pending' && !$isPendingPremiseOfficer): ?>
                 <button class="btn btn-approve" onclick="showApproveModal()">
+                    <span class="material-symbols-outlined">check</span>
+                    Approve Request
+                </button>
+                <button class="btn btn-reject" onclick="showRejectModal()">
+                    <span class="material-symbols-outlined">close</span>
+                    Reject Request
+                </button>
+                <?php endif; ?>
+                <?php if ($data['leaveRequest']->status == 'Pending' && $isPendingPremiseOfficer): ?>
+                <button class="btn btn-approve" onclick="showApproveModal()" <?php echo empty($data['plannedReplacementOfficerId']) ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''; ?>>
                     <span class="material-symbols-outlined">check</span>
                     Approve Request
                 </button>
@@ -752,6 +849,141 @@
 
 <script>
 let currentAction = null;
+let pendingReplacementOfficerId = null;
+let pendingReplacementOfficerName = '';
+
+const leaveRequestId = <?php echo (int)$data['leaveRequest']->id; ?>;
+const urlRoot = '<?php echo URL_ROOT; ?>';
+const isPendingPremiseOfficer = <?php echo ($isPendingPremiseOfficer ? 'true' : 'false'); ?>;
+const leaveSiteInfo = {
+    site_id: <?php echo !empty($data['replacementContext']) ? (int)$data['replacementContext']->site_id : 'null'; ?>,
+    city: '<?php echo !empty($data['replacementContext']) ? addslashes($data['replacementContext']->city ?? '') : ''; ?>',
+    district: '<?php echo !empty($data['replacementContext']) ? addslashes($data['replacementContext']->district ?? '') : ''; ?>'
+};
+
+function renderReplacementOfficers(officers) {
+    const container = document.getElementById('replacementOfficerResults');
+    if (!container) {
+        return;
+    }
+
+    if (!officers || officers.length === 0) {
+        container.innerHTML = '<div style="padding:14px; color:#991b1b; background:#fef2f2;">No officers found for current filters.</div>';
+        return;
+    }
+
+    let html = '<table style="width:100%; border-collapse: collapse;">';
+    html += '<thead><tr style="background:#f9fafb;">';
+    html += '<th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb;">Officer</th>';
+    html += '<th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb;">Location</th>';
+    html += '<th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb;">Status</th>';
+    html += '<th style="text-align:left; padding:10px; border-bottom:1px solid #e5e7eb;">Action</th>';
+    html += '</tr></thead><tbody>';
+
+    officers.forEach(officer => {
+        const disabled = officer.current_assignment ? 'disabled' : '';
+        const btnText = officer.current_assignment ? 'Already Assigned' : 'Assign Replacement';
+        const rowBg = officer.current_assignment ? '#fff7ed' : '#ffffff';
+        html += `<tr style="background:${rowBg};">`;
+        html += `<td style="padding:10px; border-bottom:1px solid #f3f4f6;"><strong>${officer.name}</strong><br><span style="font-size:12px;color:#6b7280;">${officer.officerID || officer.userID || ''}</span></td>`;
+        html += `<td style="padding:10px; border-bottom:1px solid #f3f4f6;">${officer.city || '-'}, ${officer.district || '-'}</td>`;
+        html += `<td style="padding:10px; border-bottom:1px solid #f3f4f6;">${officer.employment_status || '-'}</td>`;
+        html += `<td style="padding:10px; border-bottom:1px solid #f3f4f6;"><button ${disabled} onclick="assignReplacementOfficer(${officer.user_id}, '${(officer.name || '').replace(/'/g, "\\'")}')" style="padding:8px 10px; border:1px solid #d1d5db; border-radius:6px; background:${officer.current_assignment ? '#f3f4f6' : '#dcfce7'}; cursor:${officer.current_assignment ? 'not-allowed' : 'pointer'};">${btnText}</button></td>`;
+        html += '</tr>';
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+}
+
+function loadReplacementOfficers() {
+    if (!isPendingPremiseOfficer || !leaveSiteInfo.site_id) {
+        return;
+    }
+
+    const districtFilter = document.getElementById('leaveDistrictFilter').value;
+    const cityFilter = document.getElementById('leaveCityFilter').value;
+    const availability = document.getElementById('leaveAvailabilityFilter').value;
+    const status = document.getElementById('leaveStatusFilter').value;
+
+    const container = document.getElementById('replacementOfficerResults');
+    container.innerHTML = '<div style="padding:14px; color:#6b7280;">Loading officers...</div>';
+
+    fetch(urlRoot + '/admin/getAvailableOfficers', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            site_id: leaveSiteInfo.site_id,
+            district_filter: districtFilter,
+            city_filter: cityFilter,
+            availability: availability,
+            status: status,
+            district: leaveSiteInfo.district,
+            city: leaveSiteInfo.city
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        renderReplacementOfficers(data.officers || []);
+    })
+    .catch(() => {
+        container.innerHTML = '<div style="padding:14px; color:#991b1b; background:#fef2f2;">Failed to load officers.</div>';
+    });
+}
+
+function resetReplacementFilters() {
+    if (!isPendingPremiseOfficer) {
+        return;
+    }
+    document.getElementById('leaveDistrictFilter').value = 'same-district';
+    document.getElementById('leaveCityFilter').value = 'same-city';
+    document.getElementById('leaveAvailabilityFilter').value = 'available';
+    document.getElementById('leaveStatusFilter').value = 'Active';
+}
+
+function assignReplacementOfficer(officerId, officerName) {
+    pendingReplacementOfficerId = officerId;
+    pendingReplacementOfficerName = officerName;
+
+    document.getElementById('modalTitle').textContent = 'Assign Replacement Officer';
+    document.getElementById('modalMessage').textContent = 'Assign ' + officerName + ' as replacement for this leave request?';
+    document.getElementById('modalIcon').textContent = 'group_add';
+    document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon approve';
+    document.getElementById('modalInput').style.display = 'none';
+    document.getElementById('modalConfirmBtn').className = 'modal-btn modal-btn-confirm approve';
+    document.getElementById('modalConfirmBtn').textContent = 'Assign';
+
+    currentAction = 'assign_replacement';
+    document.getElementById('confirmModal').classList.add('active');
+}
+
+function submitReplacementAssignment(officerId, officerName) {
+    if (!officerId) {
+        showToast('error', 'No replacement officer selected');
+        return;
+    }
+
+    fetch(urlRoot + '/admin/planReplacementOfficerForLeave', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            leave_request_id: leaveRequestId,
+            replacement_officer_id: officerId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            showToast('error', data.message || 'Failed to assign replacement officer');
+            return;
+        }
+        showToast('success', officerName + ' assigned as replacement officer');
+        setTimeout(() => window.location.reload(), 800);
+    })
+    .catch(() => {
+        showToast('error', 'Failed to assign replacement officer');
+    });
+}
 
 // Show approve modal
 function showApproveModal() {
@@ -770,7 +1002,7 @@ function showApproveModal() {
 // Show reject modal
 function showRejectModal() {
     document.getElementById('modalTitle').textContent = 'Reject Leave Request';
-    document.getElementById('modalMessage').textContent = 'Please provide a reason for rejecting this leave request:';
+    document.getElementById('modalMessage').textContent = 'Please provide a reason for rejecting this leave request. Any selected replacement will be ignored.';
     document.getElementById('modalIcon').textContent = 'cancel';
     document.getElementById('modalIcon').className = 'material-symbols-outlined confirm-modal-icon reject';
     document.getElementById('modalInput').style.display = 'block';
@@ -786,6 +1018,8 @@ function showRejectModal() {
 function closeModal() {
     document.getElementById('confirmModal').classList.remove('active');
     currentAction = null;
+    pendingReplacementOfficerId = null;
+    pendingReplacementOfficerName = '';
     document.getElementById('modalInput').value = '';
 }
 
@@ -798,12 +1032,29 @@ function confirmAction() {
     } else if (currentAction === 'reject') {
         const reason = document.getElementById('modalInput').value.trim();
         if (!reason) {
-            alert('Please provide a reason for rejection');
+            showToast('error', 'Please provide a reason for rejection');
             return;
         }
         window.location.href = '<?php echo URL_ROOT; ?>/admin/rejectLeaveRequest/' + requestId + '?reason=' + encodeURIComponent(reason);
+    } else if (currentAction === 'assign_replacement') {
+        const officerId = pendingReplacementOfficerId;
+        const officerName = pendingReplacementOfficerName;
+        submitReplacementAssignment(officerId, officerName);
     }
     closeModal();
+}
+
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    const bg = type === 'success' ? '#16a34a' : '#dc2626';
+    toast.style.cssText = 'position: fixed; top: 18px; right: 18px; z-index: 12000; color: #fff; background: ' + bg + '; padding: 10px 14px; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); font-size: 14px;';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 180ms ease';
+        setTimeout(() => toast.remove(), 220);
+    }, 2200);
 }
 
 // Close modal on background click

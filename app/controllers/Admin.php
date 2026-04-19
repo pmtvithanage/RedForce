@@ -387,6 +387,29 @@ class Admin extends Controller {
     public function officers() {
 
         $officers = $this->adminModel->getAllPO();
+
+        $userIds = [];
+        foreach ($officers as $officer) {
+            if (isset($officer->user_id)) {
+                $userIds[] = (int)$officer->user_id;
+            }
+        }
+
+        $scoreMap = $this->adminModel->getPremiseOfficerFinalScores($userIds);
+        foreach ($officers as $officer) {
+            $uid = isset($officer->user_id) ? (int)$officer->user_id : 0;
+            $officer->rating = isset($scoreMap[$uid]) ? $scoreMap[$uid]['final_score'] : 0;
+        }
+
+        usort($officers, function ($a, $b) {
+            $aScore = isset($a->rating) ? (float)$a->rating : 0;
+            $bScore = isset($b->rating) ? (float)$b->rating : 0;
+            if ($aScore === $bScore) {
+                return strcmp((string)($a->name ?? ''), (string)($b->name ?? ''));
+            }
+            return $aScore < $bScore ? 1 : -1;
+        });
+
         $data = [
             'title' => 'Officers',
             'pageTitle' => 'Manage Officers',
@@ -430,6 +453,33 @@ class Admin extends Controller {
     ];
         $this->view('admin/officers/v_officer_profile', $data);
     }
+
+    public function officerRatings($officerUserId) {
+        if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
+            flash('msg', 'You do not have permission to view officer ratings', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $officer = $this->adminModel->getPOById($officerUserId);
+        if (!$officer) {
+            flash('msg', 'Officer not found', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $ratings = $this->adminModel->getOfficerRatingsByUserId($officer->user_id);
+
+        $data = [
+            'title' => 'Officers',
+            'pageTitle' => 'Officer Ratings',
+            'officer' => $officer,
+            'ratings' => $ratings
+        ];
+
+        $this->view('admin/officers/v_officer_ratings', $data);
+    }
+
     public function mobile_rider_profile($id){
         // Check permission
         if (!$this->hasPermission($_SESSION['user_userID'], 'edit_officer_profiles')) {
@@ -462,21 +512,44 @@ class Admin extends Controller {
     }
 
     public function viewOfficerCalendar($officerId) {
-        // Get officer details
-        $officer = $this->adminModel->getPOById($officerId);
-        
-        // Get officer assignments
-        $assignments = $this->premiseOfficerModel->getActiveAssignments($officerId);
-        
-        // Get approved leave dates
-        $leaveDates = $this->premiseOfficerModel->getApprovedLeaveDates($officerId);
+        $user = $this->userModel->getUserById($officerId);
+        if (!$user) {
+            flash('msg', 'User not found', 'alert-danger');
+            redirect('admin/officers');
+            return;
+        }
+
+        $role = strtolower(trim((string)($user->role ?? '')));
+        $officer = null;
+        if ($role === 'premise officer') {
+            $officer = $this->adminModel->getPOById($officerId);
+        } elseif ($role === 'caretaker' || $role === 'care taker' || $role === 'care-taker') {
+            $officer = $this->adminModel->getCTById($officerId);
+        } elseif ($role === 'mobile rider') {
+            $officer = $this->adminModel->getMRById($officerId);
+        }
+
+        if (!$officer) {
+            $officer = (object)[
+                'name' => $user->name,
+                'officerID' => $user->userID,
+                'rank' => ucfirst($role),
+                'user_id' => $user->id
+            ];
+        }
+
+        $assignments = $this->premiseOfficerModel->getCalendarAssignments($officerId, $role);
+        $leaveDates = $this->premiseOfficerModel->getCalendarLeaveDates($officerId, $role);
+        $attendanceStatuses = $this->premiseOfficerModel->getAttendanceStatusesByUserId($officerId);
         
         $data = [
             'title' => 'Officer Calendar',
             'pageTitle' => 'Officer Schedule',
             'officer' => $officer,
             'assignments' => $assignments,
-            'leaveDates' => $leaveDates
+            'leaveDates' => $leaveDates,
+            'attendanceStatuses' => $attendanceStatuses,
+            'officerRole' => $role
         ];
         
         $this->view('admin/officers/v_officer_calendar', $data);
@@ -486,24 +559,52 @@ class Admin extends Controller {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $date = $_POST['date'] ?? null;
             $officerId = $_POST['officer_id'] ?? null;
+            $role = strtolower(trim((string)($_POST['role'] ?? '')));
             
             if (!$date || !$officerId) {
                 echo json_encode(['success' => false, 'message' => 'Missing date or officer ID']);
                 return;
             }
+
+            if ($role === '') {
+                $user = $this->userModel->getUserById($officerId);
+                $role = strtolower(trim((string)($user->role ?? '')));
+            }
             
             // Get shift details for the date
-            $shiftDetails = $this->premiseOfficerModel->getShiftDetailsForDate($officerId, $date);
+            $shiftDetails = $this->premiseOfficerModel->getCalendarShiftDetailsForDate($officerId, $role, $date);
             
             // Get leave details if any
-            $leaveDetails = $this->premiseOfficerModel->getLeaveForDate($officerId, $date);
+            $leaveDetails = $this->premiseOfficerModel->getCalendarLeaveForDate($officerId, $role, $date);
+            $attendanceInfo = $this->premiseOfficerModel->getAttendanceStatusForDateByUserId($officerId, $date);
+            $isPastDate = strtotime($date) < strtotime(date('Y-m-d'));
+
+            $attendanceStatus = null;
+            if ($attendanceInfo && !empty($attendanceInfo->status)) {
+                $attendanceStatus = $attendanceInfo->status;
+            } elseif ($shiftDetails && !$leaveDetails && $isPastDate) {
+                $attendanceStatus = 'Absent';
+            }
+
+            $shiftTypeLower = strtolower(trim((string)($shiftDetails->shift_type ?? '')));
+            $shiftTime = 'Not Specified';
+            if ($shiftTypeLower === 'day') {
+                $shiftTime = '08:00 AM - 06:00 PM';
+            } elseif ($shiftTypeLower === 'night') {
+                $shiftTime = '06:00 PM - 06:00 AM';
+            } elseif ($shiftTypeLower === 'full time' || $shiftTypeLower === 'caretaker') {
+                $shiftTime = '08:00 AM - 06:00 PM';
+            } elseif ($shiftTypeLower === 'flexible') {
+                $shiftTime = 'Flexible Hours';
+            }
             
             if ($leaveDetails) {
                 echo json_encode([
                     'success' => true,
                     'isLeave' => true,
                     'leave_type' => $leaveDetails->leave_type,
-                    'reason' => $leaveDetails->reason
+                    'reason' => $leaveDetails->reason,
+                    'attendance_status' => $attendanceStatus
                 ]);
             } elseif ($shiftDetails) {
                 echo json_encode([
@@ -512,12 +613,18 @@ class Admin extends Controller {
                     'shift_type' => $shiftDetails->shift_type,
                     'location' => $shiftDetails->site_name,
                     'address' => $shiftDetails->address . ', ' . $shiftDetails->city,
-                    'time' => $shiftDetails->shift_type === 'day' ? '6:00 AM - 6:00 PM' : '6:00 PM - 6:00 AM',
+                    'time' => $shiftTime,
                     'client' => $shiftDetails->contact_person_name ?? 'N/A',
-                    'notes' => $shiftDetails->notes ?? 'No additional notes'
+                    'notes' => $shiftDetails->notes ?? 'No additional notes',
+                    'attendance_status' => $attendanceStatus
                 ]);
             } else {
-                echo json_encode(['success' => false, 'message' => 'No shift details found']);
+                echo json_encode([
+                    'success' => true,
+                    'isLeave' => false,
+                    'noShift' => true,
+                    'attendance_status' => $attendanceStatus
+                ]);
             }
         }
     }
@@ -812,7 +919,7 @@ class Admin extends Controller {
         elseif($role == 'ct') $role_name = "Care Taker";
         
         // Get the logged-in admin ID (you need to adjust this based on your auth system)
-        $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
+        $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
         
         $result = $this->adminModel->acceptOfficerApplication($id, $adminId, $role);
         
@@ -986,7 +1093,7 @@ class Admin extends Controller {
     }
     
     // Get the logged-in admin ID (you need to adjust this based on your auth system)
-    $adminId = $_SESSION['user_userID'] ?? 1; // Default to 1 if session not set
+    $adminId = $_SESSION['user_id'] ?? 1; // Default to 1 if session not set
     
     $result = $this->adminModel->acceptClient($clientId, $adminId);
     
@@ -1790,7 +1897,7 @@ public function editSite($site_id){
         // Finalize the draft site (make it official)
         if ($this->adminModel->finalizeDraftSite($siteId)) {
             // Update package request to Approved
-            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
+            $this->adminModel->approvePackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
             
             flash('request_success', 'Package request approved and site created successfully');
             redirect('admin/viewsites/' . $siteId);
@@ -1822,7 +1929,7 @@ public function editSite($site_id){
         // Delete draft site
         if ($this->adminModel->deleteDraftSite($siteId)) {
             // Update package request to Rejected
-            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_userID']);
+            $this->adminModel->rejectPackageRequestFinal($packageRequest->id, $_SESSION['user_id']);
             
             flash('request_success', 'Package request rejected and draft site deleted');
             redirect('admin/clientRequests');
@@ -1871,7 +1978,7 @@ public function editSite($site_id){
         require_once APP_ROOT . '/helpers/image_upload_helper.php';
 
         // Sanitize POST data
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
 
         // Init data
         $data = [
@@ -1886,7 +1993,7 @@ public function editSite($site_id){
             'price_per_caretaker' => floatval($_POST['price_per_caretaker'] ?? 0),
             'background_image' => null,
             'status' => 'Active',
-            'created_by' => $_SESSION['user_userID'],
+            'created_by' => isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
             'package_name_err' => '',
             'number_of_officers_err' => '',
             'package_price_err' => '',
@@ -2025,7 +2132,7 @@ public function editSite($site_id){
         require_once APP_ROOT . '/helpers/image_upload_helper.php';
 
         // Sanitize POST data
-        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
 
         // Init data
         $data = [
@@ -2318,7 +2425,20 @@ public function editSite($site_id){
 
             if(empty($data['route_name_err'])){
                 $route_id = $this->adminModel->generateRouteId();
-                $created_by = $_SESSION['user_userID'];
+                // routes.created_by references Users.id (INT), not Users.userID.
+                $created_by = (int)($_SESSION['user_id'] ?? 0);
+
+                // Fallback for sessions that only carry business userID (e.g. ADMIN001).
+                if ($created_by <= 0 && !empty($_SESSION['user_userID'])) {
+                    $sessionUser = $this->userModel->getUserByUserID($_SESSION['user_userID']);
+                    $created_by = (int)($sessionUser->id ?? 0);
+                }
+
+                if ($created_by <= 0) {
+                    flash('msg', 'Unable to identify logged in admin account', 'alert-danger');
+                    redirect('admin/routes');
+                    return;
+                }
 
                 $routeData = [
                     'id' => $route_id,
@@ -2646,7 +2766,7 @@ public function editSite($site_id){
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Sanitize POST data
-            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            $_POST = filter_input_array(INPUT_POST, FILTER_UNSAFE_RAW) ?? [];
             
             $data = [
                 'amount' => trim($_POST['amount']),
@@ -2758,14 +2878,57 @@ public function editSite($site_id){
     if (!$leaveRequest) {
         flash('leave_error', 'Leave request not found');
         redirect('admin/dashboard');
+        return;
     }
     
+    $replacementContext = null;
+    $plannedReplacementOfficerId = null;
+    $plannedReplacementOfficer = null;
+
+    if ($leaveRequest->status === 'Pending' && !empty($leaveRequest->premiseofficer_id)) {
+        $replacementContext = $this->adminModel->getPremiseOfficerLeaveCoverageContext($id);
+        $plannedReplacementOfficerId = $this->adminModel->getPlannedReplacementOfficerForLeave($id);
+        if ($plannedReplacementOfficerId) {
+            $plannedReplacementOfficer = $this->userModel->getUserById($plannedReplacementOfficerId);
+        }
+    }
+
     $data = [
         'title' => 'Dashboard',
         'pageTitle' => 'Leave Request Details',
-        'leaveRequest' => $leaveRequest
+        'leaveRequest' => $leaveRequest,
+        'replacementContext' => $replacementContext,
+        'plannedReplacementOfficerId' => $plannedReplacementOfficerId,
+        'plannedReplacementOfficer' => $plannedReplacementOfficer
     ];
     $this->view('admin/dashboard/v_leave_details', $data);
+}
+
+public function planReplacementOfficerForLeave() {
+    header('Content-Type: application/json');
+
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        echo json_encode(['success' => false, 'message' => 'You do not have permission to approve leave requests']);
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+        return;
+    }
+
+    $input = json_decode(file_get_contents('php://input'), true);
+    $leaveRequestId = (int)($input['leave_request_id'] ?? 0);
+    $replacementOfficerId = (int)($input['replacement_officer_id'] ?? 0);
+    $adminId = $_SESSION['user_id'] ?? null;
+
+    if (!$leaveRequestId || !$replacementOfficerId || !$adminId) {
+        echo json_encode(['success' => false, 'message' => 'Missing required parameters']);
+        return;
+    }
+
+    $result = $this->adminModel->planReplacementOfficerForLeave($leaveRequestId, $adminId, $replacementOfficerId);
+    echo json_encode($result);
 }
 
 // Approve leave request
@@ -2866,6 +3029,54 @@ public function approveLeaveRequest($id) {
     }
     
     $admin_id = $_SESSION['user_id'];
+
+    $leaveRequest = $this->adminModel->getLeaveRequestById($id);
+    if ($leaveRequest && $leaveRequest->status === 'Pending' && !empty($leaveRequest->premiseofficer_id)) {
+        $plannedReplacementOfficerId = $this->adminModel->getPlannedReplacementOfficerForLeave($id);
+        if (!$plannedReplacementOfficerId) {
+            flash('leave_error', 'Manually select and assign a replacement officer before approving this premise officer leave request.');
+            redirect('admin/viewLeaveRequest/' . $id);
+            return;
+        }
+
+        $replacementResult = $this->adminModel->approvePremiseOfficerLeaveWithReplacement($id, $admin_id, $plannedReplacementOfficerId);
+        if (!$replacementResult['success']) {
+            flash('leave_error', $replacementResult['message'] ?? 'Failed to approve leave request with replacement');
+            redirect('admin/viewLeaveRequest/' . $id);
+            return;
+        }
+
+        try {
+            $site = $this->adminModel->getSiteById($replacementResult['site_id']);
+            $siteName = $site ? $site->site_name : 'assigned site';
+
+            $this->notificationModel->insertNotification(
+                $replacementResult['requesting_officer_id'],
+                'success',
+                'Leave Request Approved',
+                'Your ' . ($replacementResult['leave_type'] ?? 'leave') . ' request from ' . $replacementResult['leave_start'] . ' to ' . $replacementResult['leave_end'] . ' has been approved with replacement coverage.',
+                URL_ROOT . '/premiseOfficer/leaverequests',
+                'check_circle',
+                $admin_id
+            );
+
+            $this->notificationModel->insertNotification(
+                $replacementResult['replacement_officer_id'],
+                'assignment',
+                'Temporary Leave Coverage Assigned',
+                'You have been assigned to cover ' . $siteName . ' from ' . $replacementResult['leave_start'] . ' to ' . $replacementResult['leave_end'] . '.',
+                URL_ROOT . '/premiseOfficer/schedule',
+                'calendar_today',
+                $admin_id
+            );
+        } catch (Exception $e) {
+            error_log('approveLeaveRequest premise officer notifications error: ' . $e->getMessage());
+        }
+
+        flash('leave_success', 'Leave request approved successfully with manual replacement assignment');
+        redirect('admin/pendings');
+        return;
+    }
     
     if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
         // Get leave request details for notification
@@ -2939,6 +3150,79 @@ public function approveLeaveRequest($id) {
         flash('leave_error', 'Failed to approve leave request');
     }
     
+    redirect('admin/pendings');
+}
+
+public function approvePremiseOfficerLeaveWithReplacement($id) {
+    if (!$this->hasPermission($_SESSION['user_userID'], 'accept_leave_requests')) {
+        flash('leave_error', 'You do not have permission to approve leave requests', 'alert-danger');
+        redirect('admin/pendings');
+        return;
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        flash('leave_error', 'Invalid request method');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    $adminId = $_SESSION['user_id'] ?? null;
+    $replacementOfficerId = (int)($_POST['replacement_officer_id'] ?? 0);
+
+    if (!$adminId || $replacementOfficerId <= 0) {
+        flash('leave_error', 'Please select a replacement premise officer before approving');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    $result = $this->adminModel->approvePremiseOfficerLeaveWithReplacement($id, $adminId, $replacementOfficerId);
+    if (!$result['success']) {
+        flash('leave_error', $result['message'] ?? 'Failed to approve leave request with replacement');
+        redirect('admin/viewLeaveRequest/' . $id);
+        return;
+    }
+
+    try {
+        $leaveDetails = $this->adminModel->getLeaveRequestById($id);
+
+        // Notify requesting officer
+        $this->notificationModel->insertNotification(
+            $result['requesting_officer_id'],
+            'success',
+            'Leave Request Approved',
+            'Your ' . ($result['leave_type'] ?? 'leave') . ' request from ' . $result['leave_start'] . ' to ' . $result['leave_end'] . ' has been approved with coverage assigned.',
+            URL_ROOT . '/premiseOfficer/leaverequests',
+            'check_circle',
+            $adminId
+        );
+
+        // Notify replacement officer
+        $site = $this->adminModel->getSiteById($result['site_id']);
+        $siteName = $site ? $site->site_name : 'assigned site';
+        $this->notificationModel->insertNotification(
+            $result['replacement_officer_id'],
+            'assignment',
+            'Temporary Leave Coverage Assigned',
+            'You have been assigned to cover ' . $siteName . ' from ' . $result['leave_start'] . ' to ' . $result['leave_end'] . '.',
+            URL_ROOT . '/premiseOfficer/schedule',
+            'calendar_today',
+            $adminId
+        );
+
+        if ($leaveDetails) {
+            $requestingName = $leaveDetails->employee_name ?? 'Officer';
+            $this->adminModel->insertRecentActivity(
+                'Leave Replacement Assigned',
+                'Approved leave request #' . $id . ' for ' . $requestingName . ' with replacement officer coverage from ' . $result['leave_start'] . ' to ' . $result['leave_end'],
+                'leave_approval',
+                $adminId
+            );
+        }
+    } catch (Exception $e) {
+        error_log('approvePremiseOfficerLeaveWithReplacement notifications error: ' . $e->getMessage());
+    }
+
+    flash('leave_success', 'Leave request approved and replacement officer assigned successfully');
     redirect('admin/pendings');
 }
 
@@ -3121,6 +3405,19 @@ public function rejectLeaveRequest($id) {
                 if (uploadImage($_FILES['image']['tmp_name'], $unique_filename, $upload_dir)) {
                     // Image path to store in database
                     $image_path = $upload_dir . $unique_filename;
+
+                    // advertisements.created_by is a FK to Users.id (numeric), not Users.userID.
+                    $createdBy = (int)($_SESSION['user_id'] ?? 0);
+                    if ($createdBy <= 0 && !empty($_SESSION['user_userID'])) {
+                        $sessionUser = $this->userModel->getUserByUserID($_SESSION['user_userID']);
+                        $createdBy = !empty($sessionUser->id) ? (int)$sessionUser->id : 0;
+                    }
+
+                    if ($createdBy <= 0) {
+                        $data['image_err'] = 'Unable to identify the current user. Please log in again.';
+                        $this->view('admin/advertisements/v_create_advertisement', $data);
+                        return;
+                    }
                     
                     // Convert roles array to comma-separated string
                     $target_roles = implode(',', $data['target_roles']);
@@ -3131,7 +3428,7 @@ public function rejectLeaveRequest($id) {
                         'description' => $data['description_value'],
                         'image_path' => $image_path,
                         'target_roles' => $target_roles,
-                        'created_by' => $_SESSION['user_userID'],
+                        'created_by' => $_SESSION['user_id'],
                         'status' => 'active'
                     ];
                     

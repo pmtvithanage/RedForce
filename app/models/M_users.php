@@ -108,8 +108,19 @@
             }
         }
 
-        // Update user password (hashed expected or raw to be hashed here)
-        public function updatePassword($id, $currentPassword, $newPassword) {
+        // Update user password.
+        // Supports 2-arg mode: updatePassword($id, $newPassword)
+        // and 3-arg mode: updatePassword($id, $currentPassword, $newPassword)
+        public function updatePassword($id, $currentPassword, $newPassword = null) {
+            // 2-arg mode: controller already validated current password
+            if ($newPassword === null) {
+                $hashed = password_hash($currentPassword, PASSWORD_DEFAULT);
+                $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
+                $this->db->bind(":password", $hashed);
+                $this->db->bind(":id", $id);
+                return $this->db->execute();
+            }
+
             // Get current password hash
             $this->db->query("SELECT password FROM Users WHERE id = :id");
             $this->db->bind(":id", $id);
@@ -131,6 +142,179 @@
             $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
             $this->db->bind(":password", $hashed);
             $this->db->bind(":id", $id);
+            return $this->db->execute();
+        }
+
+        public function issueTemporaryPasswordReset($user, $temporaryPassword, $expirySeconds = 60)
+        {
+            try {
+                $this->ensurePasswordResetTable();
+                $this->db->beginTransaction();
+
+                // Restore any older pending temporary password before creating a new one.
+                $pending = $this->getLatestPendingResetByUserId((int)$user->id);
+                if ($pending) {
+                    $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
+                    $this->db->bind(':password', $pending->old_password_hash);
+                    $this->db->bind(':id', (int)$user->id);
+                    $this->db->execute();
+
+                    $this->db->query("UPDATE user_password_resets SET used = 3, used_at = NOW() WHERE id = :id");
+                    $this->db->bind(':id', (int)$pending->id);
+                    $this->db->execute();
+                }
+
+                // Get fresh current hash (the hash to restore to if temp expires).
+                $this->db->query("SELECT password FROM Users WHERE id = :id");
+                $this->db->bind(':id', (int)$user->id);
+                $current = $this->db->single();
+                if (!$current || empty($current->password)) {
+                    throw new Exception('Current password not found');
+                }
+
+                $tempHash = password_hash($temporaryPassword, PASSWORD_DEFAULT);
+
+                $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
+                $this->db->bind(':password', $tempHash);
+                $this->db->bind(':id', (int)$user->id);
+                $this->db->execute();
+
+                $expiresAt = date('Y-m-d H:i:s', time() + (int)$expirySeconds);
+
+                $this->db->query("INSERT INTO user_password_resets (user_id, temp_password_hash, old_password_hash, expires_at, used, created_at) VALUES (:user_id, :temp_password_hash, :old_password_hash, :expires_at, 0, NOW())");
+                $this->db->bind(':user_id', (int)$user->id);
+                $this->db->bind(':temp_password_hash', $tempHash);
+                $this->db->bind(':old_password_hash', $current->password);
+                $this->db->bind(':expires_at', $expiresAt);
+                $this->db->execute();
+
+                $this->db->commit();
+                return true;
+            } catch (Exception $e) {
+                if ($this->db) {
+                    try { $this->db->rollBack(); } catch (Exception $ignored) {}
+                }
+                error_log('issueTemporaryPasswordReset failed: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function revertLatestPendingReset($userId)
+        {
+            try {
+                $this->ensurePasswordResetTable();
+                $this->db->beginTransaction();
+
+                $pending = $this->getLatestPendingResetByUserId((int)$userId);
+                if (!$pending) {
+                    $this->db->commit();
+                    return true;
+                }
+
+                $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
+                $this->db->bind(':password', $pending->old_password_hash);
+                $this->db->bind(':id', (int)$userId);
+                $this->db->execute();
+
+                $this->db->query("UPDATE user_password_resets SET used = 4, used_at = NOW() WHERE id = :id");
+                $this->db->bind(':id', (int)$pending->id);
+                $this->db->execute();
+
+                $this->db->commit();
+                return true;
+            } catch (Exception $e) {
+                if ($this->db) {
+                    try { $this->db->rollBack(); } catch (Exception $ignored) {}
+                }
+                error_log('revertLatestPendingReset failed: ' . $e->getMessage());
+                return false;
+            }
+        }
+
+        public function restoreExpiredTemporaryPasswordByUserID($userID)
+        {
+            $user = $this->getUserByUserID($userID);
+            if (!$user) {
+                return false;
+            }
+
+            $this->ensurePasswordResetTable();
+            $this->db->query("SELECT * FROM user_password_resets WHERE user_id = :user_id AND used = 0 AND expires_at < NOW() ORDER BY id DESC LIMIT 1");
+            $this->db->bind(':user_id', (int)$user->id);
+            $expired = $this->db->single();
+
+            if (!$expired) {
+                return false;
+            }
+
+            try {
+                $this->db->beginTransaction();
+
+                $this->db->query("UPDATE Users SET password = :password WHERE id = :id");
+                $this->db->bind(':password', $expired->old_password_hash);
+                $this->db->bind(':id', (int)$user->id);
+                $this->db->execute();
+
+                $this->db->query("UPDATE user_password_resets SET used = 2, used_at = NOW() WHERE id = :id");
+                $this->db->bind(':id', (int)$expired->id);
+                $this->db->execute();
+
+                $this->db->commit();
+                return true;
+            } catch (Exception $e) {
+                if ($this->db) {
+                    try { $this->db->rollBack(); } catch (Exception $ignored) {}
+                }
+                return false;
+            }
+        }
+
+        public function consumeTemporaryPasswordLogin($userId, $plainPassword)
+        {
+            $this->ensurePasswordResetTable();
+            $this->db->query("SELECT * FROM user_password_resets WHERE user_id = :user_id AND used = 0 ORDER BY id DESC LIMIT 1");
+            $this->db->bind(':user_id', (int)$userId);
+            $pending = $this->db->single();
+
+            if (!$pending) {
+                return false;
+            }
+
+            // Not valid anymore.
+            if (strtotime($pending->expires_at) < time()) {
+                return false;
+            }
+
+            if (!password_verify($plainPassword, $pending->temp_password_hash)) {
+                return false;
+            }
+
+            $this->db->query("UPDATE user_password_resets SET used = 1, used_at = NOW() WHERE id = :id");
+            $this->db->bind(':id', (int)$pending->id);
+            return $this->db->execute();
+        }
+
+        private function getLatestPendingResetByUserId($userId)
+        {
+            $this->db->query("SELECT * FROM user_password_resets WHERE user_id = :user_id AND used = 0 ORDER BY id DESC LIMIT 1");
+            $this->db->bind(':user_id', (int)$userId);
+            return $this->db->single();
+        }
+
+        public function ensurePasswordResetTable()
+        {
+            $this->db->query("CREATE TABLE IF NOT EXISTS user_password_resets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id INT NOT NULL,
+                temp_password_hash VARCHAR(255) NOT NULL,
+                old_password_hash VARCHAR(255) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used TINYINT(1) NOT NULL DEFAULT 0,
+                created_at DATETIME NOT NULL,
+                used_at DATETIME NULL,
+                INDEX idx_user_used (user_id, used),
+                INDEX idx_expires (expires_at)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
             return $this->db->execute();
         }
         

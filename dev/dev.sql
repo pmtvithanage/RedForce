@@ -855,3 +855,8 @@ CREATE TABLE `notifications` (
   `from_user_id` int(11) DEFAULT NULL COMMENT 'Sender user ID',
   `to_user_id` int(11) DEFAULT NULL COMMENT 'Recipient user ID (alternative to user_id column)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+
+ALTER TABLE `test` CHANGE `description` `description` TEXT;
+

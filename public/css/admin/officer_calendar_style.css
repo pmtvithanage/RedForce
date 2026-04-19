@@ -228,6 +228,26 @@ body {
     color: white;
 }
 
+/* Absent day styling - Orange background (end of day only) */
+.calendar-day.absent-day {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border: 1px solid #ffb74d;
+}
+
+.calendar-day.absent-day:hover {
+    background: linear-gradient(135deg, #ffe0b2 0%, #ffcc80 100%);
+}
+
+.calendar-day.absent-day.selected {
+    background: #ff9800;
+    border: 2px solid #ef6c00;
+    color: white;
+}
+
+.calendar-day.absent-day.selected .day-number {
+    color: white;
+}
+
 .day-number {
     font-weight: 600;
     margin-bottom: 5px;
@@ -273,6 +293,11 @@ body {
 .legend-color.leave-day {
     background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
     border-color: #e57373;
+}
+
+.legend-color.absent-day {
+    background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    border-color: #ffb74d;
 }
 
 .legend-color.today {
@@ -364,6 +389,20 @@ body {
 
 .status-badge.leave-badge {
     background: #f44336;
+}
+
+.status-badge.attendance-badge {
+    margin-left: 8px;
+}
+
+.status-badge.attendance-present {
+    background: #4caf50;
+    color: #fff;
+}
+
+.status-badge.attendance-absent {
+    background: #ff9800;
+    color: #fff;
 }
 
 .shift-details-grid {
