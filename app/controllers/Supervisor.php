@@ -125,7 +125,13 @@ class Supervisor extends Controller {
 
      public function editProfile() {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_id']);
+            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_userID'] ?? '');
+
+            if (!$supervisor) {
+                flash('msg', 'Supervisor profile not found. Please login again.', 'alert-danger');
+                redirect('users/login');
+                return;
+            }
             
             $data = [
                 'title' => 'Profile',
