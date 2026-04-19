@@ -2425,7 +2425,20 @@ public function editSite($site_id){
 
             if(empty($data['route_name_err'])){
                 $route_id = $this->adminModel->generateRouteId();
-                $created_by = $_SESSION['user_userID'];
+                // routes.created_by references Users.id (INT), not Users.userID.
+                $created_by = (int)($_SESSION['user_id'] ?? 0);
+
+                // Fallback for sessions that only carry business userID (e.g. ADMIN001).
+                if ($created_by <= 0 && !empty($_SESSION['user_userID'])) {
+                    $sessionUser = $this->userModel->getUserByUserID($_SESSION['user_userID']);
+                    $created_by = (int)($sessionUser->id ?? 0);
+                }
+
+                if ($created_by <= 0) {
+                    flash('msg', 'Unable to identify logged in admin account', 'alert-danger');
+                    redirect('admin/routes');
+                    return;
+                }
 
                 $routeData = [
                     'id' => $route_id,
@@ -3392,6 +3405,19 @@ public function rejectLeaveRequest($id) {
                 if (uploadImage($_FILES['image']['tmp_name'], $unique_filename, $upload_dir)) {
                     // Image path to store in database
                     $image_path = $upload_dir . $unique_filename;
+
+                    // advertisements.created_by is a FK to Users.id (numeric), not Users.userID.
+                    $createdBy = (int)($_SESSION['user_id'] ?? 0);
+                    if ($createdBy <= 0 && !empty($_SESSION['user_userID'])) {
+                        $sessionUser = $this->userModel->getUserByUserID($_SESSION['user_userID']);
+                        $createdBy = !empty($sessionUser->id) ? (int)$sessionUser->id : 0;
+                    }
+
+                    if ($createdBy <= 0) {
+                        $data['image_err'] = 'Unable to identify the current user. Please log in again.';
+                        $this->view('admin/advertisements/v_create_advertisement', $data);
+                        return;
+                    }
                     
                     // Convert roles array to comma-separated string
                     $target_roles = implode(',', $data['target_roles']);
