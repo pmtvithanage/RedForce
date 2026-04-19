@@ -502,6 +502,7 @@ class Supervisor extends Controller
         redirect('supervisor/attendance');
     }
 
+
     // UPDATE - Edit a duty point in supervisor's assigned site
     public function updateDutyPoint($id)
     {
@@ -540,25 +541,17 @@ class Supervisor extends Controller
             return;
         }
 
-        $existingDutyPoint = $this->supervisorModel->isValidDutyPointForSupervisor($supervisor_id, $dutyPointId);
-        if (!$existingDutyPoint) {
-            flash('attendance_error', 'Invalid duty point selected');
-            redirect('supervisor/attendance');
-            return;
-        }
-
         if ($this->supervisorModel->updateAttendanceDutyPoint($supervisor_id, $dutyPointId, $dutyPointName)) {
             flash('attendance_success', 'Duty point updated successfully');
         } else {
-            flash('attendance_error', 'Failed to update duty point');
+            flash('attendance_error', 'Failed to update duty point. Please try again.');
         }
 
         redirect('supervisor/attendance');
     }
 
-    // DELETE - Remove a duty point from supervisor's assigned site
-    public function deleteDutyPoint($id)
-    {
+    // DELETE - Deactivate a duty point in supervisor's assigned site
+    public function deleteDutyPoint($id) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('supervisor/attendance');
             return;
@@ -578,17 +571,10 @@ class Supervisor extends Controller
             return;
         }
 
-        $existingDutyPoint = $this->supervisorModel->isValidDutyPointForSupervisor($supervisor_id, $dutyPointId);
-        if (!$existingDutyPoint) {
-            flash('attendance_error', 'Invalid duty point selected');
-            redirect('supervisor/attendance');
-            return;
-        }
-
         if ($this->supervisorModel->deleteAttendanceDutyPoint($supervisor_id, $dutyPointId)) {
             flash('attendance_success', 'Duty point deleted successfully');
         } else {
-            flash('attendance_error', 'Failed to delete duty point');
+            flash('attendance_error', 'Failed to delete duty point. Please try again.');
         }
 
         redirect('supervisor/attendance');
