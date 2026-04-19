@@ -91,10 +91,14 @@
                                 <div class="duty-point-item" id="dutyPointItem-<?php echo (int)$point->id; ?>">
                                     <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
                                     <div class="duty-point-actions">
+
+                                        <button type="button" class="btn-chip-action btn-chip-edit" onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, true)" title="Edit duty point">
+
                                         <button
                                             type="button"
                                             class="btn-chip-action btn-chip-edit"
                                             onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, true)">
+
                                             <i class="fa-solid fa-pen"></i>
                                         </button>
                                         <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint/<?php echo (int)$point->id; ?>" onsubmit="return confirm('Delete this duty point?');">
@@ -104,6 +108,14 @@
                                         </form>
                                     </div>
                                 </div>
+
+
+                                <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint/<?php echo (int)$point->id; ?>" class="duty-point-edit-form" id="dutyPointEditForm-<?php echo (int)$point->id; ?>">
+                                    <input type="text" name="duty_point_name" value="<?php echo htmlspecialchars($point->duty_point_name); ?>" required maxlength="120">
+                                    <button type="submit" class="btn-chip-action btn-chip-save" title="Save changes">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn-chip-action btn-chip-cancel" onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, false)" title="Cancel">
 
                                 <form
                                     method="POST"
@@ -124,6 +136,7 @@
                                         class="btn-chip-action btn-chip-cancel"
                                         onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, false)"
                                         title="Cancel">
+
                                         <i class="fa-solid fa-xmark"></i>
                                     </button>
                                 </form>
