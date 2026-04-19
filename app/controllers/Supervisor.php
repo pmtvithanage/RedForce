@@ -489,6 +489,82 @@ class Supervisor extends Controller {
         redirect('supervisor/attendance');
     }
 
+    // UPDATE - Rename an existing duty point in supervisor's assigned site
+    public function updateDutyPoint($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        if (!$supervisor_id) {
+            flash('attendance_error', 'User not authenticated');
+            redirect('users/login');
+            return;
+        }
+
+        $dutyPointId = (int)$id;
+        $dutyPointName = trim($_POST['duty_point_name'] ?? '');
+
+        if ($dutyPointId <= 0) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($dutyPointName === '') {
+            flash('attendance_error', 'Duty point name is required');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if (strlen($dutyPointName) > 120) {
+            flash('attendance_error', 'Duty point name is too long');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($this->supervisorModel->updateAttendanceDutyPoint($supervisor_id, $dutyPointId, $dutyPointName)) {
+            flash('attendance_success', 'Duty point updated successfully');
+        } else {
+            flash('attendance_error', 'Failed to update duty point. Please try again.');
+        }
+
+        redirect('supervisor/attendance');
+    }
+
+    // DELETE - Deactivate a duty point in supervisor's assigned site
+    public function deleteDutyPoint($id) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        if (!$supervisor_id) {
+            flash('attendance_error', 'User not authenticated');
+            redirect('users/login');
+            return;
+        }
+
+        $dutyPointId = (int)$id;
+        if ($dutyPointId <= 0) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($this->supervisorModel->deleteAttendanceDutyPoint($supervisor_id, $dutyPointId)) {
+            flash('attendance_success', 'Duty point deleted successfully');
+        } else {
+            flash('attendance_error', 'Failed to delete duty point. Please try again.');
+        }
+
+        redirect('supervisor/attendance');
+    }
+
     // Show edit attendance form page
     public function editAttendancePage($id) {
         $supervisor_id = $_SESSION['user_id'] ?? null;

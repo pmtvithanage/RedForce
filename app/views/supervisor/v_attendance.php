@@ -88,7 +88,26 @@
                     <?php if (!empty($data['dutyPoints'])): ?>
                         <div class="duty-points-list">
                             <?php foreach ($data['dutyPoints'] as $point): ?>
-                                <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+                                <div class="duty-point-item">
+                                    <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+                                    <div class="action-buttons duty-point-actions">
+                                        <button
+                                            type="button"
+                                            class="btn-edit"
+                                            data-id="<?php echo (int)$point->id; ?>"
+                                            data-name="<?php echo htmlspecialchars($point->duty_point_name, ENT_QUOTES, 'UTF-8'); ?>"
+                                            title="Edit"
+                                            onclick="openDutyPointEdit(this)">
+                                            <i class="fa-regular fa-pen-to-square"></i>
+                                        </button>
+
+                                        <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint/<?php echo (int)$point->id; ?>" onsubmit="return confirmDutyPointDelete('<?php echo htmlspecialchars($point->duty_point_name, ENT_QUOTES, 'UTF-8'); ?>');">
+                                            <button type="submit" class="btn-delete" title="Delete">
+                                                <i class="fa-regular fa-trash-can"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
@@ -222,6 +241,44 @@
 
     updateDateTime();
     setInterval(updateDateTime, 1000);
+
+    function openDutyPointEdit(button) {
+        const dutyPointId = button.getAttribute('data-id');
+        const currentName = button.getAttribute('data-name') || '';
+        const newName = window.prompt('Edit duty point name:', currentName);
+
+        if (newName === null) {
+            return;
+        }
+
+        const trimmedName = newName.trim();
+        if (!trimmedName) {
+            alert('Duty point name is required.');
+            return;
+        }
+
+        if (trimmedName.length > 120) {
+            alert('Duty point name is too long. Max 120 characters.');
+            return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint/' + dutyPointId;
+
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'duty_point_name';
+        input.value = trimmedName;
+
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function confirmDutyPointDelete(name) {
+        return window.confirm('Delete duty point "' + name + '"?');
+    }
 
     setTimeout(() => {
         const flashMessages = document.querySelectorAll('.flash-message');

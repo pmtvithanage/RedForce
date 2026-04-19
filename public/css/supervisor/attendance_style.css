@@ -164,19 +164,62 @@
 
 .duty-points-list {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.duty-points-list .duty-point-item {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.45rem;
+    flex-wrap: nowrap;
 }
 
 .duty-point-chip {
     display: inline-block;
-    background: #fdf2f2;
-    color: #a80f0f;
-    border: 1px solid #f7cdcd;
+    background: #fff5f5;
+    color: #b11212;
+    border: 1px solid #efc5c5;
     border-radius: 999px;
-    padding: 0.32rem 0.7rem;
+    padding: 0.34rem 0.75rem;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
+}
+
+.duty-points-list .duty-point-actions {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.3rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.duty-points-list .duty-point-actions form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.duty-point-item .btn-edit,
+.duty-point-item .btn-delete {
+    min-width: 30px;
+    height: 30px;
+}
+
+.duty-point-item .btn-edit {
+    background: #fff;
+    color: #344054;
+    border: 1px solid #d0d5dd;
+}
+
+.duty-point-item .btn-edit:hover {
+    background: #f2f4f7;
+    border-color: #98a2b3;
+    color: #1d2939;
 }
 
 .duty-points-empty {
@@ -837,11 +880,21 @@
         gap: 0.35rem;
     }
 
+    .duty-point-item .action-buttons {
+        flex-direction: row !important;
+        width: auto;
+    }
+
     .btn-edit,
     .btn-delete {
         width: 100%;
 
         justify-content: center;
+    }
+
+    .duty-point-item .btn-edit,
+    .duty-point-item .btn-delete {
+        width: 30px;
     }
 }
 

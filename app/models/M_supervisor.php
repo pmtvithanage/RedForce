@@ -232,6 +232,46 @@ class M_supervisor {
         return $this->db->execute();
     }
 
+    public function updateAttendanceDutyPoint($supervisor_id, $duty_point_id, $duty_point_name) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId || !$duty_point_id) {
+            return false;
+        }
+
+        $this->db->query('
+            UPDATE supervisor_duty_points
+            SET duty_point_name = :duty_point_name
+            WHERE id = :id
+              AND site_id = :site_id
+              AND status = "Active"
+            LIMIT 1
+        ');
+        $this->db->bind(':duty_point_name', $duty_point_name);
+        $this->db->bind(':id', (int)$duty_point_id);
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->execute();
+    }
+
+    public function deleteAttendanceDutyPoint($supervisor_id, $duty_point_id) {
+        $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
+        if (!$siteId || !$duty_point_id) {
+            return false;
+        }
+
+        // Soft delete to preserve historical attendance records that store duty point labels.
+        $this->db->query('
+            UPDATE supervisor_duty_points
+            SET status = "Inactive"
+            WHERE id = :id
+              AND site_id = :site_id
+              AND status = "Active"
+            LIMIT 1
+        ');
+        $this->db->bind(':id', (int)$duty_point_id);
+        $this->db->bind(':site_id', $siteId);
+        return $this->db->execute();
+    }
+
     public function isValidDutyPointForSupervisor($supervisor_id, $duty_point_id) {
         $siteId = $this->getSupervisorPrimarySiteId($supervisor_id);
         if (!$siteId || !$duty_point_id) {
