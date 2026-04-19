@@ -98,6 +98,8 @@
         font-size: 14px;
         cursor: pointer;
         transition: all 0.3s ease;
+        width: 120px;
+        margin: 5px auto;
     }
 
     .btn-upload:hover {
@@ -259,7 +261,7 @@
     <form class="form-and-photo" action="<?php echo URL_ROOT; ?>/admin/createAdvertisement" method="POST" enctype="multipart/form-data">
         
         <!-- Left Side: Preview -->
-        <div class="preview-section">
+       <!-- <div class="preview-section">
             <h3>Advertisement Preview</h3>
             <div class="preview-content">
                 <img id="previewImage" class="preview-image" 
@@ -271,7 +273,7 @@
                     <span class="role-badge">No roles selected</span>
                 </div>
             </div>
-        </div>
+        </div>-->
 
         <!-- Right Side: Input Form -->
         <div class="application-form" style="flex: 2 1 500px;">
