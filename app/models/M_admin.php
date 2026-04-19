@@ -2502,6 +2502,227 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':limit', $limit);
         return $this->db->resultSet();
     }
+
+    /**
+     * Get all attendance records for admin reporting.
+     * Site data is derived from officer site assignments that overlap the attendance date.
+     */
+    public function getAttendanceReportRecords() {
+        $this->db->query("
+            SELECT
+                oa.id,
+                oa.supervisor_id,
+                oa.officer_id,
+                oa.officer_name,
+                oa.attendance_date,
+                oa.check_in_time,
+                oa.check_out_time,
+                oa.status,
+                oa.notes,
+                oa.created_at,
+                oa.updated_at,
+                supervisor_user.name AS supervisor_name,
+                GROUP_CONCAT(DISTINCT s.site_name ORDER BY s.site_name SEPARATOR ', ') AS site_name,
+                GROUP_CONCAT(DISTINCT s.id ORDER BY s.id SEPARATOR ',') AS site_ids,
+                MIN(s.id) AS site_id
+            FROM officer_attendance oa
+            LEFT JOIN Users supervisor_user
+                ON supervisor_user.id = oa.supervisor_id
+            LEFT JOIN Users officer_user
+                ON officer_user.userID = oa.officer_id
+                OR CAST(officer_user.id AS CHAR) = oa.officer_id
+            LEFT JOIN officer_site_assignments osa
+                ON osa.officer_id = officer_user.id
+                AND osa.status = 'Active'
+                AND (osa.assignment_start IS NULL OR oa.attendance_date >= osa.assignment_start)
+                AND (osa.assignment_end IS NULL OR oa.attendance_date <= osa.assignment_end)
+            LEFT JOIN sites s
+                ON s.id = osa.site_id
+                AND (s.is_draft = 0 OR s.is_draft IS NULL)
+            GROUP BY
+                oa.id,
+                oa.supervisor_id,
+                oa.officer_id,
+                oa.officer_name,
+                oa.attendance_date,
+                oa.check_in_time,
+                oa.check_out_time,
+                oa.status,
+                oa.notes,
+                oa.created_at,
+                oa.updated_at,
+                supervisor_user.name
+            ORDER BY oa.attendance_date DESC, oa.created_at DESC
+        ");
+
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get supervisors that have created attendance records for report filters.
+     */
+    public function getAttendanceReportSupervisors() {
+        $this->db->query("
+            SELECT DISTINCT
+                u.id,
+                u.name
+            FROM officer_attendance oa
+            INNER JOIN Users u ON u.id = oa.supervisor_id
+            ORDER BY u.name ASC
+        ");
+
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get premise officers for performance report filters.
+     */
+    public function getPerformanceReportOfficers() {
+        $this->db->query("
+            SELECT
+                u.id,
+                u.userID,
+                u.name,
+                COALESCE(po.rating, 0) AS rating
+            FROM Users u
+            INNER JOIN premise_officers po ON po.userID = u.id
+            WHERE u.role = 'premise officer'
+              AND (po.rank IS NULL OR po.rank != 'Supervisor')
+            ORDER BY u.name ASC
+        ");
+
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get performance report dataset (attendance + officer rating + sites + incidents reported).
+     * This is intentionally "wide" so the report page can filter and compute analytics on the client.
+     */
+    public function getPerformanceReportDataset() {
+        $this->db->query("
+            SELECT
+                oa.id AS attendance_id,
+                oa.supervisor_id,
+                supervisor_user.name AS supervisor_name,
+                oa.officer_id,
+                oa.officer_name,
+                officer_user.id AS officer_user_id,
+                COALESCE(po.rating, 0) AS officer_rating,
+                oa.attendance_date,
+                oa.check_in_time,
+                oa.check_out_time,
+                oa.status,
+                oa.notes,
+                oa.created_at,
+                GROUP_CONCAT(DISTINCT s.site_name ORDER BY s.site_name SEPARATOR ', ') AS site_name,
+                GROUP_CONCAT(DISTINCT s.id ORDER BY s.id SEPARATOR ',') AS site_ids,
+                MIN(s.id) AS site_id,
+                (
+                    SELECT COUNT(*)
+                    FROM incident_reports ir
+                    WHERE ir.user_id = officer_user.id
+                      AND DATE(ir.created_at) = oa.attendance_date
+                ) AS incidents_reported_that_day
+            FROM officer_attendance oa
+            LEFT JOIN Users supervisor_user
+                ON supervisor_user.id = oa.supervisor_id
+            LEFT JOIN Users officer_user
+                ON officer_user.userID = oa.officer_id
+                OR CAST(officer_user.id AS CHAR) = oa.officer_id
+            LEFT JOIN premise_officers po
+                ON po.userID = officer_user.id
+            LEFT JOIN officer_site_assignments osa
+                ON osa.officer_id = officer_user.id
+                AND osa.status = 'Active'
+                AND (osa.assignment_start IS NULL OR oa.attendance_date >= osa.assignment_start)
+                AND (osa.assignment_end IS NULL OR oa.attendance_date <= osa.assignment_end)
+            LEFT JOIN sites s
+                ON s.id = osa.site_id
+                AND (s.is_draft = 0 OR s.is_draft IS NULL)
+            GROUP BY
+                oa.id,
+                oa.supervisor_id,
+                supervisor_user.name,
+                oa.officer_id,
+                oa.officer_name,
+                officer_user.id,
+                po.rating,
+                oa.attendance_date,
+                oa.check_in_time,
+                oa.check_out_time,
+                oa.status,
+                oa.notes,
+                oa.created_at
+            ORDER BY oa.attendance_date DESC, oa.created_at DESC
+        ");
+
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get site report dataset with staffing, incidents, and payment health.
+     */
+    public function getSiteReportDataset() {
+        $this->db->query("
+            SELECT
+                s.id,
+                s.site_name,
+                s.address,
+                s.city,
+                s.district,
+                s.created_at,
+                COALESCE(client_user.name, c.contact_person_name, 'Unknown Client') AS client_name,
+                COALESCE(staff.total_officers, 0) AS total_officers,
+                COALESCE(staff.supervisors, 0) AS supervisors,
+                COALESCE(staff.caretakers, 0) AS caretakers,
+                COALESCE(inc.total_incidents, 0) AS total_incidents,
+                COALESCE(inc.pending_incidents, 0) AS pending_incidents,
+                COALESCE(inc.resolved_incidents, 0) AS resolved_incidents,
+                COALESCE(pay.total_payments, 0) AS total_payments,
+                COALESCE(pay.paid_amount, 0) AS paid_amount,
+                COALESCE(pay.pending_amount, 0) AS pending_amount,
+                COALESCE(pay.overdue_amount, 0) AS overdue_amount
+            FROM sites s
+            LEFT JOIN Clients c ON c.id = s.client_id
+            LEFT JOIN Users client_user ON client_user.id = c.user_id
+            LEFT JOIN (
+                SELECT
+                    osa.site_id,
+                    COUNT(DISTINCT CASE WHEN osa.shift_type <> 'Supervisor' THEN osa.officer_id END) AS total_officers,
+                    COUNT(DISTINCT CASE WHEN osa.shift_type = 'Supervisor' THEN osa.officer_id END) AS supervisors,
+                    COUNT(DISTINCT csa.caretaker_id) AS caretakers
+                FROM officer_site_assignments osa
+                LEFT JOIN caretaker_site_assignments csa
+                    ON csa.site_id = osa.site_id
+                    AND csa.status = 'Active'
+                WHERE osa.status = 'Active'
+                GROUP BY osa.site_id
+            ) staff ON staff.site_id = s.id
+            LEFT JOIN (
+                SELECT
+                    ir.site_id,
+                    COUNT(*) AS total_incidents,
+                    SUM(CASE WHEN COALESCE(ir.status, 'Pending') = 'Pending' THEN 1 ELSE 0 END) AS pending_incidents,
+                    SUM(CASE WHEN ir.status IN ('Resolved', 'Closed') THEN 1 ELSE 0 END) AS resolved_incidents
+                FROM incident_reports ir
+                GROUP BY ir.site_id
+            ) inc ON inc.site_id = s.id
+            LEFT JOIN (
+                SELECT
+                    p.site_id,
+                    COUNT(*) AS total_payments,
+                    SUM(CASE WHEN p.status = 'paid' THEN p.amount ELSE 0 END) AS paid_amount,
+                    SUM(CASE WHEN p.status = 'pending' THEN p.amount ELSE 0 END) AS pending_amount,
+                    SUM(CASE WHEN p.status = 'overdue' THEN p.amount ELSE 0 END) AS overdue_amount
+                FROM payments p
+                GROUP BY p.site_id
+            ) pay ON pay.site_id = s.id
+            WHERE s.is_draft = 0 OR s.is_draft IS NULL
+            ORDER BY s.site_name ASC
+        ");
+
+        return $this->db->resultSet();
+    }
     
     /**
      * Get incident by ID
@@ -3116,5 +3337,45 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
         $this->db->bind(':description', $data['description'] ?? '');
 
         return $this->db->execute();
+    }
+
+    /**
+     * Get all client requests for the client requests report dataset
+     */
+    public function getClientRequestsReportRecords() {
+        $this->db->query("
+            SELECT
+                id,
+                company_name,
+                legal_company_name,
+                company_type,
+                business_registration_number,
+                registered_address,
+                email,
+                phone_number,
+                contact_person_name,
+                status,
+                created_at,
+                logo_path,
+                business_document
+            FROM client_requests
+            ORDER BY created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get client requests statistics
+     */
+    public function getClientRequestsStats() {
+        $this->db->query("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+            FROM client_requests
+        ");
+        return $this->db->single();
     }
 }
