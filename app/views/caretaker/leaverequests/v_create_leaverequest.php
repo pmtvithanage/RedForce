@@ -68,7 +68,8 @@
         color: var(--text-color);
     }
 
-    .field-input, .field-select {
+    .field-input,
+    .field-select {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid var(--border-color);
@@ -76,7 +77,8 @@
         font-size: 15px;
     }
 
-    .field-input:focus, .field-select:focus {
+    .field-input:focus,
+    .field-select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(164, 0, 0, 0.2);
@@ -179,7 +181,7 @@
     .back-btn-container {
         margin: 20px;
     }
-    
+
     /* ---------- Preview Section ---------- */
     .preview-section {
         flex: 1 1 300px;
@@ -245,7 +247,7 @@
 </style>
 
 <div class="back-btn-container">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/leaverequests'"> 
+    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/leaverequests'">
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back
     </button>
@@ -253,11 +255,11 @@
 
 <main class="page">
     <form class="form-and-preview" action="<?php echo URL_ROOT; ?>/caretaker/createLeaveRequest" method="POST" enctype="multipart/form-data">
-        
+
         <!-- Input Form -->
         <div class="application-form" style="flex: 1 1 100%; max-width: 800px; margin: 0 auto;">
             <h3 style="color: var(--primary-color); margin-top: 0;">Leave Request Details</h3>
-            
+
             <div class="field">
                 <div class="field-label">Leave Type: <span style="color: red;">*</span></div>
                 <select class="field-select" id="leave_type" name="leave_type" required>
@@ -275,27 +277,27 @@
             <div class="date-grid">
                 <div class="field">
                     <div class="field-label">Start Date: <span style="color: red;">*</span></div>
-                    <input class="field-input" type="date" id="start_date" name="start_date" 
-                           value="<?php echo isset($data['start_date_value']) ? $data['start_date_value'] : ''; ?>" 
-                           min="<?php echo date('Y-m-d'); ?>"
-                           required />
+                    <input class="field-input" type="date" id="start_date" name="start_date"
+                        value="<?php echo isset($data['start_date_value']) ? $data['start_date_value'] : ''; ?>"
+                        min="<?php echo date('Y-m-d'); ?>"
+                        required />
                     <span class="form-input-error"><?php echo isset($data['start_date_err']) ? $data['start_date_err'] : ''; ?></span>
                 </div>
 
                 <div class="field">
                     <div class="field-label">End Date: <span style="color: red;">*</span></div>
-                    <input class="field-input" type="date" id="end_date" name="end_date" 
-                           value="<?php echo isset($data['end_date_value']) ? $data['end_date_value'] : ''; ?>" 
-                           min="<?php echo date('Y-m-d'); ?>"
-                           required />
+                    <input class="field-input" type="date" id="end_date" name="end_date"
+                        value="<?php echo isset($data['end_date_value']) ? $data['end_date_value'] : ''; ?>"
+                        min="<?php echo date('Y-m-d'); ?>"
+                        required />
                     <span class="form-input-error"><?php echo isset($data['end_date_err']) ? $data['end_date_err'] : ''; ?></span>
                 </div>
             </div>
 
             <div class="field">
                 <div class="field-label">Reason: <span style="color: red;">*</span></div>
-                <textarea class="field-textarea" id="reason" name="reason" 
-                          placeholder="Please provide a detailed reason for your leave request" required><?php echo isset($data['reason_value']) ? $data['reason_value'] : ''; ?></textarea>
+                <textarea class="field-textarea" id="reason" name="reason"
+                    placeholder="Please provide a detailed reason for your leave request" required><?php echo isset($data['reason_value']) ? $data['reason_value'] : ''; ?></textarea>
                 <span class="form-input-error"><?php echo isset($data['reason_err']) ? $data['reason_err'] : ''; ?></span>
             </div>
 
@@ -306,7 +308,7 @@
                         <span class="material-symbols-outlined">upload_file</span>
                         <p>Click to upload file</p>
                     </div>
-                    
+
                     <input type="file" id="proof_file" name="proof_file" accept=".pdf,.jpg,.jpeg,.png,.gif" hidden />
                     <span class="form-input-error"><?php echo isset($data['proof_file_err']) ? $data['proof_file_err'] : ''; ?></span>
                     <div class="file-name" id="fileName"></div>
@@ -323,65 +325,65 @@
 </main>
 
 <script>
-// File upload functionality
-function toggleFileBrowse() {
-    document.getElementById('proof_file').click();
-}
-
-function removeFile() {
-    const filePlaceholder = document.getElementById('filePlaceholder');
-    document.getElementById('proof_file').value = '';
-    document.getElementById('fileName').textContent = '';
-    document.getElementById('removeFileBtn').style.display = 'none';
-    filePlaceholder.innerHTML = '<span class="material-symbols-outlined">upload_file</span><p>Click to upload file</p>';
-}
-
-// Handle file selection
-document.getElementById('proof_file').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const filePlaceholder = document.getElementById('filePlaceholder');
-        const fileName = document.getElementById('fileName');
-        
-        // Get file icon based on type
-        let iconName = 'description';
-        if (file.type.startsWith('image/')) {
-            iconName = 'image';
-        } else if (file.type === 'application/pdf') {
-            iconName = 'picture_as_pdf';
-        }
-        
-        filePlaceholder.innerHTML = `<span class="material-symbols-outlined" style="font-size: 64px; color: var(--primary-color);">${iconName}</span>`;
-        fileName.textContent = file.name;
-        document.getElementById('removeFileBtn').style.display = 'block';
+    // File upload functionality
+    function toggleFileBrowse() {
+        document.getElementById('proof_file').click();
     }
-});
 
-// Update end date min value when start date changes
-document.getElementById('start_date').addEventListener('change', function(e) {
-    document.getElementById('end_date').min = e.target.value;
-});
+    function removeFile() {
+        const filePlaceholder = document.getElementById('filePlaceholder');
+        document.getElementById('proof_file').value = '';
+        document.getElementById('fileName').textContent = '';
+        document.getElementById('removeFileBtn').style.display = 'none';
+        filePlaceholder.innerHTML = '<span class="material-symbols-outlined">upload_file</span><p>Click to upload file</p>';
+    }
+
+    // Handle file selection
+    document.getElementById('proof_file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const filePlaceholder = document.getElementById('filePlaceholder');
+            const fileName = document.getElementById('fileName');
+
+            // Get file icon based on type
+            let iconName = 'description';
+            if (file.type.startsWith('image/')) {
+                iconName = 'image';
+            } else if (file.type === 'application/pdf') {
+                iconName = 'picture_as_pdf';
+            }
+
+            filePlaceholder.innerHTML = `<span class="material-symbols-outlined" style="font-size: 64px; color: var(--primary-color);">${iconName}</span>`;
+            fileName.textContent = file.name;
+            document.getElementById('removeFileBtn').style.display = 'block';
+        }
+    });
+
+    // Update end date min value when start date changes
+    document.getElementById('start_date').addEventListener('change', function(e) {
+        document.getElementById('end_date').min = e.target.value;
+    });
 </script>
 
-<?php flash('msg')?>
+<?php flash('msg') ?>
 
 <script>
-  // Flash message auto-remove
-  document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('msg-flash');
-    
-    if (flashMessage) {
-      setTimeout(function() {
-        flashMessage.classList.add('fade-out');
-        
-        setTimeout(function() {
-          if (flashMessage.parentNode) {
-            flashMessage.parentNode.removeChild(flashMessage);
-          }
-        }, 300);
-      }, 5000);
-    }
-  });
+    // Flash message auto-remove
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('msg-flash');
+
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.classList.add('fade-out');
+
+                setTimeout(function() {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    });
 </script>
 
 </main>
