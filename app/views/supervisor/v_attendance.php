@@ -88,7 +88,45 @@
                     <?php if (!empty($data['dutyPoints'])): ?>
                         <div class="duty-points-list">
                             <?php foreach ($data['dutyPoints'] as $point): ?>
-                                <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+                                <div class="duty-point-item" id="dutyPointItem-<?php echo (int)$point->id; ?>">
+                                    <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+                                    <div class="duty-point-actions">
+                                        <button
+                                            type="button"
+                                            class="btn-chip-action btn-chip-edit"
+                                            onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, true)">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+                                        <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint/<?php echo (int)$point->id; ?>" onsubmit="return confirm('Delete this duty point?');">
+                                            <button type="submit" class="btn-chip-action btn-chip-delete" title="Delete duty point">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                                <form
+                                    method="POST"
+                                    action="<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint/<?php echo (int)$point->id; ?>"
+                                    class="duty-point-edit-form"
+                                    id="dutyPointEditForm-<?php echo (int)$point->id; ?>">
+                                    <input
+                                        type="text"
+                                        name="duty_point_name"
+                                        value="<?php echo htmlspecialchars($point->duty_point_name); ?>"
+                                        required
+                                        maxlength="120">
+                                    <button type="submit" class="btn-chip-action btn-chip-save" title="Save changes">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="btn-chip-action btn-chip-cancel"
+                                        onclick="toggleDutyPointEdit(<?php echo (int)$point->id; ?>, false)"
+                                        title="Cancel">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
@@ -229,6 +267,29 @@
             msg.style.display = 'none';
         });
     }, 5000);
+
+    function toggleDutyPointEdit(id, showEdit) {
+        const item = document.getElementById(`dutyPointItem-${id}`);
+        const form = document.getElementById(`dutyPointEditForm-${id}`);
+
+        if (!item || !form) {
+            return;
+        }
+
+        if (showEdit) {
+            item.style.display = 'none';
+            form.classList.add('is-visible');
+            const input = form.querySelector('input[name="duty_point_name"]');
+            if (input) {
+                input.focus();
+                input.select();
+            }
+            return;
+        }
+
+        form.classList.remove('is-visible');
+        item.style.display = 'inline-flex';
+    }
 </script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

@@ -8,6 +8,22 @@ class M_caretaker
         $this->db = new Database();
     }
 
+    // Get caretaker user record for sidebar/profile display.
+    public function getCaretakerById($caretakerIdentifier)
+    {
+        $this->db->query('
+            SELECT *
+            FROM Users
+            WHERE id = :caretaker_id OR userID = :caretaker_user_id
+            LIMIT 1
+        ');
+
+        $this->db->bind(':caretaker_id', $caretakerIdentifier);
+        $this->db->bind(':caretaker_user_id', $caretakerIdentifier);
+
+        return $this->db->single();
+    }
+
     // ==================== LEAVE REQUESTS ====================
 
     // CREATE - Add new leave request
@@ -21,6 +37,7 @@ class M_caretaker
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
+        $this->db->bind(':start_time', $data['start_time'] ?? null);
         $this->db->bind(':proof_file', $data['proof_file']);
 
         return $this->db->execute();
@@ -58,6 +75,7 @@ class M_caretaker
         $this->db->bind(':leave_type', $data['leave_type']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
+        $this->db->bind(':start_time', $data['start_time'] ?? null);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file']);
 
@@ -476,57 +494,58 @@ class M_caretaker
         $this->db->bind(':site_id', $site_id);
         return $this->db->resultSet();
     }
+// ======================================================================== //
+// =======================      profile       ====================== //
+// ======================================================================== //
 
-    // ======================================================================== //
-    // =======================      profile       ====================== //
-    // ======================================================================== //
-    public function getCaretakerById($userID)
-    {
-        $this->db->query("SELECT * FROM Users WHERE userID = :userID");
-        $this->db->bind(':userID', $userID);
-        return $this->db->single();
+public function getCaretakerById($userID)
+{
+    $this->db->query("SELECT * FROM Users WHERE userID = :userID");
+    $this->db->bind(':userID', $userID);
+    return $this->db->single();
+}
+
+public function updateCaretakerProfile($user_id, $data)
+{
+    $fields = [];
+    $bindings = [];
+
+    // Only update fields that are provided
+    if (isset($data['name'])) {
+        $fields[] = 'name = :name';
+        $bindings[':name'] = $data['name'];
+    }
+    if (isset($data['email'])) {
+        $fields[] = 'email = :email';
+        $bindings[':email'] = $data['email'];
+    }
+    if (isset($data['phone_number'])) {
+        $fields[] = 'phone_number = :phone_number';
+        $bindings[':phone_number'] = $data['phone_number'];
+    }
+    if (isset($data['profile_image'])) {
+        $fields[] = 'profile_image = :profile_image';
+        $bindings[':profile_image'] = $data['profile_image'];
+    }
+    if (isset($data['password'])) {
+        $fields[] = 'password = :password';
+        $bindings[':password'] = $data['password'];
     }
 
-
-    public function updateCaretakerProfile($user_id, $data)
-    {
-        $fields = [];
-        $bindings = [];
-
-        // Only update fields that are provided
-        if (isset($data['name'])) {
-            $fields[] = 'name = :name';
-            $bindings[':name'] = $data['name'];
-        }
-        if (isset($data['email'])) {
-            $fields[] = 'email = :email';
-            $bindings[':email'] = $data['email'];
-        }
-        if (isset($data['phone_number'])) {
-            $fields[] = 'phone_number = :phone_number';
-            $bindings[':phone_number'] = $data['phone_number'];
-        }
-        if (isset($data['profile_image'])) {
-            $fields[] = 'profile_image = :profile_image';
-            $bindings[':profile_image'] = $data['profile_image'];
-        }
-        if (isset($data['password'])) {
-            $fields[] = 'password = :password';
-            $bindings[':password'] = $data['password'];
-        }
-
-        if (empty($fields)) {
-            return false; // Nothing to update
-        }
-
-        $query = 'UPDATE Users SET ' . implode(', ', $fields) . ' WHERE id = :user_id';
-        $this->db->query($query);
-
-        $this->db->bind(':user_id', $user_id);
-        foreach ($bindings as $key => $value) {
-            $this->db->bind($key, $value);
-        }
-
-        return $this->db->execute();
+    if (empty($fields)) {
+        return false; // Nothing to update
     }
+
+    $query = 'UPDATE Users SET ' . implode(', ', $fields) . ' WHERE userID = :user_id';
+    $this->db->query($query);
+
+    $this->db->bind(':user_id', $user_id);
+
+    foreach ($bindings as $key => $value) {
+        $this->db->bind($key, $value);
+    }
+
+    return $this->db->execute();
+}
+
 }

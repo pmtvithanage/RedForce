@@ -1,12 +1,14 @@
 <?php
-class Supervisor extends Controller {
+class Supervisor extends Controller
+{
     private $supervisorModel;
     private $userModel;
     private $advertisementModel;
     private $notificationModel;
     private $leaveRequestModel;
 
-    public function __construct() {
+    public function __construct()
+    {
         // Check if user is logged in and has supervisor role
         requireAuth('supervisor');
         $this->advertisementModel = $this->model('M_advertisements');
@@ -17,14 +19,16 @@ class Supervisor extends Controller {
     }
 
     // Default action - redirect to dashboard
-    public function index() {
+    public function index()
+    {
         redirect('supervisor/dashboard/dashboard');
     }
     // Notifications
-    public function notifications() {
+    public function notifications()
+    {
         // TODO: Fetch notifications from database
         $notifications = $this->notificationModel->getNotifications($_SESSION['user_id']);
-        
+
         $data = [
             'title' => 'Notifications',
             'pageTitle' => 'Notifications',
@@ -34,13 +38,14 @@ class Supervisor extends Controller {
         $this->view('components/notifications', $data);
     }
     // dashboard
-    public function dashboard() {
+    public function dashboard()
+    {
         $role = 'supervisor';
         $advertisements = $this->advertisementModel->getAdvertisementsByRole($role);
-        
+
         // Get supervisor ID from session
         $supervisor_id = $_SESSION['user_id'] ?? null;
-        
+
         // Get today's attendance records
         $todayAttendance = [];
         $attendanceStats = [
@@ -49,23 +54,23 @@ class Supervisor extends Controller {
             'absent' => 0,
             'late' => 0
         ];
-        
+
         // Get total unique officers count
         $totalOfficers = 0;
-        
+
         // Get recent activities
         $recentActivities = [];
-        
+
         if ($supervisor_id) {
             // Get today's date
             $today = date('Y-m-d');
-            
+
             // Fetch attendance records for today
             $todayAttendance = $this->supervisorModel->getAttendanceRecords($supervisor_id, ['date' => $today]);
-            
+
             // Get total unique officers count
             $totalOfficers = $this->supervisorModel->getTotalOfficersCount($supervisor_id);
-            
+
             // Get attendance statistics
             $stats = $this->supervisorModel->getAttendanceStats($supervisor_id, $today);
             if ($stats) {
@@ -78,7 +83,7 @@ class Supervisor extends Controller {
             } else {
                 $attendanceStats['total'] = $totalOfficers;
             }
-            
+
             // Get recent activities
             $recentActivities = $this->supervisorModel->getRecentActivities($supervisor_id, 50);
         }
@@ -94,13 +99,14 @@ class Supervisor extends Controller {
     }
 
     // Messages
-    public function messages() {
+    public function messages()
+    {
         $user_id = $_SESSION['user_id'] ?? null;
         $messageModel = $this->model('M_message');
-        
+
         $conversations = $messageModel->getConversations($user_id);
         $all_users = $messageModel->getAllUsersForSupervisor($user_id);
-        
+
         $data = [
             'title' => 'Messages',
             'pageTitle' => 'Messages',
@@ -110,11 +116,12 @@ class Supervisor extends Controller {
         $this->view('supervisor/messages/v_messages', $data);
     }
 
-// ======================================================================== //
-// =======================      profile       ====================== //
-// ======================================================================== //
+    // ======================================================================== //
+    // =======================      profile       ====================== //
+    // ======================================================================== //
     //Profile
-    public function profile() {
+    public function profile()
+    {
         $data = [
             'title' => 'Profile',
             'pageTitle' => 'My Profile',
@@ -123,10 +130,17 @@ class Supervisor extends Controller {
         $this->view('supervisor/profile/v_profile', $data);
     }
 
-     public function editProfile() {
+    public function editProfile()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_id']);
-            
+            $supervisor = $this->supervisorModel->getSupervisorById($_SESSION['user_userID'] ?? '');
+
+            if (!$supervisor) {
+                flash('msg', 'Supervisor profile not found. Please login again.', 'alert-danger');
+                redirect('users/login');
+                return;
+            }
+
             $data = [
                 'title' => 'Profile',
                 'pageTitle' => 'Edit Profile',
@@ -198,7 +212,7 @@ class Supervisor extends Controller {
             if (isset($_FILES['profile_image']) && $_FILES['profile_image']['size'] > 0) {
                 $file = $_FILES['profile_image'];
                 $allowed = ['image/jpeg', 'image/jpg', 'image/png'];
-                
+
                 if (!in_array($file['type'], $allowed)) {
                     $data['image_err'] = 'Only JPEG and PNG images are allowed';
                 } elseif ($file['size'] > 5 * 1024 * 1024) { // 5MB limit
@@ -207,7 +221,7 @@ class Supervisor extends Controller {
                     // Generate unique filename
                     $profileImageName = uniqid() . '_' . basename($file['name']);
                     $uploadPath = PUB_ROOT . '/uploads/applicantPhotos/' . $profileImageName;
-                    
+
                     if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
                         $data['image_err'] = 'Failed to upload image';
                         $profileImageName = $supervisor->profile_image; // Revert to old image
@@ -222,10 +236,12 @@ class Supervisor extends Controller {
             }
 
             // If no errors, update profile
-            if (empty($data['name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) && 
-                empty($data['current_password_err']) && empty($data['new_password_err']) && 
-                empty($data['confirm_password_err']) && empty($data['image_err'])) {
-                
+            if (
+                empty($data['name_err']) && empty($data['email_err']) && empty($data['phone_number_err']) &&
+                empty($data['current_password_err']) && empty($data['new_password_err']) &&
+                empty($data['confirm_password_err']) && empty($data['image_err'])
+            ) {
+
                 $updateData = [
                     'name' => $data['name'],
                     'email' => $data['email'],
@@ -236,7 +252,6 @@ class Supervisor extends Controller {
                 // Add password to update if it's being changed
                 if (!empty($data['new_password'])) {
                     $updateData['password'] = password_hash($data['new_password'], PASSWORD_DEFAULT);
-                    
                 }
 
                 if ($this->supervisorModel->updateSupervisorProfile($_SESSION['user_id'], $updateData)) {
@@ -273,60 +288,61 @@ class Supervisor extends Controller {
         }
     }
     // Mark Attendance via QR Scanner
-    public function markAttendance() {
+    public function markAttendance()
+    {
         // Only accept POST requests
         if ($_SERVER['REQUEST_METHOD'] != 'POST') {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
-        
+
         // Get supervisor ID from session
         $supervisor_id = $_SESSION['user_id'] ?? null;
-        
+
         if (!$supervisor_id) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'User not authenticated']);
             return;
         }
-        
+
         // Get JSON input
         $input = json_decode(file_get_contents('php://input'), true);
-        
+
         if (!$input || !isset($input['officer_id']) || !isset($input['name'])) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'Invalid QR code data']);
             return;
         }
-        
+
         $officer_id = trim($input['officer_id']);
         $officer_name = trim($input['name']);
         $timestamp = $input['timestamp'] ?? date('Y-m-d H:i:s');
-        
+
         // Validate officer_id
         if (empty($officer_id)) {
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'message' => 'Officer ID is required']);
             return;
         }
-        
+
         // Mark attendance in database
         $result = $this->supervisorModel->markAttendance($officer_id, $supervisor_id, $timestamp);
-        
+
         header('Content-Type: application/json');
         if ($result === true) {
             echo json_encode([
-                'success' => true, 
+                'success' => true,
                 'message' => 'Attendance marked successfully for ' . $officer_name
             ]);
         } elseif ($result === 'duplicate') {
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Attendance already marked for today'
             ]);
         } else {
             echo json_encode([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Failed to mark attendance. Please try again.'
             ]);
         }
@@ -337,14 +353,15 @@ class Supervisor extends Controller {
     // ==========================================
 
     // Display attendance page
-    public function attendance() {
+    public function attendance()
+    {
         $supervisor_id = $_SESSION['user_id'] ?? null;
-        
+
         if (!$supervisor_id) {
             redirect('users/login');
             return;
         }
-        
+
         $selectedDate = $_GET['date'] ?? date('Y-m-d');
         $officerSearch = trim($_GET['officer_id'] ?? '');
 
@@ -424,7 +441,7 @@ class Supervisor extends Controller {
             'present' => $presentCount,
             'absent' => $absentCount
         ];
-        
+
         $data = [
             'title' => 'Attendance',
             'pageTitle' => 'Attendance',
@@ -436,17 +453,19 @@ class Supervisor extends Controller {
             'dutyPoints' => $dutyPoints,
             'selectedDate' => $selectedDate
         ];
-        
+
         $this->view('supervisor/v_attendance', $data);
     }
 
     // Show mark attendance form page
-    public function markAttendancePage() {
+    public function markAttendancePage()
+    {
         redirect('supervisor/attendance');
     }
 
     // CREATE - Add a duty point in supervisor's assigned site
-    public function addDutyPoint() {
+    public function addDutyPoint()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('supervisor/attendance');
             return;
@@ -483,47 +502,141 @@ class Supervisor extends Controller {
         redirect('supervisor/attendance');
     }
 
-    // Show edit attendance form page
-    public function editAttendancePage($id) {
+    // UPDATE - Edit a duty point in supervisor's assigned site
+    public function updateDutyPoint($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
         $supervisor_id = $_SESSION['user_id'] ?? null;
-        
+        if (!$supervisor_id) {
+            flash('attendance_error', 'User not authenticated');
+            redirect('users/login');
+            return;
+        }
+
+        $dutyPointId = (int)$id;
+        $dutyPointName = trim($_POST['duty_point_name'] ?? '');
+
+        if ($dutyPointId <= 0) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($dutyPointName === '') {
+            flash('attendance_error', 'Duty point name is required');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if (strlen($dutyPointName) > 120) {
+            flash('attendance_error', 'Duty point name is too long');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $existingDutyPoint = $this->supervisorModel->isValidDutyPointForSupervisor($supervisor_id, $dutyPointId);
+        if (!$existingDutyPoint) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($this->supervisorModel->updateAttendanceDutyPoint($supervisor_id, $dutyPointId, $dutyPointName)) {
+            flash('attendance_success', 'Duty point updated successfully');
+        } else {
+            flash('attendance_error', 'Failed to update duty point');
+        }
+
+        redirect('supervisor/attendance');
+    }
+
+    // DELETE - Remove a duty point from supervisor's assigned site
+    public function deleteDutyPoint($id)
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+        if (!$supervisor_id) {
+            flash('attendance_error', 'User not authenticated');
+            redirect('users/login');
+            return;
+        }
+
+        $dutyPointId = (int)$id;
+        if ($dutyPointId <= 0) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        $existingDutyPoint = $this->supervisorModel->isValidDutyPointForSupervisor($supervisor_id, $dutyPointId);
+        if (!$existingDutyPoint) {
+            flash('attendance_error', 'Invalid duty point selected');
+            redirect('supervisor/attendance');
+            return;
+        }
+
+        if ($this->supervisorModel->deleteAttendanceDutyPoint($supervisor_id, $dutyPointId)) {
+            flash('attendance_success', 'Duty point deleted successfully');
+        } else {
+            flash('attendance_error', 'Failed to delete duty point');
+        }
+
+        redirect('supervisor/attendance');
+    }
+
+    // Show edit attendance form page
+    public function editAttendancePage($id)
+    {
+        $supervisor_id = $_SESSION['user_id'] ?? null;
+
         if (!$supervisor_id) {
             redirect('users/login');
             return;
         }
-        
+
         // Get attendance record
         $attendance = $this->supervisorModel->getAttendanceById($id);
-        
+
         // Verify ownership
         if (!$attendance || $attendance->supervisor_id != $supervisor_id) {
             flash('attendance_error', 'Unauthorized access');
             redirect('supervisor/attendance');
             return;
         }
-        
+
         $data = [
             'title' => 'Edit Attendance',
             'pageTitle' => 'Edit Attendance',
             'attendance' => $attendance
         ];
-        
+
         $this->view('supervisor/v_edit_attendance', $data);
     }
 
     // CREATE - Add new attendance record
-    public function addAttendance() {
+    public function addAttendance()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
+
             $supervisor_id = $_SESSION['user_id'] ?? null;
-            
+
             if (!$supervisor_id) {
                 flash('attendance_error', 'User not authenticated');
                 redirect('supervisor/markAttendancePage');
                 return;
             }
-            
+
             $staffUserId = (int)($_POST['staff_user_id'] ?? 0);
             $attendanceDate = trim($_POST['attendance_date'] ?? '');
             $notes = trim($_POST['notes'] ?? '');
@@ -561,13 +674,13 @@ class Supervisor extends Controller {
                 'duty_point' => $dutyPoint->duty_point_name,
                 'staff_role' => $staff->staff_role
             ];
-            
+
             if ($this->supervisorModel->addAttendance($data)) {
                 flash('attendance_success', 'Attendance record added successfully');
             } else {
                 flash('attendance_error', 'Failed to add attendance record');
             }
-            
+
             redirect('supervisor/attendance?date=' . urlencode($attendanceDate));
         } else {
             redirect('supervisor/attendance');
@@ -575,18 +688,19 @@ class Supervisor extends Controller {
     }
 
     // UPDATE - Edit attendance record
-    public function updateAttendance($id) {
+    public function updateAttendance($id)
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
+
             $supervisor_id = $_SESSION['user_id'] ?? null;
-            
+
             if (!$supervisor_id) {
                 flash('attendance_error', 'User not authenticated');
                 redirect('supervisor/attendance');
                 return;
             }
-            
+
             // Verify ownership
             $existingRecord = $this->supervisorModel->getAttendanceById($id);
             if (!$existingRecord || $existingRecord->supervisor_id != $supervisor_id) {
@@ -594,7 +708,7 @@ class Supervisor extends Controller {
                 redirect('supervisor/attendance');
                 return;
             }
-            
+
             $data = [
                 'id' => $id,
                 'supervisor_id' => $supervisor_id,
@@ -606,13 +720,13 @@ class Supervisor extends Controller {
                 'status' => trim($_POST['status']),
                 'notes' => trim($_POST['notes'])
             ];
-            
+
             if ($this->supervisorModel->updateAttendance($data)) {
                 flash('attendance_success', 'Attendance record updated successfully');
             } else {
                 flash('attendance_error', 'Failed to update attendance record');
             }
-            
+
             redirect('supervisor/attendance');
         } else {
             redirect('supervisor/attendance');
@@ -620,16 +734,17 @@ class Supervisor extends Controller {
     }
 
     // DELETE - Remove attendance record
-    public function deleteAttendance($id) {
+    public function deleteAttendance($id)
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $supervisor_id = $_SESSION['user_id'] ?? null;
-            
+
             if (!$supervisor_id) {
                 flash('attendance_error', 'User not authenticated');
                 redirect('supervisor/attendance');
                 return;
             }
-            
+
             // Verify ownership
             $record = $this->supervisorModel->getAttendanceById($id);
             if (!$record || $record->supervisor_id != $supervisor_id) {
@@ -637,34 +752,35 @@ class Supervisor extends Controller {
                 redirect('supervisor/attendance');
                 return;
             }
-            
+
             if ($this->supervisorModel->deleteAttendance($id, $supervisor_id)) {
                 flash('attendance_success', 'Attendance record deleted successfully');
             } else {
                 flash('attendance_error', 'Failed to delete attendance record');
             }
-            
+
             redirect('supervisor/attendance');
         } else {
             redirect('supervisor/attendance');
         }
     }
 
-    public function site_info(){
+    public function site_info()
+    {
         $supervisorId = $_SESSION['user_id'] ?? null;
-        
+
         if (!$supervisorId) {
             flash('msg', 'Session expired. Please login again.', 'alert-danger');
             redirect('users/login');
             return;
         }
-        
+
         // Get officers and supervisors for this site
         $siteData = $this->supervisorModel->getSiteOfficers($supervisorId);
-        
+
         // Get mobile riders for this site
         $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
-        
+
         // Get caretakers for this site
         $caretakers = $this->supervisorModel->getSiteCaretakers($supervisorId);
 
@@ -674,7 +790,7 @@ class Supervisor extends Controller {
         $ratingSuccess = $_SESSION['supervisor_rating_success'] ?? '';
         $ratingError = $_SESSION['supervisor_rating_error'] ?? '';
         unset($_SESSION['supervisor_rating_success'], $_SESSION['supervisor_rating_error']);
-        
+
         $data = [
             'title' => 'Sites',
             'pageTitle' => 'Site Information',
@@ -687,11 +803,12 @@ class Supervisor extends Controller {
             'rating_success' => $ratingSuccess,
             'rating_error' => $ratingError
         ];
-        
+
         $this->view('supervisor/site/v_site_info', $data);
     }
 
-    public function saveOfficerRating() {
+    public function saveOfficerRating()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('supervisor/site_info');
             return;
@@ -737,7 +854,8 @@ class Supervisor extends Controller {
         redirect('supervisor/site_info');
     }
 
-    public function deleteOfficerRating() {
+    public function deleteOfficerRating()
+    {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             redirect('supervisor/site_info');
             return;
@@ -770,18 +888,19 @@ class Supervisor extends Controller {
     }
 
     // Incidents - List all incidents
-    public function incidents() {
+    public function incidents()
+    {
         $userId = $_SESSION['user_id'] ?? null;
-        
+
         if (!$userId) {
             flash('msg', 'Session expired. Please login again.', 'alert-danger');
             redirect('users/login');
             return;
         }
-        
+
         // Get incidents for this supervisor
         $incidents = $this->supervisorModel->getIncidentsByUserId($userId);
-        
+
         // Calculate statistics
         $stats = [
             'total_incidents' => count($incidents),
@@ -789,7 +908,7 @@ class Supervisor extends Controller {
             'inprogress_incidents' => 0,
             'resolved_incidents' => 0
         ];
-        
+
         foreach ($incidents as $incident) {
             $status = strtolower($incident->status ?? 'pending');
             if ($status === 'pending') {
@@ -800,13 +919,13 @@ class Supervisor extends Controller {
                 $stats['resolved_incidents']++;
             }
         }
-        
+
         $data = array_merge([
             'title' => 'Incidents',
             'pageTitle' => 'Incident Reports',
             'incidents' => $incidents
         ], $stats);
-        
+
         $this->view('supervisor/incidents/v_incidents', $data);
     }
 
@@ -814,21 +933,21 @@ class Supervisor extends Controller {
     public function createIncident()
     {
         $userId = $_SESSION['user_id'] ?? null;
-        
+
         if (!$userId) {
             flash('msg', 'Session expired. Please login again.', 'alert-danger');
             redirect('users/login');
             return;
         }
-        
+
         // Get sites assigned to this supervisor only
         $sites = $this->supervisorModel->getAssignedSites($userId);
-        
+
         // Handle POST request
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Sanitize input
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
+
             // Initialize data array
             $data = [
                 'title' => 'Incidents',
@@ -853,51 +972,51 @@ class Supervisor extends Controller {
                 'priority_err' => '',
                 'description_err' => '',
             ];
-            
+
             // Validation
             if (empty($data['incident_type'])) {
                 $data['incident_type_err'] = 'Please select an incident type';
             }
-            
+
             if (empty($data['site_id'])) {
                 $data['site_id_err'] = 'Please select a site';
             }
-            
+
             if (empty($data['incident_date'])) {
                 $data['incident_date_err'] = 'Please select incident date';
             }
-            
+
             if (empty($data['incident_time'])) {
                 $data['incident_time_err'] = 'Please select incident time';
             }
-            
+
             if (empty($data['description'])) {
                 $data['description_err'] = 'Please provide a description';
             }
-            
+
             // Handle file uploads
             $uploadedFiles = [];
             if (!empty($_FILES['evidence_files']['name'][0])) {
                 $uploadDir = 'uploads/evidence/';
-                
+
                 // Create directory if it doesn't exist
                 if (!file_exists($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
-                
+
                 $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
                 $maxFileSize = 5 * 1024 * 1024; // 5MB
-                
+
                 foreach ($_FILES['evidence_files']['tmp_name'] as $key => $tmp_name) {
                     if ($_FILES['evidence_files']['error'][$key] == 0) {
                         $fileType = $_FILES['evidence_files']['type'][$key];
                         $fileSize = $_FILES['evidence_files']['size'][$key];
-                        
+
                         // Validate file type and size
                         if (in_array($fileType, $allowedTypes) && $fileSize <= $maxFileSize) {
                             $fileName = uniqid() . '_' . basename($_FILES['evidence_files']['name'][$key]);
                             $targetFile = $uploadDir . $fileName;
-                            
+
                             if (move_uploaded_file($tmp_name, $targetFile)) {
                                 $uploadedFiles[] = $fileName;
                             }
@@ -905,15 +1024,17 @@ class Supervisor extends Controller {
                     }
                 }
             }
-            
+
             // Check if there are no validation errors
-            if (empty($data['incident_type_err']) && empty($data['site_id_err']) && 
-                empty($data['incident_date_err']) && empty($data['incident_time_err']) && 
-                empty($data['description_err'])) {
-                
+            if (
+                empty($data['incident_type_err']) && empty($data['site_id_err']) &&
+                empty($data['incident_date_err']) && empty($data['incident_time_err']) &&
+                empty($data['description_err'])
+            ) {
+
                 // Get user details
                 $user = $this->userModel->getUserById($userId);
-                
+
                 // Prepare incident data
                 $incidentData = [
                     'user_id' => $userId,
@@ -935,7 +1056,7 @@ class Supervisor extends Controller {
                     'longitude' => !empty($data['longitude']) ? $data['longitude'] : null,
                     'status' => 'Pending'
                 ];
-                
+
                 // Add incident to database
                 if ($this->supervisorModel->addIncident($incidentData)) {
                     // Log activity
@@ -945,17 +1066,17 @@ class Supervisor extends Controller {
                         'activity_titel' => 'New Incident Reported',
                         'activity_details' => "Reported incident: {$data['incident_type']} at site ID {$data['site_id']}"
                     ]);
-                    
+
                     // Send notifications to mobile riders and admins
                     $this->sendIncidentNotifications($userId, $data['site_id'], $data['incident_type'], $data['priority']);
-                    
+
                     flash('incident_message', 'Incident reported successfully!', 'alert alert-success');
                     redirect('supervisor/incidents');
                 } else {
                     flash('incident_message', 'Error submitting incident report. Please try again.', 'alert alert-danger');
                 }
             }
-            
+
             // Load view with errors
             $this->view('supervisor/incidents/v_create_Incident', $data);
         } else {
@@ -992,22 +1113,22 @@ class Supervisor extends Controller {
     {
         // Get incident ID from parameter or query string
         $incidentId = $id ?? $_GET['id'] ?? null;
-        
+
         if (!$incidentId) {
             flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
             redirect('supervisor/incidents');
             return;
         }
-        
+
         // Get incident details
         $incident = $this->supervisorModel->getIncidentById($incidentId);
-        
+
         if (!$incident) {
             flash('incident_message', 'Incident not found.', 'alert alert-danger');
             redirect('supervisor/incidents');
             return;
         }
-        
+
         // Verify this incident belongs to the current user
         $userId = $_SESSION['user_id'] ?? null;
         if ($incident->user_id != $userId) {
@@ -1015,17 +1136,17 @@ class Supervisor extends Controller {
             redirect('supervisor/incidents');
             return;
         }
-        
+
         // Get reviews for this incident
         $reviews = $this->supervisorModel->getIncidentReviews($incidentId);
-        
+
         $data = [
             'title' => 'Incidents',
             'pageTitle' => 'Incident Details',
             'incident' => $incident,
             'reviews' => $reviews
         ];
-        
+
         $this->view('supervisor/incidents/v_view_incident', $data);
     }
 
@@ -1034,32 +1155,32 @@ class Supervisor extends Controller {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Sanitize input
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            
+
             $userId = $_SESSION['user_id'] ?? null;
             $incidentId = $_POST['incident_id'] ?? null;
-            
+
             if (!$userId) {
                 flash('incident_message', 'Session expired. Please login again.', 'alert alert-danger');
                 redirect('users/login');
                 return;
             }
-            
+
             if (!$incidentId) {
                 flash('incident_message', 'Invalid incident ID.', 'alert alert-danger');
                 redirect('supervisor/incidents');
                 return;
             }
-            
+
             // Validate input
             if (empty($_POST['review_title']) || empty($_POST['review_details'])) {
                 flash('incident_message', 'Review title and details are required.', 'alert alert-danger');
                 redirect('supervisor/viewIncident/' . $incidentId);
                 return;
             }
-            
+
             // Get user details
             $user = $this->userModel->getUserById($userId);
-            
+
             // Prepare review data
             $reviewData = [
                 'incident_id' => $incidentId,
@@ -1069,7 +1190,7 @@ class Supervisor extends Controller {
                 'review_title' => trim($_POST['review_title']),
                 'review_details' => trim($_POST['review_details'])
             ];
-            
+
             // Add review to database
             if ($this->supervisorModel->addIncidentReview($reviewData)) {
                 // Log activity
@@ -1079,15 +1200,15 @@ class Supervisor extends Controller {
                     'activity_titel' => 'Added Review to Incident',
                     'activity_details' => "Added review to incident #{$incidentId}: {$reviewData['review_title']}"
                 ]);
-                
+
                 // Send notifications to related users
                 $this->sendIncidentReviewNotifications($userId, $incidentId, $reviewData);
-                
+
                 flash('incident_message', 'Review added successfully!', 'alert alert-success');
             } else {
                 flash('incident_message', 'Error adding review. Please try again.', 'alert alert-danger');
             }
-            
+
             redirect('supervisor/viewIncident/' . $incidentId);
         } else {
             redirect('supervisor/incidents');
@@ -1099,17 +1220,18 @@ class Supervisor extends Controller {
     // ======================================================================== //
 
     // Get conversations (AJAX)
-    public function getConversations() {
+    public function getConversations()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $user_id = $_SESSION['user_id'] ?? null;
-            
+
             if (!$user_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
-            
+
             $messageModel = $this->model('M_message');
             $conversations = $messageModel->getConversations($user_id);
             echo json_encode(['status' => 'success', 'conversations' => $conversations]);
@@ -1117,22 +1239,23 @@ class Supervisor extends Controller {
     }
 
     // Load messages (AJAX)
-    public function loadMessages() {
+    public function loadMessages()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
-            
+
             if (!$sender_id || !$recipient_id) {
                 echo json_encode(['status' => 'error', 'message' => 'Invalid user']);
                 return;
             }
-            
+
             $messageModel = $this->model('M_message');
             // Mark messages as read
             $messageModel->markAsRead($recipient_id, $sender_id);
-            
+
             // Get messages
             $messages = $messageModel->getMessages($sender_id, $recipient_id);
             echo json_encode(['status' => 'success', 'messages' => $messages]);
@@ -1140,22 +1263,23 @@ class Supervisor extends Controller {
     }
 
     // Send message (AJAX)
-    public function sendMessage() {
+    public function sendMessage()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
             $message = trim($_POST['message'] ?? '');
-            
+
             if (!$sender_id || !$recipient_id || empty($message)) {
                 echo json_encode(['status' => 'error', 'message' => 'Invalid input']);
                 return;
             }
-            
+
             // Sanitize message
             $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
-            
+
             $messageModel = $this->model('M_message');
             if ($messageModel->sendMessage($sender_id, $recipient_id, $message)) {
                 echo json_encode([
@@ -1170,39 +1294,41 @@ class Supervisor extends Controller {
     }
 
     // Mark messages as seen (AJAX)
-    public function markAsSeen() {
+    public function markAsSeen()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $sender_id = $_SESSION['user_id'] ?? null;
             $recipient_id = $_POST['recipient_id'] ?? null;
-            
+
             if (!$sender_id || !$recipient_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
-            
+
             $messageModel = $this->model('M_message');
             // Mark messages as seen
             $messageModel->markAsSeen($sender_id, $recipient_id);
-            
+
             echo json_encode(['status' => 'success']);
         }
     }
 
     // Delete message (AJAX)
-    public function deleteMessage() {
+    public function deleteMessage()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
-            
+
             if (!$user_id || !$message_id) {
                 echo json_encode(['status' => 'error']);
                 return;
             }
-            
+
             $messageModel = $this->model('M_message');
             if ($messageModel->deleteMessage($message_id, $user_id)) {
                 echo json_encode(['status' => 'success']);
@@ -1213,19 +1339,20 @@ class Supervisor extends Controller {
     }
 
     // Update message (AJAX)
-    public function updateMessage() {
+    public function updateMessage()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $user_id = $_SESSION['user_id'] ?? null;
             $message_id = $_POST['message_id'] ?? null;
             $message = $_POST['message'] ?? null;
-            
+
             if (!$user_id || !$message_id || !$message) {
                 echo json_encode(['status' => 'error', 'message' => 'Missing required fields']);
                 return;
             }
-            
+
             $messageModel = $this->model('M_message');
             if ($messageModel->updateMessage($message_id, $user_id, $message)) {
                 echo json_encode(['status' => 'success']);
@@ -1236,19 +1363,20 @@ class Supervisor extends Controller {
     }
 
     // Get user online status (AJAX)
-    public function getUserStatus() {
+    public function getUserStatus()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             header('Content-Type: application/json');
-            
+
             $user_id = $_POST['user_id'] ?? null;
-            
+
             if (!$user_id) {
                 echo json_encode(['status' => 'error', 'message' => 'User ID required']);
                 return;
             }
-            
+
             $userStatus = $this->userModel->getUserOnlineStatus($user_id);
-            
+
             if ($userStatus) {
                 echo json_encode([
                     'status' => 'success',
@@ -1266,10 +1394,11 @@ class Supervisor extends Controller {
     }
 
     // Update user last seen (AJAX)
-    public function updateLastSeen() {
+    public function updateLastSeen()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user_id = $_SESSION['user_id'] ?? null;
-            
+
             if ($user_id) {
                 $this->userModel->updateLastSeen($user_id);
             }
@@ -1277,10 +1406,11 @@ class Supervisor extends Controller {
     }
 
     // Set user offline (AJAX)
-    public function setOffline() {
+    public function setOffline()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $user_id = $_SESSION['user_id'] ?? null;
-            
+
             if ($user_id) {
                 $this->userModel->setUserOffline($user_id);
             }
@@ -1291,25 +1421,26 @@ class Supervisor extends Controller {
      * Send notifications when an incident is reported
      * Sends to all admins and mobile riders assigned to the site
      */
-    private function sendIncidentNotifications($supervisorId, $siteId, $incidentType, $priority) {
+    private function sendIncidentNotifications($supervisorId, $siteId, $incidentType, $priority)
+    {
         // Get supervisor details
         $supervisor = $this->userModel->getUserById($supervisorId);
         $supervisorName = $supervisor->name ?? 'A supervisor';
-        
+
         // Get site name (if available)
         $siteName = "Site ID: {$siteId}";
-        
+
         // Prepare notification details
         $notificationTitle = "New Incident Reported";
         $notificationMessage = "{$supervisorName} reported a {$incidentType} incident at {$siteName}. Priority: {$priority}";
         $notificationLink = URL_ROOT . '/admin/incidents'; // Admins can view all incidents
         $notificationType = ($priority == 'High' || $priority == 'Critical') ? 'warning' : 'info';
         $notificationIcon = 'warning';
-        
+
         // 1. Send notifications to all admins
         $adminModel = $this->model('M_admin');
         $admins = $adminModel->getAllAdmins();
-        
+
         if ($admins && is_array($admins)) {
             foreach ($admins as $admin) {
                 $this->notificationModel->insertNotification(
@@ -1323,13 +1454,13 @@ class Supervisor extends Controller {
                 );
             }
         }
-        
+
         // 2. Send notifications to mobile riders assigned to the supervisor's site
         $mobileRiders = $this->supervisorModel->getSiteMobileRiders($supervisorId);
-        
+
         if ($mobileRiders && is_array($mobileRiders)) {
             $riderNotificationLink = URL_ROOT . '/MobileRider/incidents'; // Mobile riders view
-            
+
             foreach ($mobileRiders as $rider) {
                 $this->notificationModel->insertNotification(
                     $rider->user_id,
@@ -1348,37 +1479,38 @@ class Supervisor extends Controller {
      * Send notifications when an incident review is added
      * For Supervisor: Notify admins + mobile riders of the site
      */
-    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData) {
+    private function sendIncidentReviewNotifications($reviewerId, $incidentId, $reviewData)
+    {
         try {
             // Get incident details
             $incident = $this->supervisorModel->getIncidentById($incidentId);
-            
+
             if (!$incident) {
                 error_log("Incident not found: {$incidentId}");
                 return;
             }
-            
+
             // Get reviewer details
             $reviewer = $this->userModel->getUserById($reviewerId);
             $reviewerName = $reviewer->name ?? 'A user';
             $reviewerRole = $reviewer->role ?? 'supervisor';
-            
+
             // Prepare notification details
             $notificationTitle = "New Review on Incident #{$incidentId}";
             $notificationMessage = "{$reviewerName} (Supervisor) added a review: \"{$reviewData['review_title']}\" on incident #{$incidentId}";
             $notificationType = 'info';
             $notificationIcon = 'comment';
-            
+
             // Collect all users to notify (use array to avoid duplicates)
             $usersToNotify = [];
-            
+
             // SUPERVISOR adds review: Notify admins + mobile riders of the site
-            
+
             // 1. Notify all admins
             try {
                 $adminModel = $this->model('M_admin');
                 $admins = $adminModel->getAllAdmins();
-                
+
                 if ($admins && is_array($admins)) {
                     foreach ($admins as $admin) {
                         if (isset($admin->id) && $admin->id != $reviewerId) {
@@ -1391,12 +1523,12 @@ class Supervisor extends Controller {
             } catch (Exception $e) {
                 error_log("Error getting admins for notification: " . $e->getMessage());
             }
-            
+
             // 2. Notify mobile riders assigned to the incident site
             if (isset($incident->site_id) && isset($incident->user_id)) {
                 try {
                     $mobileRiders = $this->supervisorModel->getSiteMobileRiders($incident->user_id);
-                    
+
                     if ($mobileRiders && is_array($mobileRiders)) {
                         foreach ($mobileRiders as $rider) {
                             if (isset($rider->user_id) && $rider->user_id != $reviewerId) {
@@ -1410,7 +1542,7 @@ class Supervisor extends Controller {
                     error_log("Error getting mobile riders for notification: " . $e->getMessage());
                 }
             }
-            
+
             // Send notifications to all collected users
             $sentCount = 0;
             foreach ($usersToNotify as $userId => $data) {
@@ -1431,9 +1563,8 @@ class Supervisor extends Controller {
                     error_log("Error sending notification to user {$userId}: " . $e->getMessage());
                 }
             }
-            
+
             error_log("Sent {$sentCount} notifications for incident review #{$incidentId} by supervisor");
-            
         } catch (Exception $e) {
             error_log("Error in sendIncidentReviewNotifications: " . $e->getMessage());
         }
@@ -1442,46 +1573,48 @@ class Supervisor extends Controller {
     /**
      * Display equipment approval requests
      */
-    public function equipmentApprovals() {
+    public function equipmentApprovals()
+    {
         if (!isLoggedIn() || !hasRole('supervisor')) {
             redirect('users/login');
         }
 
         $supervisor_id = $_SESSION['user_id'];
-        
+
         // Get pending equipment requests for this supervisor's sites
         $pending_requests = $this->supervisorModel->getPendingEquipmentRequests($supervisor_id);
-        
+
         // Get stats for the dashboard cards
         $stats = $this->supervisorModel->getEquipmentApprovalStats($supervisor_id);
-        
+
         $data = [
             'title' => 'Equipment Approvals',
             'pending_requests' => $pending_requests,
             'stats' => $stats
         ];
-        
+
         $this->view('supervisor/equipmentApprovals/v_equipment_approvals', $data);
     }
 
     /**
      * Get equipment requests for a caretaker (AJAX)
      */
-    public function getCaretakerEquipmentRequests() {
+    public function getCaretakerEquipmentRequests()
+    {
         header('Content-Type: application/json');
-        
+
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode(['success' => false, 'message' => 'Invalid request method']);
             return;
         }
-        
+
         $caretaker_id = $_POST['caretaker_id'] ?? null;
-        
+
         if (!$caretaker_id) {
             echo json_encode(['success' => false, 'message' => 'Caretaker ID required']);
             return;
         }
-        
+
         $requests = $this->supervisorModel->getCaretakerEquipmentRequests($caretaker_id);
         echo json_encode(['success' => true, 'requests' => $requests]);
     }
@@ -1489,9 +1622,10 @@ class Supervisor extends Controller {
     /**
      * Approve an equipment request
      */
-    public function approveEquipmentRequest() {
+    public function approveEquipmentRequest()
+    {
         header('Content-Type: application/json');
-        
+
         if (!isLoggedIn() || !hasRole('supervisor')) {
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
             return;
@@ -1509,7 +1643,7 @@ class Supervisor extends Controller {
 
             // Get request details before approval
             $request = $this->supervisorModel->getEquipmentRequestById($request_id);
-            
+
             if (!$request) {
                 echo json_encode(['success' => false, 'message' => 'Request not found']);
                 return;
@@ -1525,11 +1659,11 @@ class Supervisor extends Controller {
                         $clientId = $request->client_id;
                         $caretakerName = $request->caretaker_name;
                         $equipmentName = $request->equipment_name;
-                        
+
                         $notificationTitle = "Equipment Request Approved by Supervisor";
                         $notificationMessage = "Equipment request for {$equipmentName} from {$caretakerName} has been approved by supervisor and needs your approval.";
                         $notificationLink = URL_ROOT . '/client/equipmentApprovals';
-                        
+
                         $this->notificationModel->insertNotification(
                             $clientId,
                             'info',
@@ -1540,7 +1674,7 @@ class Supervisor extends Controller {
                             $supervisor_id
                         );
                     }
-                    
+
                     // Log recent activity for supervisor
                     $this->supervisorModel->insertRecentActivity(
                         $supervisor_id,
@@ -1554,7 +1688,7 @@ class Supervisor extends Controller {
                 }
 
                 echo json_encode([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Equipment request approved successfully.'
                 ]);
                 exit;
@@ -1571,9 +1705,10 @@ class Supervisor extends Controller {
     /**
      * Reject an equipment request
      */
-    public function rejectEquipmentRequest() {
+    public function rejectEquipmentRequest()
+    {
         header('Content-Type: application/json');
-        
+
         if (!isLoggedIn() || !hasRole('supervisor')) {
             echo json_encode(['success' => false, 'message' => 'Unauthorized']);
             return;
@@ -1591,7 +1726,7 @@ class Supervisor extends Controller {
 
             // Get request details before rejection
             $request = $this->supervisorModel->getEquipmentRequestById($request_id);
-            
+
             if (!$request) {
                 echo json_encode(['success' => false, 'message' => 'Request not found']);
                 return;
@@ -1605,11 +1740,11 @@ class Supervisor extends Controller {
                 try {
                     $caretakerId = $request->caretaker_id;
                     $equipmentName = $request->equipment_name;
-                    
+
                     $notificationTitle = "Equipment Request Rejected";
                     $notificationMessage = "Your equipment request for {$equipmentName} has been rejected by supervisor. Reason: {$rejection_reason}";
                     $notificationLink = URL_ROOT . '/caretaker/equipment';
-                    
+
                     $this->notificationModel->insertNotification(
                         $caretakerId,
                         'warning',
@@ -1619,7 +1754,7 @@ class Supervisor extends Controller {
                         'cancel',
                         $supervisor_id
                     );
-                    
+
                     // Log recent activity for supervisor
                     $this->supervisorModel->insertRecentActivity(
                         $supervisor_id,
@@ -1633,7 +1768,7 @@ class Supervisor extends Controller {
                 }
 
                 echo json_encode([
-                    'success' => true, 
+                    'success' => true,
                     'message' => 'Equipment request rejected successfully.'
                 ]);
             } else {
@@ -1650,16 +1785,17 @@ class Supervisor extends Controller {
     // ======================================================================== //
 
     // Leave Requests
-    public function leaverequests() {
+    public function leaverequests()
+    {
         $user_id = $_SESSION['user_id'] ?? null;
-        
+
         if (!$user_id) {
             redirect('login');
         }
 
         $leaveRequests = $this->leaveRequestModel->getLeaveRequestsByUser($user_id, 'supervisor');
         $stats = $this->leaveRequestModel->getLeaveStats($user_id, 'supervisor');
-        
+
         $data = [
             'title' => 'Leave Requests',
             'pageTitle' => 'Leave Requests',
@@ -1670,7 +1806,8 @@ class Supervisor extends Controller {
     }
 
     // Create Leave Request
-    public function createLeaveRequest() {
+    public function createLeaveRequest()
+    {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Process form submission
             $data = [
@@ -1686,36 +1823,36 @@ class Supervisor extends Controller {
                 'end_date_err' => '',
                 'proof_file_err' => ''
             ];
-            
+
             // Validate leave type
             if (empty($data['leave_type_value'])) {
                 $data['leave_type_err'] = 'Please select a leave type';
             }
-            
+
             // Validate reason
             if (empty($data['reason_value'])) {
                 $data['reason_err'] = 'Please enter a reason for leave';
             }
-            
+
             // Validate start date
             if (empty($data['start_date_value'])) {
                 $data['start_date_err'] = 'Please select a start date';
             }
-            
+
             // Validate end date
             if (empty($data['end_date_value'])) {
                 $data['end_date_err'] = 'Please select an end date';
             } elseif (!empty($data['start_date_value']) && strtotime($data['end_date_value']) < strtotime($data['start_date_value'])) {
                 $data['end_date_err'] = 'End date must be after start date';
             }
-            
+
             // Handle proof file upload (optional)
             $proof_file_path = null;
             if (isset($_FILES['proof_file']) && $_FILES['proof_file']['error'] == UPLOAD_ERR_OK) {
                 // Validate file type
                 $allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
                 $file_type = $_FILES['proof_file']['type'];
-                
+
                 if (!in_array($file_type, $allowed_types)) {
                     $data['proof_file_err'] = 'Only JPG, PNG, GIF, and PDF files are allowed';
                 } else {
@@ -1723,7 +1860,7 @@ class Supervisor extends Controller {
                     $upload_dir = '/uploads/leave_proofs/';
                     $file_extension = pathinfo($_FILES['proof_file']['name'], PATHINFO_EXTENSION);
                     $unique_filename = 'proof_' . time() . '_' . uniqid() . '.' . $file_extension;
-                    
+
                     if (uploadImage($_FILES['proof_file']['tmp_name'], $unique_filename, $upload_dir)) {
                         $proof_file_path = $upload_dir . $unique_filename;
                     } else {
@@ -1731,7 +1868,7 @@ class Supervisor extends Controller {
                     }
                 }
             }
-            
+
             // If no errors, create leave request
             if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
                 $leaveRequestData = [
@@ -1743,7 +1880,7 @@ class Supervisor extends Controller {
                     'proof_file' => $proof_file_path,
                     'status' => 'Pending'
                 ];
-                
+
                 if ($this->leaveRequestModel->createLeaveRequest($leaveRequestData)) {
                     // Send notifications to all admins
                     try {
@@ -1751,7 +1888,7 @@ class Supervisor extends Controller {
                         $admins = $adminModel->getAllAdmins();
                         $user = $this->userModel->getUserById($_SESSION['user_id']);
                         $userName = $user->name ?? 'A supervisor';
-                        
+
                         if ($admins && is_array($admins)) {
                             foreach ($admins as $admin) {
                                 $this->notificationModel->addNotification(
@@ -1765,7 +1902,7 @@ class Supervisor extends Controller {
                                 );
                             }
                         }
-                        
+
                         // Log recent activity
                         $supervisorModel = $this->model('M_supervisor');
                         $supervisorModel->insertRecentActivity(
@@ -1777,7 +1914,7 @@ class Supervisor extends Controller {
                     } catch (Exception $e) {
                         error_log("Error sending leave request notifications: " . $e->getMessage());
                     }
-                    
+
                     flash('msg', 'Leave request submitted successfully', 'alert-success');
                     redirect('supervisor/leaverequests');
                 } else {
@@ -1808,19 +1945,20 @@ class Supervisor extends Controller {
     }
 
     // View Leave Request
-    public function viewLeaveRequest($id) {
+    public function viewLeaveRequest($id)
+    {
         if (!isset($_SESSION['user_id'])) {
             redirect('login');
         }
 
         $leaveRequest = $this->leaveRequestModel->getLeaveRequestById($id, 'supervisor');
-        
+
         // Check if leave request exists and belongs to user
         if (!$leaveRequest || !$this->leaveRequestModel->isOwnedByUser($id, $_SESSION['user_id'], 'supervisor')) {
             flash('msg', 'Leave request not found', 'alert-danger');
             redirect('supervisor/leaverequests');
         }
-        
+
         $data = [
             'title' => 'Leave Requests',
             'pageTitle' => 'Leave Request Details',
@@ -1830,13 +1968,14 @@ class Supervisor extends Controller {
     }
 
     // Edit Leave Request
-    public function editLeaveRequest($id) {
+    public function editLeaveRequest($id)
+    {
         if (!isset($_SESSION['user_id'])) {
             redirect('login');
         }
 
         $leaveRequest = $this->leaveRequestModel->getLeaveRequestById($id, 'supervisor');
-        
+
         // Check if leave request exists and belongs to user
         if (!$leaveRequest || !$this->leaveRequestModel->isOwnedByUser($id, $_SESSION['user_id'], 'supervisor')) {
             flash('msg', 'Leave request not found', 'alert-danger');
@@ -1866,7 +2005,7 @@ class Supervisor extends Controller {
                 'end_date_err' => '',
                 'proof_file_err' => ''
             ];
-            
+
             // Validate (same as create)
             if (empty($data['leave_type_value'])) {
                 $data['leave_type_err'] = 'Please select a leave type';
@@ -1882,7 +2021,7 @@ class Supervisor extends Controller {
             } elseif (!empty($data['start_date_value']) && strtotime($data['end_date_value']) < strtotime($data['start_date_value'])) {
                 $data['end_date_err'] = 'End date must be after start date';
             }
-            
+
             // Handle file updates
             $proof_file_path = $leaveRequest->proof_file;
             if (isset($_POST['remove_file']) && $_POST['remove_file'] == '1') {
@@ -1904,7 +2043,7 @@ class Supervisor extends Controller {
                     }
                 }
             }
-            
+
             if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
                 $updateData = [
                     'leave_type' => $data['leave_type_value'],
@@ -1913,7 +2052,7 @@ class Supervisor extends Controller {
                     'end_date' => $data['end_date_value'],
                     'proof_file' => $proof_file_path
                 ];
-                
+
                 if ($this->leaveRequestModel->updateLeaveRequest($id, $updateData, $_SESSION['user_id'], 'supervisor')) {
                     flash('msg', 'Leave request updated successfully', 'alert-success');
                     redirect('supervisor/leaverequests');
@@ -1945,7 +2084,8 @@ class Supervisor extends Controller {
     }
 
     // Delete Leave Request
-    public function deleteLeaveRequest($id) {
+    public function deleteLeaveRequest($id)
+    {
         if (!isset($_SESSION['user_id'])) {
             redirect('login');
         }
@@ -1960,7 +2100,7 @@ class Supervisor extends Controller {
         } else {
             flash('msg', 'Failed to delete leave request or request is not pending', 'alert-danger');
         }
-        
+
         redirect('supervisor/leaverequests');
     }
 
@@ -1971,7 +2111,8 @@ class Supervisor extends Controller {
      * Sanitize input data
      * Replacement for FILTER_SANITIZE_STRING
      */
-    private function sanitizeInput($input) {
+    private function sanitizeInput($input)
+    {
         $input = trim($input ?? '');
         $input = htmlspecialchars($input, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         // Remove or encode potentially dangerous characters
