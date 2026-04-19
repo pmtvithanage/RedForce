@@ -3635,9 +3635,14 @@ public function rejectLeaveRequest($id) {
     }
 
     public function requestsreports() {
+        $requestsRecords = $this->adminModel->getClientRequestsReportRecords();
+        $stats = $this->adminModel->getClientRequestsStats();
+
         $data = [
             'title' => 'Reports',
-            'pageTitle' => 'Client Requests Reports'
+            'pageTitle' => 'Client Requests Reports',
+            'requestsRecords' => $requestsRecords,
+            'stats' => $stats
         ];
         $this->view('admin/reports/v_clientrequests', $data);  
     }

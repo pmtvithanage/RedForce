@@ -81,15 +81,7 @@
                 <label>Client</label>
                 <input type="text" id="clientFilter" placeholder="Search client name">
             </div>
-            <div class="filter-group">
-                <label>Status</label>
-                <select id="statusFilter">
-                    <option value="">All Statuses</option>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                    <option value="overdue">Overdue</option>
-                </select>
-            </div>
+ 
             <div class="filter-group">
                 <label>From Date</label>
                 <input type="date" id="startDate">
@@ -126,11 +118,7 @@
             <div class="value" id="statOverdueAmount">LKR 0</div>
             <div class="sub" id="statOverdueCount">0 overdue records</div>
         </div>
-        <div class="stat-card">
-            <h3>Collection Rate</h3>
-            <div class="value" id="statCollectionRate">0%</div>
-            <div class="sub">Paid amount / total billed</div>
-        </div>
+ 
         <div class="stat-card">
             <h3>Average Payment</h3>
             <div class="value" id="statAveragePayment">LKR 0</div>
@@ -143,13 +131,9 @@
             <h2>Payment Status Distribution</h2>
             <div class="chart-container"><canvas id="statusChart"></canvas></div>
         </div>
-        <div class="chart-card">
-            <h2>Top Clients by Paid Amount</h2>
-            <div class="chart-container"><canvas id="topClientsChart"></canvas></div>
-        </div>
         <div class="chart-card" style="grid-column: span 2;">
-            <h2>Monthly Payment Trend</h2>
-            <div class="chart-container"><canvas id="monthlyTrendChart"></canvas></div>
+            <h2>Payment Growth by Date</h2>
+            <div class="chart-container"><canvas id="paymentGrowthChart"></canvas></div>
         </div>
     </div>
 
@@ -184,7 +168,7 @@
 <script>
 const allPayments = <?php echo json_encode($data['payments'] ?? []); ?>;
 let filteredPayments = [];
-let statusChart, topClientsChart, monthlyTrendChart;
+let statusChart, paymentGrowthChart;
 
 function toNum(v) { return Number(v || 0); }
 function money(v) { return `LKR ${toNum(v).toLocaleString()}`; }
@@ -215,7 +199,6 @@ function updateStats(payments) {
         return acc;
     }, { total:0, billed:0, paidAmount:0, pendingAmount:0, overdueAmount:0, paidCount:0, pendingCount:0, overdueCount:0 });
 
-    const collectionRate = totals.billed > 0 ? (totals.paidAmount / totals.billed) * 100 : 0;
     const averagePayment = totals.paidCount > 0 ? (totals.paidAmount / totals.paidCount) : 0;
 
     document.getElementById('statTotalPayments').textContent = totals.total;
@@ -225,7 +208,6 @@ function updateStats(payments) {
     document.getElementById('statPendingCount').textContent = `${totals.pendingCount} pending records`;
     document.getElementById('statOverdueAmount').textContent = money(totals.overdueAmount);
     document.getElementById('statOverdueCount').textContent = `${totals.overdueCount} overdue records`;
-    document.getElementById('statCollectionRate').textContent = `${collectionRate.toFixed(1)}%`;
     document.getElementById('statAveragePayment').textContent = money(averagePayment);
 }
 
@@ -252,72 +234,49 @@ function buildStatusChart(payments) {
     }
 }
 
-function buildTopClientsChart(payments) {
-    const byClient = {};
-    payments.forEach(p => {
-        if (normalizeStatus(p.status) !== 'paid') return;
-        const key = p.client_name || 'Unknown Client';
-        byClient[key] = (byClient[key] || 0) + toNum(p.amount);
-    });
-
-    const top = Object.entries(byClient)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10);
-    const labels = top.map(([name]) => name.slice(0, 22));
-    const values = top.map(([, amount]) => amount);
-
-    if (!topClientsChart) {
-        topClientsChart = new Chart(document.getElementById('topClientsChart').getContext('2d'), {
-            type: 'bar',
-            data: { labels, datasets: [{ label:'Paid Amount', data: values, backgroundColor:'rgba(33,150,243,.75)' }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true } } }
-        });
-    } else {
-        topClientsChart.data.labels = labels;
-        topClientsChart.data.datasets[0].data = values;
-        topClientsChart.update();
-    }
-}
-
-function buildMonthlyTrendChart(payments) {
+function buildPaymentGrowthChart(payments) {
     const monthly = {};
     payments.forEach(p => {
         const date = parseDate(p.payment_date || p.created_at);
         if (!date) return;
         const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        if (!monthly[key]) monthly[key] = { paid:0, pending:0, overdue:0 };
-        const status = normalizeStatus(p.status);
-        if (monthly[key][status] !== undefined) monthly[key][status] += toNum(p.amount);
+        if (!monthly[key]) monthly[key] = 0;
+        if (normalizeStatus(p.status) === 'paid') monthly[key] += toNum(p.amount);
     });
 
     const keys = Object.keys(monthly).sort();
-    const labels = keys.map(k => {
-        const [y, m] = k.split('-');
-        return new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month:'short', year:'numeric' });
-    });
-    const paid = keys.map(k => monthly[k].paid);
-    const pending = keys.map(k => monthly[k].pending);
-    const overdue = keys.map(k => monthly[k].overdue);
+    const labels = [];
+    const growthData = [];
+    let cumulative = 0;
 
-    if (!monthlyTrendChart) {
-        monthlyTrendChart = new Chart(document.getElementById('monthlyTrendChart').getContext('2d'), {
+    keys.forEach(k => {
+        const [y, m] = k.split('-');
+        labels.push(new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }));
+        cumulative += monthly[k];
+        growthData.push(cumulative);
+    });
+
+    if (!paymentGrowthChart) {
+        paymentGrowthChart = new Chart(document.getElementById('paymentGrowthChart').getContext('2d'), {
             type: 'line',
             data: {
                 labels,
-                datasets: [
-                    { label:'Paid', data: paid, borderColor:'#4CAF50', backgroundColor:'rgba(76,175,80,.1)', tension:.3, borderWidth:2 },
-                    { label:'Pending', data: pending, borderColor:'#FF9800', backgroundColor:'rgba(255,152,0,.1)', tension:.3, borderWidth:2 },
-                    { label:'Overdue', data: overdue, borderColor:'#D32F2F', backgroundColor:'rgba(211,47,47,.1)', tension:.3, borderWidth:2 }
-                ]
+                datasets: [{
+                    label: 'Cumulative Paid Amount (LKR)',
+                    data: growthData,
+                    borderColor: '#2196F3',
+                    backgroundColor: 'rgba(33,150,243,0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    borderWidth: 3
+                }]
             },
-            options: { responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false}, scales:{ y:{ beginAtZero:true } } }
+            options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { beginAtZero: true } } }
         });
     } else {
-        monthlyTrendChart.data.labels = labels;
-        monthlyTrendChart.data.datasets[0].data = paid;
-        monthlyTrendChart.data.datasets[1].data = pending;
-        monthlyTrendChart.data.datasets[2].data = overdue;
-        monthlyTrendChart.update();
+        paymentGrowthChart.data.labels = labels;
+        paymentGrowthChart.data.datasets[0].data = growthData;
+        paymentGrowthChart.update();
     }
 }
 
@@ -351,7 +310,7 @@ function updateTable(payments) {
 function applyFilters() {
     const siteId = document.getElementById('siteFilter').value;
     const client = document.getElementById('clientFilter').value.trim().toLowerCase();
-    const status = document.getElementById('statusFilter').value;
+ 
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
     const start = startDate ? parseDate(startDate) : null;
@@ -360,7 +319,7 @@ function applyFilters() {
     filteredPayments = allPayments.filter(p => {
         if (siteId && String(p.site_id || '') !== String(siteId)) return false;
         if (client && !String(p.client_name || '').toLowerCase().includes(client)) return false;
-        if (status && normalizeStatus(p.status) !== status) return false;
+ 
 
         const paymentDate = parseDate(p.payment_date || p.created_at);
         if (start && paymentDate && paymentDate < start) return false;
@@ -370,15 +329,14 @@ function applyFilters() {
 
     updateStats(filteredPayments);
     buildStatusChart(filteredPayments);
-    buildTopClientsChart(filteredPayments);
-    buildMonthlyTrendChart(filteredPayments);
+    buildPaymentGrowthChart(filteredPayments);
     updateTable(filteredPayments);
 }
 
 function resetFilters() {
     document.getElementById('siteFilter').value = '';
     document.getElementById('clientFilter').value = '';
-    document.getElementById('statusFilter').value = '';
+ 
     document.getElementById('startDate').value = '';
     document.getElementById('endDate').value = '';
     applyFilters();
@@ -414,8 +372,6 @@ async function downloadPdfReport() {
             return acc;
         }, { total:0, billed:0, paid:0, pending:0, overdue:0 });
 
-        const collectionRate = totals.billed > 0 ? ((totals.paid / totals.billed) * 100).toFixed(1) : '0.0';
-
         pdf.setFillColor(211,47,47);
         pdf.rect(0,0,pageWidth,80,'F');
         pdf.setTextColor(255);
@@ -439,14 +395,12 @@ async function downloadPdfReport() {
         pdf.text(`Payment records: ${totals.total}`, 25, y); y += 6;
         pdf.text(`Paid amount: ${money(totals.paid)}`, 25, y); y += 6;
         pdf.text(`Pending amount: ${money(totals.pending)}`, 25, y); y += 6;
-        pdf.text(`Overdue amount: ${money(totals.overdue)}`, 25, y); y += 6;
-        pdf.text(`Collection rate: ${collectionRate}%`, 25, y);
+        pdf.text(`Overdue amount: ${money(totals.overdue)}`, 25, y);
         addPageNo();
 
         const chartPages = [
             ['statusChart', 'Payment Status Distribution'],
-            ['topClientsChart', 'Top Clients by Paid Amount'],
-            ['monthlyTrendChart', 'Monthly Payment Trend']
+            ['paymentGrowthChart', 'Payment Growth by Date']
         ];
         chartPages.forEach(([id, title]) => {
             pdf.addPage();

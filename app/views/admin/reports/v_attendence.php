@@ -55,8 +55,6 @@
 
     .stat-card.present .value { color: #4CAF50; }
     .stat-card.absent .value { color: #616161; }
-    .stat-card.late .value { color: #FF9800; }
-    .stat-card.half-day .value { color: #2196F3; }
 
     .filter-section,
     .chart-card,
@@ -215,8 +213,6 @@
     .color-indicator.total { background: #D32F2F; height: 4px; }
     .color-indicator.present { background: #4CAF50; }
     .color-indicator.absent { background: #616161; }
-    .color-indicator.late { background: #FF9800; }
-    .color-indicator.half-day { background: #2196F3; }
 
     .attendance-table {
         width: 100%;
@@ -252,8 +248,6 @@
 
     .badge.present { background: #E8F5E9; color: #2E7D32; }
     .badge.absent { background: #F5F5F5; color: #424242; }
-    .badge.late { background: #FFF3E0; color: #E65100; }
-    .badge.half-day { background: #E3F2FD; color: #1565C0; }
 
     .muted {
         color: #888;
@@ -316,16 +310,7 @@
                 <input type="text" id="officerFilter" placeholder="Officer ID or name">
             </div>
 
-            <div class="filter-group">
-                <label>Status</label>
-                <select id="statusFilter">
-                    <option value="">All Statuses</option>
-                    <option value="Present">Present</option>
-                    <option value="Absent">Absent</option>
-                    <option value="Late">Late</option>
-                    <option value="Half Day">Half Day</option>
-                </select>
-            </div>
+ 
 
             <div class="filter-group">
                 <label>From</label>
@@ -357,14 +342,6 @@
             <h3>Absent</h3>
             <div class="value" id="statAbsent">0</div>
         </div>
-        <div class="stat-card late">
-            <h3>Late</h3>
-            <div class="value" id="statLate">0</div>
-        </div>
-        <div class="stat-card half-day">
-            <h3>Half Day</h3>
-            <div class="value" id="statHalfDay">0</div>
-        </div>
     </div>
 
     <div class="charts-grid">
@@ -375,49 +352,7 @@
             </div>
         </div>
 
-        <div class="chart-card" style="grid-column: span 2;">
-            <h2 id="trendChartTitle">Daily Attendance Trend (Last 90 Days)</h2>
-            <div class="chart-controls">
-                <label class="chart-checkbox">
-                    <input type="checkbox" id="toggleTotal" checked>
-                    <span class="checkbox-label">
-                        <span class="color-indicator total"></span>
-                        <span>Total</span>
-                    </span>
-                </label>
-                <label class="chart-checkbox">
-                    <input type="checkbox" id="togglePresent" checked>
-                    <span class="checkbox-label">
-                        <span class="color-indicator present"></span>
-                        <span>Present</span>
-                    </span>
-                </label>
-                <label class="chart-checkbox">
-                    <input type="checkbox" id="toggleAbsent" checked>
-                    <span class="checkbox-label">
-                        <span class="color-indicator absent"></span>
-                        <span>Absent</span>
-                    </span>
-                </label>
-                <label class="chart-checkbox">
-                    <input type="checkbox" id="toggleLate" checked>
-                    <span class="checkbox-label">
-                        <span class="color-indicator late"></span>
-                        <span>Late</span>
-                    </span>
-                </label>
-                <label class="chart-checkbox">
-                    <input type="checkbox" id="toggleHalfDay" checked>
-                    <span class="checkbox-label">
-                        <span class="color-indicator half-day"></span>
-                        <span>Half Day</span>
-                    </span>
-                </label>
-            </div>
-            <div class="chart-container tall">
-                <canvas id="trendChart"></canvas>
-            </div>
-        </div>
+        <!-- Removed trend chart -->
     </div>
 
     <div class="recent-attendance">
@@ -430,15 +365,13 @@
                     <th>Officer Name</th>
                     <th>Supervisor</th>
                     <th>Site</th>
-                    <th>Check In</th>
-                    <th>Check Out</th>
                     <th>Status</th>
                     <th>Notes</th>
                 </tr>
             </thead>
             <tbody id="attendanceTableBody">
                 <tr>
-                    <td colspan="9" style="text-align:center; padding:40px; color:#999;">Loading attendance records...</td>
+                    <td colspan="7" style="text-align:center; padding:40px; color:#999;">Loading attendance records...</td>
                 </tr>
             </tbody>
         </table>
@@ -458,7 +391,6 @@
 const allAttendanceRecords = <?php echo json_encode($data['attendanceRecords'] ?? []); ?>;
 let filteredAttendanceRecords = [];
 let statusChart;
-let trendChart;
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#666';
@@ -500,9 +432,7 @@ function getStatusCounts(records) {
     return {
         total: records.length,
         present: records.filter(record => normalizeStatus(record.status) === 'Present').length,
-        absent: records.filter(record => normalizeStatus(record.status) === 'Absent').length,
-        late: records.filter(record => normalizeStatus(record.status) === 'Late').length,
-        halfDay: records.filter(record => normalizeStatus(record.status) === 'Half Day').length
+        absent: records.filter(record => normalizeStatus(record.status) === 'Absent').length
     };
 }
 
@@ -510,19 +440,17 @@ function buildStatusChart(records) {
     const counts = getStatusCounts(records);
     const chartValues = [
         counts.present,
-        counts.absent,
-        counts.late,
-        counts.halfDay
+        counts.absent
     ];
 
     if (!statusChart) {
         statusChart = new Chart(document.getElementById('statusChart').getContext('2d'), {
             type: 'doughnut',
             data: {
-                labels: ['Present', 'Absent', 'Late', 'Half Day'],
+                labels: ['Present', 'Absent'],
                 datasets: [{
                     data: chartValues,
-                    backgroundColor: ['#4CAF50', '#616161', '#FF9800', '#2196F3'],
+                    backgroundColor: ['#4CAF50', '#616161'],
                     borderColor: '#fff',
                     borderWidth: 2
                 }]
@@ -547,219 +475,20 @@ function buildStatusChart(records) {
     statusChart.update();
 }
 
-function calculateTrendData(records) {
-    const startDateInput = document.getElementById('startDate').value;
-    const endDateInput = document.getElementById('endDate').value;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let startDate = startDateInput ? parseLocalDate(startDateInput) : new Date(today);
-    let endDate = endDateInput ? parseLocalDate(endDateInput) : new Date(today);
-
-    if (!startDateInput && !endDateInput) {
-        startDate.setDate(startDate.getDate() - 89);
-    }
-
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const dailyMap = {};
-    const currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-        const key = currentDate.toISOString().slice(0, 10);
-        dailyMap[key] = { total: 0, present: 0, absent: 0, late: 0, halfDay: 0 };
-        currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    records.forEach(record => {
-        const key = record.attendance_date;
-        if (!dailyMap[key]) {
-            return;
-        }
-
-        const status = normalizeStatus(record.status);
-        dailyMap[key].total += 1;
-
-        if (status === 'Present') dailyMap[key].present += 1;
-        if (status === 'Absent') dailyMap[key].absent += 1;
-        if (status === 'Late') dailyMap[key].late += 1;
-        if (status === 'Half Day') dailyMap[key].halfDay += 1;
-    });
-
-    const keys = Object.keys(dailyMap).sort();
-    const labels = [];
-    const total = [];
-    const present = [];
-    const absent = [];
-    const late = [];
-    const halfDay = [];
-    const showFullDates = keys.length <= 30;
-
-    keys.forEach((key, index) => {
-        const date = parseLocalDate(key);
-        const skipInterval = keys.length > 180 ? 7 : 3;
-        const label = showFullDates || index % skipInterval === 0 || index === keys.length - 1
-            ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            : '';
-
-        labels.push(label);
-        total.push(dailyMap[key].total);
-        present.push(dailyMap[key].present);
-        absent.push(dailyMap[key].absent);
-        late.push(dailyMap[key].late);
-        halfDay.push(dailyMap[key].halfDay);
-    });
-
-    return { labels, total, present, absent, late, halfDay };
-}
-
-function buildTrendChart(records) {
-    const trendData = calculateTrendData(records);
-
-    if (!trendChart) {
-        trendChart = new Chart(document.getElementById('trendChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: trendData.labels,
-                datasets: [
-                    {
-                        label: 'Total',
-                        data: trendData.total,
-                        borderColor: '#D32F2F',
-                        backgroundColor: 'rgba(211, 47, 47, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Present',
-                        data: trendData.present,
-                        borderColor: '#4CAF50',
-                        backgroundColor: 'rgba(76, 175, 80, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Absent',
-                        data: trendData.absent,
-                        borderColor: '#616161',
-                        backgroundColor: 'rgba(97, 97, 97, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Late',
-                        data: trendData.late,
-                        borderColor: '#FF9800',
-                        backgroundColor: 'rgba(255, 152, 0, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        tension: 0.3
-                    },
-                    {
-                        label: 'Half Day',
-                        data: trendData.halfDay,
-                        borderColor: '#2196F3',
-                        backgroundColor: 'rgba(33, 150, 243, 0.1)',
-                        borderWidth: 2,
-                        pointRadius: 3,
-                        pointHoverRadius: 5,
-                        tension: 0.3
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                        labels: {
-                            padding: 15,
-                            usePointStyle: true
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            precision: 0
-                        },
-                        title: {
-                            display: true,
-                            text: 'Attendance Records'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45,
-                            autoSkip: true,
-                            maxTicksLimit: 15
-                        }
-                    }
-                }
-            }
-        });
-    } else {
-        const hiddenStates = trendChart.data.datasets.map(dataset => dataset.hidden || false);
-        trendChart.data.labels = trendData.labels;
-        trendChart.data.datasets[0].data = trendData.total;
-        trendChart.data.datasets[1].data = trendData.present;
-        trendChart.data.datasets[2].data = trendData.absent;
-        trendChart.data.datasets[3].data = trendData.late;
-        trendChart.data.datasets[4].data = trendData.halfDay;
-        trendChart.data.datasets.forEach((dataset, index) => {
-            dataset.hidden = hiddenStates[index];
-        });
-        trendChart.update();
-    }
-
-    updateTrendTitle();
-}
-
-function updateTrendTitle() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const title = document.getElementById('trendChartTitle');
-
-    if (startDate || endDate) {
-        const fromText = startDate ? formatDate(startDate) : 'Beginning';
-        const toText = endDate ? formatDate(endDate) : 'Present';
-        title.textContent = `Daily Attendance Trend (${fromText} - ${toText})`;
-    } else {
-        title.textContent = 'Daily Attendance Trend (Last 90 Days)';
-    }
-}
+ 
 
 function updateStats(records) {
     const counts = getStatusCounts(records);
     document.getElementById('statTotal').textContent = counts.total;
     document.getElementById('statPresent').textContent = counts.present;
     document.getElementById('statAbsent').textContent = counts.absent;
-    document.getElementById('statLate').textContent = counts.late;
-    document.getElementById('statHalfDay').textContent = counts.halfDay;
 }
 
 function updateTable(records) {
     const tbody = document.getElementById('attendanceTableBody');
 
     if (!records.length) {
-        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:40px; color:#999;">No attendance records found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:40px; color:#999;">No attendance records found</td></tr>';
         return;
     }
 
@@ -777,8 +506,6 @@ function updateTable(records) {
                 <td>${record.officer_name || 'Unknown'}</td>
                 <td>${record.supervisor_name || 'Unknown'}</td>
                 <td>${siteName}</td>
-                <td>${formatTime(record.check_in_time)}</td>
-                <td>${formatTime(record.check_out_time)}</td>
                 <td><span class="badge ${badgeClass}">${status}</span></td>
                 <td>${shortNotes}</td>
             </tr>
@@ -790,7 +517,7 @@ function applyFilters() {
     const siteId = document.getElementById('siteFilter').value;
     const supervisorId = document.getElementById('supervisorFilter').value;
     const officerSearch = document.getElementById('officerFilter').value.trim().toLowerCase();
-    const status = document.getElementById('statusFilter').value;
+ 
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
 
@@ -811,9 +538,7 @@ function applyFilters() {
             return false;
         }
 
-        if (status && normalizeStatus(record.status) !== status) {
-            return false;
-        }
+ 
 
         if (officerSearch && !officerId.includes(officerSearch) && !officerName.includes(officerSearch)) {
             return false;
@@ -832,7 +557,6 @@ function applyFilters() {
 
     updateStats(filteredAttendanceRecords);
     buildStatusChart(filteredAttendanceRecords);
-    buildTrendChart(filteredAttendanceRecords);
     updateTable(filteredAttendanceRecords);
 }
 
@@ -844,19 +568,14 @@ function resetFilters() {
     document.getElementById('siteFilter').value = '';
     document.getElementById('supervisorFilter').value = '';
     document.getElementById('officerFilter').value = '';
-    document.getElementById('statusFilter').value = '';
+ 
     document.getElementById('endDate').value = today.toISOString().split('T')[0];
     document.getElementById('startDate').value = ninetyDaysAgo.toISOString().split('T')[0];
 
     applyFilters();
 }
 
-function bindTrendToggle(checkboxId, datasetIndex) {
-    document.getElementById(checkboxId).addEventListener('change', function () {
-        trendChart.data.datasets[datasetIndex].hidden = !this.checked;
-        trendChart.update();
-    });
-}
+ 
 
 async function downloadPdfReport() {
     const button = document.getElementById('downloadPdf');
@@ -880,7 +599,6 @@ async function downloadPdfReport() {
 
         const counts = getStatusCounts(filteredAttendanceRecords);
         const attendanceRate = counts.total > 0 ? ((counts.present / counts.total) * 100).toFixed(1) : '0.0';
-        const lateRate = counts.total > 0 ? ((counts.late / counts.total) * 100).toFixed(1) : '0.0';
 
         pdf.setFillColor(211, 47, 47);
         pdf.rect(0, 0, pageWidth, 80, 'F');
@@ -905,11 +623,9 @@ async function downloadPdfReport() {
 
         const siteText = document.querySelector('#siteFilter option:checked').textContent;
         const supervisorText = document.querySelector('#supervisorFilter option:checked').textContent;
-        const statusText = document.querySelector('#statusFilter option:checked').textContent;
 
         pdf.text(`Site: ${siteText}`, 25, yPos); yPos += 6;
         pdf.text(`Supervisor: ${supervisorText}`, 25, yPos); yPos += 6;
-        pdf.text(`Status: ${statusText}`, 25, yPos); yPos += 6;
         pdf.text(`Officer Search: ${document.getElementById('officerFilter').value || 'All Officers'}`, 25, yPos); yPos += 6;
         pdf.text(`Date Range: ${document.getElementById('startDate').value || 'Beginning'} to ${document.getElementById('endDate').value || 'Present'}`, 25, yPos); yPos += 6;
         pdf.text(`Total Records: ${counts.total}`, 25, yPos);
@@ -925,9 +641,8 @@ async function downloadPdfReport() {
         pdf.setFontSize(10);
         pdf.setFont(undefined, 'normal');
         pdf.text(`This report covers ${counts.total} attendance record(s).`, 30, yPos + 22);
-        pdf.text(`Present: ${counts.present}, Absent: ${counts.absent}, Late: ${counts.late}, Half Day: ${counts.halfDay}.`, 30, yPos + 30);
+        pdf.text(`Present: ${counts.present}, Absent: ${counts.absent}.`, 30, yPos + 30);
         pdf.text(`Attendance Rate: ${attendanceRate}%`, 30, yPos + 38);
-        pdf.text(`Late Rate: ${lateRate}%`, 30, yPos + 46);
         addPageNumber();
 
         pdf.addPage();
@@ -945,9 +660,7 @@ async function downloadPdfReport() {
         const statCards = [
             ['TOTAL', counts.total, [211, 47, 47]],
             ['PRESENT', counts.present, [76, 175, 80]],
-            ['ABSENT', counts.absent, [97, 97, 97]],
-            ['LATE', counts.late, [255, 152, 0]],
-            ['HALF DAY', counts.halfDay, [33, 150, 243]]
+            ['ABSENT', counts.absent, [97, 97, 97]]
         ];
 
         statCards.forEach((card, index) => {
@@ -968,8 +681,7 @@ async function downloadPdfReport() {
         addPageNumber();
 
         const chartConfigs = [
-            ['statusChart', 'Attendance by Status'],
-            ['trendChart', 'Daily Attendance Trend']
+            ['statusChart', 'Attendance by Status']
         ];
 
         chartConfigs.forEach(([canvasId, title]) => {
@@ -1044,9 +756,6 @@ async function downloadPdfReport() {
         if (counts.absent > counts.total * 0.2) {
             recommendations.push('Absence volume is elevated. Review staffing gaps and supervisor follow-up for affected officers.');
         }
-        if (counts.late > counts.total * 0.15) {
-            recommendations.push('Late attendance is trending high. Consider reviewing shift timing, transport constraints, or reporting discipline.');
-        }
         if (counts.present / Math.max(counts.total, 1) < 0.7) {
             recommendations.push('Present attendance rate is below 70%. Investigate operational causes and site-specific shortages.');
         }
@@ -1081,11 +790,7 @@ document.getElementById('applyFilter').addEventListener('click', applyFilters);
 document.getElementById('resetFilter').addEventListener('click', resetFilters);
 document.getElementById('downloadPdf').addEventListener('click', downloadPdfReport);
 
-bindTrendToggle('toggleTotal', 0);
-bindTrendToggle('togglePresent', 1);
-bindTrendToggle('toggleAbsent', 2);
-bindTrendToggle('toggleLate', 3);
-bindTrendToggle('toggleHalfDay', 4);
+ 
 
 window.addEventListener('DOMContentLoaded', applyFilters);
 </script>

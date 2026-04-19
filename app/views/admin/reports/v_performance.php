@@ -298,16 +298,7 @@
             <div class="value" id="statRecords">0</div>
             <div class="sub">Total records in date range</div>
         </div>
-        <div class="stat-card">
-            <h3>Avg Attendance Rate</h3>
-            <div class="value" id="statAttendanceRate">0%</div>
-            <div class="sub">Present / total records</div>
-        </div>
-        <div class="stat-card">
-            <h3>Avg Officer Rating</h3>
-            <div class="value" id="statAvgRating">0.0</div>
-            <div class="sub">From premise officer profiles</div>
-        </div>
+ 
         <div class="stat-card">
             <h3>Incidents Reported</h3>
             <div class="value" id="statIncidents">0</div>
@@ -323,19 +314,7 @@
             </div>
         </div>
 
-        <div class="chart-card">
-            <h2>Top Officers by Performance Score</h2>
-            <div class="chart-container">
-                <canvas id="topOfficersChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-card" style="grid-column: span 2;">
-            <h2 id="trendTitle">Daily Trend (Last 90 Days)</h2>
-            <div class="chart-container tall">
-                <canvas id="dailyTrendChart"></canvas>
-            </div>
-        </div>
+ 
     </div>
 
     <div class="table-card">
@@ -347,8 +326,6 @@
                     <th>Rating</th>
                     <th>Present</th>
                     <th>Absent</th>
-                    <th>Late</th>
-                    <th>Half Day</th>
                     <th>Attendance Rate</th>
                     <th>Incidents Reported</th>
                     <th>Sites</th>
@@ -357,7 +334,7 @@
             </thead>
             <tbody id="summaryTableBody">
                 <tr>
-                    <td colspan="10" style="text-align:center; padding:40px; color:#999;">Loading performance summary...</td>
+                    <td colspan="8" style="text-align:center; padding:40px; color:#999;">Loading performance summary...</td>
                 </tr>
             </tbody>
         </table>
@@ -379,8 +356,6 @@ let filteredRows = [];
 let officerSummary = [];
 
 let statusChart;
-let topOfficersChart;
-let dailyTrendChart;
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.color = '#666';
@@ -445,13 +420,11 @@ function computeOfficerSummary(rows) {
     });
 
     const summary = Array.from(byOfficer.values()).map(entry => {
-        const total = entry.present + entry.absent + entry.late + entry.halfDay;
+        const total = entry.present + entry.absent;
         const attendanceRate = total > 0 ? (entry.present / total) : 0;
 
         const score = (
-            (entry.present * 1.0) +
-            (entry.halfDay * 0.5) +
-            (entry.late * 0.25) -
+            (entry.present * 1.0) -
             (entry.absent * 1.0) +
             (Number(entry.rating || 0) * 0.5) -
             (entry.incidents * 0.1)
@@ -474,15 +447,6 @@ function updateStats(rows, summary) {
     const uniqueOfficers = new Set(summary.map(item => item.officer_id || item.officer_name));
     document.getElementById('statOfficers').textContent = uniqueOfficers.size;
     document.getElementById('statRecords').textContent = rows.length;
-
-    const presentCount = rows.filter(r => normalizeStatus(r.status) === 'Present').length;
-    const attendanceRate = rows.length ? ((presentCount / rows.length) * 100) : 0;
-    document.getElementById('statAttendanceRate').textContent = `${attendanceRate.toFixed(1)}%`;
-
-    const avgRating = summary.length
-        ? (summary.reduce((sum, item) => sum + (Number(item.rating) || 0), 0) / summary.length)
-        : 0;
-    document.getElementById('statAvgRating').textContent = avgRating.toFixed(1);
 
     const totalIncidents = rows.reduce((sum, row) => sum + Number(row.incidents_reported_that_day || 0), 0);
     document.getElementById('statIncidents').textContent = totalIncidents;
@@ -535,157 +499,9 @@ function buildStatusChart(rows) {
     statusChart.update();
 }
 
-function buildTopOfficersChart(summary) {
-    const top = summary.slice(0, 10);
-    const labels = top.map(item => (item.officer_name || item.officer_id || 'Officer').slice(0, 18));
-    const values = top.map(item => item.score);
+ 
 
-    if (!topOfficersChart) {
-        topOfficersChart = new Chart(document.getElementById('topOfficersChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Performance Score',
-                    data: values,
-                    backgroundColor: 'rgba(211, 47, 47, 0.7)',
-                    borderColor: '#D32F2F',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { precision: 0 }
-                    }
-                }
-            }
-        });
-        return;
-    }
-
-    topOfficersChart.data.labels = labels;
-    topOfficersChart.data.datasets[0].data = values;
-    topOfficersChart.update();
-}
-
-function calculateDailyTrend(rows) {
-    const startDateInput = document.getElementById('startDate').value;
-    const endDateInput = document.getElementById('endDate').value;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let startDate = startDateInput ? parseLocalDate(startDateInput) : new Date(today);
-    let endDate = endDateInput ? parseLocalDate(endDateInput) : new Date(today);
-    if (!startDateInput && !endDateInput) {
-        startDate.setDate(startDate.getDate() - 89);
-    }
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const daily = {};
-    const cursor = new Date(startDate);
-    while (cursor <= endDate) {
-        const key = cursor.toISOString().slice(0, 10);
-        daily[key] = { total: 0, present: 0, absent: 0, late: 0, halfDay: 0 };
-        cursor.setDate(cursor.getDate() + 1);
-    }
-
-    rows.forEach(row => {
-        const key = row.attendance_date;
-        if (!daily[key]) return;
-        const status = normalizeStatus(row.status);
-        daily[key].total += 1;
-        if (status === 'Present') daily[key].present += 1;
-        if (status === 'Absent') daily[key].absent += 1;
-        if (status === 'Late') daily[key].late += 1;
-        if (status === 'Half Day') daily[key].halfDay += 1;
-    });
-
-    const keys = Object.keys(daily).sort();
-    const labels = [];
-    const total = [];
-    const present = [];
-    const absent = [];
-    const late = [];
-    const halfDay = [];
-    const showFullDates = keys.length <= 30;
-    const skipInterval = keys.length > 180 ? 7 : 3;
-
-    keys.forEach((key, index) => {
-        const date = parseLocalDate(key);
-        const label = showFullDates || index % skipInterval === 0 || index === keys.length - 1
-            ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            : '';
-        labels.push(label);
-        total.push(daily[key].total);
-        present.push(daily[key].present);
-        absent.push(daily[key].absent);
-        late.push(daily[key].late);
-        halfDay.push(daily[key].halfDay);
-    });
-
-    return { labels, total, present, absent, late, halfDay };
-}
-
-function updateTrendTitle() {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
-    const title = document.getElementById('trendTitle');
-
-    if (startDate || endDate) {
-        const from = startDate ? formatDate(startDate) : 'Beginning';
-        const to = endDate ? formatDate(endDate) : 'Present';
-        title.textContent = `Daily Trend (${from} - ${to})`;
-    } else {
-        title.textContent = 'Daily Trend (Last 90 Days)';
-    }
-}
-
-function buildDailyTrendChart(rows) {
-    const trend = calculateDailyTrend(rows);
-    updateTrendTitle();
-
-    if (!dailyTrendChart) {
-        dailyTrendChart = new Chart(document.getElementById('dailyTrendChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: trend.labels,
-                datasets: [
-                    { label: 'Total', data: trend.total, borderColor: '#D32F2F', borderWidth: 2, tension: 0.3, pointRadius: 2 },
-                    { label: 'Present', data: trend.present, borderColor: '#4CAF50', borderWidth: 2, tension: 0.3, pointRadius: 2 },
-                    { label: 'Absent', data: trend.absent, borderColor: '#616161', borderWidth: 2, tension: 0.3, pointRadius: 2 },
-                    { label: 'Late', data: trend.late, borderColor: '#FF9800', borderWidth: 2, tension: 0.3, pointRadius: 2 },
-                    { label: 'Half Day', data: trend.halfDay, borderColor: '#2196F3', borderWidth: 2, tension: 0.3, pointRadius: 2 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: { legend: { position: 'top' } },
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } }
-                }
-            }
-        });
-        return;
-    }
-
-    dailyTrendChart.data.labels = trend.labels;
-    dailyTrendChart.data.datasets[0].data = trend.total;
-    dailyTrendChart.data.datasets[1].data = trend.present;
-    dailyTrendChart.data.datasets[2].data = trend.absent;
-    dailyTrendChart.data.datasets[3].data = trend.late;
-    dailyTrendChart.data.datasets[4].data = trend.halfDay;
-    dailyTrendChart.update();
-}
+ 
 
 function badgeForAttendanceRate(rate) {
     if (rate >= 0.85) return { cls: 'good', text: 'Good' };
@@ -696,7 +512,7 @@ function badgeForAttendanceRate(rate) {
 function updateSummaryTable(summary) {
     const tbody = document.getElementById('summaryTableBody');
     if (!summary.length) {
-        tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:40px; color:#999;">No officers match these filters</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:40px; color:#999;">No officers match these filters</td></tr>';
         return;
     }
 
@@ -712,8 +528,6 @@ function updateSummaryTable(summary) {
                 <td>${ratingText}</td>
                 <td>${item.present}</td>
                 <td>${item.absent}</td>
-                <td>${item.late}</td>
-                <td>${item.halfDay}</td>
                 <td>${ratePct}% <span class="badge ${badge.cls}">${badge.text}</span></td>
                 <td>${item.incidents}</td>
                 <td>${sitesText}</td>
@@ -761,8 +575,6 @@ function applyFilters() {
     officerSummary = computeOfficerSummary(filteredRows);
     updateStats(filteredRows, officerSummary);
     buildStatusChart(filteredRows);
-    buildTopOfficersChart(officerSummary);
-    buildDailyTrendChart(filteredRows);
     updateSummaryTable(officerSummary);
 }
 
@@ -829,14 +641,12 @@ async function downloadPdfReport() {
         pdf.setFont(undefined, 'normal');
         pdf.text(`Officers in report: ${officerSummary.length}`, 25, yPos); yPos += 6;
         pdf.text(`Attendance records: ${filteredRows.length}`, 25, yPos); yPos += 6;
-        pdf.text(`Attendance rate (Present): ${attendanceRate}%`, 25, yPos); yPos += 6;
-        pdf.text(`Average rating: ${avgRating}`, 25, yPos); yPos += 6;
         pdf.text(`Incidents reported (attendance dates): ${incidents}`, 25, yPos);
         addPageNumber();
 
         // Charts pages
-        const chartIds = ['statusChart', 'topOfficersChart', 'dailyTrendChart'];
-        const titles = ['Attendance Status Breakdown', 'Top Officers by Score', 'Daily Trend'];
+        const chartIds = ['statusChart'];
+        const titles = ['Attendance Status Breakdown'];
         chartIds.forEach((id, index) => {
             pdf.addPage();
             pdf.setFillColor(211, 47, 47);

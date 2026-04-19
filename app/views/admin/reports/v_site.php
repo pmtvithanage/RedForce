@@ -120,10 +120,7 @@
             <h2>Staffing Distribution</h2>
             <div class="chart-container"><canvas id="staffingChart"></canvas></div>
         </div>
-        <div class="chart-card" style="grid-column: span 2;">
-            <h2>Payment Health by Site (Top 10 by Pending/Overdue)</h2>
-            <div class="chart-container"><canvas id="paymentHealthChart"></canvas></div>
-        </div>
+ 
     </div>
 
     <div class="table-card">
@@ -139,11 +136,10 @@
                     <th>Caretakers</th>
                     <th>Incidents</th>
                     <th>Payments</th>
-                    <th>Risk</th>
                 </tr>
             </thead>
             <tbody id="siteTableBody">
-                <tr><td colspan="9" style="text-align:center; padding:40px; color:#999;">Loading site data...</td></tr>
+                <tr><td colspan="8" style="text-align:center; padding:40px; color:#999;">Loading site data...</td></tr>
             </tbody>
         </table>
     </div>
@@ -158,21 +154,14 @@
 <script>
 const allSites = <?php echo json_encode($data['siteDataset'] ?? []); ?>;
 let filteredSites = [];
-let incidentsBySiteChart, staffingChart, paymentHealthChart;
+let incidentsBySiteChart, staffingChart;
 
 Chart.defaults.font.family = "'Inter', sans-serif";
 
 function toNum(value) { return Number(value || 0); }
 function money(value) { return `LKR ${toNum(value).toLocaleString()}`; }
 
-function riskLevel(site) {
-    const incidents = toNum(site.total_incidents);
-    const unresolved = toNum(site.pending_incidents);
-    const overdue = toNum(site.overdue_amount);
-    if (incidents >= 10 || unresolved >= 5 || overdue > 50000) return 'high';
-    if (incidents >= 5 || unresolved >= 2 || overdue > 10000) return 'medium';
-    return 'low';
-}
+ 
 
 function updateStats(sites) {
     const totals = sites.reduce((acc, s) => {
@@ -235,35 +224,7 @@ function buildStaffingChart(sites) {
     }
 }
 
-function buildPaymentChart(sites) {
-    const top = [...sites]
-        .map(s => ({ ...s, riskAmount: toNum(s.pending_amount) + toNum(s.overdue_amount) }))
-        .sort((a,b) => b.riskAmount - a.riskAmount)
-        .slice(0,10);
-
-    const labels = top.map(s => (s.site_name || 'Unknown').slice(0, 20));
-    const pending = top.map(s => toNum(s.pending_amount));
-    const overdue = top.map(s => toNum(s.overdue_amount));
-
-    if (!paymentHealthChart) {
-        paymentHealthChart = new Chart(document.getElementById('paymentHealthChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [
-                    { label:'Pending', data: pending, backgroundColor:'rgba(255,152,0,.75)' },
-                    { label:'Overdue', data: overdue, backgroundColor:'rgba(211,47,47,.75)' }
-                ]
-            },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom'}}, scales:{ x:{stacked:true}, y:{stacked:true, beginAtZero:true} } }
-        });
-    } else {
-        paymentHealthChart.data.labels = labels;
-        paymentHealthChart.data.datasets[0].data = pending;
-        paymentHealthChart.data.datasets[1].data = overdue;
-        paymentHealthChart.update();
-    }
-}
+ 
 
 function updateTable(sites) {
     const tbody = document.getElementById('siteTableBody');
@@ -273,7 +234,6 @@ function updateTable(sites) {
     }
 
     tbody.innerHTML = sites.map(site => {
-        const level = riskLevel(site);
         return `
             <tr>
                 <td>${site.site_name || 'Unknown'}</td>
@@ -287,7 +247,6 @@ function updateTable(sites) {
                     <div>Paid: ${money(site.paid_amount)}</div>
                     <div class="muted">Pending: ${money(site.pending_amount)}, Overdue: ${money(site.overdue_amount)}</div>
                 </td>
-                <td><span class="risk ${level}">${level.charAt(0).toUpperCase() + level.slice(1)}</span></td>
             </tr>
         `;
     }).join('');
@@ -310,7 +269,6 @@ function applyFilters() {
     updateStats(filteredSites);
     buildIncidentsChart(filteredSites);
     buildStaffingChart(filteredSites);
-    buildPaymentChart(filteredSites);
     updateTable(filteredSites);
 }
 
@@ -380,8 +338,7 @@ async function downloadPdfReport() {
 
         const chartPages = [
             ['incidentsBySiteChart', 'Incidents by Site'],
-            ['staffingChart', 'Staffing Distribution'],
-            ['paymentHealthChart', 'Payment Health by Site']
+            ['staffingChart', 'Staffing Distribution']
         ];
         chartPages.forEach(([id, title]) => {
             pdf.addPage();

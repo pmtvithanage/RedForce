@@ -2806,4 +2806,44 @@ public function acceptOfficerApplication($id, $approved_by_user_id, $role) {
 
         return $this->db->execute();
     }
+
+    /**
+     * Get all client requests for the client requests report dataset
+     */
+    public function getClientRequestsReportRecords() {
+        $this->db->query("
+            SELECT
+                id,
+                company_name,
+                legal_company_name,
+                company_type,
+                business_registration_number,
+                registered_address,
+                email,
+                phone_number,
+                contact_person_name,
+                status,
+                created_at,
+                logo_path,
+                business_document
+            FROM client_requests
+            ORDER BY created_at DESC
+        ");
+        return $this->db->resultSet();
+    }
+
+    /**
+     * Get client requests statistics
+     */
+    public function getClientRequestsStats() {
+        $this->db->query("
+            SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
+                SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected
+            FROM client_requests
+        ");
+        return $this->db->single();
+    }
 }
