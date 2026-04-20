@@ -36,16 +36,16 @@
   <div class="card stat-card stat-active">
     <span class="stat-icon"><i class="fas fa-user-check"></i></span>
     <div class="stat-info">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Active</div>
+      <div class="stat-value"><?php echo (int)($data['incidentStats']['active'] ?? 0); ?></div>
+      <div class="stat-label">Active Incidents</div>
     </div>
   </div>
 
   <div class="card stat-card stat-incidents">
     <span class="stat-icon"><i class="fas fa-circle-exclamation"></i></span>
     <div class="stat-info">
-      <div class="stat-value">0</div>
-      <div class="stat-label">Incidents</div>
+      <div class="stat-value"><?php echo (int)($data['incidentStats']['pending'] ?? 0); ?></div>
+      <div class="stat-label">Pending Incidents</div>
     </div>
   </div>
 

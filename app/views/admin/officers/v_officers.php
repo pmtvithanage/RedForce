@@ -176,7 +176,7 @@
 
         <div class="search-box">
             <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Search">
+            <input type="text" id="officerSearchInput" placeholder="Search by ID, name, rank, status, or location">
         </div>
 
         <table>
@@ -251,6 +251,33 @@
 <div class="backdrop" id="backdrop" hidden></div>
 
 <script>
+    (function initOfficerSearch() {
+        const searchInput = document.getElementById('officerSearchInput');
+        const tableBody = document.getElementById('officersTableBody');
+        if (!searchInput || !tableBody) {
+            return;
+        }
+
+        function filterRows() {
+            const query = (searchInput.value || '').trim().toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
+
+            rows.forEach((row) => {
+                const officerId = (row.children[1]?.textContent || '').trim().toLowerCase();
+                const officerName = (row.children[2]?.textContent || '').trim().toLowerCase();
+                const officerRank = (row.children[3]?.textContent || '').trim().toLowerCase();
+                const officerStatus = (row.children[4]?.textContent || '').trim().toLowerCase();
+                const officerLocation = (row.children[5]?.textContent || '').trim().toLowerCase();
+                const officerRating = (row.children[6]?.textContent || '').trim().toLowerCase();
+
+                const searchableText = `${officerId} ${officerName} ${officerRank} ${officerStatus} ${officerLocation} ${officerRating}`;
+                row.style.display = searchableText.includes(query) ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterRows);
+    })();
+
     (function initOfficerRatingSort() {
         const tableBody = document.getElementById('officersTableBody');
         const ratingHeader = document.getElementById('ratingSortHeader');

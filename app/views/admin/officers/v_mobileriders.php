@@ -160,7 +160,7 @@
 
         <div class="search-box">
             <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Search">
+            <input type="text" id="mobileRiderSearchInput" placeholder="Search by ID, name, rank, status, or location">
         </div>
 
         <table>
@@ -176,7 +176,7 @@
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="mobileRidersTableBody">
                 <?php foreach ($data['officer'] as $officer) : ?>
                     <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/mobile_rider_profile/<?php echo $officer->mobile_rider_id; ?>'">
                         <td style="padding: 8px; text-align: center;">
@@ -233,6 +233,35 @@
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
+
+<script>
+    (function initMobileRiderSearch() {
+        const searchInput = document.getElementById('mobileRiderSearchInput');
+        const tableBody = document.getElementById('mobileRidersTableBody');
+        if (!searchInput || !tableBody) {
+            return;
+        }
+
+        function filterRows() {
+            const query = (searchInput.value || '').trim().toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
+
+            rows.forEach((row) => {
+                const riderId = (row.children[1]?.textContent || '').trim().toLowerCase();
+                const riderName = (row.children[2]?.textContent || '').trim().toLowerCase();
+                const riderRank = (row.children[3]?.textContent || '').trim().toLowerCase();
+                const riderStatus = (row.children[4]?.textContent || '').trim().toLowerCase();
+                const riderLocation = (row.children[5]?.textContent || '').trim().toLowerCase();
+                const riderRating = (row.children[6]?.textContent || '').trim().toLowerCase();
+
+                const searchableText = `${riderId} ${riderName} ${riderRank} ${riderStatus} ${riderLocation} ${riderRating}`;
+                row.style.display = searchableText.includes(query) ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterRows);
+    })();
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

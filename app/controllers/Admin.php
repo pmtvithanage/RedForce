@@ -78,6 +78,7 @@ class Admin extends Controller
         $pendingLeaves = $this->adminModel->getPendingLeaveRequests();
         $leaveStats = $this->adminModel->getLeaveRequestStats();
         $recentActivities = $this->adminModel->getRecentActivities(100);
+        $incidentStats = $this->adminModel->getIncidentStats();
 
         // Initialize chart data
         $userRoleChart = [
@@ -97,7 +98,11 @@ class Admin extends Controller
             'pendingLeaves' => $pendingLeaves,
             'leaveStats' => $leaveStats,
             'recent_activities' => $recentActivities,
-            'userRoleChart' => $userRoleChart
+            'userRoleChart' => $userRoleChart,
+            'incidentStats' => [
+                'active' => (int) (($incidentStats->in_progress ?? 0)),
+                'pending' => (int) (($incidentStats->pending ?? 0))
+            ]
         ];
 
         $this->view('admin/dashboard/v_dashboard', $data);
@@ -3861,7 +3866,7 @@ class Admin extends Controller
         $reviewTitle = trim($_POST['review_title'] ?? '');
         $reviewType = trim($_POST['review_type'] ?? '');
         $reviewDetails = trim($_POST['review_details'] ?? '');
-        $userId = $_SESSION['user_userID'] ?? null;
+        $userId = $_SESSION['user_id'] ?? null;
         $userName = $_SESSION['user_name'] ?? 'Admin';
 
         // Validate required fields

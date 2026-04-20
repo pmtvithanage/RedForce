@@ -160,7 +160,7 @@
 
         <div class="search-box">
             <span class="material-symbols-outlined">search</span>
-            <input type="text" placeholder="Search">
+            <input type="text" id="careTakerSearchInput" placeholder="Search by ID, name, rank, status, or location">
         </div>
 
         <table>
@@ -176,7 +176,7 @@
                 </tr>
             </thead>
 
-            <tbody>
+            <tbody id="careTakersTableBody">
                 <?php foreach ($data['officer'] as $officer) : ?>
                     <tr onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/care_taker_profile/<?php echo $officer->care_taker_id; ?>'">
                         <td style="padding: 8px; text-align: center;">
@@ -233,6 +233,35 @@
 </div>
 
 <div class="backdrop" id="backdrop" hidden></div>
+
+<script>
+    (function initCareTakerSearch() {
+        const searchInput = document.getElementById('careTakerSearchInput');
+        const tableBody = document.getElementById('careTakersTableBody');
+        if (!searchInput || !tableBody) {
+            return;
+        }
+
+        function filterRows() {
+            const query = (searchInput.value || '').trim().toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
+
+            rows.forEach((row) => {
+                const careTakerId = (row.children[1]?.textContent || '').trim().toLowerCase();
+                const careTakerName = (row.children[2]?.textContent || '').trim().toLowerCase();
+                const careTakerRank = (row.children[3]?.textContent || '').trim().toLowerCase();
+                const careTakerStatus = (row.children[4]?.textContent || '').trim().toLowerCase();
+                const careTakerLocation = (row.children[5]?.textContent || '').trim().toLowerCase();
+                const careTakerRating = (row.children[6]?.textContent || '').trim().toLowerCase();
+
+                const searchableText = `${careTakerId} ${careTakerName} ${careTakerRank} ${careTakerStatus} ${careTakerLocation} ${careTakerRating}`;
+                row.style.display = searchableText.includes(query) ? '' : 'none';
+            });
+        }
+
+        searchInput.addEventListener('input', filterRows);
+    })();
+</script>
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
