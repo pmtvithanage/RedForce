@@ -1024,17 +1024,7 @@ class Admin extends Controller
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
 
-            // Send notification to officer
-            $adminId = $_SESSION['user_userID'] ?? 1;
-            $this->notificationModel->insertNotification(
-                $id,
-                'error',
-                'Application Rejected',
-                'Your officer application has been rejected. Please contact HR for more information.',
-                '/users/login',
-                'cancel',
-                $adminId
-            );
+
 
             flash('msg', 'Officer application rejected successfully', 'alert-success');
             redirect('admin/pending_officer_applications/all');
@@ -1197,17 +1187,6 @@ class Admin extends Controller
             $type = "incident";
             $this->adminModel->insertRecentActivity($title, $description, $type);
 
-            // Send notification to client
-            $adminId = $_SESSION['user_userID'] ?? 1;
-            $this->notificationModel->insertNotification(
-                $clientId,
-                'error',
-                'Registration Rejected',
-                'Your registration has been rejected. Please contact support for more information.',
-                '/client/dashboard',
-                'cancel',
-                $adminId
-            );
 
             flash('msg', 'Client rejected successfully', 'alert-success');
             redirect('admin/addclients');

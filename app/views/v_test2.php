@@ -191,17 +191,6 @@
                             <option value="other">Other</option>
                         </select>
                     </div>
-
-                    <div class="filter-group">
-                        <label for="hobbyFilter">Filter by Hobby</label>
-                        <select id="hobbyFilter" class="filter-select">
-                            <option value="">All Hobbies</option>
-                            <option value="reading books">Reading books</option>
-                            <option value="play games">Play games</option>
-                            <option value="collect stamps">Collect stamps</option>
-                            <option value="watch tv">Watch TV</option>
-                        </select>
-                    </div>
                 </div>
 
                 <table class="result-table">
@@ -278,26 +267,22 @@
     <script>
         (function () {
             const genderFilter = document.getElementById('genderFilter');
-            const hobbyFilter = document.getElementById('hobbyFilter');
             const tableRows = document.querySelectorAll('.result-table tbody tr');
             const noFilterResults = document.getElementById('noFilterResults');
 
-            if (!genderFilter || !hobbyFilter || tableRows.length === 0) {
+            if (!genderFilter || tableRows.length === 0) {
                 return;
             }
 
             const applyFilters = () => {
                 const selectedGender = genderFilter.value.trim().toLowerCase();
-                const selectedHobby = hobbyFilter.value.trim().toLowerCase();
                 let visibleRows = 0;
 
                 tableRows.forEach((row) => {
                     const rowGender = (row.dataset.gender || '').toLowerCase();
-                    const rowHobbies = (row.dataset.hobbies || '').toLowerCase();
 
                     const genderMatches = !selectedGender || rowGender === selectedGender;
-                    const hobbyMatches = !selectedHobby || rowHobbies.includes(selectedHobby);
-                    const isVisible = genderMatches && hobbyMatches;
+                    const isVisible = genderMatches;
 
                     row.style.display = isVisible ? '' : 'none';
 
@@ -312,7 +297,6 @@
             };
 
             genderFilter.addEventListener('change', applyFilters);
-            hobbyFilter.addEventListener('change', applyFilters);
         })();
     </script>
 

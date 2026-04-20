@@ -153,6 +153,13 @@
   width: 16px;
   height: 16px;
 }
+
+.input-group{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 40%;
+}
 </style>
 
     <!-- Content will be loaded here -->
@@ -166,7 +173,7 @@
         
         
         <input type="file" id="image" name="image" accept="image/*" hidden />
-        <!-- <span class="form-input-error"><?php echo $data['image_err'];?></span> -->
+        <span class="form-input-error"><?php echo $data['image_err'];?></span> 
 
 
         <div class="btn-upload" id="addImageBtn" onClick="toggleBrowse()">Upload photo</div>
@@ -175,7 +182,7 @@
 
       <div class="form-fields">
         <!-- input fields will go here -->
-        <input class="field-input" type="text" id="name" name="name" value="<?php echo $data['name']; ?>" placeholder="Enter name"/>
+        <input class="field-input" type="text" id="name" name="name" value="<?php echo $data['name']; ?>" placeholder="Enter name" pattern="^[A-Za-z](?:[A-Za-z0-9]*[A-Za-z])?$" title="Name must start and end with a letter. Middle characters can be letters or numbers"/>
         <span class="form-input-error"><?php echo $data['name_err'];?></span>
 
         <input class="field-input" type="text" id="email" name="email" value="<?php echo $data['email']; ?>" placeholder="Enter your email" />
@@ -190,7 +197,7 @@
         <span class="form-input-error"><?php echo $data['gender_err'] ?? '';?></span>
 
         <!-- Textarea for description -->
-        <textarea class="field-input" id="description" name="description" placeholder="Enter description" rows="4"><?php echo $data['description'] ?? ''; ?></textarea>
+        <textarea class="field-input" id="description" name="description" placeholder="Enter description" rows="4" minlength="100" maxlength="100" title="Description must be exactly 100 characters"><?php echo $data['description'] ?? ''; ?></textarea>
         <span class="form-input-error"><?php echo $data['description_err'] ?? '';?></span>
 
         <!-- Checkbox group for hobbies -->
@@ -217,6 +224,123 @@
           </label>
         </div>
 
+        <div class="container" style="display: flex; flex-direction: column; padding: 12px; margin-top: 12px; border: 1px solid #e5e7eb; padding-top: 12px;">
+          <div class="input-group">
+            <p>Username</p>
+            <input type="text" name="username" placeholder="Enter name" value="<?php echo $data['username'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['username_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Email</p>
+            <input type="email" name="contact_email" required value="<?php echo $data['contact_email'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['contact_email_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Password</p>
+            
+            <input type="password" name="pwd" value="<?php echo $data['pwd'] ?? ''; ?>" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}" title="Password must include uppercase, lowercase, number, and symbol">
+            <span class="form-input-error"><?php echo $data['pwd_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Age</p>
+            <input type="number" name="age" min="0" max="120" value="<?php echo $data['age'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['age_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Date of Birth</p>
+            <input type="date" name="dob" value="<?php echo $data['dob'] ?? ''; ?>" max="<?php echo date('Y-m-d', strtotime('-18 years')); ?>">
+            <span class="form-input-error"><?php echo $data['dob_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>NIC Number</p>
+            <input type="text" name="nic" value="<?php echo $data['nic'] ?? ''; ?>" placeholder="Enter NIC number" pattern="^\d{12}$" minlength="12" maxlength="12" inputmode="numeric" title="NIC number must be exactly 12 digits">
+            <span class="form-input-error"><?php echo $data['nic_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+              <p>Subscribe to newsletter</p>
+            <input type="checkbox" name="subscribe" value="news" <?php echo !empty($data['subscribe']) ? 'checked' : ''; ?>>
+            <span class="form-input-error"><?php echo $data['subscribe_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+              <p>Gender</p>
+            <input type="radio" name="gender_identity" value="male" <?php echo (isset($data['gender_identity']) && $data['gender_identity'] === 'male') ? 'checked' : ''; ?>> Male
+            <input type="radio" name="gender_identity" value="female" <?php echo (isset($data['gender_identity']) && $data['gender_identity'] === 'female') ? 'checked' : ''; ?>>Female
+            <span class="form-input-error"><?php echo $data['gender_identity_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Favorite Color</p>
+            <input type="color" name="favcolor" value="<?php echo $data['favcolor'] ?? '#000000'; ?>">
+            <span class="form-input-error"><?php echo $data['favcolor_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Volume</p>
+            <input type="range" name="volume" min="0" max="100" value="<?php echo $data['volume'] ?? '50'; ?>">
+            <span class="form-input-error"><?php echo $data['volume_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+              <p>Upload File</p>
+            <input type="file" name="upload">
+            <span class="form-input-error"><?php echo $data['upload_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>User ID</p>
+            <input type="hidden" name="user_id" value="<?php echo $data['user_id'] ?? '12345'; ?>">
+            <span class="form-input-error"><?php echo $data['user_id_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Search</p>
+            <input type="search" name="query" value="<?php echo $data['query'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['query_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Phone Number</p>
+            <input type="tel" name="phone" value="<?php echo $data['phone'] ?? ''; ?>" pattern="^07[0-9]{8}$" minlength="10" maxlength="10" inputmode="numeric" title="Enter a 10-digit phone number starting with 07">
+            <span class="form-input-error"><?php echo $data['phone_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Website</p>
+            <input type="url" name="website" value="<?php echo $data['website'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['website_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Meeting Time</p>
+            <input type="time" name="meeting_time" value="<?php echo $data['meeting_time'] ?? ''; ?>">
+            <span class="form-input-error"><?php echo $data['meeting_time_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Message</p>
+            <textarea name="message" rows="4" cols="50"><?php echo $data['message'] ?? ''; ?></textarea>
+            <span class="form-input-error"><?php echo $data['message_err'] ?? ''; ?></span>
+          </div>
+
+          <div class="input-group">
+            <p>Country</p>
+            <select name="country">
+              <option value="">Select country</option>
+              <option value="us" <?php echo (isset($data['country']) && $data['country'] === 'us') ? 'selected' : ''; ?>>USA</option>
+              <option value="ca" <?php echo (isset($data['country']) && $data['country'] === 'ca') ? 'selected' : ''; ?>>Canada</option>
+              <option value="uk" <?php echo (isset($data['country']) && $data['country'] === 'uk') ? 'selected' : ''; ?>>UK</option>
+            </select>
+            <span class="form-input-error"><?php echo $data['country_err'] ?? ''; ?></span>
+          </div>
+
+        </div>
         <button type="submit">Submit</button>
       </div>
     </form>
@@ -271,7 +395,7 @@ function showImage() {
   let fileType = file.type;
   let validExtensions = ["image/jpeg", "image/jpg", "image/png"];
 
-  if (validExtensions.includes(fileType)) {
+ 
     let fileReader = new FileReader();
 
     fileReader.onload = () => {
@@ -279,16 +403,10 @@ function showImage() {
       imagePlaceholder.setAttribute("src", fileURL);
     };
 
-    fileReader.onerror = () => {
-      alert("Error reading file");
-      removeImage();
-    };
+
 
     fileReader.readAsDataURL(file);
-  } else {
-    alert("This is not a valid image file"); // Fixed typo
-    removeImage();
-  }
+
 }
 
     </script>

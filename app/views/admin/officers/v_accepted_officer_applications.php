@@ -395,59 +395,10 @@
     <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/pending_officer_applications/all'">Pending Requests</button>
     <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/accepted_officer_applications/all'">Approved Requests</button>
     <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/rejected_officer_applications/all'">Rejected Requests</button>
-    
+  
+  
+  
 
-        <div class="filter-container" id="filterContainer">
-      <button class="filter-button" id="filterButton">
-          <?php 
-          if(isset($data['role'])) {
-              switch($data['role']) {
-                  case 'all': echo 'All Applications'; break;
-                  case 'po': echo 'Premise Officers'; break;
-                  case 'mr': echo 'Mobile Riders'; break;
-                  case 'ct': echo 'Care Takers'; break;
-                  default: echo 'Select Filters';
-              }
-          } else {
-              echo 'Select Filters';
-          }
-          ?>
-      </button>
-      
-      <div class="filter-dropdown" id="filterDropdown">
-          <?php 
-          $currentRole = isset($data['role']) ? $data['role'] : '';
-          $options = [
-              'all' => 'All Applications',
-              'po' => 'Premise Officers',
-              'mr' => 'Mobile Riders',
-              'ct' => 'Care Takers'
-          ];
-          
-          // Show all options except the currently selected one
-          foreach($options as $key => $label):
-              if($key !== $currentRole):
-          ?>
-          <button class="filter-option" 
-                  data-value="<?php echo URL_ROOT; ?>/admin/accepted_officer_applications/<?php echo $key; ?>"
-                  onclick="window.location.href = this.dataset.value">
-              <?php echo $label; ?>
-          </button>
-          <?php 
-              endif;
-          endforeach;
-          ?>
-      </div>
-      
-      <div class="filter-selected" id="filterSelected">
-          Current: 
-          <?php 
-          if(isset($data['role'])) {
-              echo htmlspecialchars($options[$data['role']]);
-          }
-          ?>
-      </div>
-  </div>
 </div>
     
     <div class="content-container">
@@ -457,7 +408,7 @@
         ?>
         <?php foreach($data['officer'] as $officer) : ?>
         <!-- Profile Card Container -->
-        <div class="profile-card">
+        <div class="profile-card" data-role="<?php echo strtolower($officer->role ?? ''); ?>">
 
             <p class="role-label" style="margin-left:20px; margin-top:10px; font-weight:bold; color:#555;">
             <?php 
@@ -575,57 +526,10 @@
     </div>
 </div>
 
-<!-- Confirmation Modal -->
-<div class="modal" id="confirmationModal" hidden>
-    <div class="modal-content">
-        <h3 id="modalTitle">Confirm Action</h3>
-        <p id="modalMessage">Are you sure you want to proceed?</p>
-        <div class="modal-actions">
-            <button class="btn-secondary" id="modalCancel">Cancel</button>
-            <button class="btn-primary" id="modalConfirm">Confirm</button>
-        </div>
-    </div>
-</div>
+
 
 <div class="backdrop" id="backdrop" hidden></div>
 
 
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const filterButton = document.getElementById('filterButton');
-    const filterDropdown = document.getElementById('filterDropdown');
-    const filterSelected = document.getElementById('filterSelected');
-    
-    // Toggle dropdown visibility
-    filterButton.addEventListener('click', function(e) {
-        e.stopPropagation();
-        filterDropdown.classList.toggle('show');
-    });
-    
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!filterContainer.contains(e.target)) {
-            filterDropdown.classList.remove('show');
-        }
-    });
-    
-    // Show current selection if not "Select Filters"
-    const buttonText = filterButton.textContent.trim();
-    if (buttonText !== 'Select Filters') {
-        filterSelected.style.display = 'block';
-    }
-    
-    // Add active class to current selection in dropdown
-    const currentPath = window.location.pathname;
-    const options = document.querySelectorAll('.filter-option');
-    options.forEach(option => {
-        const optionPath = new URL(option.dataset.value).pathname;
-        if (currentPath === optionPath) {
-            option.classList.add('active');
-        }
-    });
-});
-</script>
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

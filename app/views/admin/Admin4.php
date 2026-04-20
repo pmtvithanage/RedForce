@@ -186,64 +186,26 @@
         letter-spacing: 0.3px;
     }
     
-    @media (max-width: 1024px) {
-        .content-container {
-            max-width: 80vw;
-            margin-left: 5vw;
-        }
-        
-        .card-body {
-            grid-template-columns: 1fr;
-        }
-        
-        .info-row:nth-last-child(-n+2) {
-            grid-column: span 1;
-        }
+    .btn-primary {
+        background: #a40000;
+        color: white;
     }
     
-    @media (max-width: 768px) {
-        .main-content {
-            margin-left: 0;
-        }
-        
-        .content-container {
-            max-width: 100%;
-            margin-left: 0;
-            padding: 15px;
-        }
-        
-        .tabs {
-            flex-direction: column;
-            margin-left: 0;
-        }
-        
-        .card-header {
-            padding: 25px 20px;
-        }
-        
-        .imagePlaceholder {
-            height: 150px;
-            width: 150px;
-        }
-        
-        .company-name {
-            font-size: 22px;
-        }
-        
-        .card-body {
-            gap: 20px;
-            padding: 25px;
-        }
-        
-        .card-footer {
-            flex-direction: column;
-            padding: 20px 25px;
-        }
-        
-        .btn-primary, .btn-secondary {
-            width: 100%;
-            justify-content: center;
-        }
+    .btn-primary:hover {
+        background: #d00000;
+        box-shadow: 0 4px 12px rgba(164, 0, 0, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+        background: white;
+        color: #a40000;
+        border: 2px solid #a40000;
+    }
+    
+    .btn-secondary:hover {
+        background: #a40000;
+        color: white;
     }
     
     .filter-container {
@@ -351,6 +313,66 @@
         border-left: 3px solid #a40000;
     }
     
+    @media (max-width: 1024px) {
+        .content-container {
+            max-width: 80vw;
+            margin-left: 5vw;
+        }
+        
+        .card-body {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-row:nth-last-child(-n+2) {
+            grid-column: span 1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .main-content {
+            margin-left: 0;
+        }
+        
+        .content-container {
+            max-width: 100%;
+            margin-left: 0;
+            padding: 15px;
+        }
+        
+        .tabs {
+            flex-direction: column;
+            margin-left: 0;
+        }
+        
+        .card-header {
+            padding: 25px 20px;
+        }
+        
+        .imagePlaceholder {
+            height: 150px;
+            width: 150px;
+        }
+        
+        .company-name {
+            font-size: 22px;
+        }
+        
+        .card-body {
+            gap: 20px;
+            padding: 25px;
+        }
+        
+        .card-footer {
+            flex-direction: column;
+            padding: 20px 25px;
+        }
+        
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
     @keyframes fadeIn {
         from {
             opacity: 0;
@@ -361,123 +383,6 @@
             transform: translateY(0);
         }
     }
-
-
-.filter-container {
-    position: relative;
-    display: inline-block;
-}
-
-.filter-button {
-    background: linear-gradient(135deg, #a40000 0%, #d00000 100%);
-    color: white;
-    padding: 11px 20px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 600;
-    min-width: 180px;
-    text-align: left;
-    position: relative;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 8px rgba(164, 0, 0, 0.2);
-}
-
-.filter-button:hover {
-    box-shadow: 0 4px 15px rgba(164, 0, 0, 0.3);
-    transform: translateY(-1px);
-}
-
-.filter-button::after {
-    content: '▼';
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 11px;
-    transition: transform 0.3s ease;
-}
-
-.filter-dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    display: none;
-    flex-direction: column;
-    min-width: 220px;
-    margin-top: 8px;
-    border: 1px solid #f0f0f0;
-    overflow: hidden;
-}
-
-.filter-dropdown.show {
-    display: flex;
-    animation: slideDown 0.25s ease;
-}
-
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.filter-option {
-    background: none;
-    border: none;
-    padding: 13px 20px;
-    text-align: left;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
-    transition: all 0.2s;
-    font-weight: 500;
-}
-
-.filter-option:hover {
-    background: #f5f5f5;
-    padding-left: 24px;
-}
-
-.filter-option.active {
-    background: #fff0f0;
-    color: #a40000;
-    font-weight: 700;
-    border-left: 4px solid #a40000;
-    padding-left: 24px;
-}
-
-.filter-selected {
-    margin-top: 10px;
-    font-size: 13px;
-    color: #666;
-    padding: 8px 12px;
-    background: linear-gradient(135deg, #fff5f5 0%, #ffefef 100%);
-    border-radius: 6px;
-    display: none;
-    font-weight: 600;
-    border-left: 3px solid #a40000;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
 </style>
 
 <button class="tertiary-btn" style="display:flex; width:100px; margin: 20px;align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/officers'"> 
@@ -488,9 +393,21 @@
 <div class="main-content">
     <div class="tabs">
     <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/pending_officer_applications/all'">Pending Requests</button>
-    <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/accepted_officer_applications/all'">Approved Requests</button>
-    <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/rejected_officer_applications/all'">Rejected Requests</button>
-    
+    <button class="tab primary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/accepted_officer_applications/all'">Approved Requests</button>
+    <button class="tab secondary-btn" onclick="window.location.href='<?php echo URL_ROOT; ?>/admin/rejected_officer_applications/all'">Rejected Requests</button>
+  
+  
+  
+  
+  
+  
+    <input
+        type="text"
+        id="officerSearch"
+        placeholder="Search by name, email, phone..."
+        style="min-width:260px; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;"
+    />
+ 
 
 </div>
     
@@ -623,6 +540,56 @@
 
 <div class="backdrop" id="backdrop" hidden></div>
 
+<script>
+    (function () {
+        const searchInput = document.getElementById('officerSearch');
+        const cards = document.querySelectorAll('.profile-card');
+
+        if (!searchInput || cards.length === 0) {
+            return;
+        }
+
+        const applySearchFilter = () => {
+            const searchValue = searchInput.value.trim().toLowerCase();
+
+            cards.forEach((card) => {
+                const cardText = (card.textContent || '').toLowerCase();
+                const matches = !searchValue || cardText.includes(searchValue);
+                card.style.display = matches ? '' : 'none';
+            });
+        };
+
+        searchInput.addEventListener('input', applySearchFilter);
+    })();
+</script>
+
 
 <script src="<?php echo URL_ROOT; ?>/js/components/sidebar.js"></script>
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>
+
+
+
+
+
+
+
+
+
+
+
+                if(empty($data['image']['name'])){
+                    $data['image_err'] = 'Please upload an image';
+                } elseif($data['image']['size'] > 0){
+                    $fileExtension = strtolower(pathinfo($data['image']['name'], PATHINFO_EXTENSION));
+                    $allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+                    $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    $detectedMimeType = mime_content_type($data['image']['tmp_name']);
+
+                    if(!in_array($fileExtension, $allowedExtensions) || !in_array($detectedMimeType, $allowedMimeTypes)){
+                        $data['image_err'] = 'Only JPG, PNG, and WEBP images are allowed';
+                    } elseif(uploadImage($data['image']['tmp_name'], $data['image_name'], '/uploads/clientLogos/')){
+                        // Image uploaded successfully
+                    } else {
+                        $data['image_err'] = 'Failed to upload image';
+                    }
+                }
