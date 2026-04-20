@@ -26,7 +26,8 @@
         color: var(--text-color);
     }
 
-    .field-input, .field-select {
+    .field-input,
+    .field-select {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid var(--border-color);
@@ -34,7 +35,8 @@
         font-size: 15px;
     }
 
-    .field-input:focus, .field-select:focus {
+    .field-input:focus,
+    .field-select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(164, 0, 0, 0.2);
@@ -172,7 +174,7 @@
 </style>
 
 <div class="back-btn-container">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/notes'"> 
+    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/notes'">
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back
     </button>
@@ -184,21 +186,20 @@
 
     <div class="application-form" style="flex: 1 1 100%; max-width: 800px; margin: 0 auto;">
         <h3 style="color: var(--primary-color); margin-top: 0;">Add New Note</h3>
-        
+
         <form method="POST" action="<?php echo URL_ROOT; ?>/caretaker/addNote" id="noteForm">
             <div class="form-grid">
-                
+
                 <!-- Title -->
                 <div class="field full-width">
                     <div class="field-label">Note Title <span class="required">*</span></div>
-                    <input 
+                    <input
                         class="field-input"
-                        type="text" 
-                        name="title" 
+                        type="text"
+                        name="title"
                         placeholder="e.g., Check main gate lock, Submit monthly report"
                         required
-                        maxlength="255"
-                    >
+                        maxlength="255">
                     <small class="form-hint">Brief title for your note (max 255 characters)</small>
                 </div>
 
@@ -226,27 +227,25 @@
                 <!-- Reminder Date -->
                 <div class="field full-width">
                     <div class="field-label">Reminder Date <span class="optional">(Optional)</span></div>
-                    <input 
+                    <input
                         class="field-input"
-                        type="date" 
+                        type="date"
                         name="reminder_date"
-                        min="<?php echo date('Y-m-d'); ?>"
-                    >
+                        min="<?php echo date('Y-m-d'); ?>">
                     <small class="form-hint">Set a reminder date for this note</small>
                 </div>
 
                 <!-- Note Content -->
                 <div class="field full-width">
                     <div class="field-label">Note Content <span class="required">*</span></div>
-                    <textarea 
+                    <textarea
                         class="field-textarea"
-                        name="note_content" 
-                        rows="8" 
+                        name="note_content"
+                        rows="8"
                         placeholder="Enter your note details here..."
                         required
                         minlength="10"
-                        maxlength="5000"
-                    ></textarea>
+                        maxlength="5000"></textarea>
                     <small class="form-hint">Detailed note content (minimum 10 characters)</small>
                 </div>
             </div>
@@ -274,25 +273,25 @@
     </div>
 </main>
 
-<?php flash('msg')?>
+<?php flash('msg') ?>
 
 <script>
-  // Flash message auto-remove
-  document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('msg-flash');
-    
-    if (flashMessage) {
-      setTimeout(function() {
-        flashMessage.classList.add('fade-out');
-        
-        setTimeout(function() {
-          if (flashMessage.parentNode) {
-            flashMessage.parentNode.removeChild(flashMessage);
-          }
-        }, 300);
-      }, 5000);
-    }
-  });
+    // Flash message auto-remove
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('msg-flash');
+
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.classList.add('fade-out');
+
+                setTimeout(function() {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    });
 </script>
 
 </main>

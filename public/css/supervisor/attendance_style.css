@@ -168,6 +168,16 @@
     gap: 0.5rem;
 }
 
+.duty-point-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: #fff9f9;
+    border: 1px solid #f8dede;
+}
+
 .duty-point-chip {
     display: inline-block;
     background: #fdf2f2;
@@ -177,6 +187,101 @@
     padding: 0.32rem 0.7rem;
     font-size: 0.8rem;
     font-weight: 600;
+}
+
+.duty-point-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.btn-edit-duty,
+.btn-delete-duty,
+.btn-save-duty,
+.btn-cancel-duty {
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-edit-duty {
+    background: #ffffff;
+    color: #344054;
+    border-color: #d0d5dd;
+}
+
+.btn-edit-duty:hover {
+    background: #f9fafb;
+    border-color: #98a2b3;
+}
+
+.btn-delete-duty {
+    background: #fff5f5;
+    color: #b42318;
+    border-color: #fecaca;
+}
+
+.btn-delete-duty:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+}
+
+.duty-edit-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.duty-edit-form[hidden] {
+    display: none !important;
+}
+
+.duty-edit-input {
+    border: 1px solid #e7c8ce;
+    border-radius: 999px;
+    padding: 0.3rem 0.58rem;
+    font-size: 0.8rem;
+    min-width: 130px;
+}
+
+.duty-edit-input:focus {
+    outline: none;
+    border-color: #c41212;
+    box-shadow: 0 0 0 2px rgba(196, 18, 18, 0.1);
+}
+
+.btn-save-duty {
+    background: #c41212;
+    color: #fff;
+    border-color: #c41212;
+}
+
+.btn-save-duty:hover {
+    background: #a80f0f;
+}
+
+.btn-cancel-duty {
+    background: #fff;
+    color: #344054;
+    border-color: #d0d5dd;
+}
+
+.btn-cancel-duty:hover {
+    background: #f2f4f7;
+}
+
+.duty-delete-form {
+    margin: 0;
 }
 
 .duty-points-empty {
@@ -842,6 +947,23 @@
         width: 100%;
 
         justify-content: center;
+    }
+
+    .duty-point-item {
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 12px;
+    }
+
+    .duty-edit-form {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+    }
+
+    .duty-edit-input {
+        width: 100%;
+        min-width: 0;
     }
 }
 

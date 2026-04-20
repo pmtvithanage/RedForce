@@ -37,7 +37,6 @@ class M_caretaker
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
-        $this->db->bind(':start_time', $data['start_time'] ?? null);
         $this->db->bind(':proof_file', $data['proof_file']);
 
         return $this->db->execute();
@@ -75,7 +74,6 @@ class M_caretaker
         $this->db->bind(':leave_type', $data['leave_type']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
-        $this->db->bind(':start_time', $data['start_time'] ?? null);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file']);
 
@@ -325,7 +323,6 @@ class M_caretaker
         $this->db->bind(':estimated_cost', $data['estimated_cost']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':priority', $data['priority']);
-
         return $this->db->execute();
     }
 

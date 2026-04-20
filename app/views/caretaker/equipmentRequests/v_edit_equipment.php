@@ -26,7 +26,8 @@
         color: var(--text-color);
     }
 
-    .field-input, .field-select {
+    .field-input,
+    .field-select {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid var(--border-color);
@@ -34,7 +35,8 @@
         font-size: 15px;
     }
 
-    .field-input:focus, .field-select:focus {
+    .field-input:focus,
+    .field-select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(164, 0, 0, 0.2);
@@ -196,7 +198,7 @@
 </style>
 
 <div class="back-btn-container">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/equipmentRequests'"> 
+    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/equipmentRequests'">
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back
     </button>
@@ -207,9 +209,9 @@
     <?php flash('equipment_message'); ?>
     <?php flash('equipment_error'); ?>
 
-    <?php 
+    <?php
     // Check if request can be edited
-    if ($data['request']->status != 'Pending'): 
+    if ($data['request']->status != 'Pending'):
     ?>
         <!-- Cannot Edit - Show Alert -->
         <div class="alert alert-warning">
@@ -259,27 +261,26 @@
         </div>
 
     <?php else: ?>
-        
+
         <!-- Can Edit - Show Editable Form -->
         <div class="application-form" style="flex: 1 1 100%; max-width: 800px; margin: 0 auto;">
             <h3 style="color: var(--primary-color); margin-top: 0;">Edit Equipment Request</h3>
-            
+
             <form method="POST" action="<?php echo URL_ROOT; ?>/caretaker/updateEquipmentRequest/<?php echo $data['request']->id; ?>" id="editEquipmentForm">
-                
+
                 <div class="form-grid">
-                    
+
                     <!-- Equipment Name -->
                     <div class="field">
                         <div class="field-label">Equipment Name <span class="required">*</span></div>
-                        <input 
+                        <input
                             class="field-input"
-                            type="text" 
-                            name="equipment_name" 
+                            type="text"
+                            name="equipment_name"
                             value="<?php echo htmlspecialchars($data['request']->equipment_name); ?>"
                             placeholder="e.g., Flashlight"
                             list="equipment-suggestions"
-                            required
-                        >
+                            required>
                         <datalist id="equipment-suggestions">
                             <option value="Flashlight">
                             <option value="Uniform">
@@ -297,15 +298,14 @@
                     <!-- Quantity -->
                     <div class="field">
                         <div class="field-label">Quantity <span class="required">*</span></div>
-                        <input 
+                        <input
                             class="field-input"
-                            type="number" 
-                            name="quantity" 
+                            type="number"
+                            name="quantity"
                             min="1"
                             value="<?php echo $data['request']->quantity; ?>"
                             id="quantity"
-                            required
-                        >
+                            required>
                     </div>
 
                     <!-- Estimated Cost -->
@@ -313,15 +313,14 @@
                         <div class="field-label">Estimated Cost (per unit) <span class="required">*</span></div>
                         <div class="input-with-prefix">
                             <span class="prefix">Rs.</span>
-                            <input 
-                                type="number" 
-                                name="estimated_cost" 
-                                min="0" 
+                            <input
+                                type="number"
+                                name="estimated_cost"
+                                min="0"
                                 step="0.01"
                                 value="<?php echo $data['request']->estimated_cost; ?>"
                                 id="estimated_cost"
-                                required
-                            >
+                                required>
                         </div>
                     </div>
 
@@ -355,13 +354,12 @@
                     <!-- Reason -->
                     <div class="field full-width">
                         <div class="field-label">Reason <span class="required">*</span></div>
-                        <textarea 
+                        <textarea
                             class="field-textarea"
-                            name="reason" 
+                            name="reason"
                             rows="5"
                             required
-                            minlength="10"
-                        ><?php echo htmlspecialchars($data['request']->reason); ?></textarea>
+                            minlength="10"><?php echo htmlspecialchars($data['request']->reason); ?></textarea>
                     </div>
 
                 </div>
@@ -379,43 +377,43 @@
 </main>
 
 <script>
-// Auto-calculate total cost when editing
-const quantityInput = document.getElementById('quantity');
-const costInput = document.getElementById('estimated_cost');
-const totalDisplay = document.getElementById('total_estimated');
+    // Auto-calculate total cost when editing
+    const quantityInput = document.getElementById('quantity');
+    const costInput = document.getElementById('estimated_cost');
+    const totalDisplay = document.getElementById('total_estimated');
 
-if (quantityInput && costInput && totalDisplay) {
-    function calculateTotal() {
-        const quantity = parseFloat(quantityInput.value) || 0;
-        const cost = parseFloat(costInput.value) || 0;
-        const total = (quantity * cost).toFixed(2);
-        totalDisplay.textContent = total;
+    if (quantityInput && costInput && totalDisplay) {
+        function calculateTotal() {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const cost = parseFloat(costInput.value) || 0;
+            const total = (quantity * cost).toFixed(2);
+            totalDisplay.textContent = total;
+        }
+
+        quantityInput.addEventListener('input', calculateTotal);
+        costInput.addEventListener('input', calculateTotal);
     }
-
-    quantityInput.addEventListener('input', calculateTotal);
-    costInput.addEventListener('input', calculateTotal);
-}
 </script>
 
-<?php flash('msg')?>
+<?php flash('msg') ?>
 
 <script>
-  // Flash message auto-remove
-  document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('msg-flash');
-    
-    if (flashMessage) {
-      setTimeout(function() {
-        flashMessage.classList.add('fade-out');
-        
-        setTimeout(function() {
-          if (flashMessage.parentNode) {
-            flashMessage.parentNode.removeChild(flashMessage);
-          }
-        }, 300);
-      }, 5000);
-    }
-  });
+    // Flash message auto-remove
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('msg-flash');
+
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.classList.add('fade-out');
+
+                setTimeout(function() {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    });
 </script>
 
 </main>

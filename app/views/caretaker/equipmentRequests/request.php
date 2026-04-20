@@ -231,7 +231,6 @@
                         <th>Equipment</th>
                         <th>Qty</th>
                         <th>Est. Cost</th>
-                        <th>Actual Cost</th>
                         <th>Total</th>
                         <th>Priority</th>
                         <th>Status</th>
@@ -249,14 +248,14 @@
                                 <!-- Estimated Cost -->
                                 <td class="cost-cell">Rs. <?php echo number_format($request->estimated_cost, 2); ?></td>
 
-                                <!-- Actual Cost -->
+                                <!-- Actual Cost 
                                 <td class="cost-cell">
                                     <?php if ($request->status == 'Approved' && isset($request->actual_cost) && $request->actual_cost > 0): ?>
                                         <span class="actual-cost">Rs. <?php echo number_format($request->actual_cost, 2); ?></span>
                                     <?php else: ?>
                                         <span class="pending-text">-</span>
                                     <?php endif; ?>
-                                </td>
+                                </td>-->
 
                                 <!-- Total Cost -->
                                 <td class="cost-cell total-cost">
@@ -324,7 +323,7 @@
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="9" class="no-data">
+                            <td colspan="8" class="no-data">
                                 <span class="material-symbols-outlined">inventory</span>
                                 <p>No equipment requests found. Click "Request Equipment" to submit a request.</p>
                             </td>

@@ -530,7 +530,9 @@
                                     <?php echo ucfirst($request->status); ?>
                                 </span>
                             </td>
-                            <td><?php echo date('M d, Y', strtotime($request->created_at)); ?></td>
+                            <td>
+                                <?php echo !empty($request->created_at) ? date('M d, Y', strtotime($request->created_at)) : 'N/A'; ?>
+                            </td>
                             <td>
                                 <div class="actions">
                                     <button class="action-btn view-btn"

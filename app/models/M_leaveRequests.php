@@ -1,8 +1,10 @@
 <?php
-class M_leaveRequests {
+class M_leaveRequests
+{
     private $db;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->db = new Database();
     }
 
@@ -12,19 +14,20 @@ class M_leaveRequests {
      * @param string $role Role type
      * @return string Column name
      */
-    private function getRoleColumn($role = null) {
+    private function getRoleColumn($role = null)
+    {
         if ($role === null) {
             // Try to determine from session
             $role = $_SESSION['role'] ?? 'premise officer';
         }
-        
+
         $roleMap = [
             'supervisor' => 'supervisor_id',
             'caretaker' => 'caretaker_id',
             'mobile rider' => 'mobilerider_id',
             'premise officer' => 'premiseofficer_id'
         ];
-        
+
         return $roleMap[strtolower($role)] ?? 'premiseofficer_id';
     }
 
@@ -35,9 +38,10 @@ class M_leaveRequests {
      * @param string $role The user's role (optional, defaults to session role)
      * @return array List of leave requests
      */
-    public function getLeaveRequestsByUser($user_id, $role = null) {
+    public function getLeaveRequestsByUser($user_id, $role = null)
+    {
         $roleColumn = $this->getRoleColumn($role);
-        
+
         $this->db->query("
             SELECT lr.*, u.name AS requester_name
             FROM leave_requests lr
@@ -56,7 +60,8 @@ class M_leaveRequests {
      * @param string $role The user's role (optional)
      * @return object Leave request details
      */
-    public function getLeaveRequestById($id, $role = null) {
+    public function getLeaveRequestById($id, $role = null)
+    {
         $this->db->query('
             SELECT lr.*, 
                 COALESCE(u1.name, u2.name, u3.name, u4.name) AS requester_name,
@@ -78,11 +83,12 @@ class M_leaveRequests {
      * @param array $data Leave request data (must include role-specific ID key)
      * @return bool Success status
      */
-    public function createLeaveRequest($data) {
+    public function createLeaveRequest($data)
+    {
         // Determine which role ID is provided
         $roleColumn = null;
         $userId = null;
-        
+
         if (isset($data['supervisor_id'])) {
             $roleColumn = 'supervisor_id';
             $userId = $data['supervisor_id'];
@@ -96,17 +102,17 @@ class M_leaveRequests {
             $roleColumn = 'premiseofficer_id';
             $userId = $data['premiseofficer_id'];
         }
-        
+
         if (!$roleColumn) {
             return false;
         }
-        
+
         $this->db->query("
             INSERT INTO leave_requests 
             ($roleColumn, leave_type, reason, start_date, end_date, proof_file, status, created_at) 
             VALUES (:user_id, :leave_type, :reason, :start_date, :end_date, :proof_file, :status, NOW())
         ");
-        
+
         $this->db->bind(':user_id', $userId);
         $this->db->bind(':leave_type', $data['leave_type']);
         $this->db->bind(':reason', $data['reason']);
@@ -114,7 +120,7 @@ class M_leaveRequests {
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file'] ?? null);
         $this->db->bind(':status', $data['status'] ?? 'Pending');
-        
+
         if ($this->db->execute()) {
             return $this->db->lastInsertId();
         }
@@ -130,9 +136,10 @@ class M_leaveRequests {
      * @param string $role User's role (optional)
      * @return bool Success status
      */
-    public function updateLeaveRequest($id, $data, $user_id, $role = null) {
+    public function updateLeaveRequest($id, $data, $user_id, $role = null)
+    {
         $roleColumn = $this->getRoleColumn($role);
-        
+
         $this->db->query("
             UPDATE leave_requests 
             SET leave_type = :leave_type, 
@@ -143,7 +150,7 @@ class M_leaveRequests {
                 updated_at = NOW()
             WHERE id = :id AND $roleColumn = :user_id AND status = 'Pending'
         ");
-        
+
         $this->db->bind(':id', $id);
         $this->db->bind(':user_id', $user_id);
         $this->db->bind(':leave_type', $data['leave_type']);
@@ -151,7 +158,7 @@ class M_leaveRequests {
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
         $this->db->bind(':proof_file', $data['proof_file'] ?? null);
-        
+
         return $this->db->execute();
     }
 
@@ -163,16 +170,17 @@ class M_leaveRequests {
      * @param string $role User's role (optional)
      * @return bool Success status
      */
-    public function deleteLeaveRequest($id, $user_id, $role = null) {
+    public function deleteLeaveRequest($id, $user_id, $role = null)
+    {
         $roleColumn = $this->getRoleColumn($role);
-        
+
         $this->db->query("
             DELETE FROM leave_requests 
             WHERE id = :id AND $roleColumn = :user_id AND status = 'Pending'
         ");
         $this->db->bind(':id', $id);
         $this->db->bind(':user_id', $user_id);
-        
+
         return $this->db->execute();
     }
 
@@ -183,9 +191,10 @@ class M_leaveRequests {
      * @param string $role User's role (optional)
      * @return object Statistics
      */
-    public function getLeaveStats($user_id, $role = null) {
+    public function getLeaveStats($user_id, $role = null)
+    {
         $roleColumn = $this->getRoleColumn($role);
-        
+
         $this->db->query("
             SELECT 
                 COUNT(*) as total_requests,
@@ -207,17 +216,17 @@ class M_leaveRequests {
      * @param string $role User's role (optional)
      * @return bool
      */
-    public function isOwnedByUser($id, $user_id, $role = null) {
+    public function isOwnedByUser($id, $user_id, $role = null)
+    {
         $roleColumn = $this->getRoleColumn($role);
-        
+
         $this->db->query("
             SELECT id FROM leave_requests 
             WHERE id = :id AND $roleColumn = :user_id
         ");
         $this->db->bind(':id', $id);
         $this->db->bind(':user_id', $user_id);
-        
+
         return $this->db->single() ? true : false;
     }
 }
-?>

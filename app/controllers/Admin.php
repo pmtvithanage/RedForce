@@ -3011,7 +3011,12 @@ class Admin extends Controller
             return;
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $admin_id = $_SESSION['user_userID'];
+            $admin_id = (int)($_SESSION['user_id'] ?? 0);
+            if ($admin_id <= 0) {
+                flash('leave_error', 'Unauthorized access');
+                redirect('admin/pendings');
+                return;
+            }
 
             if ($this->adminModel->approveLeaveRequest($id, $admin_id)) {
                 // Get leave request details for notification
@@ -3050,7 +3055,12 @@ class Admin extends Controller
             return;
         }
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $admin_id = $_SESSION['user_userID'];
+            $admin_id = (int)($_SESSION['user_id'] ?? 0);
+            if ($admin_id <= 0) {
+                flash('leave_error', 'Unauthorized access');
+                redirect('admin/pendings');
+                return;
+            }
             $reason = trim($_POST['reason'] ?? '');
 
             if (empty($reason)) {
@@ -3316,7 +3326,12 @@ class Admin extends Controller
             return;
         }
 
-        $admin_id = $_SESSION['user_userID'];
+        $admin_id = (int)($_SESSION['user_id'] ?? 0);
+        if ($admin_id <= 0) {
+            flash('leave_error', 'Unauthorized access');
+            redirect('admin/dashboard');
+            return;
+        }
         $reason = trim($_GET['reason'] ?? '');
 
         if (empty($reason)) {

@@ -26,7 +26,8 @@
         color: var(--text-color);
     }
 
-    .field-input, .field-select {
+    .field-input,
+    .field-select {
         width: 100%;
         padding: 10px 12px;
         border: 1px solid var(--border-color);
@@ -34,7 +35,8 @@
         font-size: 15px;
     }
 
-    .field-input:focus, .field-select:focus {
+    .field-input:focus,
+    .field-select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 2px rgba(164, 0, 0, 0.2);
@@ -216,7 +218,7 @@
 </style>
 
 <div class="back-btn-container">
-    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/equipmentRequests'"> 
+    <button class="tertiary-btn" style="display:flex; width:100px; align-items:center;" onclick="window.location.href='<?php echo URL_ROOT; ?>/caretaker/equipmentRequests'">
         <span class="material-symbols-outlined" style="font-size:18px;">arrow_back</span>
         Back
     </button>
@@ -229,22 +231,21 @@
 
     <div class="application-form" style="flex: 1 1 100%; max-width: 800px; margin: 0 auto;">
         <h3 style="color: var(--primary-color); margin-top: 0;">New Equipment Request</h3>
-        
+
         <form method="POST" action="<?php echo URL_ROOT; ?>/caretaker/addEquipmentRequest" id="equipmentForm">
             <div class="form-grid">
-                
+
                 <!-- Equipment Name -->
                 <div class="field">
                     <div class="field-label">Equipment Name <span class="required">*</span></div>
-                    <input 
+                    <input
                         class="field-input"
-                        type="text" 
-                        name="equipment_name" 
+                        type="text"
+                        name="equipment_name"
                         placeholder="e.g., Flashlight, Uniform, Radio"
                         list="equipment-suggestions"
                         required
-                        maxlength="255"
-                    >
+                        maxlength="255">
                     <!-- Pre-defined suggestions -->
                     <datalist id="equipment-suggestions">
                         <option value="Flashlight">
@@ -264,16 +265,15 @@
                 <!-- Quantity -->
                 <div class="field">
                     <div class="field-label">Quantity <span class="required">*</span></div>
-                    <input 
+                    <input
                         class="field-input"
-                        type="number" 
-                        name="quantity" 
-                        min="1" 
+                        type="number"
+                        name="quantity"
+                        min="1"
                         max="100"
                         value="1"
                         id="quantity"
-                        required
-                    >
+                        required>
                     <small class="form-hint">How many units do you need?</small>
                 </div>
 
@@ -282,15 +282,14 @@
                     <div class="field-label">Estimated Cost (per unit) <span class="required">*</span></div>
                     <div class="input-with-prefix">
                         <span class="prefix">Rs.</span>
-                        <input 
-                            type="number" 
-                            name="estimated_cost" 
-                            min="0" 
+                        <input
+                            type="number"
+                            name="estimated_cost"
+                            min="0"
                             step="0.01"
                             placeholder="0.00"
                             id="estimated_cost"
-                            required
-                        >
+                            required>
                     </div>
                     <small class="form-hint">Approximate price per item</small>
                 </div>
@@ -322,15 +321,14 @@
                 <!-- Reason (Full Width) -->
                 <div class="field full-width">
                     <div class="field-label">Reason for Request <span class="required">*</span></div>
-                    <textarea 
+                    <textarea
                         class="field-textarea"
-                        name="reason" 
+                        name="reason"
                         rows="5"
                         placeholder="Explain why you need this equipment...&#10;&#10;Example:&#10;- Previous flashlight stopped working&#10;- Battery died and cannot be replaced&#10;- Need for night patrol duty"
                         required
                         minlength="10"
-                        maxlength="1000"
-                    ></textarea>
+                        maxlength="1000"></textarea>
                     <small class="form-hint">Provide detailed explanation (minimum 10 characters)</small>
                 </div>
 
@@ -360,41 +358,41 @@
 </main>
 
 <script>
-// Auto-calculate total cost
-const quantityInput = document.getElementById('quantity');
-const costInput = document.getElementById('estimated_cost');
-const totalDisplay = document.getElementById('total_estimated');
+    // Auto-calculate total cost
+    const quantityInput = document.getElementById('quantity');
+    const costInput = document.getElementById('estimated_cost');
+    const totalDisplay = document.getElementById('total_estimated');
 
-function calculateTotal() {
-    const quantity = parseFloat(quantityInput.value) || 0;
-    const cost = parseFloat(costInput.value) || 0;
-    const total = (quantity * cost).toFixed(2);
-    totalDisplay.textContent = total;
-}
+    function calculateTotal() {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const cost = parseFloat(costInput.value) || 0;
+        const total = (quantity * cost).toFixed(2);
+        totalDisplay.textContent = total;
+    }
 
-quantityInput.addEventListener('input', calculateTotal);
-costInput.addEventListener('input', calculateTotal);
+    quantityInput.addEventListener('input', calculateTotal);
+    costInput.addEventListener('input', calculateTotal);
 </script>
 
-<?php flash('msg')?>
+<?php flash('msg') ?>
 
 <script>
-  // Flash message auto-remove
-  document.addEventListener('DOMContentLoaded', function() {
-    const flashMessage = document.getElementById('msg-flash');
-    
-    if (flashMessage) {
-      setTimeout(function() {
-        flashMessage.classList.add('fade-out');
-        
-        setTimeout(function() {
-          if (flashMessage.parentNode) {
-            flashMessage.parentNode.removeChild(flashMessage);
-          }
-        }, 300);
-      }, 5000);
-    }
-  });
+    // Flash message auto-remove
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessage = document.getElementById('msg-flash');
+
+        if (flashMessage) {
+            setTimeout(function() {
+                flashMessage.classList.add('fade-out');
+
+                setTimeout(function() {
+                    if (flashMessage.parentNode) {
+                        flashMessage.parentNode.removeChild(flashMessage);
+                    }
+                }, 300);
+            }, 5000);
+        }
+    });
 </script>
 
 </main>
