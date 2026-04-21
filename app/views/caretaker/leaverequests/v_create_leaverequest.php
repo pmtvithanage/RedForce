@@ -274,6 +274,16 @@
                 <span class="form-input-error"><?php echo isset($data['leave_type_err']) ? $data['leave_type_err'] : ''; ?></span>
             </div>
 
+            <div class="field">
+                <div class="field-label">Half Day:</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="half_day" name="half_day" value="1" <?php echo (isset($data['half_day_value']) && $data['half_day_value'] == 'on') ? 'checked' : ''; ?> />
+                        <label for="half_day">Yes</label>
+                    </div>
+                </div>
+            </div>
+
             <div class="date-grid">
                 <div class="field">
                     <div class="field-label">Start Date: <span style="color: red;">*</span></div>

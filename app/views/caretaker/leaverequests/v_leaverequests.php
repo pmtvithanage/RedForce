@@ -513,12 +513,19 @@
                             <td><?php echo date('M d, Y', strtotime($request->start_date)); ?></td>
                             <td><?php echo date('M d, Y', strtotime($request->end_date)); ?></td>
                             <td>
-                                <?php
-                                $start = new DateTime($request->start_date);
-                                $end = new DateTime($request->end_date);
-                                $interval = $start->diff($end);
-                                echo ($interval->days + 1) . ' day(s)';
-                                ?>
+                                <?php if (!empty($request->start_date) && !empty($request->end_date)) {
+                                    if (!empty($request->half_day) && $request->half_day == 'on') {
+                                        echo '<span style="color: #e71313; font-weight: 600;">Half Day</span>';
+                                    } else {
+                                        $start = new DateTime($request->start_date);
+                                        $end = new DateTime($request->end_date);
+                                        $interval = $start->diff($end);
+                                        $days = $interval->days + 1;
+                                        echo $days . ($days == 1 ? ' day' : ' days');
+                                    }
+                                } else {
+                                    echo 'N/A';
+                                } ?>
                             </td>
                             <td>
                                 <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="<?php echo htmlspecialchars($request->reason); ?>">

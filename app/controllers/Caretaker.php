@@ -811,10 +811,12 @@ class Caretaker extends Controller
                 'title' => 'Leave Requests',
                 'pageTitle' => 'Create Leave Request',
                 'leave_type_value' => trim($_POST['leave_type'] ?? ''),
+                'half_day_value' => isset($_POST['half_day']) ? 'on' : 'off',
                 'reason_value' => trim($_POST['reason'] ?? ''),
                 'start_date_value' => trim($_POST['start_date'] ?? ''),
                 'end_date_value' => trim($_POST['end_date'] ?? ''),
                 'leave_type_err' => '',
+                'half_day_err' => '',
                 'reason_err' => '',
                 'start_date_err' => '',
                 'end_date_err' => '',
@@ -829,18 +831,6 @@ class Caretaker extends Controller
             // Validate reason
             if (empty($data['reason_value'])) {
                 $data['reason_err'] = 'Please enter a reason for leave';
-            }
-
-            // Validate start date
-            if (empty($data['start_date_value'])) {
-                $data['start_date_err'] = 'Please select a start date';
-            }
-
-            // Validate end date
-            if (empty($data['end_date_value'])) {
-                $data['end_date_err'] = 'Please select an end date';
-            } elseif (!empty($data['start_date_value']) && strtotime($data['end_date_value']) < strtotime($data['start_date_value'])) {
-                $data['end_date_err'] = 'End date must be after start date';
             }
 
             // Validate start date
@@ -879,10 +869,11 @@ class Caretaker extends Controller
             }
 
             // If no errors, create leave request
-            if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
+            if (empty($data['leave_type_err']) && empty($data['half_day_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
                 $leaveRequestData = [
                     'caretaker_id' => $_SESSION['user_id'],
                     'leave_type' => $data['leave_type_value'],
+                    'half_day' => $data['half_day_value'],
                     'reason' => $data['reason_value'],
                     'start_date' => $data['start_date_value'],
                     'end_date' => $data['end_date_value'],
@@ -940,14 +931,16 @@ class Caretaker extends Controller
                 'title' => 'Leave Requests',
                 'pageTitle' => 'Create Leave Request',
                 'leave_type_value' => '',
+                'half_day_value' => '',
                 'reason_value' => '',
                 'start_date_value' => '',
                 'end_date_value' => '',
                 'leave_type_err' => '',
+                'half_day_err' => '',
                 'reason_err' => '',
                 'start_date_err' => '',
                 'end_date_err' => '',
-                'proof_file_err' => ''
+                'proof_file_err' => '',
             ];
             $this->view('caretaker/leaverequests/v_create_leaverequest', $data);
         }
@@ -1004,11 +997,13 @@ class Caretaker extends Controller
                 'pageTitle' => 'Edit Leave Request',
                 'leaveRequest' => $leaveRequest,
                 'leave_type_value' => trim($_POST['leave_type'] ?? ''),
+                'half_day_value' => isset($_POST['half_day']) ? 'on' : 'off',
                 'reason_value' => trim($_POST['reason'] ?? ''),
                 'start_date_value' => trim($_POST['start_date'] ?? ''),
                 'end_date_value' => trim($_POST['end_date'] ?? ''),
                 'current_file' => $leaveRequest->proof_file,
                 'leave_type_err' => '',
+                'half_day_err' => '',
                 'reason_err' => '',
                 'start_date_err' => '',
                 'end_date_err' => '',
@@ -1053,9 +1048,10 @@ class Caretaker extends Controller
                 }
             }
 
-            if (empty($data['leave_type_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
+            if (empty($data['leave_type_err']) && empty($data['half_day_err']) && empty($data['reason_err']) && empty($data['start_date_err']) && empty($data['end_date_err']) && empty($data['proof_file_err'])) {
                 $updateData = [
                     'leave_type' => $data['leave_type_value'],
+                    'half_day' => $data['half_day_value'],
                     'reason' => $data['reason_value'],
                     'start_date' => $data['start_date_value'],
                     'end_date' => $data['end_date_value'],
@@ -1078,11 +1074,13 @@ class Caretaker extends Controller
                 'pageTitle' => 'Edit Leave Request',
                 'leaveRequest' => $leaveRequest,
                 'leave_type_value' => $leaveRequest->leave_type,
+                'half_day_value' => $leaveRequest->half_day,
                 'reason_value' => $leaveRequest->reason,
                 'start_date_value' => $leaveRequest->start_date,
                 'end_date_value' => $leaveRequest->end_date,
                 'current_file' => $leaveRequest->proof_file,
                 'leave_type_err' => '',
+                'half_day_err' => '',
                 'reason_err' => '',
                 'start_date_err' => '',
                 'end_date_err' => '',

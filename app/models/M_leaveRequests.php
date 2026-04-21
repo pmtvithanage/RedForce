@@ -109,12 +109,13 @@ class M_leaveRequests
 
         $this->db->query("
             INSERT INTO leave_requests 
-            ($roleColumn, leave_type, reason, start_date, end_date, proof_file, status, created_at) 
-            VALUES (:user_id, :leave_type, :reason, :start_date, :end_date, :proof_file, :status, NOW())
+            ($roleColumn, leave_type, reason, half_day, start_date, end_date, proof_file, status, created_at) 
+            VALUES (:user_id, :leave_type, :reason, :half_day, :start_date, :end_date, :proof_file, :status, NOW())
         ");
 
         $this->db->bind(':user_id', $userId);
         $this->db->bind(':leave_type', $data['leave_type']);
+        $this->db->bind(':half_day', $data['half_day'] ?? 'off');
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
@@ -144,6 +145,7 @@ class M_leaveRequests
             UPDATE leave_requests 
             SET leave_type = :leave_type, 
                 reason = :reason, 
+                half_day = :half_day, 
                 start_date = :start_date, 
                 end_date = :end_date, 
                 proof_file = :proof_file, 
@@ -154,6 +156,7 @@ class M_leaveRequests
         $this->db->bind(':id', $id);
         $this->db->bind(':user_id', $user_id);
         $this->db->bind(':leave_type', $data['leave_type']);
+        $this->db->bind(':half_day', $data['half_day'] ?? 'off');
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);

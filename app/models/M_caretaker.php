@@ -29,11 +29,12 @@ class M_caretaker
     // CREATE - Add new leave request
     public function addLeaveRequest($data)
     {
-        $this->db->query('INSERT INTO leave_requests (caretaker_id, leave_type, reason, start_date, end_date, proof_file) 
-                          VALUES (:caretaker_id, :leave_type, :reason, :start_date, :end_date, :proof_file)');
+        $this->db->query('INSERT INTO leave_requests (caretaker_id, leave_type, half_day, reason, start_date, end_date, proof_file) 
+                          VALUES (:caretaker_id, :leave_type, :half_day, :reason, :start_date, :end_date, :proof_file)');
 
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':leave_type', $data['leave_type']);
+        $this->db->bind(':half_day', $data['half_day']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
@@ -63,6 +64,7 @@ class M_caretaker
     {
         $this->db->query('UPDATE leave_requests 
                           SET leave_type = :leave_type, 
+                              half_day = :half_day, 
                               reason = :reason, 
                               start_date = :start_date, 
                               end_date = :end_date, 
@@ -72,6 +74,7 @@ class M_caretaker
         $this->db->bind(':id', $data['id']);
         $this->db->bind(':caretaker_id', $data['caretaker_id']);
         $this->db->bind(':leave_type', $data['leave_type']);
+        $this->db->bind(':half_day', $data['half_day']);
         $this->db->bind(':reason', $data['reason']);
         $this->db->bind(':start_date', $data['start_date']);
         $this->db->bind(':end_date', $data['end_date']);
