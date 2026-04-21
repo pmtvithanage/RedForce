@@ -88,7 +88,41 @@
                     <?php if (!empty($data['dutyPoints'])): ?>
                         <div class="duty-points-list">
                             <?php foreach ($data['dutyPoints'] as $point): ?>
-                                <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+                                <div class="duty-point-item" data-duty-point-id="<?php echo (int)$point->id; ?>">
+                                    <span class="duty-point-chip"><?php echo htmlspecialchars($point->duty_point_name); ?></span>
+
+                                    <div class="duty-point-actions">
+                                        <button
+                                            type="button"
+                                            class="btn-edit-duty"
+                                            data-duty-point-id="<?php echo (int)$point->id; ?>"
+                                            data-duty-point-name="<?php echo htmlspecialchars($point->duty_point_name, ENT_QUOTES, 'UTF-8'); ?>"
+                                            title="Edit duty point"
+                                            aria-label="Edit duty point">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </button>
+
+                                        <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/deleteDutyPoint" class="duty-delete-form">
+                                            <input type="hidden" name="duty_point_id" value="<?php echo (int)$point->id; ?>">
+                                            <button type="submit" class="btn-delete-duty" title="Delete duty point" aria-label="Delete duty point">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+
+                                    <form method="POST" action="<?php echo URL_ROOT; ?>/supervisor/updateDutyPoint" class="duty-edit-form" hidden>
+                                        <input type="hidden" name="duty_point_id" value="<?php echo (int)$point->id; ?>">
+                                        <input
+                                            type="text"
+                                            name="duty_point_name"
+                                            class="duty-edit-input"
+                                            value="<?php echo htmlspecialchars($point->duty_point_name); ?>"
+                                            maxlength="120"
+                                            required>
+                                        <button type="submit" class="btn-save-duty" title="Save duty point" aria-label="Save duty point"><i class="fa-solid fa-check"></i></button>
+                                        <button type="button" class="btn-cancel-duty" title="Cancel edit" aria-label="Cancel edit"><i class="fa-solid fa-xmark"></i></button>
+                                    </form>
+                                </div>
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
@@ -229,6 +263,61 @@
             msg.style.display = 'none';
         });
     }, 5000);
+
+    document.querySelectorAll('.btn-edit-duty').forEach((button) => {
+        button.addEventListener('click', () => {
+            const item = button.closest('.duty-point-item');
+            if (!item) {
+                return;
+            }
+
+            const actions = item.querySelector('.duty-point-actions');
+            const editForm = item.querySelector('.duty-edit-form');
+            const editInput = item.querySelector('.duty-edit-input');
+
+            if (actions) {
+                actions.style.display = 'none';
+            }
+
+            if (editForm) {
+                editForm.hidden = false;
+            }
+
+            if (editInput) {
+                editInput.focus();
+                editInput.select();
+            }
+        });
+    });
+
+    document.querySelectorAll('.btn-cancel-duty').forEach((button) => {
+        button.addEventListener('click', () => {
+            const item = button.closest('.duty-point-item');
+            if (!item) {
+                return;
+            }
+
+            const actions = item.querySelector('.duty-point-actions');
+            const editForm = item.querySelector('.duty-edit-form');
+
+            if (editForm) {
+                editForm.hidden = true;
+            }
+
+            if (actions) {
+                actions.style.display = 'inline-flex';
+            }
+        });
+    });
+
+    document.querySelectorAll('.duty-delete-form').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            const shouldDelete = window.confirm('Delete this duty point?');
+            if (!shouldDelete) {
+                event.preventDefault();
+            }
+        });
+    });
 </script>
 
 <?php require_once APP_ROOT . '/views/inc/components/footer.php'; ?>

@@ -1,7 +1,7 @@
 /* Profile Page Styles */
 .main-content {
     padding: 30px;
-    background-color: #FFEAEA;
+    background-color: #f5f7fa;
     min-height: calc(100vh - 60px);
     margin-left: 0px;
 }
@@ -74,7 +74,7 @@
 
 .card-header .material-icons {
     font-size: 24px;
-    color: #d32f2f;
+    color: #c41212;
 }
 
 .card-header h3 {
@@ -103,11 +103,11 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    background: linear-gradient(135deg, #c41212 0%, #a80f0f 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 4px 12px rgba(196, 18, 18, 0.3);
 }
 
 .avatar-circle-large .material-icons {
@@ -126,9 +126,9 @@
 .profile-role {
     text-align: center;
     font-size: 14px;
-    color: #666;
+    color: #5a5a5a;
     padding: 6px 16px;
-    background: #fff3f3;
+    background: #fff1f1;
     border-radius: 20px;
     display: inline-block;
     width: 100%;
@@ -173,7 +173,7 @@
 
 .info-icon .material-icons {
     font-size: 20px;
-    color: #d32f2f;
+    color: #c41212;
 }
 
 .info-details {
@@ -207,8 +207,8 @@
 }
 
 .action-btn:hover {
-    background: #d32f2f;
-    border-color: #d32f2f;
+    background: #c41212;
+    border-color: #c41212;
 }
 
 .action-btn:hover .material-icons {
@@ -239,7 +239,7 @@
 .security-icon {
     width: 50px;
     height: 50px;
-    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%);
+    background: linear-gradient(135deg, #c41212 0%, #a80f0f 100%);
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -269,7 +269,7 @@
 }
 
 .btn-primary {
-    background: #d32f2f;
+    background: #c41212;
     color: white;
     padding: 10px 24px;
     border-radius: 6px;
@@ -283,9 +283,9 @@
 }
 
 .btn-primary:hover {
-    background: #b71c1c;
+    background: #a80f0f;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 4px 12px rgba(196, 18, 18, 0.3);
 }
 
 /* Modal Styles */
@@ -345,7 +345,7 @@
 
 .close-btn:hover {
     background: #f0f0f0;
-    color: #d32f2f;
+    color: #c41212;
 }
 
 .modal-content {
@@ -377,8 +377,8 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: #d32f2f;
-    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+    border-color: #c41212;
+    box-shadow: 0 0 0 3px rgba(196, 18, 18, 0.1);
 }
 
 .form-group input::placeholder {
@@ -386,7 +386,7 @@
 }
 
 .save-btn {
-    background: #d32f2f;
+    background: #c41212;
     color: white;
     border: none;
     border-radius: 8px;
@@ -399,9 +399,9 @@
 }
 
 .save-btn:hover {
-    background: #b71c1c;
+    background: #a80f0f;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+    box-shadow: 0 4px 12px rgba(196, 18, 18, 0.3);
 }
 
 /* Responsive Design */
